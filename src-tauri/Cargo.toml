@@ -1,0 +1,19 @@
+[package]
+name = "souls-fit"
+version = "0.1.0"
+description = "Tire un exercice et un nombre de répétitions selon les événements des jeux"
+edition = "2021"
+
+[lib]
+name = "souls_fit_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rand = "0.9"
+chrono = "0.4"
