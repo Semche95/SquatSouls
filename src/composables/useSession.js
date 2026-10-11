@@ -1,10 +1,42 @@
-import { ref, watch } from 'vue';
+import { computed, onScopeDispose, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { defineShared } from './shared.js';
 
-export const [provideSession, useSession] = defineShared(({ call }, { game, gameId, store }) => {
+// Rafraîchissement du compte à rebours de la pause.
+const PAUSE_TICK_MS = 250;
+
+export const [provideSession, useSession] = defineShared(({ call }, { config, game, gameId, store }) => {
   const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], jokers: 0, jokersEarned: 0, skipped: [] });
   const notice = ref('');
+  // Pause après une série validée : la suivante ne peut pas être validée avant sa fin.
+  const pauseEnd = ref(0);
+  const now = ref(0);
+  let ticker;
+  const pauseLeft = computed(() => Math.max(0, Math.ceil((pauseEnd.value - now.value) / 1000)));
+
+  // La plus longue des pauses des exercices de la série, la pause globale à défaut de pause propre.
+  function pauseAfter(draw) {
+    const { exercises, pause } = config.value;
+    return Math.max(...draw.items.map((it) => exercises.find((ex) => ex.id === it.exerciseId)?.pause ?? pause));
+  }
+
+  function startPause(seconds) {
+    skipPause();
+    if (!seconds) return;
+    now.value = Date.now();
+    pauseEnd.value = now.value + seconds * 1000;
+    ticker = setInterval(() => {
+      now.value = Date.now();
+      if (!pauseLeft.value) skipPause();
+    }, PAUSE_TICK_MS);
+  }
+
+  function skipPause() {
+    clearInterval(ticker);
+    pauseEnd.value = 0;
+  }
+
+  onScopeDispose(skipPause);
 
   watch(session, (s) => {
     if (s.gameId) gameId.value = s.gameId;
@@ -36,8 +68,11 @@ export const [provideSession, useSession] = defineShared(({ call }, { game, game
 
   // Fait, joker ou annulation d'une série : en cas d'échec, on resynchronise la file.
   async function act(command, draw) {
+    const complete = command === 'complete';
+    if (complete && pauseLeft.value) return;
     try {
       session.value = await call(command, { drawId: draw.id });
+      if (complete) startPause(pauseAfter(draw));
     } catch {
       await reload();
     }
@@ -45,11 +80,13 @@ export const [provideSession, useSession] = defineShared(({ call }, { game, game
 
   async function newSession() {
     notice.value = '';
+    skipPause();
     session.value = await call('new_session');
   }
 
   async function cancelSession() {
     notice.value = '';
+    skipPause();
     try {
       session.value = await call('cancel_session');
     } catch {
@@ -57,5 +94,5 @@ export const [provideSession, useSession] = defineShared(({ call }, { game, game
     }
   }
 
-  return { session, notice, reload, saveNow, trigger, act, newSession, cancelSession };
+  return { session, notice, pauseLeft, skipPause, reload, saveNow, trigger, act, newSession, cancelSession };
 });

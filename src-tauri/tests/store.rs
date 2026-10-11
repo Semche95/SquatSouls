@@ -31,6 +31,38 @@ fn config_changes_are_saved() {
 }
 
 #[test]
+fn pauses_are_saved() {
+    let mut s = store();
+    let mut cfg = default_config();
+    assert_eq!(cfg.pause, DEFAULT_PAUSE);
+    cfg.pause = 90;
+    cfg.exercises[0].pause = Some(120);
+    cfg.exercises[1].pause = Some(0);
+    s.save_config(&cfg).unwrap();
+    assert_eq!(s.config().unwrap(), cfg);
+    cfg.exercises[0].pause = None;
+    s.save_config(&cfg).unwrap();
+    assert_eq!(s.config().unwrap(), cfg);
+}
+
+#[test]
+fn older_database_gets_pauses() {
+    let path = std::env::temp_dir().join(format!("squatsouls-{}.db", std::process::id()));
+    let conn = rusqlite::Connection::open(&path).unwrap();
+    conn.execute_batch(
+        "CREATE TABLE exercises (id TEXT PRIMARY KEY, position INTEGER NOT NULL, name TEXT NOT NULL,
+         unit TEXT NOT NULL, min INTEGER NOT NULL, max INTEGER NOT NULL);
+         INSERT INTO exercises VALUES ('squats', 0, 'Squats', 'rép.', 10, 15);",
+    )
+    .unwrap();
+    drop(conn);
+    let cfg = Store::open(&path).unwrap().config().unwrap();
+    std::fs::remove_file(&path).unwrap();
+    assert_eq!(cfg.pause, DEFAULT_PAUSE);
+    assert_eq!(cfg.exercises[0].pause, None);
+}
+
+#[test]
 fn removed_game_takes_its_events_along() {
     let mut s = store();
     let mut cfg = default_config();

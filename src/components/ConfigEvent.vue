@@ -1,5 +1,6 @@
 <script setup>
 import { plural } from '../format.js';
+import { setOptional } from '../configDraft.js';
 import { useConfig } from '../composables/useConfig.js';
 
 // ev appartient au brouillon : on l'édite en place.
@@ -7,11 +8,6 @@ defineProps({ ev: Object });
 defineEmits(['remove']);
 
 const { draft } = useConfig();
-
-function setMaxPerSession(ev, value) {
-  if (value === '') delete ev.maxPerSession;
-  else ev.maxPerSession = Number(value);
-}
 </script>
 
 <template>
@@ -42,7 +38,7 @@ function setMaxPerSession(ev, value) {
           type="number"
           min="1"
           placeholder="aucune"
-          @input="setMaxPerSession(ev, $event.target.value)"
+          @input="setOptional(ev, 'maxPerSession', $event.target.value)"
         />
       </label>
       <label>

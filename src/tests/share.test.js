@@ -4,7 +4,7 @@ import { config } from './app.js';
 
 const exercises = [
   { id: 'squat', name: 'Squats', unit: 'rép.', min: 10, max: 15 },
-  { id: 'pompes', name: 'Pompes', unit: 'rép.', min: 8, max: 12 },
+  { id: 'pompes', name: 'Pompes', unit: 'rép.', min: 8, max: 12, pause: 90 },
 ];
 
 describe('partage d\'un jeu', () => {
@@ -53,9 +53,10 @@ describe('partage d\'un jeu', () => {
 });
 
 describe('partage des exercices', () => {
-  it('partage les exercices sans id, puis les relit', () => {
+  it('partage les exercices sans id, avec leur pause propre, puis les relit', () => {
     const text = shareExercises(exercises);
     expect(unpack(text)).not.toContain('"id"');
+    expect(unpack(text)).toContain('"pause":90');
     expect(parseExercises(text)).toEqual(exercises.map(({ id, ...ex }) => ex));
     // Les espaces et retours à la ligne ajoutés par une messagerie sont ignorés.
     expect(parseExercises(` ${text.slice(0, 10)}\n${text.slice(10)} `)).toEqual(parseExercises(text));
@@ -68,6 +69,7 @@ describe('partage des exercices', () => {
       shareExercises([{ name: 'Squats', unit: 'rép.', min: 5, max: 0 }]),
       shareExercises([{ name: 'Squats', unit: 'rép.', min: 6, max: 5 }]),
       shareExercises([{ name: '', unit: 'rép.', min: 1, max: 5 }]),
+      shareExercises([{ name: 'Squats', unit: 'rép.', min: 1, max: 5, pause: -1 }]),
     ];
     for (const text of invalid) expect(() => parseExercises(text)).toThrow('Ce texte n\'est pas une liste d\'exercices partagée valide.');
   });
@@ -78,19 +80,21 @@ describe('partage des exercices', () => {
 
   it('met à jour les exercices du même nom et ajoute les autres, sans toucher l\'original', () => {
     const imported = [
-      { name: 'squats', unit: 's', min: 20, max: 30 },
-      { name: 'Pompes', unit: 'rép.', min: 8, max: 12 },
+      { name: 'squats', unit: 's', min: 20, max: 30, pause: 45 },
+      { name: 'Pompes', unit: 'rép.', min: 8, max: 12, pause: 90 },
       { name: 'Fentes', unit: 'rép.', min: 5, max: 8 },
     ];
     expect(mergeExercises(exercises, imported)).toEqual({
       exercises: [
-        { id: 'squat', name: 'Squats', unit: 's', min: 20, max: 30 },
+        { id: 'squat', name: 'Squats', unit: 's', min: 20, max: 30, pause: 45 },
         exercises[1],
         { id: 'fentes', name: 'Fentes', unit: 'rép.', min: 5, max: 8 },
       ],
       added: 1,
       updated: 1,
     });
+    // Sans pause propre dans l'import, l'exercice repasse à la pause globale.
+    expect(mergeExercises(exercises, [{ name: 'Pompes', unit: 'rép.', min: 8, max: 12 }]).exercises[1]).toEqual({ id: 'pompes', name: 'Pompes', unit: 'rép.', min: 8, max: 12 });
     expect(exercises[0].unit).toBe('rép.');
   });
 });

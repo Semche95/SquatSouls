@@ -12,6 +12,11 @@ export function formatTime(seconds) {
   return new Date(seconds * 1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
+// Compte à rebours en minutes et secondes : 1:05.
+export function formatCountdown(seconds) {
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
 export function formatDuration(seconds) {
   const minutes = Math.round(seconds / 60);
   if (minutes < 1) return 'moins d\'une minute';

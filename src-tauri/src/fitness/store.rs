@@ -2,7 +2,7 @@
 
 use super::{
     active_days, default_config, last_days, window_start, Config, DayTotals, Exercise, Game,
-    GameEvent, LogEntry,
+    GameEvent, LogEntry, DEFAULT_PAUSE,
 };
 use chrono::NaiveDate;
 use rusqlite::{params, Connection, Result, Transaction};
@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS exercises (
     name TEXT NOT NULL,
     unit TEXT NOT NULL,
     min INTEGER NOT NULL,
-    max INTEGER NOT NULL
+    max INTEGER NOT NULL,
+    pause INTEGER
 );
 CREATE TABLE IF NOT EXISTS games (
     id TEXT PRIMARY KEY,
@@ -57,6 +58,7 @@ CREATE TABLE IF NOT EXISTS settings (
 ";
 
 const LAST_GAME: &str = "last_game";
+const PAUSE: &str = "pause";
 
 pub struct Store {
     conn: Connection,
@@ -74,6 +76,15 @@ impl Store {
     /// Crée les tables au besoin et remplit une base neuve avec la configuration par défaut.
     fn init(conn: Connection) -> Result<Self> {
         conn.execute_batch(SCHEMA)?;
+        // Base créée avant les pauses par exercice : la colonne est ajoutée en place.
+        let has_pause: bool = conn.query_row(
+            "SELECT EXISTS (SELECT 1 FROM pragma_table_info('exercises') WHERE name = 'pause')",
+            [],
+            |r| r.get(0),
+        )?;
+        if !has_pause {
+            conn.execute_batch("ALTER TABLE exercises ADD COLUMN pause INTEGER")?;
+        }
         let mut store = Store { conn };
         let empty: bool =
             store
@@ -88,7 +99,7 @@ impl Store {
     pub fn config(&self) -> Result<Config> {
         let exercises = self
             .conn
-            .prepare("SELECT id, name, unit, min, max FROM exercises ORDER BY position")?
+            .prepare("SELECT id, name, unit, min, max, pause FROM exercises ORDER BY position")?
             .query_map([], |r| {
                 Ok(Exercise {
                     id: r.get(0)?,
@@ -96,6 +107,7 @@ impl Store {
                     unit: r.get(2)?,
                     min: r.get(3)?,
                     max: r.get(4)?,
+                    pause: r.get(5)?,
                 })
             })?
             .collect::<Result<_>>()?;
@@ -122,21 +134,32 @@ impl Store {
                 Ok(Game { id, name, events })
             })
             .collect::<Result<_>>()?;
-        Ok(Config { exercises, games })
+        let pause = self
+            .setting(PAUSE)?
+            .map_or(Ok(DEFAULT_PAUSE), |v| v.parse())
+            .unwrap_or(DEFAULT_PAUSE);
+        Ok(Config {
+            pause,
+            exercises,
+            games,
+        })
     }
 
     /// N'écrit que les lignes ajoutées, modifiées ou déplacées, et efface celles qui ont disparu.
     pub fn save_config(&mut self, config: &Config) -> Result<()> {
         let old = self.config()?;
         let tx = self.conn.transaction()?;
+        if old.pause != config.pause {
+            set_setting(&tx, PAUSE, &config.pause.to_string())?;
+        }
         sync(
             &tx,
             &old.exercises,
             &config.exercises,
             |e| e.id.as_str(),
-            "INSERT INTO exercises (id, position, name, unit, min, max) VALUES (?1, ?2, ?3, ?4, ?5, ?6)
-             ON CONFLICT (id) DO UPDATE SET position = ?2, name = ?3, unit = ?4, min = ?5, max = ?6",
-            |stmt, pos, e| stmt.execute(params![e.id, pos, e.name, e.unit, e.min, e.max]),
+            "INSERT INTO exercises (id, position, name, unit, min, max, pause) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+             ON CONFLICT (id) DO UPDATE SET position = ?2, name = ?3, unit = ?4, min = ?5, max = ?6, pause = ?7",
+            |stmt, pos, e| stmt.execute(params![e.id, pos, e.name, e.unit, e.min, e.max, e.pause]),
             "DELETE FROM exercises WHERE id = ?1",
             |stmt, e| stmt.execute([&e.id]),
         )?;
@@ -264,23 +287,31 @@ impl Store {
 
     /// Dernier jeu choisi, vide s'il n'y en a pas encore.
     pub fn last_game(&self) -> Result<String> {
-        match self.conn.query_row(
-            "SELECT value FROM settings WHERE key = ?1",
-            [LAST_GAME],
-            |r| r.get(0),
-        ) {
-            Err(rusqlite::Error::QueryReturnedNoRows) => Ok(String::new()),
-            other => other,
-        }
+        Ok(self.setting(LAST_GAME)?.unwrap_or_default())
     }
 
     pub fn set_last_game(&self, game_id: &str) -> Result<()> {
-        self.conn.execute(
-            "INSERT OR REPLACE INTO settings (key, value) VALUES (?1, ?2)",
-            [LAST_GAME, game_id],
-        )?;
-        Ok(())
+        set_setting(&self.conn, LAST_GAME, game_id)
     }
+
+    fn setting(&self, key: &str) -> Result<Option<String>> {
+        match self
+            .conn
+            .query_row("SELECT value FROM settings WHERE key = ?1", [key], |r| {
+                r.get(0)
+            }) {
+            Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
+            other => other.map(Some),
+        }
+    }
+}
+
+fn set_setting(conn: &Connection, key: &str, value: &str) -> Result<()> {
+    conn.execute(
+        "INSERT OR REPLACE INTO settings (key, value) VALUES (?1, ?2)",
+        [key, value],
+    )?;
+    Ok(())
 }
 
 /// Synchronise une table avec une liste ordonnée : une ligne n'est réécrite que si elle

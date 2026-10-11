@@ -5,7 +5,7 @@ import { useSession } from '../composables/useSession.js';
 // current : série en tête de file, la seule pilotable au clavier.
 defineProps({ draw: Object, current: Boolean });
 
-const { session, act } = useSession();
+const { session, pauseLeft, act } = useSession();
 </script>
 
 <template>
@@ -25,7 +25,7 @@ const { session, act } = useSession();
       </li>
     </ul>
     <footer class="card-actions">
-      <button class="primary" @click="act('complete', draw)">
+      <button class="primary" :disabled="!!pauseLeft" :title="pauseLeft ? 'En pause' : ''" @click="act('complete', draw)">
         Fait <kbd v-if="current" class="dark">Entrée</kbd>
       </button>
       <button v-if="session.jokers" class="ghost" @click="act('use_joker', draw)">

@@ -12,6 +12,9 @@ pub struct Exercise {
     /// Intervalle du nombre tiré, bornes incluses.
     pub min: u32,
     pub max: u32,
+    /// Pause propre à l'exercice, en secondes ; à défaut, la pause globale.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pause: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -38,6 +41,9 @@ pub struct Game {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Config {
+    /// Pause après chaque série validée, en secondes, pour les exercices sans pause propre.
+    #[serde(default = "default_pause")]
+    pub pause: u32,
     pub exercises: Vec<Exercise>,
     pub games: Vec<Game>,
 }
@@ -122,6 +128,12 @@ pub fn event(id: &str, name: &str, draws: u32, max: Option<u32>) -> GameEvent {
         max_per_session: max,
         jokers: 0,
     }
+}
+
+pub const DEFAULT_PAUSE: u32 = 60;
+
+fn default_pause() -> u32 {
+    DEFAULT_PAUSE
 }
 
 /// Configuration par défaut, écrite dans une base neuve et utilisée si la configuration enregistrée est invalide.

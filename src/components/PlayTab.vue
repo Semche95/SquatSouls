@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { plural } from '../format.js';
+import { formatCountdown, plural } from '../format.js';
 import { byName } from '../configDraft.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
@@ -9,7 +9,7 @@ import DrawCard from './DrawCard.vue';
 import SessionActions from './SessionActions.vue';
 
 const { config, gameId, game } = useConfig();
-const { session, notice, trigger, act } = useSession();
+const { session, notice, pauseLeft, skipPause, trigger, act } = useSession();
 
 // Le jeu est figé dès le premier événement de la séance, jusqu'à la suivante.
 const gameLocked = computed(() => !!session.value.gameId);
@@ -35,6 +35,10 @@ useKeydown((e) => {
     return;
   }
   // Toujours bloquées : sinon elles activeraient le bouton qui a le focus (ex. « Annuler la séance »).
+  if (e.code === 'Escape') {
+    skipPause();
+    return;
+  }
   const validate = e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space';
   const joker = e.code === 'KeyJ';
   if (!validate && !joker && e.code !== 'Backspace') return;
@@ -76,6 +80,11 @@ useKeydown((e) => {
     </div>
 
     <p v-if="notice" class="banner info">{{ notice }}</p>
+
+    <p v-if="pauseLeft" class="banner pause">
+      Pause <strong class="pause-left">{{ formatCountdown(pauseLeft) }}</strong>
+      <button class="ghost" @click="skipPause">Passer <kbd>Échap</kbd></button>
+    </p>
 
     <section class="pending">
       <h2>

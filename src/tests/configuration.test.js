@@ -140,6 +140,24 @@ describe('configuration', () => {
     expect(sent.exercises[0]).toMatchObject({ min: 10, max: 0 });
   });
 
+  it('règle la pause globale et la pause propre d\'un exercice', async () => {
+    setup({ save_config: (args) => ({ config: args.config }) });
+    const w = await openConfig();
+    await w.findAll('.subtabs button')[1].trigger('click');
+    const own = () => w.find('input[aria-label="Pause"]');
+    await w.find('.cfg-pause input').setValue(45);
+    expect(own().attributes('placeholder')).toBe('45');
+    await own().setValue('90');
+    await w.find('.cfg-actions .primary').trigger('click');
+    await flushPromises();
+    const sent = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)[1].config;
+    expect(sent()).toMatchObject({ pause: 45, exercises: [{ id: 'squat', pause: 90 }] });
+    await own().setValue('');
+    await w.find('.cfg-actions .primary').trigger('click');
+    await flushPromises();
+    expect(sent().exercises[0]).not.toHaveProperty('pause');
+  });
+
   it('vide la limite par séance pour la retirer', async () => {
     setup();
     const w = await openConfig();

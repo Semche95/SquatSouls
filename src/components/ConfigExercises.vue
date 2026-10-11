@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { newId } from '../configDraft.js';
+import { newId, setOptional } from '../configDraft.js';
 import { plural } from '../format.js';
 import { mergeExercises, parseExercises, shareExercises } from '../share.js';
 import { useConfig } from '../composables/useConfig.js';
@@ -34,9 +34,13 @@ function addExercise() {
       <button class="ghost" :disabled="importing" @click="importing = true">Importer</button>
     </header>
     <ShareImport v-if="importing" :parse="parseExercises" @import="importShared" @cancel="importing = false" />
+    <label class="field cfg-pause">
+      <span>Pause après chaque série (s)</span>
+      <input v-model.number="draft.pause" type="number" @change="draft.pause = Number(draft.pause) || 0" min="0" />
+    </label>
     <table class="cfg-table">
       <thead>
-        <tr><th>Nom</th><th>Unité</th><th>Min</th><th>Max</th><th></th></tr>
+        <tr><th>Nom</th><th>Unité</th><th>Min</th><th>Max</th><th>Pause (s)</th><th></th></tr>
       </thead>
       <tbody>
         <tr v-for="(ex, i) in draft.exercises" :key="ex.id">
@@ -44,6 +48,16 @@ function addExercise() {
           <td class="cfg-unit"><input v-model="ex.unit" aria-label="Unité" placeholder="rép., s…" /></td>
           <td><input v-model.number="ex.min" type="number" @change="ex.min = Number(ex.min) || 0" min="0" aria-label="Minimum" /></td>
           <td><input v-model.number="ex.max" type="number" @change="ex.max = Number(ex.max) || 0" min="1" aria-label="Maximum" /></td>
+          <td>
+            <input
+              :value="ex.pause ?? ''"
+              type="number"
+              min="0"
+              :placeholder="String(draft.pause)"
+              aria-label="Pause"
+              @input="setOptional(ex, 'pause', $event.target.value)"
+            />
+          </td>
           <td>
             <button
               class="ghost icon"

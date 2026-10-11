@@ -298,6 +298,19 @@ kbd.dark {
   background: var(--panel);
   color: var(--muted);
 }
+.banner.pause {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-color: var(--gold);
+}
+.pause-left {
+  font-size: 1.3rem;
+  font-variant-numeric: tabular-nums;
+}
+.banner.pause button {
+  margin-left: auto;
+}
 /* Confirmation flottante : passe par-dessus le contenu sans le décaler. */
 .banner.ok {
   position: fixed;
@@ -655,6 +668,15 @@ kbd.dark {
 .cfg-unit {
   width: 30%;
 }
+.cfg-pause {
+  align-self: flex-start;
+}
+
+.config .cfg-pause input {
+  flex: none;
+  width: 5.5em;
+}
+
 .cfg-table input[type="number"] {
   width: 5.5em;
 }

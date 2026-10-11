@@ -50,8 +50,12 @@ export function shareGame(game) {
   return share(GAME, { name: game.name, events });
 }
 
+// Exercice sans pause propre : la clé est absente, il suit la pause globale.
+const withPause = (ex, pause) => (pause === undefined ? ex : { ...ex, pause });
+
+// La pause globale n'est pas partagée : chacun garde la sienne.
 export function shareExercises(exercises) {
-  return share(EXERCISES, { exercises: exercises.map(({ name, unit, min, max }) => ({ name, unit, min, max })) });
+  return share(EXERCISES, { exercises: exercises.map(({ name, unit, min, max, pause }) => withPause({ name, unit, min, max }, pause)) });
 }
 
 const validEvent = (ev) =>
@@ -73,7 +77,8 @@ export function parseGame(text, exerciseCount) {
   return { name: data.name.trim(), events, clamped: data.events.some((ev) => ev.draws > exerciseCount) };
 }
 
-const validExercise = (ex) => isText(ex?.name) && typeof ex.unit === 'string' && isCount(ex.min, 0) && isCount(ex.max, 1) && ex.min <= ex.max;
+const validExercise = (ex) =>
+  isText(ex?.name) && typeof ex.unit === 'string' && isCount(ex.min, 0) && isCount(ex.max, 1) && ex.min <= ex.max && (ex.pause === undefined || isCount(ex.pause, 0));
 
 export function parseExercises(text) {
   return parse(
@@ -95,13 +100,14 @@ export function mergeExercises(exercises, imported) {
   const merged = exercises.map((ex) => ({ ...ex }));
   let added = 0;
   let updated = 0;
-  for (const { name, unit, min, max } of imported) {
-    const ex = merged.find((e) => sameName(e.name, name));
+  for (const { name, unit, min, max, pause } of imported) {
+    const i = merged.findIndex((e) => sameName(e.name, name));
+    const ex = merged[i];
     if (!ex) {
-      merged.push({ id: newId(name, merged), name: name.trim(), unit, min, max });
+      merged.push(withPause({ id: newId(name, merged), name: name.trim(), unit, min, max }, pause));
       added++;
-    } else if (ex.unit !== unit || ex.min !== min || ex.max !== max) {
-      Object.assign(ex, { unit, min, max });
+    } else if (ex.unit !== unit || ex.min !== min || ex.max !== max || ex.pause !== pause) {
+      merged[i] = withPause({ id: ex.id, name: ex.name, unit, min, max }, pause);
       updated++;
     }
   }

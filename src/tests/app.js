@@ -4,6 +4,7 @@ import { invoke } from '@tauri-apps/api/core';
 import App from '../App.vue';
 
 export const config = {
+  pause: 60,
   exercises: [{ id: 'squat', name: 'Squats', unit: 'reps', min: 10, max: 15 }],
   games: [
     {

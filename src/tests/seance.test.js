@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { emptySession, draw, responses, setup, mountApp } from './app.js';
+import { config, emptySession, draw, responses, setup, mountApp, press } from './app.js';
 
 describe('séance', () => {
   it('tire une série au clic sur un événement', async () => {
@@ -37,6 +37,56 @@ describe('séance', () => {
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('complete', { drawId: 7 });
     expect(w.find('.card').exists()).toBe(false);
+  });
+
+  describe('pause après une série validée', () => {
+    const both = { ...draw, items: [...draw.items, { exerciseId: 'pompes', name: 'Pompes', amount: 8, unit: 'reps' }] };
+    const next = { ...draw, id: 8 };
+
+    // Squats suivent la pause globale, Pompes ont leur pause propre.
+    async function completeFirst(pause = config.pause, own = 90) {
+      vi.useFakeTimers();
+      setup({
+        get_config: { config: { ...config, pause, exercises: [...config.exercises, { id: 'pompes', name: 'Pompes', unit: 'reps', min: 8, max: 12, pause: own }] } },
+        get_session: emptySession({ pending: [both, next] }),
+        complete: emptySession({ pending: [next] }),
+      });
+      const w = await mountApp();
+      await w.find('.card-actions .primary').trigger('click');
+      await flushPromises();
+      return w;
+    }
+
+    it('prend la plus longue pause des exercices et bloque la série suivante jusqu\'à sa fin', async () => {
+      const w = await completeFirst();
+      const fait = () => w.find('.card-actions .primary').element;
+      expect(w.find('.pause-left').text()).toBe('1:30');
+      expect(fait().disabled).toBe(true);
+      await press('Enter');
+      expect(invoke.mock.calls.filter(([cmd]) => cmd === 'complete')).toHaveLength(1);
+      await vi.advanceTimersByTimeAsync(30_000);
+      expect(w.find('.pause-left').text()).toBe('1:00');
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(w.find('.banner.pause').exists()).toBe(false);
+      expect(fait().disabled).toBe(false);
+    });
+
+    it('se passe avec le bouton ou Échap', async () => {
+      const w = await completeFirst();
+      await w.find('.banner.pause button').trigger('click');
+      expect(w.find('.banner.pause').exists()).toBe(false);
+      responses.complete = emptySession({ pending: [next] });
+      await w.find('.card-actions .primary').trigger('click');
+      await flushPromises();
+      expect(w.find('.banner.pause').exists()).toBe(true);
+      await press('Escape');
+      expect(w.find('.banner.pause').exists()).toBe(false);
+    });
+
+    it('n\'en fait pas quand toutes les pauses valent 0', async () => {
+      const w = await completeFirst(0, 0);
+      expect(w.find('.banner.pause').exists()).toBe(false);
+    });
   });
 
   it('recharge la séance si une action échoue', async () => {

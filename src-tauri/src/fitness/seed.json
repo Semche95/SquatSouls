@@ -1,4 +1,5 @@
 {
+  "pause": 60,
   "exercises": [
     {
       "id": "pompes",

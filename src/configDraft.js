@@ -21,9 +21,16 @@ export function byName(games) {
   return [...games].sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
 }
 
+// Nombre facultatif saisi dans un champ : vidé, la clé disparaît.
+export function setOptional(item, key, value) {
+  if (value === '') delete item[key];
+  else item[key] = Number(value);
+}
+
 // Un champ numérique vidé vaut "" : on le ramène à 0 pour que le backend le refuse proprement.
 export function normalized(cfg) {
   const c = clone(cfg);
+  c.pause = Number(c.pause) || 0;
   for (const ex of c.exercises) {
     ex.min = Number(ex.min) || 0;
     ex.max = Number(ex.max) || 0;

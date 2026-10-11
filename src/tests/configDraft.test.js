@@ -19,8 +19,8 @@ describe('byName', () => {
 
 describe('normalized', () => {
   it('ramène les champs numériques vidés à 0 sans toucher l\'original', () => {
-    const cfg = { exercises: [{ min: '', max: 5 }], games: [{ events: [{ draws: '', jokers: undefined }] }] };
-    expect(normalized(cfg)).toEqual({ exercises: [{ min: 0, max: 5 }], games: [{ events: [{ draws: 0, jokers: 0 }] }] });
+    const cfg = { pause: '', exercises: [{ min: '', max: 5 }], games: [{ events: [{ draws: '', jokers: undefined }] }] };
+    expect(normalized(cfg)).toEqual({ pause: 0, exercises: [{ min: 0, max: 5 }], games: [{ events: [{ draws: 0, jokers: 0 }] }] });
     expect(cfg.exercises[0].min).toBe('');
   });
 });
