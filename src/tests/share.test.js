@@ -29,7 +29,6 @@ describe('partage d\'un jeu', () => {
   it('refuse un texte qui n\'est pas un jeu partagé valide', () => {
     const invalid = [
       'du texte',
-      shareExercises(exercises),
       shareGame({ name: 'Nioh', events: [] }),
       shareGame({ name: ' ', events: [{ name: 'Mort', draws: 1 }] }),
       shareGame({ name: 'Nioh', events: [{ name: 'Mort', draws: 0 }] }),
@@ -37,6 +36,10 @@ describe('partage d\'un jeu', () => {
       shareGame({ name: 'Nioh', events: [{ name: 'Mort', draws: 1, jokers: -1 }] }),
     ];
     for (const text of invalid) expect(() => parseGame(text, 3)).toThrow('Ce texte n\'est pas un jeu partagé valide.');
+  });
+
+  it('indique où importer des exercices collés à la place d\'un jeu', () => {
+    expect(() => parseGame(shareExercises(exercises), 3)).toThrow('Ce texte partage des exercices : l\'importer depuis l\'onglet Exercices, avec Importer.');
   });
 
   it('remplace le jeu du même nom en gardant son id, sinon l\'ajoute', () => {
@@ -61,13 +64,16 @@ describe('partage des exercices', () => {
   it('refuse un texte qui n\'est pas une liste d\'exercices valide', () => {
     const invalid = [
       '',
-      shareGame(config.games[0]),
       shareExercises([]),
       shareExercises([{ name: 'Squats', unit: 'rép.', min: 5, max: 0 }]),
       shareExercises([{ name: 'Squats', unit: 'rép.', min: 6, max: 5 }]),
       shareExercises([{ name: '', unit: 'rép.', min: 1, max: 5 }]),
     ];
     for (const text of invalid) expect(() => parseExercises(text)).toThrow('Ce texte n\'est pas une liste d\'exercices partagée valide.');
+  });
+
+  it('indique où importer un jeu collé à la place d\'exercices', () => {
+    expect(() => parseExercises(shareGame(config.games[0]))).toThrow('Ce texte partage un jeu : l\'importer depuis l\'onglet Jeux, avec Importer un jeu.');
   });
 
   it('met à jour les exercices du même nom et ajoute les autres, sans toucher l\'original', () => {

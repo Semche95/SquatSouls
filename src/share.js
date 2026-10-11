@@ -19,15 +19,29 @@ export function unpack(text) {
   return strFromU8(inflateSync(Uint8Array.from(atob(text), (c) => c.charCodeAt(0))));
 }
 
-// Renvoie le contenu du texte collé s'il est du type attendu et que `valid` l'accepte, sinon lève `error`.
-function parse(text, kind, valid, error) {
+// Messages d'import par type : texte invalide, ou texte de ce type collé dans l'import de l'autre type.
+const ERRORS = {
+  [GAME]: {
+    invalid: 'Ce texte n\'est pas un jeu partagé valide.',
+    misplaced: 'Ce texte partage un jeu : l\'importer depuis l\'onglet Jeux, avec Importer un jeu.',
+  },
+  [EXERCISES]: {
+    invalid: 'Ce texte n\'est pas une liste d\'exercices partagée valide.',
+    misplaced: 'Ce texte partage des exercices : l\'importer depuis l\'onglet Exercices, avec Importer.',
+  },
+};
+
+// Renvoie le contenu du texte collé s'il est du type attendu et que `valid` l'accepte, sinon lève une erreur.
+function parse(text, kind, valid) {
   let data = null;
   try {
     data = JSON.parse(unpack(text));
   } catch {
     // Texte quelconque : refusé ci-dessous.
   }
-  if (data?.[MARK] !== kind || !valid(data)) throw new Error(error);
+  const other = data?.[MARK];
+  if (other !== kind && Object.hasOwn(ERRORS, other)) throw new Error(ERRORS[other].misplaced);
+  if (other !== kind || !valid(data)) throw new Error(ERRORS[kind].invalid);
   return data;
 }
 
@@ -49,7 +63,6 @@ export function parseGame(text, exerciseCount) {
     text,
     GAME,
     (d) => isText(d.name) && Array.isArray(d.events) && d.events.length > 0 && d.events.every(validEvent),
-    'Ce texte n\'est pas un jeu partagé valide.',
   );
   const events = [];
   for (const { name, draws, maxPerSession, jokers = 0 } of data.events) {
@@ -67,7 +80,6 @@ export function parseExercises(text) {
     text,
     EXERCISES,
     (d) => Array.isArray(d.exercises) && d.exercises.length > 0 && d.exercises.every(validExercise),
-    'Ce texte n\'est pas une liste d\'exercices partagée valide.',
   ).exercises;
 }
 
