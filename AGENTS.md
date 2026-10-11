@@ -12,7 +12,8 @@ Les règles métier sont décrites dans la section « Règles métier » de `REA
 ## Structure
 
 - `src/` : interface Vue (`App.vue` en-tête et onglets, `components/` un composant par onglet et ses blocs, `composables/` état partagé via provide/inject, `format.js` et `configDraft.js` fonctions pures, `style.css`)
-- `src-tauri/src/` : backend Rust (`lib.rs` commandes Tauri, `fitness.rs` configuration, tirage et séance)
+- `src-tauri/src/` : backend Rust (`lib.rs` lancement, `commands.rs` commandes Tauri, `state.rs` état partagé et chargement de la configuration, `fitness/` logique métier : `config.rs` configuration, `session.rs` tirage et séance, `history.rs` historique et bilan)
+- `src-tauri/tests/` : tests du backend (tests d'intégration Cargo sur l'API publique de `fitness`), un fichier par module
 
 ## Commandes
 
