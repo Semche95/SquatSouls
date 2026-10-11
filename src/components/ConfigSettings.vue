@@ -7,59 +7,68 @@ import { useSteam } from '../composables/useSteam.js';
 const { config, draft } = useConfig();
 const { detected, storeBlocked, addGame, unignore } = useSteam();
 
-// État de la détection enregistrée, pour voir qu'elle marche même sans bandeau dans Jouer.
+// État de la détection enregistrée, pour voir qu'elle marche même sans bandeau dans Jouer :
+// texte et couleur de sa pastille.
 const status = computed(() => {
   const d = detected.value;
-  if (!d) return 'Aucun jeu Steam détecté.';
-  if (d.name) return `Jeu détecté : ${d.name}${d.ignored ? ' (ignoré)' : ''}.`;
+  if (!d) return { text: 'Aucun jeu Steam détecté.', kind: 'idle' };
+  if (d.name) return { text: `Jeu détecté : ${d.name}${d.ignored ? ' (ignoré)' : ''}.`, kind: 'found' };
   return storeBlocked.value
-    ? 'Jeu Steam détecté, mais le Steam Store limite les requêtes : les jeux inconnus ne seront plus proposés pendant 24 h au plus.'
-    : 'Jeu Steam détecté, nom pas encore connu.';
+    ? { text: 'Jeu Steam détecté, mais le Steam Store limite les requêtes : les jeux inconnus ne seront plus proposés pendant 24 h au plus.', kind: 'blocked' }
+    : { text: 'Jeu Steam détecté, nom pas encore connu.', kind: 'idle' };
 });
 </script>
 
 <template>
-  <section class="group cfg-settings">
-    <h2 class="group-title">Zone de notification</h2>
-    <div class="setting">
-      <label class="check">
-        <input v-model="draft.tray" type="checkbox" />
-        Afficher l'icône dans la zone de notification
-      </label>
-      <template v-if="draft.tray">
-        <label class="check nested">
-          <input v-model="draft.closeToTray" type="checkbox" />
+  <div class="cfg-settings">
+    <section class="group setting">
+      <h2 class="group-title">Zone de notification</h2>
+      <div>
+        <label class="check">
+          Afficher l'icône dans la zone de notification
+          <input v-model="draft.tray" type="checkbox" />
+        </label>
+        <p class="hint">Garde l'appli accessible depuis la barre système.</p>
+      </div>
+      <div v-if="draft.tray" class="nested">
+        <label class="check">
           Fermer la fenêtre la masque au lieu de quitter
+          <input v-model="draft.closeToTray" type="checkbox" />
         </label>
-        <label class="check nested">
-          <input v-model="draft.startHidden" type="checkbox" />
+        <label class="check">
           Démarrer masqué
+          <input v-model="draft.startHidden" type="checkbox" />
         </label>
+      </div>
+    </section>
+    <section class="group setting">
+      <h2 class="group-title">Steam</h2>
+      <div>
+        <label class="check">
+          Détecter le jeu Steam en cours
+          <input v-model="draft.steamDetection" type="checkbox" />
+        </label>
+        <p class="hint">Propose le jeu lancé dans l'onglet Jouer.</p>
+      </div>
+      <div v-if="draft.steamDetection" class="nested">
+        <label class="check">
+          Notifier quand un jeu est lancé
+          <input v-model="draft.steamNotify" type="checkbox" />
+        </label>
+      </div>
+      <p v-if="config.steamDetection" class="status" :class="status.kind">{{ status.text }}</p>
+      <template v-if="config.ignoredGames.length">
+        <h3 class="group-title sub">Jeux ignorés</h3>
+        <ul class="ignored">
+          <li v-for="g in byName(config.ignoredGames)" :key="g.appId">
+            {{ g.name }}
+            <span class="row">
+              <button class="ghost" @click="addGame(g)">Ajouter</button>
+              <button class="ghost" @click="unignore(g.appId)">Retirer</button>
+            </span>
+          </li>
+        </ul>
       </template>
-    </div>
-    <h2 class="group-title">Détection des jeux Steam</h2>
-    <div class="setting">
-      <label class="check">
-        <input v-model="draft.steamDetection" type="checkbox" />
-        Détecter le jeu Steam en cours
-      </label>
-      <label v-if="draft.steamDetection" class="check nested">
-        <input v-model="draft.steamNotify" type="checkbox" />
-        Notifier quand un jeu est lancé
-      </label>
-      <p v-if="config.steamDetection" class="muted small">{{ status }}</p>
-    </div>
-    <template v-if="config.ignoredGames.length">
-      <h3 class="group-title sub">Jeux ignorés</h3>
-      <ul class="ignored">
-        <li v-for="g in byName(config.ignoredGames)" :key="g.appId">
-          {{ g.name }}
-          <span class="row">
-            <button class="ghost" @click="addGame(g)">Ajouter</button>
-            <button class="ghost" @click="unignore(g.appId)">Retirer</button>
-          </span>
-        </li>
-      </ul>
-    </template>
-  </section>
+    </section>
+  </div>
 </template>

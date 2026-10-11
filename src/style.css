@@ -709,29 +709,103 @@ kbd.dark {
   align-self: flex-start;
 }
 .cfg-exercises,
+/* Réglages : une carte par thème, chaque option est un libellé suivi d'un interrupteur à droite,
+   ses options secondaires en retrait sous un trait. */
 .cfg-settings {
   max-width: 640px;
-}
-/* Réglages : une case à cocher suivie de son libellé, ses cases secondaires et l'état de la détection en dessous, en retrait. */
-.setting {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 14px;
+}
+.config .group.setting {
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
 }
 .check {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 16px;
   cursor: pointer;
 }
 .config .check input {
-  width: auto;
+  appearance: none;
+  flex: none;
+  position: relative;
+  width: 36px;
+  height: 20px;
   margin: 0;
-  accent-color: var(--gold);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
 }
-.setting .small,
+.config .check input::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform 0.15s, background 0.15s;
+}
+.config .check input:checked {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+.config .check input:checked::before {
+  transform: translateX(16px);
+  background: var(--bg);
+}
+.config .check input:focus-visible {
+  outline: 2px solid var(--gold-soft);
+  outline-offset: 2px;
+}
+.setting .hint {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
 .setting .nested {
-  padding-left: calc(13px + 10px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 0 0 16px;
+  border-top: 1px solid var(--line);
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+/* État de la détection Steam : pastille grise, verte (jeu nommé) ou orange (Steam Store bloqué). */
+.status {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--panel-2);
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.status::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.status.found::before {
+  background: var(--green);
+}
+.status.blocked::before {
+  background: var(--ember);
 }
 .group-title.sub {
   font-size: 1rem;

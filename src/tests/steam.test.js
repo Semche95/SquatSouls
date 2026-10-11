@@ -27,7 +27,7 @@ async function openSettings(w) {
   await w.findAll('.tabs button')[2].trigger('click');
   await w.findAll('.subtabs button')[2].trigger('click');
 }
-const status = (w) => w.find('.setting .small').text();
+const status = (w) => w.find('.status').text();
 // Case à cocher des réglages, d'après son libellé.
 const check = (w, label) => w.findAll('.check').find((c) => c.text() === label).find('input');
 const notifications = () => invoke.mock.calls.filter(([cmd]) => cmd === 'notify').map(([, n]) => n);
