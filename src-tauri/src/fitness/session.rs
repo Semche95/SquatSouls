@@ -60,6 +60,9 @@ pub struct Draw {
     /// Exercices déjà faits de la série, retirés si elle est annulée.
     #[serde(skip)]
     pub logged: Vec<LogEntry>,
+    /// Exercices tels que tirés, réservés au prochain déclenchement si la série est annulée.
+    #[serde(skip)]
+    pub drawn: Vec<DrawItem>,
 }
 
 impl Draw {
@@ -149,6 +152,8 @@ pub struct Session {
     skipped: Vec<Skipped>,
     /// Exercices pas encore sortis dans le tour en cours : chacun sort une fois avant qu'un autre revienne.
     bag: Vec<String>,
+    /// Exercices des séries annulées, par jeu et événement : le prochain déclenchement les redonne.
+    reserved: HashMap<(String, String), Vec<DrawItem>>,
     next_id: u64,
 }
 
@@ -182,10 +187,8 @@ impl Session {
             .ok_or_else(|| format!("Événement inconnu : {event_id}"))?;
 
         self.game_id = Some(game.id.clone());
-        let count = self
-            .triggers
-            .entry((game.id.clone(), ev.id.clone()))
-            .or_insert(0);
+        let key = (game.id.clone(), ev.id.clone());
+        let count = self.triggers.entry(key.clone()).or_insert(0);
         // Une fois la limite atteinte, le compteur ne bouge plus.
         let capped = ev.max_per_session.is_some_and(|max| *count >= max);
         if !capped {
@@ -195,6 +198,8 @@ impl Session {
 
         let items = if capped {
             Vec::new()
+        } else if let Some(items) = self.reserved.remove(&key) {
+            items
         } else {
             self.pick(config, ev.draws as usize, rng)
                 .into_iter()
@@ -216,12 +221,13 @@ impl Session {
             game_name: game.name.clone(),
             event_id: ev.id.clone(),
             event_name: ev.name.clone(),
-            items,
+            items: items.clone(),
             jokers: if capped { 0 } else { ev.jokers },
             capped,
             trigger_count,
             max_per_session: ev.max_per_session,
             logged: Vec::new(),
+            drawn: items,
         };
         if !capped {
             self.pending.push(draw.clone());
@@ -290,11 +296,14 @@ impl Session {
     }
 
     /// Annule un déclenchement : il n'est plus compté, ni les exercices déjà faits de la série, renvoyés pour les retirer de l'historique.
+    /// Ses exercices tels que tirés sont réservés au prochain déclenchement du même événement.
     pub fn dismiss(&mut self, id: u64) -> Result<Vec<LogEntry>, String> {
         let draw = self.take_pending(id)?;
-        if let Some(count) = self.triggers.get_mut(&(draw.game_id, draw.event_id)) {
+        let key = (draw.game_id, draw.event_id);
+        if let Some(count) = self.triggers.get_mut(&key) {
             *count = count.saturating_sub(1);
         }
+        self.reserved.insert(key, draw.drawn);
         for entry in &draw.logged {
             if let Some(pos) = self.done.iter().position(|e| e == entry) {
                 self.done.remove(pos);
@@ -365,10 +374,11 @@ impl Session {
         self.skipped.push(skipped);
     }
 
-    /// Retire les tirages en attente et recommence le tour (utile quand la configuration change).
+    /// Retire les tirages en attente et réservés, et recommence le tour (utile quand la configuration change).
     pub fn clear_pending(&mut self) {
         self.pending.clear();
         self.bag.clear();
+        self.reserved.clear();
     }
 
     /// Vrai si la séance a commencé sur un jeu absent de `config`.

@@ -406,3 +406,29 @@ fn dismissing_a_started_set_drops_its_done_exercises() {
     );
     assert_eq!(v.triggers.len(), 1, "le déclenchement est décompté");
 }
+
+#[test]
+fn a_dismissed_set_comes_back_on_the_next_trigger_of_its_event() {
+    let cfg = default_config();
+    let mut s = Session::new(0);
+    let mut r = rng();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    s.complete_exercise(boss.id, &boss.items[1].exercise_id, 2)
+        .unwrap();
+    s.dismiss(boss.id).unwrap();
+    let other = s.draw(&cfg, "ds3", "boss-premier", &mut r).unwrap();
+    assert_ne!(
+        other.items, boss.items,
+        "un autre événement tire normalement"
+    );
+    let again = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    assert_eq!(again.items, boss.items, "même série, telle que tirée");
+    assert_eq!(again.trigger_count, 1);
+    s.dismiss(again.id).unwrap();
+    s.clear_pending();
+    let fresh = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    assert_ne!(
+        fresh.items, boss.items,
+        "la configuration enregistrée vide la réserve"
+    );
+}
