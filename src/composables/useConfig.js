@@ -3,6 +3,9 @@ import { invoke } from '@tauri-apps/api/core';
 import { byName, clone, normalized } from '../configDraft.js';
 import { defineShared } from './shared.js';
 
+// Durée d'affichage d'une confirmation.
+const CONFIG_MSG_MS = 3000;
+
 function findOr(games, id) {
   return games.find((g) => g.id === id) ?? byName(games)[0] ?? null;
 }
@@ -12,6 +15,9 @@ export const [provideConfig, useConfig] = defineShared(() => {
   // Copie de travail éditée dans l'onglet Configuration, envoyée telle quelle à l'enregistrement.
   const draft = ref(null);
   const configError = ref('');
+  // Confirmation passagère (enregistrement, copie, import).
+  const configMsg = ref('');
+  let configMsgTimer;
   const cfgTab = ref('jeux');
   const editedGameId = ref('');
   // Création d'un jeu : formulaire à droite, rien n'est ajouté avant validation.
@@ -53,5 +59,21 @@ export const [provideConfig, useConfig] = defineShared(() => {
     }
   }
 
-  return { config, draft, configError, cfgTab, editedGameId, newGame, gameId, game, editedGame, dirty, applyConfigView, store };
+  function notify(msg) {
+    configMsg.value = msg;
+    clearTimeout(configMsgTimer);
+    if (msg) configMsgTimer = setTimeout(() => (configMsg.value = ''), CONFIG_MSG_MS);
+  }
+
+  // Copie un texte partagé dans le presse-papiers.
+  async function copy(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      notify('Copié dans le presse-papiers, prêt à partager.');
+    } catch (e) {
+      configError.value = `Copie impossible : ${e}`;
+    }
+  }
+
+  return { config, draft, configError, configMsg, notify, copy, cfgTab, editedGameId, newGame, gameId, game, editedGame, dirty, applyConfigView, store };
 });

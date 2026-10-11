@@ -2,7 +2,7 @@ import { ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { defineShared } from './shared.js';
 
-export const [provideSession, useSession] = defineShared(({ call }, { game, gameId }) => {
+export const [provideSession, useSession] = defineShared(({ call }, { game, gameId, store }) => {
   const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], jokers: 0, jokersEarned: 0, skipped: [] });
   const notice = ref('');
 
@@ -12,6 +12,13 @@ export const [provideSession, useSession] = defineShared(({ call }, { game, game
 
   async function reload() {
     session.value = await invoke('get_session');
+  }
+
+  // Configuration enregistrée aussitôt et appliquée à la séance ; false si le backend la refuse.
+  async function saveNow(cfg) {
+    if (!(await store(cfg))) return false;
+    await reload();
+    return true;
   }
 
   async function trigger(ev) {
@@ -50,5 +57,5 @@ export const [provideSession, useSession] = defineShared(({ call }, { game, game
     }
   }
 
-  return { session, notice, reload, trigger, act, newSession, cancelSession };
+  return { session, notice, reload, saveNow, trigger, act, newSession, cancelSession };
 });

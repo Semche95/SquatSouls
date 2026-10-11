@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { config, emptySession, responses, setup, mountApp } from './app.js';
+import { shareExercises, shareGame } from '../share.js';
 
 describe('configuration', () => {
   async function openConfig() {
@@ -65,7 +66,7 @@ describe('configuration', () => {
     const w = await openConfig();
     const savedGames = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)[1].config.games;
     async function create(name, source) {
-      await w.find('.group-head button').trigger('click');
+      await w.find('.group-head .primary').trigger('click');
       await flushPromises();
       expect(w.find('form.cfg-game .primary').element.disabled).toBe(true);
       const nameInput = w.find('input[aria-label="Nom du nouveau jeu"]');
@@ -87,7 +88,7 @@ describe('configuration', () => {
   it('refuse de créer un jeu au nom déjà pris', async () => {
     setup();
     const w = await openConfig();
-    await w.find('.group-head button').trigger('click');
+    await w.find('.group-head .primary').trigger('click');
     await flushPromises();
     await w.find('input[aria-label="Nom du nouveau jeu"]').setValue(' sekiro ');
     expect(w.find('form.cfg-game').text()).toContain('Un jeu porte déjà ce nom.');
@@ -169,4 +170,81 @@ describe('configuration', () => {
     expect(w.find('.banner.error').text()).toContain('champ manquant');
   });
 
+  describe('partage', () => {
+    const savedConfig = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)[1].config;
+
+    it('copie le jeu enregistré et les exercices dans le presse-papiers', async () => {
+      const writeText = vi.fn();
+      vi.stubGlobal('navigator', { clipboard: { writeText } });
+      setup();
+      const w = await openConfig();
+      await w.find('input[aria-label="Nom du jeu"]').setValue('Non enregistré');
+      await w.find('.cfg-game .field .ghost').trigger('click');
+      await flushPromises();
+      expect(writeText).toHaveBeenLastCalledWith(shareGame(config.games[0]));
+      expect(w.find('.banner.ok').text()).toBe('Copié dans le presse-papiers, prêt à partager.');
+      await w.findAll('.subtabs button')[1].trigger('click');
+      await w.find('.cfg-exercises .group-head .ghost').trigger('click');
+      expect(writeText).toHaveBeenLastCalledWith(shareExercises(config.exercises));
+      vi.unstubAllGlobals();
+    });
+
+    it('importe un jeu partagé, remplace celui du même nom et l\'enregistre aussitôt', async () => {
+      setup({ save_config: (args) => ({ config: args.config }) });
+      const w = await openConfig();
+      const open = () => w.find('.group-head .ghost');
+      await open().trigger('click');
+      await flushPromises();
+      const text = w.find('textarea[aria-label="Texte partagé"]');
+      expect(document.activeElement).toBe(text.element);
+      const submit = () => w.find('.cfg-import .primary');
+      expect(submit().element.disabled).toBe(true);
+      await text.setValue('pas un jeu');
+      expect(w.find('.cfg-import').text()).toContain('Ce texte n\'est pas un jeu partagé valide.');
+      expect(submit().element.disabled).toBe(true);
+      await text.setValue(shareGame({ name: 'sekiro', events: [{ name: 'Mort', draws: 3, jokers: 1 }] }));
+      expect(w.find('.cfg-import').text()).toContain('sekiro existe déjà : il sera remplacé.');
+      await w.find('.cfg-import').trigger('submit');
+      await flushPromises();
+      expect(savedConfig().games.map((g) => g.id)).toEqual(['er', 'sekiro']);
+      expect(savedConfig().games[1]).toEqual({ id: 'sekiro', name: 'sekiro', events: [{ id: 'mort', name: 'Mort', draws: 1, jokers: 1 }] });
+      expect(w.find('.banner.ok').text()).toBe('sekiro importé, tirages limités à 1 exercice.');
+      expect(w.find('.cfg-game-list .active').text()).toBe('sekiro');
+      expect(w.find('.cfg-actions').exists()).toBe(false);
+      await open().trigger('click');
+      await w.find('textarea').setValue(shareGame({ name: 'Nioh', events: [{ name: 'Mort', draws: 1 }] }));
+      await w.find('.cfg-import').trigger('submit');
+      await flushPromises();
+      expect(savedConfig().games.map((g) => g.id)).toEqual(['er', 'sekiro', 'nioh']);
+      expect(w.find('.banner.ok').text()).toBe('Nioh importé.');
+    });
+
+    it('importe des exercices partagés sans perdre les modifications en cours', async () => {
+      setup({ save_config: (args) => ({ config: args.config }) });
+      const w = await openConfig();
+      await w.find('input[aria-label="Nom du jeu"]').setValue('Elden Ring DLC');
+      await w.findAll('.subtabs button')[1].trigger('click');
+      await w.findAll('.cfg-exercises .group-head .ghost')[1].trigger('click');
+      await w.find('textarea').setValue(
+        shareExercises([
+          { name: 'squats', unit: 'reps', min: 12, max: 20 },
+          { name: 'Pompes', unit: 'rép.', min: 8, max: 12 },
+        ]),
+      );
+      await w.find('.cfg-import').trigger('submit');
+      await flushPromises();
+      expect(savedConfig().exercises).toEqual([
+        { id: 'squat', name: 'Squats', unit: 'reps', min: 12, max: 20 },
+        { id: 'pompes', name: 'Pompes', unit: 'rép.', min: 8, max: 12 },
+      ]);
+      expect(savedConfig().games[0].name).toBe('Elden Ring');
+      expect(w.find('.banner.ok').text()).toBe('Exercices importés : 1 ajouté, 1 mis à jour.');
+      expect(w.find('.cfg-import').exists()).toBe(false);
+      expect(w.findAll('input[aria-label="Nom de l\'exercice"]')).toHaveLength(2);
+      await w.find('.cfg-actions .primary').trigger('click');
+      await flushPromises();
+      expect(savedConfig().games[0].name).toBe('Elden Ring DLC');
+      expect(savedConfig().exercises).toHaveLength(2);
+    });
+  });
 });

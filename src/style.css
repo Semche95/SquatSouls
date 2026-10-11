@@ -30,7 +30,8 @@ body {
 
 button,
 select,
-input {
+input,
+textarea {
   font: inherit;
   color: inherit;
 }
@@ -588,7 +589,8 @@ kbd.dark {
 }
 
 .config input,
-.config select {
+.config select,
+.config textarea {
   font: inherit;
   color: inherit;
   width: 100%;
@@ -598,7 +600,8 @@ kbd.dark {
   padding: 6px 8px;
 }
 .config input:focus,
-.config select:focus {
+.config select:focus,
+.config textarea:focus {
   outline: none;
   border-color: var(--gold);
 }
@@ -677,11 +680,17 @@ kbd.dark {
 .cfg-game-list button {
   text-align: left;
 }
-.cfg-game {
+.cfg-game,
+.cfg-import {
   display: flex;
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+}
+/* Import : texte partagé à coller, puis Importer. */
+.cfg-import textarea {
+  resize: vertical;
+  word-break: break-all;
 }
 .cfg-event {
   padding: 12px 0;

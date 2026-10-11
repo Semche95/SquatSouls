@@ -1,29 +1,39 @@
 <script setup>
 import { computed, nextTick, ref } from 'vue';
 import { byName, clone, newId, sameName } from '../configDraft.js';
+import { plural } from '../format.js';
+import { importGame, parseGame, shareGame } from '../share.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import ConfigEvent from './ConfigEvent.vue';
+import ShareImport from './ShareImport.vue';
 
-const { config, draft, editedGameId, editedGame, newGame, store } = useConfig();
-const { reload } = useSession();
+const { config, draft, editedGameId, editedGame, newGame, notify, copy } = useConfig();
+const { saveNow } = useSession();
+// Import d'un jeu partagé : formulaire à droite, comme la création.
+const importing = ref(false);
 // Jeu dont la suppression attend confirmation ; changer de jeu la referme.
 const confirmRemove = ref(null);
 const newGameName = ref(null);
 const nameTaken = computed(() => config.value.games.some((g) => sameName(g.name, newGame.value.name)));
 
+function selectGame(id) {
+  editedGameId.value = id;
+  newGame.value = null;
+  importing.value = false;
+}
+
 async function openNewGame() {
+  importing.value = false;
   newGame.value = { name: '', source: '' };
   await nextTick();
   newGameName.value.focus();
 }
 
-// Création et suppression validées par l'utilisateur sont enregistrées aussitôt,
+// Création, import et suppression validés par l'utilisateur sont enregistrés aussitôt,
 // seules les autres modifications du brouillon attendent « Enregistrer ».
-async function saveGames(games) {
-  if (!(await store({ ...config.value, games }))) return false;
-  await reload();
-  return true;
+function saveGames(games) {
+  return saveNow({ ...config.value, games });
 }
 
 async function createGame() {
@@ -44,6 +54,26 @@ async function removeGame(game) {
   editedGameId.value = '';
 }
 
+function openImport() {
+  newGame.value = null;
+  importing.value = true;
+}
+
+const parseShared = (text) => parseGame(text, config.value.exercises.length);
+const takenName = (name) => config.value.games.some((g) => sameName(g.name, name));
+
+function shareEdited() {
+  copy(shareGame(config.value.games.find((g) => g.id === editedGame.value.id)));
+}
+
+async function importShared(game) {
+  if (!(await saveGames(importGame(config.value.games, game)))) return;
+  draft.value.games = importGame(draft.value.games, clone(game));
+  selectGame(config.value.games.find((g) => sameName(g.name, game.name)).id);
+  const count = config.value.exercises.length;
+  notify(game.clamped ? `${game.name} importé, tirages limités à ${plural(count, 'exercice')}.` : `${game.name} importé.`);
+}
+
 function addEvent(game) {
   game.events.push({ id: newId('Nouvel événement', game.events), name: 'Nouvel événement', draws: 1, jokers: 0 });
 }
@@ -54,14 +84,15 @@ function addEvent(game) {
     <header class="group-head">
       <h2 class="group-title">Jeux</h2>
       <button class="primary" :disabled="!!newGame" @click="openNewGame">+ Ajouter un jeu</button>
+      <button class="ghost" :disabled="importing" @click="openImport">Importer un jeu</button>
     </header>
     <div class="cfg-games">
       <nav class="subtabs cfg-game-list" aria-label="Jeu à modifier">
         <button
           v-for="g in byName(config.games)"
           :key="g.id"
-          :class="{ active: !newGame && g.id === editedGame?.id }"
-          @click="editedGameId = g.id; newGame = null"
+          :class="{ active: !newGame && !importing && g.id === editedGame?.id }"
+          @click="selectGame(g.id)"
         >{{ g.name }}</button>
       </nav>
       <form v-if="newGame" class="cfg-game" @submit.prevent="createGame">
@@ -83,10 +114,17 @@ function addEvent(game) {
           <button type="button" class="ghost" @click="newGame = null">Annuler</button>
         </div>
       </form>
+      <div v-else-if="importing" class="cfg-game">
+        <h3 class="group-title">Importer un jeu</h3>
+        <ShareImport v-slot="{ result }" :parse="parseShared" @import="importShared" @cancel="importing = false">
+          <p v-if="takenName(result.name)" class="muted">{{ result.name }} existe déjà : il sera remplacé.</p>
+        </ShareImport>
+      </div>
       <div v-else-if="editedGame" class="cfg-game">
         <div class="field">
           <span>Nom</span>
           <input v-model="editedGame.name" aria-label="Nom du jeu" />
+          <button class="ghost" @click="shareEdited">Partager</button>
           <button class="ghost danger" :disabled="draft.games.length < 2" @click="confirmRemove = editedGame">Supprimer ce jeu</button>
         </div>
         <div v-if="confirmRemove === editedGame" class="banner confirm">

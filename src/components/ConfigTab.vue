@@ -1,34 +1,26 @@
 <script setup>
-import { onBeforeUnmount, ref } from 'vue';
+import { onBeforeUnmount } from 'vue';
 import { clone } from '../configDraft.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import ConfigExercises from './ConfigExercises.vue';
 import ConfigGames from './ConfigGames.vue';
 
-const { config, draft, configError, cfgTab, newGame, dirty, store } = useConfig();
-const { reload } = useSession();
-
-const configMsg = ref('');
-// Durée d'affichage de la confirmation d'enregistrement.
-const CONFIG_MSG_MS = 3000;
-let configMsgTimer;
-onBeforeUnmount(() => clearTimeout(configMsgTimer));
+const { config, draft, configError, configMsg, notify, cfgTab, newGame, dirty } = useConfig();
+const { saveNow } = useSession();
+onBeforeUnmount(() => notify(''));
 
 async function saveConfig() {
-  configMsg.value = '';
-  if (!(await store(draft.value))) return;
+  notify('');
+  if (!(await saveNow(draft.value))) return;
   draft.value = clone(config.value);
-  configMsg.value = 'Configuration enregistrée.';
-  clearTimeout(configMsgTimer);
-  configMsgTimer = setTimeout(() => (configMsg.value = ''), CONFIG_MSG_MS);
-  await reload();
+  notify('Configuration enregistrée.');
 }
 
 function discardChanges() {
   draft.value = clone(config.value);
   newGame.value = null;
-  configMsg.value = '';
+  notify('');
 }
 </script>
 

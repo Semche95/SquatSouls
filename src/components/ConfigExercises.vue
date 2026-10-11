@@ -1,8 +1,24 @@
 <script setup>
+import { ref } from 'vue';
 import { newId } from '../configDraft.js';
+import { plural } from '../format.js';
+import { mergeExercises, parseExercises, shareExercises } from '../share.js';
 import { useConfig } from '../composables/useConfig.js';
+import { useSession } from '../composables/useSession.js';
+import ShareImport from './ShareImport.vue';
 
-const { draft } = useConfig();
+const { config, draft, notify, copy } = useConfig();
+const { saveNow } = useSession();
+const importing = ref(false);
+
+// L'import validé s'enregistre aussitôt ; le brouillon le reçoit sans perdre ses autres modifications.
+async function importShared(imported) {
+  const { exercises, added, updated } = mergeExercises(config.value.exercises, imported);
+  if (!(await saveNow({ ...config.value, exercises }))) return;
+  draft.value.exercises = mergeExercises(draft.value.exercises, imported).exercises;
+  importing.value = false;
+  notify(`Exercices importés : ${plural(added, 'ajouté')}, ${updated} mis à jour.`);
+}
 
 function addExercise() {
   const list = draft.value.exercises;
@@ -12,7 +28,12 @@ function addExercise() {
 
 <template>
   <section class="group cfg-exercises">
-    <h2 class="group-title">Exercices</h2>
+    <header class="group-head">
+      <h2 class="group-title">Exercices</h2>
+      <button class="ghost" @click="copy(shareExercises(config.exercises))">Partager</button>
+      <button class="ghost" :disabled="importing" @click="importing = true">Importer</button>
+    </header>
+    <ShareImport v-if="importing" :parse="parseExercises" @import="importShared" @cancel="importing = false" />
     <table class="cfg-table">
       <thead>
         <tr><th>Nom</th><th>Unité</th><th>Min</th><th>Max</th><th></th></tr>
