@@ -175,6 +175,14 @@ h2 {
 .field span {
   color: var(--muted);
 }
+/* Conteneur d'infobulle d'un contrôle (DisabledTip) : il ne change pas la mise en page. */
+.tip {
+  display: inline-flex;
+}
+.field .tip {
+  flex: 1;
+  color: inherit;
+}
 .field select {
   flex: 1;
   background: var(--panel);
@@ -281,7 +289,8 @@ kbd.dark {
   display: flex;
   gap: 8px;
 }
-.session-actions > button {
+.session-actions > .tip,
+.session-actions .tip > button {
   flex: 1;
 }
 .banner.error {
@@ -694,6 +703,23 @@ kbd.dark {
 
 .cfg-table input[type="number"] {
   width: 5.5em;
+}
+/* Infobulle (floating-vue) aux couleurs de l'appli, bordée de rouge pour une erreur. */
+.v-popper--theme-tooltip .v-popper__inner {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  font-size: 0.8rem;
+}
+.v-popper--theme-tooltip .v-popper__arrow-outer {
+  border-color: var(--line);
+}
+.v-popper--theme-tooltip.error .v-popper__inner,
+.v-popper--theme-tooltip.error .v-popper__arrow-outer {
+  border-color: var(--red);
+}
+.v-popper--theme-tooltip .v-popper__inner::first-letter {
+  text-transform: uppercase;
 }
 /* Configuration : sections et événements à plat, sans cadre de carte. */
 .config .group {

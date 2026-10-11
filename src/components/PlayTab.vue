@@ -7,6 +7,7 @@ import { useSession } from '../composables/useSession.js';
 import { useKeydown } from '../composables/useKeydown.js';
 import DrawCard from './DrawCard.vue';
 import SessionActions from './SessionActions.vue';
+import DisabledTip from './DisabledTip.vue';
 
 const { config, gameId, game } = useConfig();
 const { session, notice, pauseLeft, skipPause, trigger, act, halve, skipExercise } = useSession();
@@ -58,10 +59,12 @@ useKeydown((e) => {
   <main class="panel play">
     <label class="field">
       <span>Jeu</span>
-      <select v-model="gameId" :disabled="gameLocked" :title="gameLocked ? 'Le jeu ne peut plus changer pendant la séance' : ''">
-        <option value="" disabled>Choisir un jeu</option>
-        <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id">{{ g.name }}</option>
-      </select>
+      <DisabledTip :tip="gameLocked ? 'Le jeu ne peut plus changer pendant la séance' : ''">
+        <select v-model="gameId" :disabled="gameLocked">
+          <option value="" disabled>Choisir un jeu</option>
+          <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id">{{ g.name }}</option>
+        </select>
+      </DisabledTip>
     </label>
 
     <div v-if="game" class="events">

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, vi } from 'vitest';
+import { afterEach, beforeEach, expect, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import App from '../App.vue';
@@ -67,3 +67,15 @@ afterEach(() => {
   mounted = [];
   vi.useRealTimers();
 });
+
+// Texte de l'infobulle affichée, ou undefined sans infobulle.
+export const shownTip = () => document.querySelector('.v-popper__popper--shown .v-popper__inner')?.textContent.trim();
+
+// Survole le conteneur d'infobulle d'un contrôle (DisabledTip), attend le texte attendu, puis le quitte.
+export async function expectTip(wrapper, text) {
+  const tip = wrapper.element.closest('.tip');
+  tip.dispatchEvent(new Event('mouseenter'));
+  await vi.waitFor(() => expect(shownTip()).toBe(text));
+  tip.dispatchEvent(new Event('mouseleave'));
+  await vi.waitFor(() => expect(shownTip()).toBeUndefined());
+}

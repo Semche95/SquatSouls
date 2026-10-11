@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, draw, responses, setup, mountApp, press } from './app.js';
+import { config, emptySession, draw, responses, setup, mountApp, press, expectTip } from './app.js';
 
 describe('séance', () => {
   it('tire une série au clic sur un événement', async () => {
@@ -151,9 +151,11 @@ describe('séance', () => {
     setup({ get_session: emptySession() });
     let w = await mountApp();
     expect(w.find('.session-actions .primary').element.disabled).toBe(true);
+    await expectTip(w.find('.session-actions .primary'), 'Aucune série faite');
     setup({ get_session: emptySession({ sets: 1, pending: [draw] }) });
     w = await mountApp();
     expect(w.find('.session-actions .primary').element.disabled).toBe(true);
+    await expectTip(w.find('.session-actions .primary'), 'Des séries sont encore à faire');
   });
 
   it('demande confirmation avant de terminer la séance, puis enchaîne sur une nouvelle', async () => {
