@@ -80,7 +80,7 @@ useKeydown((e) => {
     </label>
 
     <p v-if="steamOffer" class="banner steam">
-      {{ detected.name }} détecté.
+      <span><strong>{{ detected.name }}</strong> détecté.</span>
       <span class="row">
         <template v-if="detected.games.length">
           <button v-for="g in detected.games" :key="g.id" class="primary" @click="selectDetected(g)">{{ g.name }}</button>

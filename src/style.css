@@ -317,8 +317,12 @@ kbd.dark {
   border-color: var(--gold);
 }
 .banner.steam {
-  border-color: var(--line);
-  background: var(--panel);
+  border-color: var(--gold);
+  border-left-width: 4px;
+  background: var(--gold-soft);
+}
+.banner.steam strong {
+  color: var(--gold);
 }
 .pause-left {
   font-size: 1.3rem;
