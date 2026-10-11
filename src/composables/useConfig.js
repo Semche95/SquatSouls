@@ -1,10 +1,10 @@
 import { computed, ref, watch } from "vue";
 import { invoke } from "@tauri-apps/api/core";
-import { clone, normalized } from "../configDraft.js";
+import { byName, clone, normalized } from "../configDraft.js";
 import { defineShared } from "./shared.js";
 
 function findOr(games, id) {
-  return games.find((g) => g.id === id) ?? games[0] ?? null;
+  return games.find((g) => g.id === id) ?? byName(games)[0] ?? null;
 }
 
 export const [provideConfig, useConfig] = defineShared(() => {
@@ -30,7 +30,7 @@ export const [provideConfig, useConfig] = defineShared(() => {
   watch(gameId, (id) => {
     if (id) invoke("set_last_game", { gameId: id }).catch(() => {});
   });
-  // Garde la liste « Jeu » sur le jeu réellement édité (le premier tant qu'aucun n'est choisi).
+  // Garde la liste « Jeu » sur le jeu réellement édité (le premier par nom tant qu'aucun n'est choisi).
   watch(editedGame, (g) => {
     if (g && g.id !== editedGameId.value) editedGameId.value = g.id;
   });

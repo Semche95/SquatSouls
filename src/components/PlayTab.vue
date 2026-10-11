@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { plural } from "../format.js";
+import { byName } from "../configDraft.js";
 import { useConfig } from "../composables/useConfig.js";
 import { useSession } from "../composables/useSession.js";
 import { useKeydown } from "../composables/useKeydown.js";
@@ -53,7 +54,7 @@ useKeydown((e) => {
       <span>Jeu</span>
       <select v-model="gameId" :disabled="gameLocked" :title="gameLocked ? 'Le jeu ne peut plus changer pendant la séance' : ''">
         <option value="" disabled>Choisir un jeu</option>
-        <option v-for="g in config?.games ?? []" :key="g.id" :value="g.id">{{ g.name }}</option>
+        <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id">{{ g.name }}</option>
       </select>
     </label>
 

@@ -16,6 +16,11 @@ export function sameName(a, b) {
   return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
 
+// Les jeux s'affichent par nom, quel que soit l'ordre enregistré.
+export function byName(games) {
+  return [...games].sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }));
+}
+
 // Un champ numérique vidé vaut "" : on le ramène à 0 pour que le backend le refuse proprement.
 export function normalized(cfg) {
   const c = clone(cfg);

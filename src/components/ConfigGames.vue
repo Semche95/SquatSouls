@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, ref } from "vue";
-import { clone, newId, sameName } from "../configDraft.js";
+import { byName, clone, newId, sameName } from "../configDraft.js";
 import { useConfig } from "../composables/useConfig.js";
 import { useSession } from "../composables/useSession.js";
 import ConfigEvent from "./ConfigEvent.vue";
@@ -41,7 +41,7 @@ async function removeGame(game) {
   confirmRemove.value = null;
   if (!(await saveGames(config.value.games.filter((g) => g.id !== game.id)))) return;
   draft.value.games = draft.value.games.filter((g) => g !== game);
-  editedGameId.value = draft.value.games[0]?.id ?? "";
+  editedGameId.value = "";
 }
 
 function addEvent(game) {
@@ -58,7 +58,7 @@ function addEvent(game) {
     <div class="cfg-games">
       <nav class="subtabs cfg-game-list" aria-label="Jeu à modifier">
         <button
-          v-for="g in config.games"
+          v-for="g in byName(config.games)"
           :key="g.id"
           :class="{ active: !newGame && g.id === editedGame?.id }"
           @click="editedGameId = g.id; newGame = null"
@@ -75,7 +75,7 @@ function addEvent(game) {
           <span>Événements</span>
           <select v-model="newGame.source" aria-label="Événements du nouveau jeu">
             <option value="">Aucun (un événement à remplir)</option>
-            <option v-for="g in draft.games" :key="g.id" :value="g.id">Copier depuis {{ g.name || "(sans nom)" }}</option>
+            <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">Copier depuis {{ g.name || "(sans nom)" }}</option>
           </select>
         </label>
         <div class="row">

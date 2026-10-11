@@ -78,9 +78,10 @@ describe("configuration", () => {
       expect(w.find(".cfg-actions").exists()).toBe(false);
       return savedGames().at(-1);
     }
-    expect(await create("Sekiro", "ds")).toMatchObject({ id: "sekiro", events: config.games[1].events });
+    expect(await create("Nioh", "sekiro")).toMatchObject({ id: "nioh", events: config.games[1].events });
     expect(await create("Lies of P", "")).toMatchObject({ id: "lies-of-p", events: [{ name: "Nouvel événement", draws: 1 }] });
-    expect(savedGames().map((g) => g.id)).toEqual(["er", "ds", "sekiro", "lies-of-p"]);
+    expect(savedGames().map((g) => g.id)).toEqual(["er", "sekiro", "nioh", "lies-of-p"]);
+    expect(w.findAll(".cfg-game-list button").map((b) => b.text())).toEqual(["Elden Ring", "Lies of P", "Nioh", "Sekiro"]);
   });
 
   it("refuse de créer un jeu au nom déjà pris", async () => {
@@ -88,7 +89,7 @@ describe("configuration", () => {
     const w = await openConfig();
     await w.find(".group-head button").trigger("click");
     await flushPromises();
-    await w.find("input[aria-label='Nom du nouveau jeu']").setValue(" dark souls ");
+    await w.find("input[aria-label='Nom du nouveau jeu']").setValue(" sekiro ");
     expect(w.find("form.cfg-game").text()).toContain("Un jeu porte déjà ce nom.");
     expect(w.find("form.cfg-game .primary").element.disabled).toBe(true);
   });
@@ -104,8 +105,8 @@ describe("configuration", () => {
     await remove().trigger("click");
     await w.find(".cfg-game .confirm .danger").trigger("click");
     await flushPromises();
-    expect(w.findAll(".cfg-game-list button").map((b) => b.text())).toEqual(["Dark Souls"]);
-    expect(invoke.mock.calls.find(([cmd]) => cmd === "save_config")[1].config.games.map((g) => g.id)).toEqual(["ds"]);
+    expect(w.findAll(".cfg-game-list button").map((b) => b.text())).toEqual(["Sekiro"]);
+    expect(invoke.mock.calls.find(([cmd]) => cmd === "save_config")[1].config.games.map((g) => g.id)).toEqual(["sekiro"]);
     expect(w.find(".cfg-actions").exists()).toBe(false);
     expect(w.find(".cfg-game .confirm").exists()).toBe(false);
   });

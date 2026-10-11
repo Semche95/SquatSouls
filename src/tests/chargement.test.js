@@ -22,9 +22,9 @@ describe("chargement", () => {
   });
 
   it("reprend le dernier jeu choisi", async () => {
-    setup({ get_last_game: "ds" });
+    setup({ get_last_game: "sekiro" });
     const w = await mountApp();
-    expect(w.find("select").element.value).toBe("ds");
+    expect(w.find("select").element.value).toBe("sekiro");
     expect(w.findAll(".event-name").map((e) => e.text())).toEqual(["Feu de camp"]);
   });
 
@@ -38,9 +38,9 @@ describe("chargement", () => {
   it("enregistre le jeu choisi", async () => {
     setup();
     const w = await mountApp();
-    await w.find("select").setValue("ds");
+    await w.find("select").setValue("sekiro");
     await flushPromises();
-    expect(invoke).toHaveBeenCalledWith("set_last_game", { gameId: "ds" });
+    expect(invoke).toHaveBeenCalledWith("set_last_game", { gameId: "sekiro" });
   });
 
   it("affiche l'erreur du backend", async () => {

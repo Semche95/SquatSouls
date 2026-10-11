@@ -14,7 +14,7 @@ export const config = {
         { id: "boss", name: "Boss vaincu", draws: 1, jokers: 2 },
       ],
     },
-    { id: "ds", name: "Dark Souls", events: [{ id: "feu", name: "Feu de camp", draws: 1, jokers: 0 }] },
+    { id: "sekiro", name: "Sekiro", events: [{ id: "feu", name: "Feu de camp", draws: 1, jokers: 0 }] },
   ],
 };
 

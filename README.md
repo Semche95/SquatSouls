@@ -91,6 +91,7 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 ### Configuration
 
 - La configuration est validée avant d'être enregistrée. Elle est refusée si : il n'y a aucun exercice ou aucun jeu, un id ou un nom est vide, un id est en double, deux jeux portent le même nom (sans tenir compte de la casse ni des espaces autour), un jeu n'a aucun événement, `draws` vaut 0 ou dépasse le nombre d'exercices définis, `maxPerSession` vaut 0, ou un exercice a `max` à 0 ou `min` supérieur à `max`.
+- Les jeux sont toujours listés par nom, sans tenir compte de la casse ni des accents, dans l'onglet Jouer comme dans la configuration. Sans jeu choisi, la configuration s'ouvre sur le premier de la liste.
 - Une base neuve reçoit la configuration par défaut. Si la configuration enregistrée est illisible ou invalide, la configuration par défaut est utilisée et l'erreur est affichée.
 
 ## Configuration
@@ -98,7 +99,7 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 L'onglet **Configuration** se règle avec des champs :
 
 - **Exercices** : nom, unité, minimum et maximum de chaque exercice. Le dernier exercice ne peut pas être supprimé.
-- **Jeux** : choisir le jeu à modifier dans la liste (qui affiche les noms enregistrés), le renommer, le supprimer (après confirmation) ou en ajouter un. Un nouveau jeu demande un nom qu'aucun autre jeu ne porte et reprend soit les événements d'un autre jeu, soit un seul événement à remplir. Le bouton **Créer** et la confirmation de suppression enregistrent aussitôt, sans passer par **Enregistrer** ; les autres modifications en cours restent à enregistrer.
+- **Jeux** : choisir le jeu à modifier dans la liste (qui affiche les noms enregistrés, par ordre alphabétique), le renommer, le supprimer (après confirmation) ou en ajouter un. Un nouveau jeu demande un nom qu'aucun autre jeu ne porte et reprend soit les événements d'un autre jeu, soit un seul événement à remplir. Le bouton **Créer** et la confirmation de suppression enregistrent aussitôt, sans passer par **Enregistrer** ; les autres modifications en cours restent à enregistrer.
 - **Événements** du jeu : repliés sur une ligne qui résume le nombre tiré, la limite et les jokers, ils se déplient d'un clic pour régler le nom, le nombre d'exercices tirés, la limite par séance (vide pour aucune) et les jokers gagnés.
 
 Dès qu'une modification est en cours, deux boutons apparaissent : **Enregistrer** valide la configuration et l'applique aussitôt à l'onglet Jouer, **Réinitialiser les modifications** revient à la dernière version enregistrée.

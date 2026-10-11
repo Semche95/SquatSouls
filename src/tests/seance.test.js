@@ -50,11 +50,11 @@ describe("séance", () => {
   });
 
   it("verrouille le jeu pendant la séance", async () => {
-    setup({ get_session: emptySession({ gameId: "ds" }) });
+    setup({ get_session: emptySession({ gameId: "sekiro" }) });
     const w = await mountApp();
     const select = w.find("select");
     expect(select.element.disabled).toBe(true);
-    expect(select.element.value).toBe("ds");
+    expect(select.element.value).toBe("sekiro");
   });
 
   it("ne propose de terminer la séance qu'avec des séries faites et aucune en attente", async () => {
