@@ -5,6 +5,9 @@ fn store() -> Store {
     Store::open_in_memory().unwrap()
 }
 
+/// Steam Store language of the names asked in the tests.
+const LANGUAGE: &str = "english";
+
 #[test]
 fn new_store_holds_default_config() {
     assert_eq!(store().config().unwrap(), default_config());
@@ -26,7 +29,7 @@ fn config_changes_are_saved() {
         id: "lies-of-p".into(),
         name: "Lies of P".into(),
         steam_app_id: Some(1627720),
-        events: vec![event("mort", "Mort", 2, None)],
+        events: vec![event("death", "Death", 2, None)],
     });
     s.save_config(&cfg).unwrap();
     assert_eq!(s.config().unwrap(), cfg);
@@ -47,7 +50,7 @@ fn pauses_are_saved() {
     assert_eq!(s.config().unwrap(), cfg);
 }
 
-/// Chemin d'une base temporaire propre au test `name`, effacée au préalable.
+/// Path of a temporary database specific to test `name`, deleted beforehand.
 fn temp_db(name: &str) -> std::path::PathBuf {
     let path = std::env::temp_dir().join(format!("squatsouls-{name}-{}.db", std::process::id()));
     let _ = std::fs::remove_file(&path);
@@ -58,7 +61,7 @@ fn connect(path: &std::path::Path) -> rusqlite::Connection {
     rusqlite::Connection::open(path).unwrap()
 }
 
-/// Versions et dates des migrations inscrites à l'historique de la base.
+/// Versions and dates of the migrations recorded in the database history.
 fn applied(path: &std::path::Path) -> Vec<(i64, String)> {
     connect(path)
         .prepare("SELECT version, applied_on FROM refinery_schema_history ORDER BY version")
@@ -79,17 +82,17 @@ fn applied_migrations_are_dated() {
     assert_eq!(
         applied.iter().map(|a| a.0).collect::<Vec<_>>(),
         [1, 2, 3, 4, 5],
-        "une migration n'est appliquée qu'une fois"
+        "a migration is applied only once"
     );
     assert!(
         applied
             .iter()
             .all(|a| chrono::DateTime::parse_from_rfc3339(&a.1).is_ok()),
-        "date et heure"
+        "date and time"
     );
 }
 
-/// Base migrée avant refinery : ses `version` premières migrations jouées, notées dans `user_version`.
+/// Database migrated before refinery: its first `version` migrations applied, recorded in `user_version`.
 fn legacy_db(name: &str, version: usize) -> std::path::PathBuf {
     let path = temp_db(name);
     let conn = connect(&path);
@@ -105,7 +108,7 @@ fn legacy_db(name: &str, version: usize) -> std::path::PathBuf {
         .unwrap();
     conn.execute(
         "INSERT INTO sets (at, session, game, event, exercise, unit, amount)
-         VALUES (1000, 1000, 'Sekiro', 'Mort', 'Squats', 'rép.', 12)",
+         VALUES (1000, 1000, 'Sekiro', 'Death', 'Squats', 'reps', 12)",
         [],
     )
     .unwrap();
@@ -146,15 +149,23 @@ fn steam_names_receive_retry_at_even_from_draft_schema() {
         let mut names = Store::open(&path).unwrap().steam_names().unwrap();
         std::fs::remove_file(&path).unwrap();
         assert_eq!(
-            names.name(814380, 1000, |_| None, |_| ()).unwrap(),
+            names
+                .name(814380, LANGUAGE, 1000, |_| None, |_| ())
+                .unwrap(),
             "Sekiro",
             "{name}"
         );
         if !draft {
             assert_eq!(
-                names.name(1, 2000, |_| panic!("redemandé avant sa date"), |_| ()),
+                names.name(
+                    1,
+                    LANGUAGE,
+                    2000,
+                    |_| panic!("asked again before its date"),
+                    |_| ()
+                ),
                 Err(SteamNameError::Unknown),
-                "date de nouvel essai gardée"
+                "retry date kept"
             );
         }
     }
@@ -196,14 +207,45 @@ fn steam_names_are_kept() {
     let mut names = SteamNames::default();
     let json = r#"{"814380":{"data":{"name":"Sekiro"}}}"#;
     names
-        .name(814380, 1000, |_| Some((200, json.into())), |_| ())
+        .name(814380, LANGUAGE, 1000, |_| Some((200, json.into())), |_| ())
         .unwrap();
-    names.name(1, 2000, |_| None, |_| ()).unwrap_err();
+    names.name(1, LANGUAGE, 2000, |_| None, |_| ()).unwrap_err();
     names
-        .name(2, 3000, |_| Some((429, String::new())), |_| ())
+        .name(2, LANGUAGE, 3000, |_| Some((429, String::new())), |_| ())
         .unwrap_err();
     s.save_steam_names(&names).unwrap();
     assert_eq!(s.steam_names().unwrap(), names);
+}
+
+#[test]
+fn database_migrated_before_comment_translation_still_opens() {
+    let path = temp_db("translated");
+    Store::open(&path).unwrap();
+    let current = applied_checksums(&path);
+    for (version, old) in PRE_TRANSLATION_CHECKSUMS {
+        connect(&path)
+            .execute(
+                "UPDATE refinery_schema_history SET checksum = ?1 WHERE version = ?2",
+                (old.to_string(), version),
+            )
+            .unwrap();
+    }
+    let opened = Store::open(&path).map(drop);
+    let updated = applied_checksums(&path);
+    std::fs::remove_file(&path).unwrap();
+    opened.unwrap();
+    assert_eq!(updated, current);
+}
+
+/// Checksums of the migrations recorded in the database history.
+fn applied_checksums(path: &std::path::Path) -> Vec<String> {
+    connect(path)
+        .prepare("SELECT checksum FROM refinery_schema_history ORDER BY version")
+        .unwrap()
+        .query_map([], |r| r.get(0))
+        .unwrap()
+        .collect::<Result<_, _>>()
+        .unwrap()
 }
 
 #[test]
@@ -228,9 +270,9 @@ fn removed_game_takes_its_events_along() {
     let mut cfg = default_config();
     let removed = cfg.games.remove(0);
     s.save_config(&cfg).unwrap();
-    // Recréer un jeu du même id repart d'une liste d'événements vide.
+    // Recreating a game with the same id starts from an empty event list.
     cfg.games.push(Game {
-        events: vec![event("mort", "Mort", 1, None)],
+        events: vec![event("death", "Death", 1, None)],
         ..removed
     });
     s.save_config(&cfg).unwrap();
@@ -247,18 +289,18 @@ fn history_and_sessions_are_stored() {
         at,
         session,
         game: "Dark Souls".into(),
-        event: "Mort".into(),
+        event: "Death".into(),
         exercise: ex.into(),
-        unit: "rép.".into(),
+        unit: "reps".into(),
         amount,
     };
     s.append_history(&[
         entry(t, t - 60, "Squats", 12),
         entry(t, t - 60, "Squats", 15),
-        entry(t, t - 60, "Pompes", 10),
+        entry(t, t - 60, "Push-ups", 10),
     ])
     .unwrap();
-    s.append_history(&[entry(t - 86_400 * 2, t - 86_400 * 2, "Pompes", 8)])
+    s.append_history(&[entry(t - 86_400 * 2, t - 86_400 * 2, "Push-ups", 8)])
         .unwrap();
     s.append_history(&[entry(t, t, "Squats", 5)]).unwrap();
     s.end_session(t - 60, t + 600).unwrap();
@@ -267,12 +309,12 @@ fn history_and_sessions_are_stored() {
     assert_eq!(days[0].sets, 4);
     assert_eq!(days[2].sets, 1);
     let first = days[0].sessions.iter().find(|x| x.sets == 3).unwrap();
-    assert_eq!(first.duration, 660, "jusqu'à la fin enregistrée");
+    assert_eq!(first.duration, 660, "until the saved end");
     assert_eq!(
         first.totals[0],
         Total {
             exercise: "Squats".into(),
-            unit: "rép.".into(),
+            unit: "reps".into(),
             amount: 27,
             sets: 2
         }
@@ -282,7 +324,7 @@ fn history_and_sessions_are_stored() {
     assert_eq!(
         s.history(1, today).unwrap()[0].sets,
         3,
-        "série annulée retirée"
+        "dismissed set removed"
     );
     s.append_history(&[entry(t, t - 60, "Squats", 15)]).unwrap();
 
@@ -290,7 +332,7 @@ fn history_and_sessions_are_stored() {
     assert_eq!(
         s.history(1, today).unwrap()[0].sets,
         3,
-        "dernière séance effacée"
+        "last session deleted"
     );
     s.remove_session(t - 60).unwrap();
     assert_eq!(s.full_history().unwrap().len(), 1);

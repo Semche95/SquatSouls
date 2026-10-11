@@ -3,8 +3,8 @@ import { computed, ref, watch } from 'vue';
 import { vTooltip } from 'floating-vue';
 import { countError, parseCount } from '../configDraft.js';
 
-// Champ de nombre entier dont le format est vérifié pendant la saisie (erreur en infobulle).
-// Vidé, il vaut 0 en quittant le champ, ou disparaît s'il est facultatif.
+// Integer field whose format is checked while typing (error in a tooltip).
+// Cleared, it becomes 0 when leaving the field, or disappears if it is optional.
 const props = defineProps({ modelValue: [Number, String], optional: Boolean });
 const emit = defineEmits(['update:modelValue']);
 
@@ -14,10 +14,10 @@ const value = (t) => {
   return v === '' && props.optional ? undefined : v;
 };
 const error = computed(() => countError(value(text.value)));
-// L'erreur s'affiche aussitôt pendant la saisie ; hors du champ, seulement au survol.
+// The error shows right away while typing; outside the field, only on hover.
 const focused = ref(false);
 
-// Valeur changée ailleurs (réinitialisation, import) : le champ la reprend.
+// Value changed elsewhere (reset, import): the field takes it.
 watch(
   () => props.modelValue,
   (v) => {

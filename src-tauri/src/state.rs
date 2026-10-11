@@ -1,4 +1,4 @@
-//! État partagé de l'application et chargement de la configuration.
+//! Shared application state and configuration loading.
 
 use crate::fitness::{default_config, Config, Session, Store};
 use chrono::Local;
@@ -8,7 +8,7 @@ use tauri::State;
 
 pub(crate) struct AppState {
     pub(crate) config: Config,
-    /// Erreur rencontrée au chargement de la configuration (la config par défaut est alors utilisée).
+    /// Error met while loading the configuration (the default config is then used).
     pub(crate) config_error: Option<String>,
     pub(crate) store: Store,
     pub(crate) session: Session,
@@ -30,7 +30,7 @@ impl AppState {
             Err(e) => (
                 default_config(),
                 Some(format!(
-                    "Configuration enregistrée ignorée, configuration par défaut utilisée. {e}"
+                    "Saved configuration ignored, default configuration used. {e}"
                 )),
             ),
         };
@@ -52,8 +52,8 @@ impl AppState {
     pub(crate) fn store_config(&mut self, config: Config) -> Result<ConfigView, String> {
         self.store
             .save_config(&config)
-            .map_err(|e| format!("Configuration non enregistrée : {e}"))?;
-        // Le jeu de la séance a été supprimé : la séance est annulée.
+            .map_err(|e| format!("Configuration not saved: {e}"))?;
+        // The session's game was removed: the session is cancelled.
         if self.session.game_removed(&config) {
             self.cancel_session()?;
         }
@@ -63,20 +63,18 @@ impl AppState {
         Ok(self.config_view())
     }
 
-    /// Retire de l'historique les séries de la séance en cours et en commence une nouvelle.
+    /// Removes the current session's sets from the history and starts a new one.
     pub(crate) fn cancel_session(&mut self) -> Result<(), String> {
         self.store
             .remove_session(self.session.started_at)
-            .map_err(|e| format!("Historique non modifié : {e}"))?;
+            .map_err(|e| format!("History not modified: {e}"))?;
         self.session = Session::new(now());
         Ok(())
     }
 }
 
 fn load_config(store: &Store) -> Result<Config, String> {
-    let config = store
-        .config()
-        .map_err(|e| format!("Lecture impossible : {e}"))?;
+    let config = store.config().map_err(|e| format!("Unreadable: {e}"))?;
     config.validate()?;
     Ok(config)
 }
@@ -88,5 +86,5 @@ pub(crate) fn now() -> i64 {
 pub(crate) fn lock<'a>(state: &'a Shared) -> Result<MutexGuard<'a, AppState>, String> {
     state
         .lock()
-        .map_err(|_| "État de l'application inaccessible.".to_string())
+        .map_err(|_| "Application state unavailable.".to_string())
 }

@@ -1,12 +1,12 @@
-//! Détection du jeu Steam en cours : AppId lu sur un processus ou noté par Steam, nom lu dans la
-//! réponse du Steam Store.
+//! Detection of the running Steam game: AppId read from a process or recorded by Steam, name read from
+//! the Steam Store response.
 
 use serde::Serialize;
 use serde_json::Value;
 use std::collections::HashMap;
 
-/// AppId du jeu lancé par Steam, lu dans la ligne de commande d'un processus
-/// (`SteamLaunch AppId=…`, sous Linux) ou dans son environnement (`SteamAppId=…`).
+/// AppId of the game launched by Steam, read from a process command line
+/// (`SteamLaunch AppId=…`, on Linux) or from its environment (`SteamAppId=…`).
 pub fn steam_app_id<S: AsRef<str>>(cmd: &[S], environ: &[S]) -> Option<u32> {
     let launched = cmd
         .iter()
@@ -24,8 +24,8 @@ pub fn steam_app_id<S: AsRef<str>>(cmd: &[S], environ: &[S]) -> Option<u32> {
         .filter(|&id| id != 0)
 }
 
-/// AppId du jeu en cours noté par Steam dans son `registry.vdf` (macOS, Linux) : valeur de la
-/// clé `RunningAppID`, à zéro sans jeu lancé.
+/// AppId of the running game recorded by Steam in its `registry.vdf` (macOS, Linux): value of the
+/// `RunningAppID` key, zero when no game is running.
 pub fn running_app_id_in_vdf(vdf: &str) -> Option<u32> {
     vdf.lines().find_map(|line| {
         let mut fields = line.split('"').map(str::trim).filter(|f| !f.is_empty());
@@ -38,12 +38,15 @@ pub fn running_app_id_in_vdf(vdf: &str) -> Option<u32> {
     })
 }
 
-/// Adresse de la fiche d'un jeu sur l'API du Steam Store, qui ne demande pas de clé.
-fn steam_app_url(app_id: u32) -> String {
-    format!("https://store.steampowered.com/api/appdetails?appids={app_id}&filters=basic&l=french")
+/// URL of a game's details on the Steam Store API, which requires no key, with its name in
+/// `language` (Steam API language name: "french", "english"...).
+fn steam_app_url(app_id: u32, language: &str) -> String {
+    format!(
+        "https://store.steampowered.com/api/appdetails?appids={app_id}&filters=basic&l={language}"
+    )
 }
 
-/// Nom du jeu dans la réponse de `steam_app_url`, sans les marques ™ et ®.
+/// Game name in the `steam_app_url` response, without the ™ and ® marks.
 fn steam_app_name(app_id: u32, json: &str) -> Option<String> {
     let response: Value = serde_json::from_str(json).ok()?;
     let name = response
@@ -56,39 +59,39 @@ fn steam_app_name(app_id: u32, json: &str) -> Option<String> {
     (!name.is_empty()).then(|| name.to_string())
 }
 
-/// Délai minimal entre deux appels au Steam Store, en secondes, pour ne jamais approcher de sa limite.
+/// Minimum delay between two Steam Store calls, in seconds, to never get close to its limit.
 pub const STEAM_STORE_INTERVAL: i64 = 60;
-/// Délai avant de redemander un jeu que le Steam Store n'a pas nommé, ou pas répondu.
+/// Delay before asking again for a game the Steam Store did not name, or did not answer for.
 pub const STEAM_RETRY_DELAY: i64 = 3600;
-/// Délai sans aucun appel après un refus du Steam Store pour excès de requêtes.
+/// Delay without any call after the Steam Store refused for too many requests.
 pub const STEAM_BLOCK_DELAY: i64 = 24 * 3600;
 
-/// Pourquoi le nom d'un jeu n'est pas connu.
+/// Why a game's name is not known.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum SteamNameError {
-    /// Le Steam Store ne connaît pas ce jeu, ou n'a pas répondu : il sera redemandé après `STEAM_RETRY_DELAY`.
+    /// The Steam Store does not know this game, or did not answer: it will be asked again after `STEAM_RETRY_DELAY`.
     Unknown,
-    /// Un autre appel vient d'être fait : on réessaiera plus tard.
+    /// Another call was just made: try again later.
     Wait,
-    /// Le Steam Store a limité les requêtes : plus aucun appel pendant `STEAM_BLOCK_DELAY`.
+    /// The Steam Store rate-limited requests: no more calls for `STEAM_BLOCK_DELAY`.
     Blocked,
 }
 
-/// Réponse d'un appel au Steam Store : code HTTP et contenu, ou `None` sans réponse.
+/// Response of a Steam Store call: HTTP status and body, or `None` without a response.
 pub type SteamResponse = Option<(u16, String)>;
 
-/// Réponse gardée pour un jeu : son nom, ou l'heure à partir de laquelle le redemander.
+/// Answer kept for a game: its name, or the time from which to ask again.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SteamName {
     Known(String),
     RetryAt(i64),
 }
 
-/// Noms des jeux demandés au Steam Store, avec les garde-fous qui évitent d'en être bloqué,
-/// gardés d'un lancement à l'autre : un nom obtenu n'est plus redemandé, un échec l'est après
-/// `STEAM_RETRY_DELAY`, au plus un appel par `STEAM_STORE_INTERVAL`, et plus aucun pendant
-/// `STEAM_BLOCK_DELAY` après un refus pour excès de requêtes (429 ou 403). Heures en secondes Unix.
+/// Game names asked from the Steam Store, with the safeguards that avoid getting blocked by it,
+/// kept from one launch to the next: a name obtained is not asked again, a failure is after
+/// `STEAM_RETRY_DELAY`, at most one call per `STEAM_STORE_INTERVAL`, and none for
+/// `STEAM_BLOCK_DELAY` after a refusal for too many requests (429 or 403). Times in Unix seconds.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct SteamNames {
     pub(super) names: HashMap<u32, SteamName>,
@@ -97,10 +100,11 @@ pub struct SteamNames {
 }
 
 impl SteamNames {
-    /// `remember` reçoit l'état après chaque appel, pour le garder d'un lancement à l'autre.
+    /// `remember` receives the state after each call, to keep it from one launch to the next.
     pub fn name(
         &mut self,
         app_id: u32,
+        language: &str,
         now: i64,
         fetch: impl FnOnce(&str) -> SteamResponse,
         remember: impl FnOnce(&SteamNames),
@@ -120,7 +124,7 @@ impl SteamNames {
             return Err(SteamNameError::Wait);
         }
         self.last_call = now;
-        let name = match fetch(&steam_app_url(app_id)) {
+        let name = match fetch(&steam_app_url(app_id, language)) {
             Some((429 | 403, _)) => {
                 self.blocked_until = now + STEAM_BLOCK_DELAY;
                 remember(self);

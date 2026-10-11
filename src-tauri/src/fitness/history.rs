@@ -1,4 +1,4 @@
-//! Bilan : séries de l'historique regroupées par jour, par séance et par jeu.
+//! Summary: history sets grouped by day, by session and by game.
 
 use super::{totals, LogEntry, Total};
 use chrono::{DateTime, Duration, Local, NaiveDate, NaiveTime};
@@ -8,26 +8,26 @@ use std::collections::{BTreeMap, HashMap};
 #[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct DayTotals {
-    /// Date au format AAAA-MM-JJ.
+    /// Date in YYYY-MM-DD format.
     pub date: String,
     pub sets: usize,
-    /// Séances du jour, de la plus récente à la plus ancienne.
+    /// Sessions of the day, most recent first.
     pub sessions: Vec<SessionTotals>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionTotals {
-    /// Heure de la première série faite.
+    /// Time of the first set done.
     pub start: i64,
-    /// Secondes entre le début de la séance et sa fin (ou sa dernière série).
+    /// Seconds between the start of the session and its end (or its last set).
     pub duration: i64,
     pub game: String,
     pub sets: usize,
     pub totals: Vec<Total>,
 }
 
-/// Regroupe les séries par séance et par jeu.
+/// Groups sets by session and by game.
 pub fn sessions(entries: &[LogEntry], ends: &HashMap<i64, i64>) -> Vec<SessionTotals> {
     let mut groups: Vec<((i64, &str), Vec<LogEntry>)> = Vec::new();
     for e in entries {
@@ -58,7 +58,7 @@ pub fn sessions(entries: &[LogEntry], ends: &HashMap<i64, i64>) -> Vec<SessionTo
 
 type ByDay = BTreeMap<NaiveDate, Vec<LogEntry>>;
 
-/// Séries regroupées par jour local.
+/// Sets grouped by local day.
 fn by_day(entries: &[LogEntry]) -> ByDay {
     let mut days = ByDay::new();
     for e in entries {
@@ -79,12 +79,12 @@ fn day_totals(date: NaiveDate, entries: &[LogEntry], ends: &HashMap<i64, i64>) -
     }
 }
 
-/// Premier des `days` derniers jours (aujourd'hui compris).
+/// First of the last `days` days (today included).
 fn first_day(days: u32, today: NaiveDate) -> NaiveDate {
     today - Duration::days(i64::from(days.max(1) - 1))
 }
 
-/// Horodatage du début local du premier des `days` derniers jours.
+/// Timestamp of the local start of the first of the last `days` days.
 pub fn window_start(days: u32, today: NaiveDate) -> i64 {
     first_day(days, today)
         .and_time(NaiveTime::MIN)
@@ -93,7 +93,7 @@ pub fn window_start(days: u32, today: NaiveDate) -> i64 {
         .map_or(i64::MIN, |d| d.timestamp())
 }
 
-/// Totaux des `days` derniers jours (aujourd'hui compris), du plus récent au plus ancien.
+/// Totals of the last `days` days (today included), most recent first.
 pub fn last_days(
     entries: &[LogEntry],
     ends: &HashMap<i64, i64>,
@@ -109,7 +109,7 @@ pub fn last_days(
         .collect()
 }
 
-/// Tous les jours où des séries ont été faites, du plus récent au plus ancien.
+/// Every day on which sets were done, most recent first.
 pub fn active_days(entries: &[LogEntry], ends: &HashMap<i64, i64>) -> Vec<DayTotals> {
     by_day(entries)
         .iter()

@@ -5,11 +5,11 @@ import DisabledTip from './DisabledTip.vue';
 
 const { session, newSession, cancelSession } = useSession();
 
-// "" ou l'action de séance en attente de confirmation : "end" ou "cancel".
+// "" or the session action awaiting confirmation: "end" or "cancel".
 const confirmSession = ref('');
-// Terminer n'a de sens qu'avec au moins une série faite et aucune en attente.
+// Ending only makes sense with at least one set done and none pending.
 const canEnd = computed(() => session.value.sets > 0 && !session.value.pending.length);
-// Rien à annuler tant qu'aucun événement n'a été déclenché.
+// Nothing to cancel until an event has been triggered.
 const canCancel = computed(() => !!session.value.gameId);
 
 function confirmed(action) {

@@ -14,17 +14,17 @@ const { config, gameId, game } = useConfig();
 const { session, notice, pauseLeft, skipPause, trigger, confirmDismiss, dismiss, remaining, complete, halve, skipExercise } = useSession();
 const { detected, selectDetected, addGame, ignoreDetected } = useSteam();
 
-// Le jeu est figé dès le premier événement de la séance, jusqu'à la suivante.
+// The game is locked from the session's first event until the next session.
 const gameLocked = computed(() => !!session.value.gameId);
-// Jeu Steam détecté : un jeu inconnu est proposé à l'ajout, sauf s'il est ignoré ; les jeux configurés
-// qui lui correspondent, à la sélection, sauf si l'un d'eux l'est déjà ou que le jeu de la séance est fixé.
+// Detected Steam game: an unknown game is offered for adding, unless it is ignored; the configured games
+// matching it, for selection, unless one of them already is or the session's game is locked.
 const steamOffer = computed(() => {
   const d = detected.value;
   if (!d?.name) return false;
   if (!d.games.length) return !d.ignored;
   return !gameLocked.value && !d.games.some((g) => g.id === gameId.value);
 });
-// Série en cours mise en avant, puis la file des suivantes.
+// Current set highlighted, then the queue of the next ones.
 const stage = computed(() => [session.value.pending.slice(0, 1), session.value.pending.slice(1)]);
 
 function triggerCount(eventId) {
@@ -35,7 +35,7 @@ function triggerCount(eventId) {
 useKeydown((e) => {
   if (e.repeat) return;
   if (e.target.closest?.('input, textarea, select')) return;
-  // e.code ignore la disposition : 1-9 marchent sur AZERTY sans Maj.
+  // e.code ignores the layout: 1-9 work on AZERTY without Shift.
   const digit = e.code.match(/^(?:Digit|Numpad)([1-9])$/);
   if (digit) {
     const ev = game.value?.events[Number(digit[1]) - 1];
@@ -45,7 +45,7 @@ useKeydown((e) => {
     }
     return;
   }
-  // Toujours bloquées : sinon elles activeraient le bouton qui a le focus (ex. « Annuler la séance »).
+  // Always blocked: otherwise they would activate the focused button (e.g. "Annuler la séance").
   if (e.code === 'Escape') {
     skipPause();
     confirmDismiss.value = 0;
@@ -58,7 +58,7 @@ useKeydown((e) => {
   e.preventDefault();
   const first = session.value.pending[0];
   if (!first) return;
-  // Fait et jokers portent sur le premier exercice restant de la série.
+  // Done and jokers apply to the first remaining exercise of the set.
   const [item] = remaining(first);
   if (validate) complete(first, item);
   else if (skip) skipExercise(first, item);

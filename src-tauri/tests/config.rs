@@ -14,7 +14,7 @@ fn default_config_is_valid_and_roundtrips() {
 fn validation_catches_mistakes() {
     let mut cfg = default_config();
     cfg.exercises[0].min = 20;
-    assert!(cfg.validate().unwrap_err().contains("Intervalle"));
+    assert!(cfg.validate().unwrap_err().contains("Invalid range"));
 
     let mut cfg = default_config();
     cfg.games[0].events[0].draws = cfg.exercises.len() as u32 + 1;
@@ -22,24 +22,24 @@ fn validation_catches_mistakes() {
 
     let mut cfg = default_config();
     cfg.games[1].id = "elden-ring".into();
-    assert!(cfg.validate().unwrap_err().contains("deux fois"));
+    assert!(cfg.validate().unwrap_err().contains("defined twice"));
 
     let mut cfg = default_config();
     cfg.games[1].name = format!(" {} ", cfg.games[0].name.to_uppercase());
-    assert!(cfg.validate().unwrap_err().contains("Deux jeux"));
+    assert!(cfg.validate().unwrap_err().contains("Two games"));
 
-    // Plusieurs jeux peuvent partager un AppId Steam : un même jeu, configuré pour des défis différents.
+    // Several games can share a Steam AppId: the same game, configured for different challenges.
     let mut cfg = default_config();
     cfg.games[1].steam_app_id = cfg.games[0].steam_app_id;
     cfg.validate().unwrap();
 
     let mut cfg = default_config();
     cfg.exercises.clear();
-    assert!(cfg.validate().unwrap_err().contains("Aucun exercice"));
+    assert!(cfg.validate().unwrap_err().contains("No exercise"));
 
     let mut cfg = default_config();
     cfg.exercises.iter_mut().for_each(|ex| ex.enabled = false);
-    assert!(cfg.validate().unwrap_err().contains("Aucun exercice coché"));
+    assert!(cfg.validate().unwrap_err().contains("No exercise checked"));
 }
 
 #[test]
@@ -59,7 +59,7 @@ fn draws_are_limited_by_the_checked_exercises() {
         .for_each(|ex| ex.enabled = false);
     cfg.validate().unwrap();
     cfg.exercises[unchecked].enabled = false;
-    assert!(cfg.validate().unwrap_err().contains("cochés"));
+    assert!(cfg.validate().unwrap_err().contains("but only"));
 }
 
 #[test]

@@ -7,8 +7,8 @@ import { useSteam } from '../composables/useSteam.js';
 const { config, draft } = useConfig();
 const { detected, storeBlocked, addGame, unignore } = useSteam();
 
-// État de la détection enregistrée, pour voir qu'elle marche même sans bandeau dans Jouer :
-// texte et couleur de sa pastille.
+// Status of the saved detection, to see it works even without a banner in Jouer:
+// text and color of its badge.
 const status = computed(() => {
   const d = detected.value;
   if (!d) return { text: 'Aucun jeu Steam détecté.', kind: 'idle' };

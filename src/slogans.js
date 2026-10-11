@@ -1,4 +1,4 @@
-// Slogans affichés au hasard sous le titre.
+// Slogans shown at random under the title.
 export const slogans = [
   'Praise the Squat!',
   'You Died, Do 20',
@@ -44,10 +44,10 @@ export const slogans = [
   'Let Me Solo Her got good through practice, not exhaustion.',
 ];
 
-// Slogans déjà affichés depuis que la liste a été vidée, gardés d'un lancement à l'autre.
+// Slogans already shown since the list was last cleared, kept from one launch to the next.
 const SEEN_KEY = 'squatsouls.seenSlogans';
 
-// Tire au hasard un slogan pas encore affiché, et repart de la liste entière quand tous l'ont été.
+// Picks at random a slogan not shown yet, and starts over from the whole list once all have been.
 export function pickSlogan(list = slogans, storage = localStorage) {
   const seen = new Set(JSON.parse(storage.getItem(SEEN_KEY) ?? '[]'));
   let fresh = list.filter((s) => !seen.has(s));

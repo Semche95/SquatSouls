@@ -1,26 +1,27 @@
 import { onScopeDispose, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { byName, extendsName } from '../configDraft.js';
+import { STEAM_LANGUAGE } from '../locale.js';
 import { defineShared } from './shared.js';
 
-// Intervalle de lecture des processus quand la détection est activée.
+// Interval between process scans when detection is enabled.
 const SCAN_MS = 10000;
-// Refus du backend quand le Steam Store a limité les requêtes : plus aucun appel pendant un temps.
+// Backend refusal when the Steam Store rate-limited requests: no more calls for a while.
 const BLOCKED = 'blocked';
 
 export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfgTab, newGame }, { saveChange }) => {
-  // Jeu Steam en cours : `games` liste les jeux configurés qui lui correspondent (vide s'il est inconnu),
-  // `name` est absent tant que le Steam Store ne l'a pas donné. Null sans jeu Steam en cours.
+  // Running Steam game: `games` lists the configured games matching it (empty if it is unknown),
+  // `name` is absent until the Steam Store has given it. Null without a running Steam game.
   const detected = ref(null);
-  // Le Steam Store a limité les requêtes : les jeux inconnus ne sont plus proposés.
+  // The Steam Store rate-limited requests: unknown games are no longer offered.
   const storeBlocked = ref(false);
   let timer;
-  // AppId du dernier jeu notifié, oublié quand plus aucun jeu ne tourne : un jeu relancé est de nouveau notifié.
+  // AppId of the last notified game, forgotten when no game runs anymore: a relaunched game is notified again.
   let notified = null;
 
-  // Plusieurs jeux peuvent porter le même AppId (un même jeu, pour des défis différents), et un jeu sans AppId
-  // dont le nom reprend le leur en est une variante. Sans aucun, un jeu ignoré garde le nom noté en l'ignorant ;
-  // sinon le nom vient du Steam Store, et un jeu configuré sans AppId se reconnaît à ce nom.
+  // Several games can carry the same AppId (the same game, for different challenges), and a game without AppId
+  // whose name extends theirs is a variant of it. Without any, an ignored game keeps the name recorded when ignoring it;
+  // otherwise the name comes from the Steam Store, and a configured game without AppId is recognized by that name.
   async function identify(appId) {
     const { games, ignoredGames } = config.value;
     const variants = (names) => games.filter((g) => g.steamAppId === undefined && names.some((n) => extendsName(g.name, n)));
@@ -30,7 +31,7 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
     if (ignored) return { appId, name: ignored.name, games: [], ignored: true };
     let name;
     try {
-      name = await invoke('steam_game_name', { appId });
+      name = await invoke('steam_game_name', { appId, language: STEAM_LANGUAGE });
       storeBlocked.value = false;
     } catch (e) {
       storeBlocked.value = e === BLOCKED;
@@ -39,7 +40,7 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
     return { appId, name: named[0]?.name ?? name, games: named, ignored: false };
   }
 
-  // Une notification par lancement, une fois le nom connu, sauf pour un jeu ignoré.
+  // One notification per launch, once the name is known, except for an ignored game.
   async function notify(found) {
     if (found?.appId !== notified) notified = null;
     if (!found?.name || found.ignored || notified !== null || !config.value.steamNotify) return;
@@ -50,7 +51,7 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
     });
   }
 
-  // Processus illisibles : rien n'est détecté, le prochain passage réessaie.
+  // Unreadable processes: nothing is detected, the next scan tries again.
   async function scan() {
     try {
       const appId = await invoke('running_steam_app');
@@ -63,7 +64,7 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
     }
   }
 
-  // Relancée à chaque configuration enregistrée : un jeu ajouté ou ignoré est aussitôt pris en compte.
+  // Restarted on each saved configuration: an added or ignored game is taken into account right away.
   watch(
     config,
     (cfg) => {
@@ -77,7 +78,7 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
   );
   onScopeDispose(() => clearInterval(timer));
 
-  // Le jeu reconnu à son nom reçoit l'AppId détecté, pour ne plus dépendre de son nom.
+  // The game recognized by its name receives the detected AppId, so it no longer depends on its name.
   async function selectDetected(game) {
     gameId.value = game.id;
     if (game.steamAppId !== undefined) return;
@@ -87,10 +88,10 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
     });
   }
 
-  // Ouvre la création d'un jeu, préremplie avec le nom et l'AppId du jeu Steam.
+  // Opens game creation, prefilled with the Steam game's name and AppId.
   function addGame({ appId, name }) {
     tab.value = 'config';
-    cfgTab.value = 'jeux';
+    cfgTab.value = 'games';
     newGame.value = { name, source: '', steamAppId: appId };
   }
 
@@ -101,7 +102,7 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
     });
   }
 
-  // Retiré de la liste des jeux ignorés, il sera de nouveau proposé.
+  // Removed from the ignored games list, it will be offered again.
   function unignore(appId) {
     return saveChange((cfg) => {
       cfg.ignoredGames = cfg.ignoredGames.filter((g) => g.appId !== appId);

@@ -1,8 +1,8 @@
 <script setup>
 import { vTooltip } from 'floating-vue';
 
-// Infobulle d'un contrôle (souvent la raison de sa désactivation), portée par un conteneur :
-// un contrôle désactivé ne reçoit pas le survol. error la borde de rouge.
+// Tooltip of a control (often the reason it is disabled), carried by a container:
+// a disabled control does not receive hover. error gives it a red border.
 defineProps({ tip: String, error: Boolean });
 </script>
 

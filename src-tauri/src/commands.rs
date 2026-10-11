@@ -1,4 +1,4 @@
-//! Commandes Tauri appelées par l'interface.
+//! Tauri commands called by the interface.
 
 use crate::fitness::{
     steam_app_id, Config, DayTotals, Draw, Session, SessionView, SteamNameError, SteamNames,
@@ -13,7 +13,7 @@ use sysinfo::{ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind};
 use tauri::async_runtime::spawn_blocking;
 use tauri::{AppHandle, Manager};
 
-const HISTORY_UNREADABLE: &str = "Historique illisible";
+const HISTORY_UNREADABLE: &str = "History unreadable";
 
 #[tauri::command]
 pub(crate) fn get_config(state: Shared) -> Result<ConfigView, String> {
@@ -29,9 +29,8 @@ pub(crate) fn save_config(
     config.validate()?;
     let mut s = lock(&state)?;
     let view = s.store_config(config)?;
-    tray::apply(&app, &s.config).map_err(|e| {
-        format!("Configuration enregistrée, zone de notification indisponible : {e}")
-    })?;
+    tray::apply(&app, &s.config)
+        .map_err(|e| format!("Configuration saved, notification area unavailable: {e}"))?;
     Ok(view)
 }
 
@@ -53,7 +52,7 @@ pub(crate) fn complete_exercise(
     let mut s = lock(&state)?;
     let entry = s.session.complete_exercise(draw_id, &exercise_id, now())?;
     if let Err(e) = s.store.append_history(&[entry]) {
-        eprintln!("Historique non enregistré : {e}");
+        eprintln!("History not saved: {e}");
     }
     Ok(s.session.view())
 }
@@ -63,7 +62,7 @@ pub(crate) fn dismiss(state: Shared, draw_id: u64) -> Result<SessionView, String
     let mut s = lock(&state)?;
     let entries = s.session.dismiss(draw_id)?;
     if let Err(e) = s.store.remove_history(&entries) {
-        eprintln!("Historique non modifié : {e}");
+        eprintln!("History not modified: {e}");
     }
     Ok(s.session.view())
 }
@@ -107,7 +106,7 @@ pub(crate) fn new_session(state: Shared) -> Result<SessionView, String> {
     let mut s = lock(&state)?;
     if s.session.view().sets > 0 {
         if let Err(e) = s.store.end_session(s.session.started_at, now()) {
-            eprintln!("Fin de séance non enregistrée : {e}");
+            eprintln!("Session end not saved: {e}");
         }
     }
     s.session = Session::new(now());
@@ -126,7 +125,7 @@ pub(crate) fn get_last_game(state: Shared) -> Result<String, String> {
     lock(&state)?
         .store
         .last_game()
-        .map_err(|e| format!("Dernier jeu illisible : {e}"))
+        .map_err(|e| format!("Last game unreadable: {e}"))
 }
 
 #[tauri::command]
@@ -134,7 +133,7 @@ pub(crate) fn set_last_game(state: Shared, game_id: String) -> Result<(), String
     lock(&state)?
         .store
         .set_last_game(&game_id)
-        .map_err(|e| format!("Dernier jeu non enregistré : {e}"))
+        .map_err(|e| format!("Last game not saved: {e}"))
 }
 
 #[tauri::command]
@@ -142,7 +141,7 @@ pub(crate) fn get_history(state: Shared, days: u32) -> Result<Vec<DayTotals>, St
     lock(&state)?
         .store
         .history(days, Local::now().date_naive())
-        .map_err(|e| format!("{HISTORY_UNREADABLE} : {e}"))
+        .map_err(|e| format!("{HISTORY_UNREADABLE}: {e}"))
 }
 
 #[tauri::command]
@@ -150,10 +149,10 @@ pub(crate) fn get_full_history(state: Shared) -> Result<Vec<DayTotals>, String> 
     lock(&state)?
         .store
         .full_history()
-        .map_err(|e| format!("{HISTORY_UNREADABLE} : {e}"))
+        .map_err(|e| format!("{HISTORY_UNREADABLE}: {e}"))
 }
 
-/// AppId du jeu Steam en cours, s'il y en a un. Lu hors du fil principal, comme le nom.
+/// AppId of the running Steam game, if any. Read off the main thread, like the name.
 #[tauri::command]
 pub(crate) async fn running_steam_app() -> Result<Option<u32>, String> {
     spawn_blocking(|| {
@@ -179,18 +178,18 @@ pub(crate) async fn running_steam_app() -> Result<Option<u32>, String> {
                     .starts_with("steam")
             })
         };
-        // Steam ne remet pas sa note à zéro s'il plante : elle ne compte que s'il tourne.
+        // Steam does not reset its record if it crashes: it only counts while Steam runs.
         processes
             .clone()
             .find_map(|p| steam_app_id(&text(p.cmd()), &text(p.environ())))
             .or_else(|| steam_running().then(noted_steam_app).flatten())
     })
     .await
-    .map_err(|e| format!("Processus illisibles : {e}"))
+    .map_err(|e| format!("Processes unreadable: {e}"))
 }
 
-/// AppId du jeu en cours noté par Steam, pour les processus dont l'environnement est illisible
-/// (Windows, macOS) : dans le registre sous Windows.
+/// AppId of the running game recorded by Steam, for processes whose environment is unreadable
+/// (Windows, macOS): in the registry on Windows.
 #[cfg(windows)]
 fn noted_steam_app() -> Option<u32> {
     use winreg::{enums::HKEY_CURRENT_USER, RegKey};
@@ -202,7 +201,7 @@ fn noted_steam_app() -> Option<u32> {
     (id != 0).then_some(id)
 }
 
-/// AppId du jeu en cours noté par Steam : dans son `registry.vdf` sous macOS et Linux.
+/// AppId of the running game recorded by Steam: in its `registry.vdf` on macOS and Linux.
 #[cfg(not(windows))]
 fn noted_steam_app() -> Option<u32> {
     let home = std::path::PathBuf::from(std::env::var_os("HOME")?);
@@ -214,7 +213,7 @@ fn noted_steam_app() -> Option<u32> {
     crate::fitness::running_app_id_in_vdf(&std::fs::read_to_string(vdf).ok()?)
 }
 
-/// Délai maximal d'un appel au Steam Store.
+/// Maximum duration of a Steam Store call.
 const STEAM_STORE_TIMEOUT: Duration = Duration::from_secs(10);
 
 fn fetch(url: &str) -> SteamResponse {
@@ -231,27 +230,31 @@ fn fetch(url: &str) -> SteamResponse {
     ))
 }
 
-/// Nom d'un jeu Steam, demandé au Steam Store avec les garde-fous de `SteamNames`.
-/// Les demandes passent une à une : la suivante attend la réponse de la précédente.
+/// Name of a Steam game in `language`, asked from the Steam Store with the safeguards of `SteamNames`.
+/// Requests go one at a time: the next one waits for the previous one's answer.
 #[tauri::command]
-pub(crate) async fn steam_game_name(app: AppHandle, app_id: u32) -> Result<String, SteamNameError> {
+pub(crate) async fn steam_game_name(
+    app: AppHandle,
+    app_id: u32,
+    language: String,
+) -> Result<String, SteamNameError> {
     spawn_blocking(move || {
         let names = app.state::<Mutex<SteamNames>>();
         let mut names = names.lock().map_err(|_| SteamNameError::Unknown)?;
-        // Faute d'enregistrement, l'état reste gardé jusqu'à la fermeture de l'appli.
+        // If saving fails, the state stays kept until the app closes.
         let remember = |steam: &SteamNames| {
             if let Ok(mut state) = lock(&app.state::<Mutex<AppState>>()) {
                 let _ = state.store.save_steam_names(steam);
             }
         };
-        names.name(app_id, now(), fetch, remember)
+        names.name(app_id, &language, now(), fetch, remember)
     })
     .await
     .map_err(|_| SteamNameError::Unknown)?
 }
 
-/// Notification système. Sous Linux, le plugin la signerait du nom de l'exécutable avec une icône
-/// système absente hors installation : elle porte ici le nom de l'appli et son icône.
+/// System notification. On Linux, the plugin would sign it with the executable name and a system
+/// icon missing outside an installation: here it carries the app name and its icon.
 #[tauri::command]
 pub(crate) async fn notify(app: AppHandle, title: String, body: String) -> Result<(), String> {
     #[cfg(target_os = "linux")]
@@ -262,7 +265,7 @@ pub(crate) async fn notify(app: AppHandle, title: String, body: String) -> Resul
             .map_err(|e| e.to_string())?
             .join("icon.png");
         spawn_blocking(move || {
-            std::fs::create_dir_all(icon.parent().expect("dossier du cache"))?;
+            std::fs::create_dir_all(icon.parent().expect("cache directory"))?;
             std::fs::write(&icon, include_bytes!("../icons/128x128.png"))?;
             notify_rust::Notification::new()
                 .appname(&app.package_info().name)
@@ -275,7 +278,7 @@ pub(crate) async fn notify(app: AppHandle, title: String, body: String) -> Resul
         })
         .await
         .map_err(|e| e.to_string())?
-        .map_err(|e| format!("Notification non envoyée : {e}"))
+        .map_err(|e| format!("Notification not sent: {e}"))
     }
     #[cfg(not(target_os = "linux"))]
     {
@@ -285,6 +288,6 @@ pub(crate) async fn notify(app: AppHandle, title: String, body: String) -> Resul
             .title(title)
             .body(body)
             .show()
-            .map_err(|e| format!("Notification non envoyée : {e}"))
+            .map_err(|e| format!("Notification not sent: {e}"))
     }
 }

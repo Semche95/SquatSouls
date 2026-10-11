@@ -1,147 +1,151 @@
 # Squat Souls
 
-Petite appli desktop (Rust, Tauri 2, Vue 3) qui tire un exercice au poids du corps et un nombre de répétitions au hasard quand un événement arrive en jeu (mort, repos au feu, boss vaincu...).
+Small desktop app (Rust, Tauri 2, Vue 3) that draws a bodyweight exercise and a random number of reps when an event happens in game (death, resting at a bonfire, boss defeated...).
+
+The interface is in French: button and setting names below are quoted as they appear in the app.
+
+All code, comments and documentation are written in English; only the interface texts are in French, and the interface is meant to become translatable.
 
 ## Installation (Arch Linux)
 
 ```bash
 sudo pacman -S --needed webkit2gtk-4.1 base-devel curl wget file openssl appmenu-gtk-module libappindicator-gtk3 librsvg
-# Rust et Node si besoin
+# Rust and Node if needed
 sudo pacman -S --needed rustup nodejs pnpm && rustup default stable
 
 cd SquatSouls
 pnpm install
-pnpm tauri dev        # lancement en développement
-pnpm tauri build      # binaire + paquets dans src-tauri/target/release/bundle/
+pnpm tauri dev        # run in development
+pnpm tauri build      # binary + packages in src-tauri/target/release/bundle/
 ```
 
-Le binaire seul est dans `src-tauri/target/release/squat-souls` après le build.
+The standalone binary is in `src-tauri/target/release/squat-souls` after the build.
 
-Le workflow GitHub Actions **Build** (`.github/workflows/build.yml`) compile les paquets Linux (`.deb`, `.rpm`, `.AppImage`) et Windows (`.msi`, `.exe`). Il se lance à la main depuis l'onglet Actions (**Run workflow**), et les paquets s'y téléchargent dans les artefacts de l'exécution.
+The GitHub Actions workflow **Build** (`.github/workflows/build.yml`) builds the Linux (`.deb`, `.rpm`, `.AppImage`) and Windows (`.msi`, `.exe`) packages. It is started by hand from the Actions tab (**Run workflow**), and the packages can be downloaded from the run's artifacts.
 
-Sous Linux, l'appli force `GDK_BACKEND=x11` et `WEBKIT_DISABLE_DMABUF_RENDERER=1` au lancement : WebKitGTK plante ou reste blanc sous Wayland (presse-papiers, GPU NVIDIA), elle passe donc par XWayland sans rendu DMABUF. Une de ces variables déjà définie au lancement est gardée telle quelle : `GDK_BACKEND=wayland squatsouls` revient à Wayland, par exemple pour un meilleur rendu HiDPI si WebKitGTK s'y montre stable.
+On Linux, the app forces `GDK_BACKEND=x11` and `WEBKIT_DISABLE_DMABUF_RENDERER=1` at launch: WebKitGTK crashes or stays blank under Wayland (clipboard, NVIDIA GPU), so it goes through XWayland without DMABUF rendering. One of these variables already set at launch is kept as is: `GDK_BACKEND=wayland squatsouls` goes back to Wayland, for instance for better HiDPI rendering if WebKitGTK proves stable there.
 
-## Utilisation
+## Usage
 
-- Choisis le jeu, puis clique sur l'événement qui vient d'arriver, ou tape son numéro (1 à 9, rangée du haut ou pavé numérique, sans Maj sur AZERTY).
-- La série tirée apparaît dans « À faire ». Chaque exercice se note fait avec son bouton **Fait**. Au clavier, sur la plus ancienne série, **Entrée** (ou Espace) note fait son premier exercice restant, **Retour arrière** annule la série (après confirmation si elle est commencée). Avec des jokers, **H** réduit de moitié ce même exercice et **J** le saute.
-- Après chaque exercice fait, une pause s'affiche avec son compte à rebours : l'exercice suivant ne se note fait qu'à sa fin. **Passer** (ou Échap) l'écourte.
-- « Terminer la séance » et « Annuler la séance », en bas de l'onglet Jouer, demandent une confirmation.
-- L'onglet **Bilan** montre la séance actuelle et les 7 derniers jours. **Tout voir** affiche tout l'historique en grand (Échap pour fermer).
-- Avec **Détecter le jeu Steam en cours** (Configuration › Réglages), l'onglet Jouer propose de sélectionner le jeu Steam lancé, ou de l'ajouter s'il n'est pas encore configuré, et une notification système signale chaque jeu lancé.
-- Avec **Afficher l'icône dans la zone de notification** (Configuration › Réglages), l'appli peut rester ouverte fenêtre masquée.
+- Choose the game, then click the event that just happened, or type its number (1 to 9, top row or numeric keypad, no Shift needed on AZERTY).
+- The drawn set appears in « À faire ». Each exercise is marked done with its **Fait** button. With the keyboard, on the oldest set, **Entrée** (or Space) marks its first remaining exercise done, **Retour arrière** (Backspace) dismisses the set (after confirmation if it is started). With jokers, **H** halves that same exercise and **J** skips it.
+- After each exercise done, a pause shows with its countdown: the next exercise can only be marked done once it ends. **Passer** (or Escape) cuts it short.
+- « Terminer la séance » and « Annuler la séance », at the bottom of the Jouer tab, ask for confirmation.
+- The **Bilan** tab shows the current session and the last 7 days. **Tout voir** shows the whole history full size (Escape to close).
+- With **Détecter le jeu Steam en cours** (Configuration › Réglages), the Jouer tab offers to select the launched Steam game, or to add it if it is not configured yet, and a system notification reports each launched game.
+- With **Afficher l'icône dans la zone de notification** (Configuration › Réglages), the app can stay open with its window hidden.
 
-## Règles métier
+## Business rules
 
-Cette section fait référence : toute évolution du comportement de l'appli doit y être reportée.
+This section is the reference: any change in the app's behavior must be reflected here.
 
-### Validation des actions
+### Confirming actions
 
-- Une action ne se valide qu'une fois : le bouton qui la valide (**Créer**, confirmation d'une suppression, **Terminer**, etc.) l'applique et l'enregistre aussitôt. Aucune action déjà validée ne doit attendre une seconde validation, comme le bouton **Enregistrer** de la configuration.
-- **Enregistrer** ne sert qu'aux modifications faites directement dans les champs, qui n'ont pas de bouton de validation propre.
+- An action is confirmed only once: the button that confirms it (**Créer**, confirmation of a removal, **Terminer**, etc.) applies and saves it right away. No action already confirmed should wait for a second confirmation, such as the configuration's **Enregistrer** button.
+- **Enregistrer** is only for changes made directly in the fields, which have no confirmation button of their own.
 
-### Tirage
+### Draw
 
-- Chaque jeu propose une liste d'événements. Déclencher un événement tire `draws` exercices distincts parmi les exercices cochés, chacun avec un nombre entier pris au hasard entre son `min` et son `max` (inclus).
-- Les exercices sortent par tours : dans une séance, chaque exercice sort une fois avant que l'un d'eux puisse revenir. Quand un tour est épuisé, un nouveau commence ; il ne reprend aussitôt ni un exercice de la série précédente, ni un exercice déjà sorti dans le même tirage (sauf s'il ne reste que lui à tirer pour le premier cas). Une configuration enregistrée recommence le tour.
-- L'intervalle appartient à l'exercice : il est le même quel que soit l'événement.
-- Un exercice décoché dans la configuration reste défini mais n'est plus tiré, jusqu'à ce qu'il soit coché de nouveau. La case s'enregistre avec **Enregistrer**, n'est pas transmise par le partage des exercices, et un exercice importé arrive coché (ou garde son état s'il existait déjà).
-- Un tirage devient une série « à faire ». Les séries à faire se traitent de la plus ancienne à la plus récente.
+- Each game offers a list of events. Triggering an event draws `draws` distinct exercises among the checked exercises, each with a whole number picked at random between its `min` and its `max` (inclusive).
+- Exercises come out in rounds: within a session, each exercise comes out once before any of them can come back. When a round runs out, a new one starts; it does not immediately pick again an exercise of the previous set, nor an exercise already drawn in the same draw (unless it is the only one left to draw, for the first case). A saved configuration restarts the round.
+- The range belongs to the exercise: it is the same whatever the event.
+- An exercise unchecked in the configuration stays defined but is no longer drawn, until it is checked again. The checkbox is saved with **Enregistrer**, is not carried by exercise sharing, and an imported exercise arrives checked (or keeps its state if it already existed).
+- A draw becomes a set "to do". Sets to do are handled from the oldest to the most recent.
 
-### Limite par séance
+### Per-session limit
 
-- Chaque déclenchement d'un événement est compté pour la séance, par jeu et par événement.
-- Au-delà de `maxPerSession` déclenchements, l'événement ne donne plus de série : un message indique que la limite est atteinte. Le compteur de déclenchements reste alors bloqué à la limite.
+- Each trigger of an event is counted for the session, per game and per event.
+- Beyond `maxPerSession` triggers, the event no longer gives a set: a message says the limit is reached. The trigger counter then stays stuck at the limit.
 
-### Traitement d'une série à faire
+### Handling a set to do
 
-- Les séries se font dans leur ordre de tirage : seule la plus ancienne propose **Fait** et les jokers, les suivantes, en file d'attente, ne peuvent qu'être annulées.
-- **Fait** se note exercice par exercice : l'exercice est ajouté aux totaux et écrit dans l'historique, et reste affiché barré jusqu'à la fin de la série. La série passe dans les séries faites quand son dernier exercice est fait ou sauté, et les jokers de l'événement sont gagnés à ce moment.
-- **Annuler** (clic raté) : la série disparaît et le déclenchement est décompté, comme s'il n'avait jamais eu lieu. Rien n'en est compté : ses exercices déjà faits sont retirés des totaux et de l'historique, pour qu'annuler ne serve pas à écourter une série. Une série commencée ne s'annule donc qu'après confirmation. La série annulée est réservée : le prochain déclenchement du même événement redonne les mêmes exercices avec les mêmes nombres, tels que tirés, pour qu'annuler ne serve pas à changer de tirage. La réserve disparaît avec la séance (fin ou annulation) ; une configuration enregistrée l'ajuste comme les séries à faire.
-- **Jokers** : réduire de moitié ou sauter un exercice, ou sauter toute la série (voir Jokers). Le déclenchement reste compté, y compris pour la limite par séance.
+- Sets are done in the order they were drawn: only the oldest offers **Fait** and the jokers; the next ones, queued, can only be dismissed.
+- **Fait** is marked exercise by exercise: the exercise is added to the totals and written to the history, and stays displayed struck through until the end of the set. The set moves to the sets done when its last exercise is done or skipped, and the event's jokers are earned at that moment.
+- **Annuler** (misclick): the set disappears and the trigger is uncounted, as if it never happened. Nothing of it is counted: its exercises already done are removed from the totals and the history, so that dismissing cannot be used to cut a set short. A started set is therefore only dismissed after confirmation. The dismissed set is reserved: the next trigger of the same event gives back the same exercises with the same numbers, as drawn, so that dismissing cannot be used to change the draw. The reserve disappears with the session (end or cancellation); a saved configuration adjusts it like the sets to do.
+- **Jokers**: halve or skip an exercise, or skip the whole set (see Jokers). The trigger stays counted, including for the per-session limit.
 
-### Pause entre les exercices
+### Pause between exercises
 
-- Chaque exercice fait (**Fait**) lance une pause : sa pause propre, ou à défaut la pause globale (60 s dans la configuration par défaut). Une pause de 0 s n'en lance pas.
-- Pendant la pause, aucun exercice ne peut être noté fait, ni dans la même série ni dans une autre, y compris une série tirée pendant la pause. Les jokers et **Annuler** restent possibles et ne lancent pas de pause.
-- **Passer** (ou Échap) termine la pause tout de suite. Elle s'arrête aussi à l'annulation de la série dont un exercice l'a lancée, et à la fin ou à l'annulation de la séance.
+- Each exercise done (**Fait**) starts a pause: its own pause, or otherwise the global pause (60 s in the default configuration). A 0 s pause starts none.
+- During the pause, no exercise can be marked done, neither in the same set nor in another one, including a set drawn during the pause. Jokers and **Annuler** remain possible and do not start a pause.
+- **Passer** (or Escape) ends the pause right away. It also stops when the set whose exercise started it is dismissed, and when the session ends or is cancelled.
 
 ### Jokers
 
-- Seuls les événements avec `jokers` en rapportent, une fois tous les exercices de leur série faits : dépenser un joker sur une série (moitié ou saut) lui fait perdre ceux qu'elle devait rapporter.
-- **Moitié** (1 joker) : divise le nombre d'un exercice par deux, arrondi au supérieur. Une seule fois par exercice, et pas pour un nombre de 1.
-- **Sauter** un exercice (2 jokers, 1 seul s'il a déjà été réduit de moitié) : il est retiré de la série, le reste demeure à faire. Sauter le dernier exercice retire la série.
-- **Sauter la série** (série à plusieurs exercices restants) : coûte la somme des sauts de ses exercices restants ; ceux déjà faits restent faits.
-- Un exercice fait ne peut plus être réduit ni sauté.
-- Une action n'est possible qu'avec assez de jokers. Ce qui est retiré n'est pas fait (ni totaux, ni historique) et apparaît dans les jokers du Bilan, marqué « moitié » ou « sauté ».
-- Les jokers non dépensés sont perdus à la fin de la séance.
+- Only events with `jokers` earn some, once all the exercises of their set are done: spending a joker on a set (half or skip) makes it lose those it was meant to earn.
+- **Moitié** (1 joker): divides an exercise's number by two, rounded up. Only once per exercise, and not for a number of 1.
+- **Sauter** an exercise (2 jokers, only 1 if it was already halved): it is removed from the set, the rest remains to do. Skipping the last exercise removes the set.
+- **Sauter la série** (set with several remaining exercises): costs the sum of the skips of its remaining exercises; those already done stay done.
+- An exercise done can no longer be halved or skipped.
+- An action is only possible with enough jokers. What is removed is not done (neither totals nor history) and appears in the jokers of the Bilan tab, marked « moitié » or « sauté ».
+- Unspent jokers are lost at the end of the session.
 
-### Séance
+### Session
 
-- Une séance commence à l'ouverture de l'appli et après chaque fin ou annulation de séance.
-- Le jeu est fixé au premier événement déclenché : il ne peut plus changer avant la séance suivante. Le dernier jeu choisi est retenu d'un lancement à l'autre. Au tout premier lancement, ou si ce jeu n'existe plus, aucun jeu n'est sélectionné : il faut le choisir avant de déclencher un événement.
-- **Terminer la séance** n'est possible qu'avec au moins une série faite et aucune série à faire. L'heure de fin est enregistrée dans l'historique et une nouvelle séance commence aussitôt.
-- **Annuler la séance** remet tout à zéro (compteurs, jokers, séries à faire et faites) et retire de l'historique les séries de cette séance. Le bouton reste désactivé tant qu'aucun événement n'a été déclenché.
-- Une configuration enregistrée s'applique immédiatement, sans redémarrer. Elle ne touche ni aux séries faites ni aux compteurs (renommer un jeu ou un événement garde ses compteurs). Les séries à faire restent telles que tirées, avec les noms à jour, sauf :
-  - un événement supprimé retire ses séries à faire ;
-  - un nombre d'exercices tirés (`draws`) changé ajuste ses séries : les exercices manquants sont tirés, ou des exercices pas encore faits sont retirés ; une série où il ne reste rien à faire est finie et rapporte ses jokers ;
-  - un exercice supprimé ou décoché est remplacé par un autre exercice coché tiré au hasard, absent de la série ;
-  - un minimum ou un maximum changé ramène le nombre d'un exercice à faire dans les nouvelles bornes, sauf s'il a été réduit de moitié ;
-  - des jokers changés s'appliquent aux séries de l'événement, sauf à celles où des jokers ont déjà été dépensés, qui n'en rapportent plus.
+- A session starts when the app opens and after each end or cancellation of a session.
+- The game is locked on the first triggered event: it can no longer change before the next session. The last chosen game is remembered from one launch to the next. On the very first launch, or if that game no longer exists, no game is selected: it must be chosen before triggering an event.
+- **Terminer la séance** is only possible with at least one set done and no set to do. The end time is saved in the history and a new session starts right away.
+- **Annuler la séance** resets everything (counters, jokers, sets to do and done) and removes the sets of this session from the history. The button stays disabled until an event has been triggered.
+- A saved configuration applies immediately, without restarting. It touches neither the sets done nor the counters (renaming a game or an event keeps its counters). The sets to do stay as drawn, with up-to-date names, except:
+  - a removed event removes its sets to do;
+  - a changed number of drawn exercises (`draws`) adjusts its sets: the missing exercises are drawn, or exercises not done yet are removed; a set with nothing left to do is finished and earns its jokers;
+  - a removed or unchecked exercise is replaced by another checked exercise drawn at random, absent from the set;
+  - a changed minimum or maximum brings the number of an exercise to do back within the new bounds, unless it was halved;
+  - changed jokers apply to the event's sets, except those on which jokers were already spent, which no longer earn any.
 
-  Les exercices déjà faits ne changent jamais. Si elle supprime le jeu de la séance en cours, la séance est annulée (comme avec **Annuler la séance**) et le jeu est à choisir de nouveau.
+  Exercises already done never change. If it removes the game of the current session, the session is cancelled (as with **Annuler la séance**) and the game must be chosen again.
 
-### Historique et bilan
+### History and summary
 
-- Chaque exercice fait est écrit dans l'historique (une entrée par exercice), avec l'heure, la séance, le jeu, l'événement, l'exercice et la quantité. Il est conservé d'un lancement à l'autre.
-- Le bilan regroupe les séries par jour local, puis par séance et par jeu, avec les totaux par exercice (quantité cumulée et nombre de séries).
-- La durée d'une séance va de son début à son heure de fin si elle a été terminée, sinon à sa dernière série.
+- Each exercise done is written to the history (one entry per exercise), with the time, the session, the game, the event, the exercise and the amount. It is kept from one launch to the next.
+- The summary groups sets by local day, then by session and by game, with totals per exercise (cumulated amount and number of sets).
+- A session's duration goes from its start to its end time if it was ended, otherwise to its last set.
 
 ### Configuration
 
-- La configuration est validée avant d'être enregistrée. Elle est refusée si : il n'y a aucun exercice, aucun exercice coché ou aucun jeu, un id ou un nom est vide, un id est en double, deux jeux portent le même nom (sans tenir compte de la casse ni des espaces autour), un jeu n'a aucun événement, `draws` vaut 0 ou dépasse le nombre d'exercices cochés, `maxPerSession` vaut 0, ou un exercice a `max` à 0 ou `min` supérieur à `max`.
-- Chaque champ numérique (pauses, minimum, maximum, exercices tirés, limite, jokers) doit être un nombre entier, 0 ou plus, et pas trop grand. Ce format se vérifie pendant la saisie : un champ mal rempli (texte, nombre négatif ou décimal) s'encadre en rouge et le problème s'affiche aussitôt dans une infobulle pendant la saisie ; une fois le champ quitté, l'infobulle se ferme et se rouvre à son survol. Les autres erreurs et les confirmations n'apparaissent qu'à l'enregistrement. Tant qu'un champ est mal rempli, **Enregistrer** est désactivé et son infobulle nomme le premier champ fautif (par exemple « Squats › minimum : il faut un nombre entier, 0 ou plus. »). Un champ obligatoire vidé vaut 0, un champ facultatif vidé (pause propre, limite) est retiré.
-- Les jeux sont toujours listés par nom, sans tenir compte de la casse ni des accents, dans l'onglet Jouer comme dans la configuration. Sans jeu choisi, la configuration s'ouvre sur le premier de la liste.
-- Une base neuve (premier lancement, aucun jeu enregistré) reçoit la configuration par défaut, décrite dans `src-tauri/src/fitness/seed.json`. Si la configuration enregistrée est illisible ou invalide, la configuration par défaut est utilisée et l'erreur est affichée.
+- The configuration is validated before being saved. It is refused if: there is no exercise, no checked exercise or no game, an id or a name is empty, an id is duplicated, two games have the same name (ignoring case and surrounding spaces), a game has no event, `draws` is 0 or exceeds the number of checked exercises, `maxPerSession` is 0, or an exercise has `max` at 0 or `min` greater than `max`.
+- Each number field (pauses, minimum, maximum, drawn exercises, limit, jokers) must be a whole number, 0 or more, and not too large. This format is checked while typing: a badly filled field (text, negative or decimal number) gets a red border and the problem shows right away in a tooltip while typing; once the field is left, the tooltip closes and reopens on hover. Other errors and confirmations only appear on save. While a field is badly filled, **Enregistrer** is disabled and its tooltip names the first faulty field (for example « Squats › minimum : il faut un nombre entier, 0 ou plus. »). A cleared required field is 0, a cleared optional field (own pause, limit) is removed.
+- Games are always listed by name, ignoring case and accents, in the Jouer tab as in the configuration. Without a chosen game, the configuration opens on the first one in the list.
+- A new database (first launch, no saved game) receives the default configuration, described in `src-tauri/src/fitness/seed.json`. If the saved configuration is unreadable or invalid, the default configuration is used and the error is shown.
 
-### Détection des jeux Steam
+### Steam game detection
 
-- Facultative, désactivée par défaut : la case **Détecter le jeu Steam en cours** des Réglages fait partie de la configuration et s'enregistre avec **Enregistrer**.
-- Activée, l'appli lit les processus toutes les 10 secondes et y cherche l'AppId d'un jeu lancé par Steam (`SteamLaunch AppId=…` dans sa ligne de commande, ou `SteamAppId` dans son environnement). Sans résultat et si un processus Steam tourne, elle prend l'AppId que Steam note pour le jeu en cours (`RunningAppID` du registre sous Windows, de `registry.vdf` sous macOS et Linux), pour les jeux dont l'environnement est illisible. Seuls les jeux Steam sont détectés, et aucune liste de jeux n'est embarquée.
-- Un jeu configuré se reconnaît à son AppId Steam. Plusieurs jeux peuvent porter le même : un jeu de la configuration est un réglage de défi, et un même jeu Steam peut en avoir plusieurs. Un jeu sans AppId se reconnaît à son nom, qu'il reprend ou prolonge sans y coller de lettre (« Megabonk 2 » pour « Megabonk »), sans tenir compte de la casse ni des espaces autour : le nom des jeux qui portent l'AppId détecté, ou à défaut celui donné par le Steam Store. Les jeux de la configuration par défaut ont leur AppId, sauf Bloodborne, absent de Steam.
-- Jeu configuré : l'onglet Jouer propose un bouton par jeu reconnu pour le sélectionner, sauf si l'un d'eux l'est déjà ou si le jeu de la séance est fixé. Reconnu à son nom, il reçoit alors l'AppId détecté, enregistré aussitôt.
-- Jeu inconnu : son nom est demandé à l'API du Steam Store (sans les marques ™ et ®), puis l'onglet Jouer propose de l'**Ajouter** ou de l'**Ignorer**. **Ajouter** ouvre la création d'un jeu, préremplie avec ce nom et l'AppId, qui s'enregistre avec **Créer**. **Ignorer** l'ajoute aussitôt aux jeux ignorés, qui ne sont plus jamais proposés.
-- Les Réglages listent les jeux ignorés : **Ajouter** ouvre la même création, et le jeu créé quitte la liste ; **Retirer** l'enlève aussitôt de la liste, et il sera de nouveau proposé.
-- Pour ne jamais être bloqué par Steam, le Steam Store n'est appelé que pour un jeu inconnu et non ignoré : un nom obtenu n'est plus jamais redemandé ; un jeu qu'il n'a pas nommé, ou une demande restée sans réponse, est redemandé une heure plus tard au plus tôt ; au plus un appel par minute, avec 10 s maximum d'attente. S'il refuse pour excès de requêtes (code 429 ou 403), il n'est plus appelé pendant 24 h : les jeux inconnus ne sont plus proposés, les jeux configurés restent détectés. Ces délais et les noms obtenus sont gardés dans la base, d'un lancement à l'autre.
-- **Notifier quand un jeu est lancé**, visible sous la case de détection cochée et cochée par défaut, envoie une notification système une seule fois par lancement : pour un jeu configuré (« à sélectionner dans Jouer ») ou inconnu (« l'ajouter depuis Jouer ») une fois son nom connu, jamais pour un jeu ignoré. Un jeu relancé après qu'aucun jeu n'a tourné est de nouveau notifié. Elle s'enregistre avec **Enregistrer**.
-- Sous la case, les Réglages montrent l'état de la détection enregistrée : le jeu détecté (même déjà sélectionné ou ignoré), aucun jeu, ou un Steam Store qui limite les requêtes. Si les processus sont illisibles, rien n'est détecté ; le passage suivant réessaie.
+- Optional, disabled by default: the **Détecter le jeu Steam en cours** checkbox in Réglages is part of the configuration and is saved with **Enregistrer**.
+- When enabled, the app reads the processes every 10 seconds and looks for the AppId of a game launched by Steam (`SteamLaunch AppId=…` in its command line, or `SteamAppId` in its environment). Without a result and if a Steam process is running, it takes the AppId Steam records for the running game (`RunningAppID` in the registry on Windows, in `registry.vdf` on macOS and Linux), for games whose environment is unreadable. Only Steam games are detected, and no game list is bundled.
+- A configured game is recognized by its Steam AppId. Several games can carry the same one: a game in the configuration is a challenge setup, and the same Steam game can have several. A game without AppId is recognized by its name, which it repeats or extends without an adjoining letter (« Megabonk 2 » for « Megabonk »), ignoring case and surrounding spaces: the name of the games carrying the detected AppId, or otherwise the one given by the Steam Store. The games of the default configuration have their AppId, except Bloodborne, absent from Steam.
+- Configured game: the Jouer tab offers one button per recognized game to select it, unless one of them already is or the session's game is locked. Recognized by its name, it then receives the detected AppId, saved right away.
+- Unknown game: its name is asked from the Steam Store API in the interface language (without the ™ and ® marks), then the Jouer tab offers to **Ajouter** or **Ignorer** it. **Ajouter** opens game creation, prefilled with that name and the AppId, which is saved with **Créer**. **Ignorer** adds it right away to the ignored games, which are never offered again.
+- Réglages lists the ignored games: **Ajouter** opens the same creation, and the created game leaves the list; **Retirer** removes it from the list right away, and it will be offered again.
+- To never get blocked by Steam, the Steam Store is only called for an unknown, non-ignored game: a name obtained is never asked again; a game it did not name, or a request left unanswered, is asked again an hour later at the earliest; at most one call per minute, with a 10 s maximum wait. If it refuses for too many requests (status 429 or 403), it is not called for 24 h: unknown games are no longer offered, configured games are still detected. These delays and the names obtained are kept in the database, from one launch to the next.
+- **Notifier quand un jeu est lancé**, visible under the checked detection checkbox and checked by default, sends a system notification only once per launch: for a configured game (« à sélectionner dans Jouer ») or an unknown one (« l'ajouter depuis Jouer ») once its name is known, never for an ignored game. A game relaunched after no game has been running is notified again. It is saved with **Enregistrer**.
+- Under the checkbox, Réglages shows the status of the saved detection: the detected game (even if already selected or ignored), no game, or a Steam Store rate-limiting requests. If the processes are unreadable, nothing is detected; the next scan tries again.
 
-### Zone de notification
+### Notification area
 
-- Facultative, désactivée par défaut : la case **Afficher l'icône dans la zone de notification** des Réglages fait partie de la configuration et s'enregistre avec **Enregistrer**, qui ajoute ou retire aussitôt l'icône.
-- Cochée, elle déplie deux cases, décochées par défaut : **Fermer la fenêtre la masque au lieu de quitter** (l'appli et la détection Steam continuent) et **Démarrer masqué** (l'appli démarre sans fenêtre). Sans l'icône, elles sont sans effet : fermer la fenêtre quitte l'appli, qui démarre toujours fenêtre affichée.
-- Un clic sur l'icône affiche la fenêtre ; son menu propose **Afficher** et **Quitter** (sous Linux, seul le menu est disponible).
+- Optional, disabled by default: the **Afficher l'icône dans la zone de notification** checkbox in Réglages is part of the configuration and is saved with **Enregistrer**, which adds or removes the icon right away.
+- When checked, it unfolds two checkboxes, unchecked by default: **Fermer la fenêtre la masque au lieu de quitter** (the app and Steam detection keep running) and **Démarrer masqué** (the app starts without a window). Without the icon, they have no effect: closing the window quits the app, which always starts with its window shown.
+- A click on the icon shows the window; its menu offers **Afficher** and **Quitter** (on Linux, only the menu is available).
 
-### Partage
+### Sharing
 
-- Un jeu se partage seul : son nom, son AppId Steam s'il en a un, et ses événements (nombre tiré, limite, jokers), sans les exercices, propres à chacun. Les exercices se partagent à part : nom, unité, minimum, maximum et pause propre. La pause globale n'est pas partagée.
-- **Partager** copie dans le presse-papiers un texte compressé à transmettre (illisible tel quel, il résiste aux retours à la ligne ajoutés par les messageries), tiré de la configuration enregistrée (les modifications en cours n'y sont pas). Il commence par un court identifiant qui indique le contenu : `squatsouls/game/elden-ring:` ou `squatsouls/exercises:`. Cet identifiant n'est qu'indicatif : l'import l'ignore et lit la version du format et le type de contenu dans le texte compressé. L'import lit chaque texte selon sa version et refuse, en demandant de mettre à jour l'appli, une version qu'il ne connaît pas.
-- **Importer** demande de coller ce texte et n'est possible que s'il est valide. Un jeu collé dans l'import des exercices, ou l'inverse, est refusé avec un message qui indique où l'importer. L'import s'enregistre aussitôt, sans passer par **Enregistrer**, et garde les autres modifications en cours.
-- Un jeu importé s'ajoute, ou remplace le jeu qui porte le même nom (sans tenir compte de la casse ni des espaces autour) : le formulaire l'annonce avant l'import. Sans AppId Steam dans l'import, le jeu remplacé garde le sien. Un événement qui tire plus d'exercices qu'il n'en est défini est ramené à ce nombre, et le message de confirmation le signale.
-- Des exercices importés mettent à jour l'unité, le minimum, le maximum et la pause propre de ceux qui portent le même nom (sans pause propre dans l'import, l'exercice repasse à la pause globale) et ajoutent les autres ; aucun exercice n'est retiré.
+- A game is shared on its own: its name, its Steam AppId if it has one, and its events (drawn number, limit, jokers), without the exercises, which are personal. Exercises are shared separately: name, unit, minimum, maximum and own pause. The global pause is not shared.
+- **Partager** copies to the clipboard a compressed text to pass on (unreadable as is, it withstands the line breaks added by messaging apps), taken from the saved configuration (pending changes are not included). It starts with a short identifier that tells the content: `squatsouls/game/elden-ring:` or `squatsouls/exercises:`. This identifier is only informative: the import ignores it and reads the format version and the content type in the compressed text. The import reads each text according to its version and refuses, asking to update the app, a version it does not know.
+- **Importer** asks to paste this text and is only possible if it is valid. A game pasted into the exercise import, or the reverse, is refused with a message that says where to import it. The import is saved right away, without going through **Enregistrer**, and keeps the other pending changes.
+- An imported game is added, or replaces the game with the same name (ignoring case and surrounding spaces): the form announces it before the import. Without a Steam AppId in the import, the replaced game keeps its own. An event that draws more exercises than are defined is capped at that number, and the confirmation message reports it.
+- Imported exercises update the unit, minimum, maximum and own pause of those with the same name (without an own pause in the import, the exercise goes back to the global pause) and add the others; no exercise is removed.
 
 ## Configuration
 
-L'onglet **Configuration** se règle avec des champs :
+The **Configuration** tab is set up with fields:
 
-- **Exercices** : la pause globale après chaque série, puis le nom, l'unité, le minimum, le maximum et la pause propre (vide pour suivre la pause globale) de chaque exercice. Le dernier exercice ne peut pas être supprimé. **Partager** et **Importer** échangent la liste avec d'autres utilisateurs.
-- **Jeux** : choisir le jeu à modifier dans la liste (qui affiche les noms enregistrés, par ordre alphabétique), le renommer, le supprimer (après confirmation) ou en ajouter un. Un nouveau jeu demande un nom qu'aucun autre jeu ne porte et reprend soit les événements d'un autre jeu, soit un seul événement à remplir. **Partager** copie le jeu ouvert, **Importer un jeu** en ajoute ou en remplace un à partir d'un texte partagé. Le bouton **Créer**, l'import et la confirmation de suppression enregistrent aussitôt, sans passer par **Enregistrer** ; les autres modifications en cours restent à enregistrer.
-- **Événements** du jeu : repliés sur une ligne qui résume le nombre tiré, la limite et les jokers, ils se déplient d'un clic pour régler le nom, le nombre d'exercices tirés, la limite par séance (vide pour aucune) et les jokers gagnés.
-- **Réglages** : l'icône dans la zone de notification (voir Zone de notification), la détection du jeu Steam en cours et sa notification, et la liste des jeux ignorés (voir Détection des jeux Steam).
+- **Exercices**: the global pause after each set, then the name, unit, minimum, maximum and own pause (empty to follow the global pause) of each exercise. The last exercise cannot be removed. **Partager** and **Importer** exchange the list with other users.
+- **Jeux**: choose the game to edit in the list (which shows the saved names, in alphabetical order), rename it, remove it (after confirmation) or add one. A new game asks for a name no other game has and takes either the events of another game, or a single event to fill in. **Partager** copies the open game, **Importer un jeu** adds or replaces one from a shared text. The **Créer** button, the import and the removal confirmation save right away, without going through **Enregistrer**; the other pending changes remain to be saved.
+- The game's **Événements**: collapsed on one line summarizing the drawn number, the limit and the jokers, they unfold in one click to set the name, the number of drawn exercises, the per-session limit (empty for none) and the jokers earned.
+- **Réglages**: the notification area icon (see Notification area), the detection of the running Steam game and its notification, and the list of ignored games (see Steam game detection).
 
-Dès qu'une modification est en cours, deux boutons apparaissent : **Enregistrer** valide la configuration et l'applique aussitôt à l'onglet Jouer, **Réinitialiser les modifications** revient à la dernière version enregistrée.
+As soon as a change is pending, two buttons appear: **Enregistrer** validates the configuration and applies it right away to the Jouer tab, **Réinitialiser les modifications** goes back to the last saved version.
 
-Tout est enregistré dans une base SQLite, `~/.config/com.semche.squatsouls/squatsouls.db` (`squatsouls-dev.db` pour l'appli de développement, lancée par `pnpm tauri dev`) : configuration (dont la pause globale, la zone de notification, la détection Steam, sa notification et les jeux ignorés), historique, dernier jeu choisi et noms donnés par le Steam Store. À l'enregistrement, seuls les exercices, jeux et événements modifiés sont réécrits. Au lancement, la base reçoit les migrations de schéma qui lui manquent, chacune datée à son application (une migration créée ne se modifie jamais, toute évolution du schéma en ajoute une nouvelle) ; une base créée par une version plus récente de l'appli est refusée.
+Everything is saved in a SQLite database, `~/.config/com.semche.squatsouls/squatsouls.db` (`squatsouls-dev.db` for the development app, started by `pnpm tauri dev`): configuration (including the global pause, the notification area, Steam detection, its notification and the ignored games), history, last chosen game and names given by the Steam Store. On save, only the modified exercises, games and events are rewritten. At launch, the database receives the schema migrations it is missing, each dated when applied (a migration is never modified once created, every schema change adds a new one); a database created by a newer version of the app is refused.
 
 ## Tests
 

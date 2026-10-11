@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 
-// `parse` lit le texte collé et lève une erreur s'il n'est pas importable.
+// `parse` reads the pasted text and throws an error if it is not importable.
 const props = defineProps({ parse: { type: Function, required: true } });
 const emit = defineEmits(['import', 'cancel']);
 
@@ -9,7 +9,7 @@ const text = ref('');
 const input = ref(null);
 onMounted(() => input.value.focus());
 
-// Contenu du texte collé, ou l'erreur qui empêche de l'importer.
+// Content of the pasted text, or the error that prevents importing it.
 const result = computed(() => {
   if (!text.value.trim()) return null;
   try {

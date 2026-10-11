@@ -11,9 +11,9 @@ use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // WebKitGTK plante sous Wayland (presse-papiers, rendu DMABUF) : passer par XWayland
-    // sans rendu DMABUF. Une variable déjà définie au lancement est respectée, pour pouvoir revenir à
-    // Wayland (`GDK_BACKEND=wayland`). Fixé avant tout fil, set_var n'étant pas sûr en multi-fil.
+    // WebKitGTK crashes under Wayland (clipboard, DMABUF rendering): go through XWayland
+    // without DMABUF rendering. A variable already set at launch is respected, so Wayland can be
+    // restored (`GDK_BACKEND=wayland`). Set before any thread, as set_var is not thread-safe.
     #[cfg(target_os = "linux")]
     for (key, value) in [
         ("GDK_BACKEND", "x11"),
@@ -28,7 +28,7 @@ pub fn run() {
         .setup(|app| {
             let dir = app.path().app_config_dir()?;
             fs::create_dir_all(&dir)?;
-            // Le build de développement a sa propre base pour ne pas toucher aux données réelles
+            // The development build has its own database so it never touches real data
             let db = if cfg!(debug_assertions) { "squatsouls-dev.db" } else { "squatsouls.db" };
             let store = Store::open(&dir.join(db))?;
             app.manage(Mutex::new(store.steam_names()?));
@@ -62,5 +62,5 @@ pub fn run() {
             commands::notify
         ])
         .run(tauri::generate_context!())
-        .expect("erreur au lancement de Squat Souls");
+        .expect("error while launching Squat Souls");
 }

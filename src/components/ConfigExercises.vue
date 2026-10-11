@@ -12,7 +12,7 @@ const { config, draft, notify, copy } = useConfig();
 const { saveNow } = useSession();
 const importing = ref(false);
 
-// L'import validé s'enregistre aussitôt ; le brouillon le reçoit sans perdre ses autres modifications.
+// The confirmed import is saved right away; the draft receives it without losing its other changes.
 async function importShared(imported) {
   const { exercises, added, updated } = mergeExercises(config.value.exercises, imported);
   if (!(await saveNow({ ...config.value, exercises }))) return;

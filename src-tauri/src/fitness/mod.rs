@@ -1,5 +1,5 @@
-//! Logique métier : configuration, tirage aléatoire, séance, historique, stockage SQLite et détection Steam.
-//! Aucun lien avec Tauri, ce qui permet de tout tester avec `cargo test`.
+//! Business logic: configuration, random draw, session, history, SQLite storage and Steam detection.
+//! No dependency on Tauri, so everything can be tested with `cargo test`.
 
 mod config;
 mod history;

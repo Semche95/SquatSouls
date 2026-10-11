@@ -11,32 +11,32 @@ describe('configuration', () => {
     return w;
   }
 
-  it('affiche dans la liste le jeu en cours d\'édition', async () => {
+  it('shows the game being edited in the list', async () => {
     setup();
     const w = await openConfig();
     expect(w.find('.cfg-game-list .active').text()).toBe('Elden Ring');
   });
 
-  it('édite la configuration avec des champs et l\'applique dès l\'enregistrement', async () => {
+  it('edits the configuration with fields and applies it on save', async () => {
     vi.useFakeTimers();
     setup();
     const w = await openConfig();
     const save = () => w.find('.cfg-actions .primary');
     expect(save().exists()).toBe(false);
-    await w.find('input[aria-label="Nom de l\'événement"]').setValue('Mort brutale');
+    await w.find('input[aria-label="Nom de l\'événement"]').setValue('Brutal death');
     responses.save_config = (args) => ({ config: args.config });
     await save().trigger('click');
     await flushPromises();
     const sent = invoke.mock.calls.find(([cmd]) => cmd === 'save_config')[1].config;
-    expect(sent.games[0].events[0]).toMatchObject({ id: 'mort', name: 'Mort brutale' });
+    expect(sent.games[0].events[0]).toMatchObject({ id: 'death', name: 'Brutal death' });
     expect(w.find('.banner.ok').text()).toBe('Configuration enregistrée.');
     await vi.runAllTimersAsync();
     expect(w.find('.banner.ok').exists()).toBe(false);
     await w.findAll('.tabs button')[0].trigger('click');
-    expect(w.find('.event').text()).toContain('Mort brutale');
+    expect(w.find('.event').text()).toContain('Brutal death');
   });
 
-  it('ne renomme le jeu dans la liste qu\'à l\'enregistrement', async () => {
+  it('only renames the game in the list on save', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
     await w.find('input[aria-label="Nom du jeu"]').setValue('Elden Ring DLC');
@@ -46,7 +46,7 @@ describe('configuration', () => {
     expect(w.find('.cfg-game-list .active').text()).toBe('Elden Ring DLC');
   });
 
-  it('ajoute un exercice avec un id dérivé du nom', async () => {
+  it('adds an exercise with an id derived from the name', async () => {
     setup();
     const w = await openConfig();
     await w.findAll('.subtabs button')[1].trigger('click');
@@ -61,7 +61,7 @@ describe('configuration', () => {
     expect(sent.exercises.map((e) => e.id)).toEqual(['squat', 'nouvel-exercice', 'nouvel-exercice-2']);
   });
 
-  it('crée un jeu vide ou avec les événements copiés d\'un autre jeu et l\'enregistre aussitôt', async () => {
+  it('creates an empty game or one with events copied from another game and saves it right away', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
     const savedGames = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)[1].config.games;
@@ -85,7 +85,7 @@ describe('configuration', () => {
     expect(w.findAll('.cfg-game-list button').map((b) => b.text())).toEqual(['Elden Ring', 'Lies of P', 'Nioh', 'Sekiro']);
   });
 
-  it('refuse de créer un jeu au nom déjà pris', async () => {
+  it('refuses to create a game with a name already taken', async () => {
     setup();
     const w = await openConfig();
     await w.find('.group-head .primary').trigger('click');
@@ -95,7 +95,7 @@ describe('configuration', () => {
     expect(w.find('form.cfg-game .primary').element.disabled).toBe(true);
   });
 
-  it('demande confirmation avant de supprimer un jeu, puis l\'enregistre aussitôt', async () => {
+  it('asks for confirmation before removing a game, then saves right away', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
     const remove = () => w.find('.cfg-game .field .danger');
@@ -112,10 +112,10 @@ describe('configuration', () => {
     expect(w.find('.cfg-game .confirm').exists()).toBe(false);
   });
 
-  it('redemande le jeu quand celui de la séance est supprimé', async () => {
+  it('asks for the game again when the session\'s game is removed', async () => {
     setup({ get_session: emptySession({ gameId: 'er', sets: 1 }), save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
-    // Le backend annule la séance du jeu supprimé.
+    // The backend cancels the session of the removed game.
     responses.get_session = emptySession();
     await w.find('.cfg-game .field .danger').trigger('click');
     await w.find('.cfg-game .confirm .danger').trigger('click');
@@ -127,7 +127,7 @@ describe('configuration', () => {
     expect(w.find('.events').exists()).toBe(false);
   });
 
-  it('règle l\'intervalle d\'un exercice et garde au moins un exercice', async () => {
+  it('sets an exercise\'s range and keeps at least one exercise', async () => {
     setup();
     const w = await openConfig();
     await w.findAll('.subtabs button')[1].trigger('click');
@@ -140,7 +140,7 @@ describe('configuration', () => {
     expect(sent.exercises[0]).toMatchObject({ min: 10, max: 0 });
   });
 
-  it('décoche un exercice pour l\'exclure du tirage sans le supprimer', async () => {
+  it('unchecks an exercise to keep it out of the draw without removing it', async () => {
     setup();
     const w = await openConfig();
     await w.findAll('.subtabs button')[1].trigger('click');
@@ -155,7 +155,7 @@ describe('configuration', () => {
     expect(sent.exercises).toEqual([expect.objectContaining({ id: 'squat', enabled: false })]);
   });
 
-  it('règle la pause globale et la pause propre d\'un exercice', async () => {
+  it('sets the global pause and an exercise\'s own pause', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
     await w.findAll('.subtabs button')[1].trigger('click');
@@ -173,7 +173,7 @@ describe('configuration', () => {
     expect(sent().exercises[0]).not.toHaveProperty('pause');
   });
 
-  it('vide la limite par séance pour la retirer', async () => {
+  it('clears the per-session limit to remove it', async () => {
     setup();
     const w = await openConfig();
     await w.find('.cfg-params input[placeholder="aucune"]').setValue('');
@@ -184,26 +184,26 @@ describe('configuration', () => {
     expect(sent.games[0].events[0]).not.toHaveProperty('maxPerSession');
   });
 
-  it('réinitialise les modifications non enregistrées', async () => {
+  it('resets unsaved changes', async () => {
     setup();
     const w = await openConfig();
     const name = () => w.find('input[aria-label="Nom du jeu"]');
-    await name().setValue('Autre');
+    await name().setValue('Other');
     await w.find('.cfg-actions .ghost').trigger('click');
     expect(name().element.value).toBe('Elden Ring');
     expect(w.find('.cfg-actions').exists()).toBe(false);
   });
 
-  it('affiche l\'erreur d\'enregistrement', async () => {
-    setup({ save_config: new Error('champ manquant') });
+  it('shows the save error', async () => {
+    setup({ save_config: new Error('missing field') });
     const w = await openConfig();
-    await w.find('input[aria-label="Nom du jeu"]').setValue('Autre');
+    await w.find('input[aria-label="Nom du jeu"]').setValue('Other');
     await w.find('.cfg-actions .primary').trigger('click');
     await flushPromises();
-    expect(w.find('.banner.error').text()).toContain('champ manquant');
+    expect(w.find('.banner.error').text()).toContain('missing field');
   });
 
-  it('signale un format invalide dès la saisie', async () => {
+  it('reports an invalid format while typing', async () => {
     setup();
     const w = await openConfig();
     await w.findAll('.subtabs button')[1].trigger('click');
@@ -224,7 +224,7 @@ describe('configuration', () => {
     await vi.waitFor(() => expect(shownTip()).toBeUndefined());
   });
 
-  it('ramène à 0 un champ obligatoire vidé en le quittant', async () => {
+  it('brings a cleared required field back to 0 when leaving it', async () => {
     setup();
     const w = await openConfig();
     await w.findAll('.subtabs button')[1].trigger('click');
@@ -234,7 +234,7 @@ describe('configuration', () => {
     expect(min.element.value).toBe('0');
   });
 
-  it('désactive l\'enregistrement tant qu\'un champ est mal rempli et en donne la raison', async () => {
+  it('disables saving while a field is badly filled and gives the reason', async () => {
     setup();
     const w = await openConfig();
     await w.findAll('.subtabs button')[1].trigger('click');
@@ -247,15 +247,15 @@ describe('configuration', () => {
     expect(save().attributes('disabled')).toBeUndefined();
   });
 
-  describe('partage', () => {
+  describe('sharing', () => {
     const savedConfig = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)[1].config;
 
-    it('copie le jeu enregistré et les exercices dans le presse-papiers', async () => {
+    it('copies the saved game and the exercises to the clipboard', async () => {
       const writeText = vi.fn();
       vi.stubGlobal('navigator', { clipboard: { writeText } });
       setup();
       const w = await openConfig();
-      await w.find('input[aria-label="Nom du jeu"]').setValue('Non enregistré');
+      await w.find('input[aria-label="Nom du jeu"]').setValue('Unsaved');
       await w.find('.cfg-game .field .ghost').trigger('click');
       await flushPromises();
       expect(writeText).toHaveBeenLastCalledWith(shareGame(config.games[0]));
@@ -266,7 +266,7 @@ describe('configuration', () => {
       vi.unstubAllGlobals();
     });
 
-    it('importe un jeu partagé, remplace celui du même nom et l\'enregistre aussitôt', async () => {
+    it('imports a shared game, replaces the one with the same name and saves it right away', async () => {
       setup({ save_config: (args) => ({ config: args.config }) });
       const w = await openConfig();
       const open = () => w.find('.group-head .ghost');
@@ -276,28 +276,28 @@ describe('configuration', () => {
       expect(document.activeElement).toBe(text.element);
       const submit = () => w.find('.cfg-import .primary');
       expect(submit().element.disabled).toBe(true);
-      await text.setValue('pas un jeu');
+      await text.setValue('not a game');
       expect(w.find('.cfg-import .banner.error').text()).toBe('Ce texte n\'est pas un jeu partagé valide.');
       expect(text.attributes('aria-invalid')).toBe('true');
       expect(submit().element.disabled).toBe(true);
-      await text.setValue(shareGame({ name: 'sekiro', events: [{ name: 'Mort', draws: 3, jokers: 1 }] }));
+      await text.setValue(shareGame({ name: 'sekiro', events: [{ name: 'Death', draws: 3, jokers: 1 }] }));
       expect(w.find('.cfg-import .banner.warn').text()).toBe('sekiro existe déjà : il sera remplacé.');
       await w.find('.cfg-import').trigger('submit');
       await flushPromises();
       expect(savedConfig().games.map((g) => g.id)).toEqual(['er', 'sekiro']);
-      expect(savedConfig().games[1]).toEqual({ id: 'sekiro', name: 'sekiro', events: [{ id: 'mort', name: 'Mort', draws: 1, jokers: 1 }] });
+      expect(savedConfig().games[1]).toEqual({ id: 'sekiro', name: 'sekiro', events: [{ id: 'death', name: 'Death', draws: 1, jokers: 1 }] });
       expect(w.find('.banner.ok').text()).toBe('sekiro importé, tirages limités à 1 exercice.');
       expect(w.find('.cfg-game-list .active').text()).toBe('sekiro');
       expect(w.find('.cfg-actions').exists()).toBe(false);
       await open().trigger('click');
-      await w.find('textarea').setValue(shareGame({ name: 'Nioh', events: [{ name: 'Mort', draws: 1 }] }));
+      await w.find('textarea').setValue(shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1 }] }));
       await w.find('.cfg-import').trigger('submit');
       await flushPromises();
       expect(savedConfig().games.map((g) => g.id)).toEqual(['er', 'sekiro', 'nioh']);
       expect(w.find('.banner.ok').text()).toBe('Nioh importé.');
     });
 
-    it('importe des exercices partagés sans perdre les modifications en cours', async () => {
+    it('imports shared exercises without losing pending changes', async () => {
       setup({ save_config: (args) => ({ config: args.config }) });
       const w = await openConfig();
       await w.find('input[aria-label="Nom du jeu"]').setValue('Elden Ring DLC');
@@ -306,14 +306,14 @@ describe('configuration', () => {
       await w.find('textarea').setValue(
         shareExercises([
           { name: 'squats', unit: 'reps', min: 12, max: 20 },
-          { name: 'Pompes', unit: 'rép.', min: 8, max: 12 },
+          { name: 'Push-ups', unit: 'reps', min: 8, max: 12 },
         ]),
       );
       await w.find('.cfg-import').trigger('submit');
       await flushPromises();
       expect(savedConfig().exercises).toEqual([
         { id: 'squat', name: 'Squats', enabled: true, unit: 'reps', min: 12, max: 20 },
-        { id: 'pompes', name: 'Pompes', enabled: true, unit: 'rép.', min: 8, max: 12 },
+        { id: 'push-ups', name: 'Push-ups', enabled: true, unit: 'reps', min: 8, max: 12 },
       ]);
       expect(savedConfig().games[0].name).toBe('Elden Ring');
       expect(w.find('.banner.ok').text()).toBe('Exercices importés : 1 ajouté, 1 mis à jour.');

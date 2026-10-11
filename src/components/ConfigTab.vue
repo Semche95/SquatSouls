@@ -33,12 +33,12 @@ function discardChanges() {
 
     <template v-if="draft">
       <nav class="subtabs">
-        <button :class="{ active: cfgTab === 'jeux' }" @click="cfgTab = 'jeux'">Jeux</button>
-        <button :class="{ active: cfgTab === 'exercices' }" @click="cfgTab = 'exercices'">Exercices</button>
-        <button :class="{ active: cfgTab === 'reglages' }" @click="cfgTab = 'reglages'">Réglages</button>
+        <button :class="{ active: cfgTab === 'games' }" @click="cfgTab = 'games'">Jeux</button>
+        <button :class="{ active: cfgTab === 'exercises' }" @click="cfgTab = 'exercises'">Exercices</button>
+        <button :class="{ active: cfgTab === 'settings' }" @click="cfgTab = 'settings'">Réglages</button>
       </nav>
-      <ConfigExercises v-if="cfgTab === 'exercices'" />
-      <ConfigSettings v-else-if="cfgTab === 'reglages'" />
+      <ConfigExercises v-if="cfgTab === 'exercises'" />
+      <ConfigSettings v-else-if="cfgTab === 'settings'" />
       <ConfigGames v-else />
     </template>
 

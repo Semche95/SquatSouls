@@ -8,10 +8,10 @@ import { provideConfig } from './composables/useConfig.js';
 import { provideSession } from './composables/useSession.js';
 import { provideSteam } from './composables/useSteam.js';
 import PlayTab from './components/PlayTab.vue';
-import BilanTab from './components/BilanTab.vue';
+import SummaryTab from './components/SummaryTab.vue';
 import ConfigTab from './components/ConfigTab.vue';
 
-// Tiré une fois au lancement, affiché sous le titre.
+// Picked once at launch, shown under the title.
 const slogan = pickSlogan();
 
 const api = provideApi();
@@ -23,12 +23,12 @@ provideSteam(cfg, { saveChange });
 
 onMounted(async () => {
   try {
-    // Lu avant la config : un jeu inconnu y est ensuite remis à vide.
+    // Read before the config: an unknown game is then reset to empty.
     gameId.value = await invoke('get_last_game').catch(() => '');
     applyConfigView(await call('get_config'));
     session.value = await call('get_session');
   } catch {
-    /* erreur déjà affichée */
+    /* error already shown */
   }
 });
 </script>
@@ -41,8 +41,8 @@ onMounted(async () => {
         <p v-if="slogan" class="splash">{{ slogan }}</p>
       </div>
       <nav class="tabs">
-        <button :class="{ active: tab === 'jouer' }" @click="tab = 'jouer'">Jouer</button>
-        <button :class="{ active: tab === 'seance' }" @click="tab = 'seance'">
+        <button :class="{ active: tab === 'play' }" @click="tab = 'play'">Jouer</button>
+        <button :class="{ active: tab === 'summary' }" @click="tab = 'summary'">
           Bilan <span v-if="session.sets" class="badge">{{ session.sets }}</span>
         </button>
         <button :class="{ active: tab === 'config' }" @click="tab = 'config'">Configuration</button>
@@ -69,8 +69,8 @@ onMounted(async () => {
       <button class="link" @click="tab = 'config'">Voir la configuration</button>
     </p>
 
-    <PlayTab v-if="tab === 'jouer'" />
-    <BilanTab v-else-if="tab === 'seance'" />
+    <PlayTab v-if="tab === 'play'" />
+    <SummaryTab v-else-if="tab === 'summary'" />
     <ConfigTab v-else />
   </div>
 </template>

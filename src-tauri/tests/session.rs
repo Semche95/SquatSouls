@@ -7,14 +7,14 @@ fn rng() -> StdRng {
     StdRng::seed_from_u64(42)
 }
 
-/// Note faits, un à un, les exercices restants d'une série.
+/// Marks done, one by one, the remaining exercises of a set.
 fn complete(s: &mut Session, id: u64, now: i64) -> Result<Vec<LogEntry>, String> {
     let draw = s
         .view()
         .pending
         .into_iter()
         .find(|d| d.id == id)
-        .ok_or("Cette série n'est plus en attente.")?;
+        .ok_or("This set is no longer pending.")?;
     draw.items
         .iter()
         .filter(|it| !it.done)
@@ -34,7 +34,7 @@ fn draws_stay_in_range_and_are_distinct() {
         assert_eq!(
             ids.len(),
             2,
-            "les exercices d'un même tirage doivent être différents"
+            "the exercises of a single draw must be different"
         );
         for it in &d.items {
             let ex = cfg
@@ -77,7 +77,7 @@ fn each_exercise_comes_out_once_per_round() {
         assert_eq!(
             round.len(),
             n,
-            "aucun exercice ne revient avant la fin du tour"
+            "no exercise comes back before the end of the round"
         );
     }
 }
@@ -94,7 +94,7 @@ fn a_new_round_does_not_start_with_the_last_set() {
         let ids: Vec<String> = d.items.into_iter().map(|it| it.exercise_id).collect();
         assert!(
             ids.iter().all(|id| !last.contains(id)),
-            "un exercice de la série précédente ne ressort pas aussitôt"
+            "an exercise of the previous set does not come out again right away"
         );
         last = ids;
     }
@@ -103,7 +103,7 @@ fn a_new_round_does_not_start_with_the_last_set() {
 #[test]
 fn a_draw_across_two_rounds_stays_distinct() {
     let mut cfg = default_config();
-    // Un exercice tiré seul décale le tour : avec un nombre pair d'exercices, les tirages de 2 chevauchent alors deux tours.
+    // A single drawn exercise shifts the round: with an even number of exercises, draws of 2 then straddle two rounds.
     cfg.exercises.truncate(cfg.exercises.len() / 2 * 2);
     let n = cfg.exercises.len();
     let mut s = Session::new(0);
@@ -115,7 +115,7 @@ fn a_draw_across_two_rounds_stays_distinct() {
         assert_ne!(d.items[0].exercise_id, d.items[1].exercise_id);
         out.extend(d.items.into_iter().map(|it| it.exercise_id));
     }
-    // Après le premier exercice tiré seul, chaque tour complet compte chaque exercice une fois.
+    // After the first single drawn exercise, each full round counts each exercise once.
     for round in out[n - 1..].chunks_exact(n) {
         assert_eq!(round.iter().collect::<HashSet<_>>().len(), n);
     }
@@ -134,17 +134,13 @@ fn death_cap_applies_per_game_and_session() {
     for _ in 0..3 {
         let d = s.draw(&cfg, "ds1", "mort", &mut r).unwrap();
         assert!(d.capped && d.items.is_empty());
-        assert_eq!(d.trigger_count, 15, "le compteur s'arrête à la limite");
+        assert_eq!(d.trigger_count, 15, "the counter stops at the limit");
     }
-    assert_eq!(
-        s.view().pending.len(),
-        15,
-        "un tirage plafonné n'est pas mis en attente"
-    );
-    // La séance reste sur son jeu.
+    assert_eq!(s.view().pending.len(), 15, "a capped draw is not queued");
+    // The session stays on its game.
     assert!(s.draw(&cfg, "ds2", "mort", &mut r).is_err());
     assert_eq!(s.view().game_id.as_deref(), Some("ds1"));
-    // Une nouvelle séance remet tout à zéro.
+    // A new session resets everything.
     let mut s2 = Session::new(1);
     assert!(!s2.draw(&cfg, "ds1", "mort", &mut r).unwrap().capped);
 }
@@ -153,11 +149,11 @@ fn death_cap_applies_per_game_and_session() {
 fn removed_game_is_detected() {
     let mut cfg = default_config();
     let mut s = Session::new(0);
-    assert!(!s.game_removed(&cfg), "séance pas encore commencée");
+    assert!(!s.game_removed(&cfg), "session not started yet");
     s.draw(&cfg, "ds1", "mort", &mut rng()).unwrap();
     assert!(!s.game_removed(&cfg));
     cfg.games.retain(|g| g.id != "ds2");
-    assert!(!s.game_removed(&cfg), "un autre jeu supprimé ne compte pas");
+    assert!(!s.game_removed(&cfg), "another removed game does not count");
     cfg.games.retain(|g| g.id != "ds1");
     assert!(s.game_removed(&cfg));
 }
@@ -187,27 +183,23 @@ fn complete_dismiss_and_totals() {
         .find(|t| t.event_id == "mort")
         .unwrap()
         .count;
-    assert_eq!(count, 1, "l'annulation retire le déclenchement");
+    assert_eq!(count, 1, "dismissing removes the trigger");
     let sum: u32 = v.totals.iter().map(|t| t.sets).sum();
     assert_eq!(sum, 3);
 }
 
-/// Séance où un « boss no hit » validé a rapporté 2 jokers, avec une série de boss à deux exercices en attente.
+/// Session where a completed "boss no hit" earned 2 jokers, with a two-exercise boss set pending.
 fn session_with_jokers() -> (Session, Draw) {
     let cfg = default_config();
     let mut s = Session::new(0);
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
-    assert!(s.skip_set(boss.id, 5).is_err(), "pas de joker au départ");
+    assert!(s.skip_set(boss.id, 5).is_err(), "no joker at first");
 
     let nohit = s.draw(&cfg, "ds3", "boss-nohit", &mut r).unwrap();
-    assert_eq!(
-        nohit.items.len(),
-        2,
-        "la récompense s'accompagne d'une série"
-    );
+    assert_eq!(nohit.items.len(), 2, "the reward comes with a set");
     assert_eq!(nohit.jokers, 2);
-    assert_eq!(s.view().jokers, 0, "rien n'est gagné avant validation");
+    assert_eq!(s.view().jokers, 0, "nothing is earned before completion");
     assert_eq!(complete(&mut s, nohit.id, 10).unwrap().len(), 2);
     assert_eq!(s.view().jokers, 2);
     (s, boss)
@@ -219,7 +211,7 @@ fn skipping_a_set_costs_its_exercises() {
     assert_eq!(skip_set_cost(&boss), 2 * SKIP_COST);
     assert!(
         s.skip_set(boss.id, 20).is_err(),
-        "deux exercices coûtent 4 jokers"
+        "two exercises cost 4 jokers"
     );
 
     let cfg = default_config();
@@ -235,15 +227,15 @@ fn skipping_a_set_costs_its_exercises() {
         (20, "Mort", SKIP_COST, false)
     );
     assert_eq!(k.items, death.items);
-    assert_eq!(v.pending.len(), 1, "seule la série du boss reste");
-    assert_eq!(v.sets, 2, "seule la série du no hit est faite");
+    assert_eq!(v.pending.len(), 1, "only the boss set remains");
+    assert_eq!(v.sets, 2, "only the no hit set is done");
     let count = v
         .triggers
         .iter()
         .find(|t| t.event_id == "mort")
         .unwrap()
         .count;
-    assert_eq!(count, 1, "une mort sautée reste comptée dans la limite");
+    assert_eq!(count, 1, "a skipped death still counts toward the limit");
 }
 
 #[test]
@@ -262,11 +254,11 @@ fn skipping_an_exercise_keeps_the_rest_of_the_set() {
     );
     assert!(
         s.skip_exercise(boss.id, &first.exercise_id, 30).is_err(),
-        "déjà sauté"
+        "already skipped"
     );
 
     let entries = complete(&mut s, boss.id, 40).unwrap();
-    assert_eq!(entries.len(), 1, "seul l'exercice restant est fait");
+    assert_eq!(entries.len(), 1, "only the remaining exercise is done");
     assert_eq!(entries[0].amount, second.amount);
 }
 
@@ -279,26 +271,22 @@ fn halving_then_skipping_costs_a_full_skip() {
     s.halve(boss.id, &item.exercise_id, 20).unwrap();
     let v = s.view();
     let halved = &v.pending[0].items[0];
-    assert_eq!(
-        halved.amount,
-        item.amount.div_ceil(2),
-        "arrondi au supérieur"
-    );
+    assert_eq!(halved.amount, item.amount.div_ceil(2), "rounded up");
     assert!(halved.halved);
-    assert_eq!(halved.halve_cost, None, "une seule moitié par exercice");
+    assert_eq!(halved.halve_cost, None, "a single half per exercise");
     assert_eq!(halved.skip_cost, SKIP_COST - HALVE_COST);
     assert_eq!(v.jokers, 2 - HALVE_COST);
     let k = &v.skipped[0];
     assert!(k.halved);
     assert_eq!(k.jokers, HALVE_COST);
-    assert_eq!(k.items[0].amount, item.amount / 2, "la moitié retirée");
+    assert_eq!(k.items[0].amount, item.amount / 2, "the removed half");
     assert!(s.halve(boss.id, &item.exercise_id, 30).is_err());
 
     s.skip_exercise(boss.id, &item.exercise_id, 30).unwrap();
     assert_eq!(
         s.view().jokers,
         0,
-        "le reste d'un exercice réduit coûte la différence"
+        "the rest of a halved exercise costs the difference"
     );
 
     let other = &boss.items[1];
@@ -320,11 +308,11 @@ fn spending_jokers_on_a_rewarding_set_forfeits_its_reward() {
             .find(|it| it.halve_cost.is_some())
             .unwrap();
         spend(&mut s, nohit.id, &first.exercise_id, 20).unwrap();
-        assert_eq!(s.view().pending[1].jokers, 0, "la récompense est perdue");
+        assert_eq!(s.view().pending[1].jokers, 0, "the reward is lost");
         let left = s.view().jokers;
         complete(&mut s, nohit.id, 30).unwrap();
         let v = s.view();
-        assert_eq!(v.jokers, left, "rien n'est gagné à la validation");
+        assert_eq!(v.jokers, left, "nothing is earned on completion");
         assert_eq!(v.jokers_earned, 2);
     }
 }
@@ -368,23 +356,23 @@ fn exercises_are_done_one_by_one() {
     assert_eq!(
         skip_set_cost(left),
         SKIP_COST,
-        "seul l'exercice restant compte"
+        "only the remaining exercise counts"
     );
-    assert_eq!(v.jokers, 2, "la récompense attend la fin de la série");
+    assert_eq!(v.jokers, 2, "the reward waits for the end of the set");
     for again in [
         s.complete_exercise(nohit.id, &first.exercise_id, 21)
             .map(|_| ()),
         s.halve(nohit.id, &first.exercise_id, 21),
         s.skip_exercise(nohit.id, &first.exercise_id, 21),
     ] {
-        assert!(again.is_err(), "déjà fait");
+        assert!(again.is_err(), "already done");
     }
 
     s.complete_exercise(nohit.id, &second.exercise_id, 30)
         .unwrap();
     let v = s.view();
-    assert_eq!(v.jokers, 4, "série finie : la récompense est gagnée");
-    assert_eq!(v.pending.len(), 1, "seule la série du boss reste");
+    assert_eq!(v.jokers, 4, "set finished: the reward is earned");
+    assert_eq!(v.pending.len(), 1, "only the boss set remains");
     assert_eq!(v.log[0].at, 30);
 
     s.complete_exercise(boss.id, &boss.items[0].exercise_id, 40)
@@ -394,7 +382,7 @@ fn exercises_are_done_one_by_one() {
     assert_eq!(
         v.jokers,
         4 - SKIP_COST,
-        "sauter le reste ne coûte que l'exercice restant"
+        "skipping the rest only costs the remaining exercise"
     );
     assert_eq!(v.skipped[0].items, vec![boss.items[1].clone()]);
     assert_eq!(v.sets, 5);
@@ -413,16 +401,16 @@ fn dismissing_a_started_set_drops_its_done_exercises() {
     assert_eq!(
         s.dismiss(boss.id).unwrap(),
         vec![entry],
-        "à retirer de l'historique"
+        "to remove from the history"
     );
     let v = s.view();
     assert!(v.pending.is_empty());
     assert_eq!(
         v.log,
         kept.into_iter().rev().collect::<Vec<_>>(),
-        "rien n'est compté de la série annulée"
+        "nothing of the dismissed set is counted"
     );
-    assert_eq!(v.triggers.len(), 1, "le déclenchement est décompté");
+    assert_eq!(v.triggers.len(), 1, "the trigger is uncounted");
 }
 
 #[test]
@@ -435,12 +423,9 @@ fn a_dismissed_set_comes_back_on_the_next_trigger_of_its_event() {
         .unwrap();
     s.dismiss(boss.id).unwrap();
     let other = s.draw(&cfg, "ds3", "boss-premier", &mut r).unwrap();
-    assert_ne!(
-        other.items, boss.items,
-        "un autre événement tire normalement"
-    );
+    assert_ne!(other.items, boss.items, "another event draws normally");
     let again = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
-    assert_eq!(again.items, boss.items, "même série, telle que tirée");
+    assert_eq!(again.items, boss.items, "same set, as drawn");
     assert_eq!(again.trigger_count, 1);
     s.dismiss(again.id).unwrap();
     let mut changed = cfg.clone();
@@ -451,12 +436,12 @@ fn a_dismissed_set_comes_back_on_the_next_trigger_of_its_event() {
     let fresh = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
     assert_ne!(
         fresh.items, boss.items,
-        "la configuration enregistrée remplace les exercices supprimés de la réserve"
+        "the saved configuration replaces the removed exercises of the reserve"
     );
     assert_eq!(fresh.items.len(), 2);
 }
 
-/// Événement de la configuration par défaut, à modifier.
+/// Event of the default configuration, to modify.
 fn event_mut<'a>(cfg: &'a mut Config, game: &str, event: &str) -> &'a mut GameEvent {
     cfg.games
         .iter_mut()
@@ -475,12 +460,12 @@ fn a_saved_configuration_keeps_the_sets_to_do() {
     let mut s = Session::new(0);
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
-    event_mut(&mut cfg, "ds3", "boss").name = "Boss vaincu".into();
+    event_mut(&mut cfg, "ds3", "boss").name = "Boss defeated".into();
     cfg.pause = 30;
     s.apply_config(&cfg, &mut r);
-    let kept = pending(&s, boss.id).expect("la série reste à faire");
-    assert_eq!(kept.items, boss.items, "mêmes exercices, mêmes nombres");
-    assert_eq!(kept.event_name, "Boss vaincu");
+    let kept = pending(&s, boss.id).expect("the set remains to do");
+    assert_eq!(kept.items, boss.items, "same exercises, same numbers");
+    assert_eq!(kept.event_name, "Boss defeated");
 }
 
 #[test]
@@ -496,10 +481,10 @@ fn changing_the_draws_adjusts_the_sets_to_do() {
     assert_eq!(
         more.items[..2],
         boss.items[..],
-        "les exercices tirés restent"
+        "the drawn exercises remain"
     );
     let ids: HashSet<_> = more.items.iter().map(|it| &it.exercise_id).collect();
-    assert_eq!(ids.len(), 4, "les exercices ajoutés sont distincts");
+    assert_eq!(ids.len(), 4, "the added exercises are distinct");
 
     s.complete_exercise(boss.id, &more.items[3].exercise_id, 1)
         .unwrap();
@@ -509,14 +494,14 @@ fn changing_the_draws_adjusts_the_sets_to_do() {
     assert_eq!(fewer.items.len(), 2);
     assert!(
         fewer.items.iter().any(|it| it.done),
-        "l'exercice fait reste"
+        "the done exercise remains"
     );
 
     event_mut(&mut cfg, "ds3", "boss").draws = 1;
     s.apply_config(&cfg, &mut r);
     assert!(
         pending(&s, boss.id).is_none(),
-        "plus rien à faire : la série est finie"
+        "nothing left to do: the set is finished"
     );
 }
 
@@ -538,7 +523,7 @@ fn new_bounds_clamp_the_amounts_to_do() {
     s.apply_config(&cfg, &mut r);
     let item = &pending(&s, boss.id).unwrap().items[0];
     assert_eq!(item.amount, 1);
-    assert_eq!(item.halve_cost, None, "un seul ne se réduit pas");
+    assert_eq!(item.halve_cost, None, "a single one cannot be halved");
 }
 
 #[test]
@@ -602,7 +587,7 @@ fn removed_events_and_new_jokers_apply_to_the_sets_to_do() {
     s.apply_config(&cfg, &mut r);
     assert!(
         pending(&s, boss.id).is_none(),
-        "l'événement supprimé emporte sa série"
+        "the removed event takes its set along"
     );
     assert_eq!(pending(&s, first.id).unwrap().jokers, 3);
 }

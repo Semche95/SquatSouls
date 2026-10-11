@@ -1,5 +1,7 @@
-# Migrations du schéma SQLite
+# SQLite schema migrations
 
-Appliquées au lancement par refinery, dans l'ordre de `V<n>`, et datées dans la table `refinery_schema_history`.
+Applied at launch by refinery, in `V<n>` order, and dated in the `refinery_schema_history` table.
 
-**Une migration créée ne se modifie jamais** (ni renommée, ni fusionnée, ni supprimée), même avant d'être commitée et même pour corriger une erreur : toute évolution du schéma passe par un nouveau fichier `V<n+1>__<nom>.sql`.
+**A migration is never modified once created** (neither renamed, merged nor deleted, not even its comments: refinery checksums its content), even before being committed and even to fix a mistake: every schema change goes through a new `V<n+1>__<name>.sql` file. Comments are written in English from the start.
+
+The comments of V4 and V5 were translated to English once: `PRE_TRANSLATION_CHECKSUMS` in `store.rs` replaces their former checksums in databases that applied them before.

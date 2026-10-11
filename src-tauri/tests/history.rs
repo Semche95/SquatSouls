@@ -7,9 +7,9 @@ fn entry(at: i64, session: i64, game: &str, amount: u32) -> LogEntry {
         at,
         session,
         game: game.into(),
-        event: "Mort".into(),
+        event: "Death".into(),
         exercise: "Squats".into(),
-        unit: "rép.".into(),
+        unit: "reps".into(),
         amount,
     }
 }
@@ -31,8 +31,8 @@ fn sessions_grouped_by_session_and_game() {
         ("Dark Souls", 100, 2)
     );
     assert_eq!(groups[1].totals[0].amount, 22);
-    assert_eq!(groups[0].duration, 50, "depuis le début de la séance");
-    assert_eq!(groups[1].duration, 310, "jusqu'à la fin de la séance");
+    assert_eq!(groups[0].duration, 50, "since the start of the session");
+    assert_eq!(groups[1].duration, 310, "until the end of the session");
 }
 
 #[test]
@@ -53,7 +53,7 @@ fn days_window_and_active_days() {
     assert_eq!(
         days.iter().map(|d| d.sets).collect::<Vec<_>>(),
         vec![2, 0, 1, 0, 0, 0, 0],
-        "l'entrée de 30 jours est hors fenêtre"
+        "the 30-day-old entry is outside the window"
     );
 
     let full = active_days(&entries, &ends);

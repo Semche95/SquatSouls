@@ -5,7 +5,7 @@ const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig({
   plugins: [vue()],
-  // Tauri attend un port fixe et affiche ses propres erreurs.
+  // Tauri expects a fixed port and shows its own errors.
   clearScreen: false,
   server: {
     port: 1420,

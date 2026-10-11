@@ -1,4 +1,4 @@
-//! Stockage SQLite : configuration, historique et réglages, écrits ligne par ligne.
+//! SQLite storage: configuration, history and settings, written row by row.
 
 use super::{
     active_days, default_config, last_days, window_start, Config, DayTotals, Exercise, Game,
@@ -11,9 +11,9 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::str::FromStr;
 
-// Migrations du schéma (`migrations/V<n>__<nom>.sql`), datées dans `refinery_schema_history`
-// à leur application. Une migration créée ne se modifie jamais, même avant d'être commitée :
-// toute évolution du schéma, correction comprise, passe par une nouvelle migration.
+// Schema migrations (`migrations/V<n>__<name>.sql`), dated in `refinery_schema_history`
+// when applied. A migration is never modified once created, even before being committed:
+// every schema change, fixes included, goes through a new migration.
 refinery::embed_migrations!("migrations");
 
 const LAST_GAME: &str = "last_game";
@@ -39,7 +39,7 @@ impl Store {
         Self::init(Connection::open_in_memory()?)
     }
 
-    /// Met le schéma à jour et remplit une base neuve avec la configuration par défaut.
+    /// Updates the schema and fills a new database with the default configuration.
     fn init(mut conn: Connection) -> Result<Self> {
         conn.execute_batch("PRAGMA foreign_keys = ON")?;
         migrate(&mut conn)?;
@@ -123,7 +123,7 @@ impl Store {
         })
     }
 
-    /// N'écrit que les lignes ajoutées, modifiées ou déplacées, et efface celles qui ont disparu.
+    /// Only writes added, modified or moved rows, and deletes those that are gone.
     pub fn save_config(&mut self, config: &Config) -> Result<()> {
         let old = self.config()?;
         let tx = self.conn.transaction()?;
@@ -156,7 +156,7 @@ impl Store {
                 set_setting(&tx, key, &new)?;
             }
         }
-        // Liste courte : réécrite en entier quand elle change, dans son ordre.
+        // Short list: fully rewritten when it changes, in its order.
         if old.ignored_games != config.ignored_games {
             tx.execute("DELETE FROM ignored_games", [])?;
             let mut stmt = tx.prepare(
@@ -177,7 +177,7 @@ impl Store {
             "DELETE FROM exercises WHERE id = ?1",
             |stmt, e| stmt.execute([&e.id]),
         )?;
-        // Le nom et l'AppId seuls sont comparés : les événements sont synchronisés à part, jeu par jeu.
+        // Only the name and the AppId are compared: events are synced separately, game by game.
         let heads = |games: &[Game]| -> Vec<(String, String, Option<u32>)> {
             games
                 .iter()
@@ -240,7 +240,7 @@ impl Store {
         tx.commit()
     }
 
-    /// Retire de l'historique une entrée par élément de `entries`.
+    /// Removes one history entry per element of `entries`.
     pub fn remove_history(&mut self, entries: &[LogEntry]) -> Result<()> {
         let tx = self.conn.transaction()?;
         {
@@ -266,7 +266,7 @@ impl Store {
         Ok(())
     }
 
-    /// Retire de l'historique les séries et la fin d'une séance.
+    /// Removes a session's sets and end from the history.
     pub fn remove_session(&mut self, session: i64) -> Result<()> {
         let tx = self.conn.transaction()?;
         tx.execute("DELETE FROM sets WHERE session = ?1", [session])?;
@@ -274,19 +274,19 @@ impl Store {
         tx.commit()
     }
 
-    /// Totaux des `days` derniers jours (aujourd'hui compris), du plus récent au plus ancien.
+    /// Totals of the last `days` days (today included), most recent first.
     pub fn history(&self, days: u32, today: NaiveDate) -> Result<Vec<DayTotals>> {
         let (entries, ends) = self.sets_since(window_start(days, today))?;
         Ok(last_days(&entries, &ends, days, today))
     }
 
-    /// Tous les jours où des séries ont été faites, du plus récent au plus ancien.
+    /// Every day on which sets were done, most recent first.
     pub fn full_history(&self) -> Result<Vec<DayTotals>> {
         let (entries, ends) = self.sets_since(i64::MIN)?;
         Ok(active_days(&entries, &ends))
     }
 
-    /// Séries faites depuis `from`, et heures de fin de leurs séances terminées.
+    /// Sets done since `from`, and end times of their finished sessions.
     fn sets_since(&self, from: i64) -> Result<(Vec<LogEntry>, HashMap<i64, i64>)> {
         let entries = self
             .conn
@@ -317,7 +317,7 @@ impl Store {
         Ok((entries, ends))
     }
 
-    /// Dernier jeu choisi, vide s'il n'y en a pas encore.
+    /// Last chosen game, empty if there is none yet.
     pub fn last_game(&self) -> Result<String> {
         Ok(self.setting(LAST_GAME)?.unwrap_or_default())
     }
@@ -326,7 +326,7 @@ impl Store {
         set_setting(&self.conn, LAST_GAME, game_id)
     }
 
-    /// Réponses du Steam Store et garde-fous de ses appels.
+    /// Steam Store answers and the safeguards on its calls.
     pub fn steam_names(&self) -> Result<SteamNames> {
         let names = self
             .conn
@@ -346,7 +346,7 @@ impl Store {
         })
     }
 
-    /// Liste courte, réécrite en entier après chaque appel au Steam Store.
+    /// Short list, fully rewritten after each Steam Store call.
     pub fn save_steam_names(&mut self, steam: &SteamNames) -> Result<()> {
         let tx = self.conn.transaction()?;
         set_setting(&tx, STEAM_LAST_CALL, &steam.last_call.to_string())?;
@@ -365,7 +365,7 @@ impl Store {
         tx.commit()
     }
 
-    /// Réglage converti en `T`, `default` s'il est absent ou illisible.
+    /// Setting parsed as `T`, `default` if missing or unreadable.
     fn parsed_setting<T: FromStr>(&self, key: &str, default: T) -> Result<T> {
         Ok(self
             .setting(key)?
@@ -385,8 +385,8 @@ impl Store {
     }
 }
 
-/// Applique dans une transaction les migrations que la base n'a pas encore reçues,
-/// et refuse une base modifiée par une migration inconnue, venue d'une version plus récente de l'appli.
+/// Applies in a transaction the migrations the database has not received yet,
+/// and refuses a database modified by an unknown migration, from a newer version of the app.
 fn migrate(conn: &mut Connection) -> Result<()> {
     let run = |conn: &mut Connection, target| {
         migrations::runner()
@@ -397,18 +397,50 @@ fn migrate(conn: &mut Connection) -> Result<()> {
             .map_err(|e| {
                 rusqlite::Error::SqliteFailure(
                     rusqlite::ffi::Error::new(rusqlite::ffi::SQLITE_ERROR),
-                    Some(format!("schéma de la base non mis à jour : {e}")),
+                    Some(format!("database schema not updated: {e}")),
                 )
             })
     };
-    // Une base migrée avant refinery note dans `user_version` le nombre de migrations déjà
-    // appliquées : elles sont inscrites à l'historique sans être rejouées.
+    // A database migrated before refinery records in `user_version` the number of migrations already
+    // applied: they are added to the history without being replayed.
     let legacy: i32 = conn.query_row("PRAGMA user_version", [], |r| r.get(0))?;
     if legacy > 0 {
         run(conn, Target::FakeVersion(legacy))?;
         conn.pragma_update(None, "user_version", 0)?;
     }
+    update_translated_checksums(conn)?;
     run(conn, Target::Latest)
+}
+
+/// Checksums of the migrations as applied before their comments were translated to English, by version.
+pub const PRE_TRANSLATION_CHECKSUMS: [(i32, u64); 2] =
+    [(4, 13746842255044008563), (5, 15443599466271548012)];
+
+/// Replaces in the history the pre-translation checksums with the current ones, so that refinery
+/// does not refuse databases that applied those migrations before.
+fn update_translated_checksums(conn: &Connection) -> Result<()> {
+    let has_history: bool = conn.query_row(
+        "SELECT EXISTS (SELECT 1 FROM sqlite_master WHERE name = 'refinery_schema_history')",
+        [],
+        |r| r.get(0),
+    )?;
+    if !has_history {
+        return Ok(());
+    }
+    let runner = migrations::runner();
+    for (version, old) in PRE_TRANSLATION_CHECKSUMS {
+        let current = runner
+            .get_migrations()
+            .iter()
+            .find(|m| m.version() == version)
+            .expect("translated migration")
+            .checksum();
+        conn.execute(
+            "UPDATE refinery_schema_history SET checksum = ?1 WHERE version = ?2 AND checksum = ?3",
+            (current.to_string(), version, old.to_string()),
+        )?;
+    }
+    Ok(())
 }
 
 fn set_setting(conn: &Connection, key: &str, value: &str) -> Result<()> {
@@ -419,8 +451,8 @@ fn set_setting(conn: &Connection, key: &str, value: &str) -> Result<()> {
     Ok(())
 }
 
-/// Synchronise une table avec une liste ordonnée : une ligne n'est réécrite que si elle
-/// diffère de celle qui occupait la même position, et les clés disparues sont effacées.
+/// Syncs a table with an ordered list: a row is only rewritten if it differs from the one
+/// that held the same position, and keys that are gone are deleted.
 #[allow(clippy::too_many_arguments)]
 fn sync<T: PartialEq>(
     tx: &Transaction,

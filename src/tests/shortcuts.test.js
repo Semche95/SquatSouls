@@ -3,17 +3,17 @@ import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { emptySession, draw, responses, setup, mountApp, press } from './app.js';
 
-describe('raccourcis clavier', () => {
-  it('déclenche l\'événement correspondant au chiffre', async () => {
+describe('keyboard shortcuts', () => {
+  it('triggers the event matching the digit', async () => {
     setup({ draw: { capped: false } });
     await mountApp();
     await press('Digit2');
     expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'boss' });
     await press('Numpad1');
-    expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'mort' });
+    expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'death' });
   });
 
-  it('ignore un chiffre sans événement et les répétitions', async () => {
+  it('ignores a digit without an event and key repeats', async () => {
     setup({ draw: { capped: false } });
     await mountApp();
     await press('Digit9');
@@ -21,7 +21,7 @@ describe('raccourcis clavier', () => {
     expect(invoke).not.toHaveBeenCalledWith('draw', expect.anything());
   });
 
-  it('agit sur la plus ancienne série', async () => {
+  it('acts on the oldest set', async () => {
     const other = { ...draw, id: 8 };
     setup({ get_session: emptySession({ pending: [draw, other], jokers: 3 }), complete_exercise: () => responses.get_session, dismiss: () => responses.get_session, halve: () => responses.get_session, skip_exercise: () => responses.get_session });
     await mountApp();
@@ -35,22 +35,22 @@ describe('raccourcis clavier', () => {
     expect(invoke).toHaveBeenCalledWith('skip_exercise', { drawId: 7, exerciseId: 'squat' });
   });
 
-  it('vise le premier exercice restant de la série', async () => {
-    const started = { ...draw, items: [{ ...draw.items[0], done: true }, { ...draw.items[0], exerciseId: 'pompes', name: 'Pompes' }] };
+  it('targets the first remaining exercise of the set', async () => {
+    const started = { ...draw, items: [{ ...draw.items[0], done: true }, { ...draw.items[0], exerciseId: 'push-ups', name: 'Push-ups' }] };
     setup({ get_session: emptySession({ pending: [started] }), complete_exercise: () => responses.get_session });
     await mountApp();
     await press('Enter');
-    expect(invoke).toHaveBeenCalledWith('complete_exercise', { drawId: 7, exerciseId: 'pompes' });
+    expect(invoke).toHaveBeenCalledWith('complete_exercise', { drawId: 7, exerciseId: 'push-ups' });
   });
 
-  it('n\'utilise pas de joker sans assez de jokers', async () => {
+  it('does not use a joker without enough jokers', async () => {
     setup({ get_session: emptySession({ pending: [draw], jokers: 1 }) });
     await mountApp();
     await press('KeyJ');
     expect(invoke).not.toHaveBeenCalledWith('skip_exercise', expect.anything());
   });
 
-  it('est inactif hors de l\'onglet Jouer et après la fin de séance', async () => {
+  it('is inactive outside the Jouer tab and after the session ends', async () => {
     setup({ draw: { capped: false } });
     const w = await mountApp();
     await w.findAll('.tabs button')[2].trigger('click');
@@ -59,7 +59,7 @@ describe('raccourcis clavier', () => {
 
   });
 
-  it('ignore les touches tapées dans un champ', async () => {
+  it('ignores keys typed in a field', async () => {
     setup({ draw: { capped: false } });
     const w = await mountApp();
     w.find('select').element.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit1', bubbles: true }));

@@ -3,40 +3,40 @@ import { describe, expect, it } from 'vitest';
 import { importGame, mergeExercises, parseExercises, parseGame, shareExercises, shareGame, toBase64, unpack } from '../share.js';
 import { config } from './app.js';
 
-// Texte partagé écrit dans une version donnée du format, avec le contenu de `shared`.
+// Shared text written in a given format version, with the content of `shared`.
 function packed(version, shared, data = unpack(shared).data) {
   const payload = JSON.stringify({ version, kind: unpack(shared).kind, ...data });
   return shared.slice(0, shared.indexOf(':') + 1) + toBase64(deflateSync(strToU8(payload)));
 }
 
 const exercises = [
-  { id: 'squat', name: 'Squats', enabled: false, unit: 'rép.', min: 10, max: 15 },
-  { id: 'pompes', name: 'Pompes', enabled: true, unit: 'rép.', min: 8, max: 12, pause: 90 },
+  { id: 'squat', name: 'Squats', enabled: false, unit: 'reps', min: 10, max: 15 },
+  { id: 'push-ups', name: 'Push-ups', enabled: true, unit: 'reps', min: 8, max: 12, pause: 90 },
 ];
 
-describe('partage d\'un jeu', () => {
-  it('partage le nom et les événements sans id ni exercices, puis les relit', () => {
+describe('game sharing', () => {
+  it('shares the name and events without ids or exercises, then reads them back', () => {
     const text = shareGame(config.games[0]);
     expect(text).toMatch(/^squatsouls\/game\/elden-ring:/);
     expect(JSON.stringify(unpack(text).data)).not.toContain('"id"');
     expect(parseGame(text, 3)).toEqual({
       name: 'Elden Ring',
       events: [
-        { id: 'mort', name: 'Mort', draws: 1, jokers: 0, maxPerSession: 15 },
-        { id: 'boss-vaincu', name: 'Boss vaincu', draws: 1, jokers: 2 },
+        { id: 'death', name: 'Death', draws: 1, jokers: 0, maxPerSession: 15 },
+        { id: 'boss-defeated', name: 'Boss defeated', draws: 1, jokers: 2 },
       ],
       clamped: false,
     });
   });
 
-  it('ignore l\'identifiant placé devant le texte compressé', () => {
+  it('ignores the identifier placed in front of the compressed text', () => {
     const text = shareGame(config.games[0]);
     const payload = text.slice(text.indexOf(':') + 1);
     expect(parseGame(`squatsouls/exercises:${payload}`, 3)).toEqual(parseGame(text, 3));
     expect(parseGame(payload, 3)).toEqual(parseGame(text, 3));
   });
 
-  it('partage l\'AppId Steam du jeu et relit un texte de la version 1, qui n\'en a pas', () => {
+  it('shares the game\'s Steam AppId and reads a version 1 text, which has none', () => {
     const game = { ...config.games[0], steamAppId: 1245620 };
     expect(parseGame(shareGame(game), 3).steamAppId).toBe(1245620);
     const { steamAppId, ...v1 } = unpack(shareGame(game)).data;
@@ -45,36 +45,36 @@ describe('partage d\'un jeu', () => {
     expect(read).not.toHaveProperty('steamAppId');
   });
 
-  it('ramène le nombre tiré au nombre d\'exercices définis', () => {
-    const text = shareGame({ name: 'Nioh', events: [{ name: 'Mort', draws: 5, jokers: 0 }] });
+  it('caps the drawn number at the number of defined exercises', () => {
+    const text = shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 5, jokers: 0 }] });
     expect(parseGame(text, 2)).toMatchObject({ events: [{ draws: 2 }], clamped: true });
   });
 
-  it('refuse un texte qui n\'est pas un jeu partagé valide', () => {
+  it('refuses a text that is not a valid shared game', () => {
     const invalid = [
-      'du texte',
+      'some text',
       shareGame({ name: 'Nioh', events: [] }),
-      shareGame({ name: ' ', events: [{ name: 'Mort', draws: 1 }] }),
-      shareGame({ name: 'Nioh', events: [{ name: 'Mort', draws: 0 }] }),
-      shareGame({ name: 'Nioh', events: [{ name: 'Mort', draws: 1, maxPerSession: 0 }] }),
-      shareGame({ name: 'Nioh', events: [{ name: 'Mort', draws: 1, jokers: -1 }] }),
-      shareGame({ name: 'Nioh', steamAppId: 0, events: [{ name: 'Mort', draws: 1 }] }),
-      shareGame({ name: 'Nioh', steamAppId: '485510', events: [{ name: 'Mort', draws: 1 }] }),
+      shareGame({ name: ' ', events: [{ name: 'Death', draws: 1 }] }),
+      shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 0 }] }),
+      shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1, maxPerSession: 0 }] }),
+      shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1, jokers: -1 }] }),
+      shareGame({ name: 'Nioh', steamAppId: 0, events: [{ name: 'Death', draws: 1 }] }),
+      shareGame({ name: 'Nioh', steamAppId: '485510', events: [{ name: 'Death', draws: 1 }] }),
     ];
     for (const text of invalid) expect(() => parseGame(text, 3)).toThrow('Ce texte n\'est pas un jeu partagé valide.');
   });
 
-  it('indique où importer des exercices collés à la place d\'un jeu', () => {
+  it('tells where to import exercises pasted instead of a game', () => {
     expect(() => parseGame(shareExercises(exercises), 3)).toThrow('Ce texte partage des exercices : l\'importer depuis l\'onglet Exercices, avec Importer.');
   });
 
-  it('demande une mise à jour pour un texte d\'une version inconnue du format', () => {
+  it('asks for an update for a text from an unknown format version', () => {
     const text = packed(999, shareGame(config.games[0]));
     expect(() => parseGame(text, 3)).toThrow('Ce texte vient d\'une version plus récente de SquatSouls : la mettre à jour pour l\'importer.');
   });
 
-  it('remplace le jeu du même nom en gardant son id, sinon l\'ajoute', () => {
-    const events = [{ id: 'feu', name: 'Feu', draws: 1, jokers: 0 }];
+  it('replaces the game with the same name keeping its id, otherwise adds it', () => {
+    const events = [{ id: 'bonfire', name: 'Bonfire', draws: 1, jokers: 0 }];
     expect(importGame(config.games, { name: ' sekiro ', events }).map((g) => [g.id, g.events])).toEqual([
       ['er', config.games[0].events],
       ['sekiro', events],
@@ -82,66 +82,66 @@ describe('partage d\'un jeu', () => {
     expect(importGame(config.games, { name: 'Nioh', events }).at(-1)).toEqual({ id: 'nioh', name: 'Nioh', events });
   });
 
-  it('reprend l\'AppId Steam importé, ou à défaut celui du jeu remplacé, même porté par un autre jeu', () => {
-    const events = [{ id: 'feu', name: 'Feu', draws: 1, jokers: 0 }];
+  it('takes the imported Steam AppId, or else the replaced game\'s, even if carried by another game', () => {
+    const events = [{ id: 'bonfire', name: 'Bonfire', draws: 1, jokers: 0 }];
     const games = [{ ...config.games[0], steamAppId: 1245620 }, { ...config.games[1], steamAppId: 814380 }];
     expect(importGame(games, { name: 'Sekiro', events })[1].steamAppId).toBe(814380);
     expect(importGame(games, { name: 'Sekiro', steamAppId: 814381, events })[1].steamAppId).toBe(814381);
     expect(importGame(games, { name: 'Nioh', steamAppId: 485510, events }).at(-1).steamAppId).toBe(485510);
-    expect(importGame(games, { name: 'Sekiro sans prothèse', steamAppId: 814380, events }).at(-1).steamAppId).toBe(814380);
+    expect(importGame(games, { name: 'Sekiro no prosthetic', steamAppId: 814380, events }).at(-1).steamAppId).toBe(814380);
   });
 });
 
-describe('partage des exercices', () => {
-  it('partage les exercices sans id, avec leur pause propre, puis les relit', () => {
+describe('exercise sharing', () => {
+  it('shares the exercises without ids, with their own pause, then reads them back', () => {
     const text = shareExercises(exercises);
     expect(text).toMatch(/^squatsouls\/exercises:/);
     expect(JSON.stringify(unpack(text).data)).not.toContain('"id"');
     expect(JSON.stringify(unpack(text).data)).toContain('"pause":90');
     expect(parseExercises(text)).toEqual(exercises.map(({ id, enabled, ...ex }) => ex));
-    // Les espaces et retours à la ligne ajoutés par une messagerie sont ignorés.
+    // Spaces and line breaks added by a messaging app are ignored.
     const cut = text.indexOf(':') + 10;
     expect(parseExercises(` ${text.slice(0, cut)}\n${text.slice(cut)} `)).toEqual(parseExercises(text));
   });
 
-  it('partage une liste trop longue pour tenir dans les arguments d\'un appel de fonction', () => {
-    const long = Array.from({ length: 20000 }, (_, i) => ({ name: `Exercice ${i} ${Math.random()}`, unit: 'rép.', min: 1, max: 5 }));
+  it('shares a list too long to fit in the arguments of a function call', () => {
+    const long = Array.from({ length: 20000 }, (_, i) => ({ name: `Exercice ${i} ${Math.random()}`, unit: 'reps', min: 1, max: 5 }));
     expect(parseExercises(shareExercises(long))).toEqual(long);
   });
 
-  it('refuse un texte qui n\'est pas une liste d\'exercices valide', () => {
+  it('refuses a text that is not a valid exercise list', () => {
     const invalid = [
       '',
       shareExercises([]),
-      shareExercises([{ name: 'Squats', unit: 'rép.', min: 5, max: 0 }]),
-      shareExercises([{ name: 'Squats', unit: 'rép.', min: 6, max: 5 }]),
-      shareExercises([{ name: '', unit: 'rép.', min: 1, max: 5 }]),
-      shareExercises([{ name: 'Squats', unit: 'rép.', min: 1, max: 5, pause: -1 }]),
+      shareExercises([{ name: 'Squats', unit: 'reps', min: 5, max: 0 }]),
+      shareExercises([{ name: 'Squats', unit: 'reps', min: 6, max: 5 }]),
+      shareExercises([{ name: '', unit: 'reps', min: 1, max: 5 }]),
+      shareExercises([{ name: 'Squats', unit: 'reps', min: 1, max: 5, pause: -1 }]),
     ];
     for (const text of invalid) expect(() => parseExercises(text)).toThrow('Ce texte n\'est pas une liste d\'exercices partagée valide.');
   });
 
-  it('indique où importer un jeu collé à la place d\'exercices', () => {
+  it('tells where to import a game pasted instead of exercises', () => {
     expect(() => parseExercises(shareGame(config.games[0]))).toThrow('Ce texte partage un jeu : l\'importer depuis l\'onglet Jeux, avec Importer un jeu.');
   });
 
-  it('met à jour les exercices du même nom, cochés ou non, et ajoute les autres, cochés, sans toucher l\'original', () => {
+  it('updates exercises with the same name, checked or not, and adds the others, checked, without touching the original', () => {
     const imported = [
       { name: 'squats', unit: 's', min: 20, max: 30, pause: 45 },
-      { name: 'Pompes', unit: 'rép.', min: 8, max: 12, pause: 90 },
-      { name: 'Fentes', unit: 'rép.', min: 5, max: 8 },
+      { name: 'Push-ups', unit: 'reps', min: 8, max: 12, pause: 90 },
+      { name: 'Lunges', unit: 'reps', min: 5, max: 8 },
     ];
     expect(mergeExercises(exercises, imported)).toEqual({
       exercises: [
         { id: 'squat', name: 'Squats', enabled: false, unit: 's', min: 20, max: 30, pause: 45 },
         exercises[1],
-        { id: 'fentes', name: 'Fentes', enabled: true, unit: 'rép.', min: 5, max: 8 },
+        { id: 'lunges', name: 'Lunges', enabled: true, unit: 'reps', min: 5, max: 8 },
       ],
       added: 1,
       updated: 1,
     });
-    // Sans pause propre dans l'import, l'exercice repasse à la pause globale.
-    expect(mergeExercises(exercises, [{ name: 'Pompes', unit: 'rép.', min: 8, max: 12 }]).exercises[1]).toEqual({ id: 'pompes', name: 'Pompes', enabled: true, unit: 'rép.', min: 8, max: 12 });
-    expect(exercises[0].unit).toBe('rép.');
+    // Without an own pause in the import, the exercise goes back to the global pause.
+    expect(mergeExercises(exercises, [{ name: 'Push-ups', unit: 'reps', min: 8, max: 12 }]).exercises[1]).toEqual({ id: 'push-ups', name: 'Push-ups', enabled: true, unit: 'reps', min: 8, max: 12 });
+    expect(exercises[0].unit).toBe('reps');
   });
 });

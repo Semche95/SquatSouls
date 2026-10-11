@@ -17,11 +17,11 @@ export const config = {
       id: 'er',
       name: 'Elden Ring',
       events: [
-        { id: 'mort', name: 'Mort', draws: 1, jokers: 0, maxPerSession: 15 },
-        { id: 'boss', name: 'Boss vaincu', draws: 1, jokers: 2 },
+        { id: 'death', name: 'Death', draws: 1, jokers: 0, maxPerSession: 15 },
+        { id: 'boss', name: 'Boss defeated', draws: 1, jokers: 2 },
       ],
     },
-    { id: 'sekiro', name: 'Sekiro', events: [{ id: 'feu', name: 'Feu de camp', draws: 1, jokers: 0 }] },
+    { id: 'sekiro', name: 'Sekiro', events: [{ id: 'bonfire', name: 'Bonfire', draws: 1, jokers: 0 }] },
   ],
 };
 
@@ -29,11 +29,11 @@ export function emptySession(extra = {}) {
   return { pending: [], sets: 0, totals: [], log: [], triggers: [], jokers: 0, jokersEarned: 0, skipped: [], ...extra };
 }
 
-export const draw = { id: 7, eventName: 'Mort', gameName: 'Elden Ring', jokers: 0, items: [{ exerciseId: 'squat', name: 'Squats', amount: 10, unit: 'reps', halved: false, halveCost: 1, skipCost: 2 }] };
+export const draw = { id: 7, eventName: 'Death', gameName: 'Elden Ring', jokers: 0, items: [{ exerciseId: 'squat', name: 'Squats', amount: 10, unit: 'reps', halved: false, halveCost: 1, skipCost: 2 }] };
 
-// Réponses du backend simulé, modifiables par test.
+// Responses of the simulated backend, adjustable per test.
 export let responses;
-// Composants montés, démontés après chaque test pour retirer leur écouteur clavier.
+// Mounted components, unmounted after each test to remove their keyboard listener.
 let mounted = [];
 
 export function setup(over = {}) {
@@ -74,10 +74,10 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-// Texte de l'infobulle affichée, ou undefined sans infobulle.
+// Text of the shown tooltip, or undefined without a tooltip.
 export const shownTip = () => document.querySelector('.v-popper__popper--shown .v-popper__inner')?.textContent.trim();
 
-// Survole le conteneur d'infobulle d'un contrôle (DisabledTip), attend le texte attendu, puis le quitte.
+// Hovers a control's tooltip container (DisabledTip), waits for the expected text, then leaves it.
 export async function expectTip(wrapper, text) {
   const tip = wrapper.element.closest('.tip');
   tip.dispatchEvent(new Event('mouseenter'));

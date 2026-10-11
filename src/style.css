@@ -77,7 +77,7 @@ button:active {
   color: var(--gold);
 }
 
-/* Prend la place laissée par les onglets : un slogan long passe à la ligne au lieu de les pousser. */
+/* Takes the space left by the tabs: a long slogan wraps instead of pushing them. */
 .brand {
   flex: 1 1 0;
   min-width: 12rem;
@@ -175,7 +175,7 @@ h2 {
 .field span {
   color: var(--muted);
 }
-/* Conteneur d'infobulle d'un contrôle (DisabledTip) : il ne change pas la mise en page. */
+/* Tooltip container of a control (DisabledTip): it does not change the layout. */
 .tip {
   display: inline-flex;
 }
@@ -212,7 +212,7 @@ h2 {
   position: relative;
   overflow: hidden;
 }
-/* Jauge de la limite par séance, en bas de la tuile. */
+/* Gauge of the per-session limit, at the bottom of the tile. */
 .gauge {
   position: absolute;
   left: 0;
@@ -283,7 +283,7 @@ kbd.dark {
 .banner.confirm .card-actions {
   margin: 0;
 }
-/* Poussé en bas de la fenêtre, sous le contenu de l'onglet Jouer. */
+/* Pushed to the bottom of the window, under the content of the Jouer tab. */
 .session-actions {
   margin-top: auto;
   display: flex;
@@ -328,13 +328,13 @@ kbd.dark {
   font-size: 1.3rem;
   font-variant-numeric: tabular-nums;
 }
-/* Actions poussées à droite du texte. */
+/* Actions pushed to the right of the text. */
 .banner.pause button,
 .banner.steam .row,
 .ignored .row {
   margin-left: auto;
 }
-/* Confirmation flottante, à droite des sous-onglets de la configuration, sans rien décaler ni masquer. */
+/* Floating confirmation, to the right of the configuration sub-tabs, without shifting or hiding anything. */
 .config {
   position: relative;
 }
@@ -498,7 +498,7 @@ kbd.dark {
   border-color: var(--red);
   transform: none;
 }
-/* Historique complet : la carte occupe toute la fenêtre, en plus grand. */
+/* Full history: the card fills the whole window, larger. */
 .group.full {
   position: fixed;
   inset: 16px;
@@ -520,7 +520,7 @@ kbd.dark {
 .group.full .day-games {
   font-size: 1rem;
 }
-/* Bilan : chaque bloc est une carte, la séance actuelle est mise en avant. */
+/* Summary: each block is a card, the current session is highlighted. */
 .group {
   display: flex;
   flex-direction: column;
@@ -555,7 +555,7 @@ kbd.dark {
   color: inherit;
 }
 
-/* Totaux de la séance : une tuile par exercice. */
+/* Session totals: one tile per exercise. */
 .totals {
   list-style: none;
   margin: 0;
@@ -704,16 +704,16 @@ kbd.dark {
 .cfg-table th:last-child {
   width: 1%;
 }
-/* Exercice décoché : gardé dans la liste mais hors du tirage. */
+/* Unchecked exercise: kept in the list but out of the draw. */
 .cfg-off input:not([type='checkbox']) {
   opacity: 0.5;
 }
-/* Configuration : jeux et exercices sur des sous-onglets séparés. */
+/* Configuration: games and exercises on separate sub-tabs. */
 .subtabs {
   align-self: flex-start;
 }
-/* Réglages : une carte par thème, chaque option est un libellé suivi d'un interrupteur à droite,
-   ses options secondaires en retrait sous un trait. */
+/* Settings: one card per topic, each option is a label followed by a switch on the right,
+   its secondary options indented under a line. */
 .cfg-settings {
   max-width: 640px;
   display: flex;
@@ -784,7 +784,7 @@ kbd.dark {
   font-size: 0.95rem;
   color: var(--muted);
 }
-/* État de la détection Steam : pastille grise, verte (jeu nommé) ou orange (Steam Store bloqué). */
+/* Steam detection status: grey, green (named game) or orange (Steam Store blocked) badge. */
 .status {
   display: flex;
   align-items: baseline;
@@ -829,7 +829,7 @@ kbd.dark {
 .ignored li:last-child {
   border-bottom: none;
 }
-/* Le nom prend toute la largeur laissée par les autres colonnes. */
+/* The name takes all the width left by the other columns. */
 .cfg-name {
   width: 100%;
 }
@@ -848,7 +848,7 @@ kbd.dark {
 .cfg-table .count-input {
   width: 5.5em;
 }
-/* Infobulle (floating-vue) aux couleurs de l'appli, bordée de rouge pour une erreur. */
+/* Tooltip (floating-vue) in the app's colors, with a red border for an error. */
 .v-popper--theme-tooltip .v-popper__inner {
   background: var(--panel-2);
   color: var(--text);
@@ -865,7 +865,7 @@ kbd.dark {
 .v-popper--theme-tooltip .v-popper__inner::first-letter {
   text-transform: uppercase;
 }
-/* Configuration : sections et événements à plat, sans cadre de carte. */
+/* Configuration: flat sections and events, without a card frame. */
 .config .group {
   padding: 0;
   background: none;
@@ -878,7 +878,7 @@ kbd.dark {
 .config .group-head {
   justify-content: flex-start;
 }
-/* Jeux : liste à gauche, jeu sélectionné détaillé à droite. */
+/* Games: list on the left, selected game detailed on the right. */
 .cfg-games {
   display: grid;
   grid-template-columns: minmax(140px, 200px) 1fr;
@@ -898,7 +898,7 @@ kbd.dark {
   gap: 14px;
   min-width: 0;
 }
-/* Import : texte partagé à coller, puis Importer. */
+/* Import: shared text to paste, then Importer. */
 .cfg-import textarea {
   resize: vertical;
   word-break: break-all;
@@ -906,12 +906,12 @@ kbd.dark {
 .config :is(input, textarea)[aria-invalid='true'] {
   border-color: var(--red);
 }
-/* L'écart entre les blocs vient déjà du formulaire. */
+/* The spacing between blocks already comes from the form. */
 .cfg-import .banner.error {
   margin-bottom: 0;
 }
-/* Événement en accordéon : une carte par événement, l'en-tête et le contenu sur le même fond,
-   séparés par un trait une fois ouvert. */
+/* Event as an accordion: one card per event, header and content on the same background,
+   separated by a line once open. */
 .cfg-event {
   background: var(--panel-2);
   border: 1px solid var(--line);
@@ -944,7 +944,7 @@ kbd.dark {
 .cfg-event[open] summary {
   border-bottom: 1px solid var(--line);
 }
-/* Champs plus sombres que la carte pour s'en détacher. */
+/* Fields darker than the card to stand out from it. */
 .config .cfg-event input {
   background: var(--panel);
 }
@@ -953,7 +953,7 @@ kbd.dark {
   align-items: center;
   gap: 10px;
 }
-/* Chevron centré sur sa propre boîte pour rester aligné sur le texte une fois tourné. */
+/* Chevron centered on its own box to stay aligned with the text once rotated. */
 .cfg-event-head::before {
   content: "▸";
   display: inline-flex;
@@ -1011,7 +1011,7 @@ code {
 }
 
 
-/* Fenêtre large : barre latérale (titre, onglets, état de la séance) et contenu à pleine largeur. */
+/* Wide window: sidebar (title, tabs, session status) and full-width content. */
 @media (min-width: 900px) {
   .app {
     max-width: 1440px;
@@ -1091,7 +1091,7 @@ code {
     gap: 24px;
   }
 
-  /* Jouer : tuiles d'événements plus grandes, série en cours en grand et file à côté. */
+  /* Jouer: larger event tiles, current set large and queue beside it. */
   .play .field {
     max-width: 360px;
   }
@@ -1155,7 +1155,7 @@ code {
     font-size: 0.9rem;
   }
 
-  /* Bilan : totaux en tuiles à côté du journal. */
+  /* Summary: totals as tiles beside the log. */
   .session-detail {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

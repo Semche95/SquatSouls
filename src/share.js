@@ -1,18 +1,18 @@
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
 import { isCount, newId, sameName } from './configDraft.js';
 
-// Texte partagé entre utilisateurs : un jeu (nom et événements) ou la liste des exercices, sans id,
-// en JSON compressé (deflate) puis encodé en base64. La version du format et le type de contenu sont dans le
-// JSON compressé ; le court identifiant placé devant (`squatsouls/game/sekiro:`, `squatsouls/exercises:`)
-// n'est qu'indicatif et l'import l'ignore.
+// Text shared between users: a game (name and events) or the exercise list, without ids,
+// as compressed JSON (deflate) then base64-encoded. The format version and content type are in the
+// compressed JSON; the short identifier placed in front (`squatsouls/game/sekiro:`, `squatsouls/exercises:`)
+// is only informative and the import ignores it.
 const MARK = 'squatsouls';
 const VERSION = 2;
 const GAME = 'game';
 const EXERCISES = 'exercises';
 
-// Lecture du contenu selon la version du format qui l'a écrit. Changer le format, c'est passer à une
-// nouvelle version et lui ajouter un lecteur, en gardant ceux des précédentes pour importer leurs textes.
-// Version 2 : un jeu peut porter l'AppId Steam qui le fait détecter.
+// Reads the content according to the format version that wrote it. Changing the format means moving to a
+// new version and adding a reader for it, keeping those of the previous ones to import their texts.
+// Version 2: a game can carry the Steam AppId used to detect it.
 const READERS = {
   1: (data) => data,
   2: (data) => data,
@@ -20,8 +20,8 @@ const READERS = {
 
 const isText = (v) => typeof v === 'string' && v.trim() !== '';
 
-// Base64 octet par octet : étaler un gros tableau en arguments de String.fromCharCode dépasserait la
-// limite d'arguments d'un appel de fonction.
+// Base64 byte by byte: spreading a large array as arguments of String.fromCharCode would exceed the
+// argument limit of a function call.
 export const toBase64 = (bytes) => btoa(Array.from(bytes, (b) => String.fromCharCode(b)).join(''));
 const fromBase64 = (text) => Uint8Array.from(atob(text), (c) => c.charCodeAt(0));
 
@@ -30,15 +30,15 @@ function share(kind, data, id) {
   return `${MARK}/${id ? `${kind}/${id}` : kind}:` + toBase64(deflateSync(strToU8(payload)));
 }
 
-// Version, type et contenu d'un texte partagé (contenu absent si la version est inconnue) ; lève une
-// erreur si le contenu est illisible. L'identifiant, ignoré, précède le dernier `:`, absent du base64.
+// Version, type and content of a shared text (content absent if the version is unknown); throws an
+// error if the content is unreadable. The identifier, ignored, precedes the last `:`, absent from base64.
 export function unpack(text) {
   const payload = text.slice(text.lastIndexOf(':') + 1);
   const { version, kind, ...data } = JSON.parse(strFromU8(inflateSync(fromBase64(payload))));
   return { version, kind, data: READERS[version]?.(data) };
 }
 
-// Messages d'import par type : texte invalide, ou texte de ce type collé dans l'import de l'autre type.
+// Import messages by type: invalid text, or text of this type pasted into the other type's import.
 const ERRORS = {
   [GAME]: {
     invalid: 'Ce texte n\'est pas un jeu partagé valide.',
@@ -52,13 +52,13 @@ const ERRORS = {
 
 const NEWER = 'Ce texte vient d\'une version plus récente de SquatSouls : la mettre à jour pour l\'importer.';
 
-// Renvoie le contenu du texte collé s'il est du type attendu et que `valid` l'accepte, sinon lève une erreur.
+// Returns the content of the pasted text if it has the expected type and `valid` accepts it, otherwise throws an error.
 function parse(text, kind, valid) {
   let read = {};
   try {
     read = unpack(text);
   } catch {
-    // Contenu illisible : refusé ci-dessous.
+    // Unreadable content: refused below.
   }
   if (read.kind !== kind && Object.hasOwn(ERRORS, read.kind)) throw new Error(ERRORS[read.kind].misplaced);
   if (read.kind === kind && !Object.hasOwn(READERS, read.version)) throw new Error(NEWER);
@@ -71,10 +71,10 @@ export function shareGame(game) {
   return share(GAME, { name: game.name, steamAppId: game.steamAppId, events }, newId(game.name, []));
 }
 
-// Champ facultatif absent (pause propre d'un exercice, AppId Steam d'un jeu) : la clé est omise.
+// Missing optional field (exercise-specific pause, game Steam AppId): the key is omitted.
 const withOptional = (item, key, value) => (value === undefined ? item : { ...item, [key]: value });
 
-// La pause globale et les exercices cochés ne sont pas partagés : chacun garde les siens.
+// The global pause and the checked exercises are not shared: everyone keeps their own.
 export function shareExercises(exercises) {
   return share(EXERCISES, { exercises: exercises.map(({ name, unit, min, max, pause }) => withOptional({ name, unit, min, max }, 'pause', pause)) });
 }
@@ -82,7 +82,7 @@ export function shareExercises(exercises) {
 const validEvent = (ev) =>
   isText(ev?.name) && isCount(ev.draws, 1) && (ev.maxPerSession === undefined || isCount(ev.maxPerSession, 1)) && (ev.jokers === undefined || isCount(ev.jokers, 0));
 
-// Jeu partagé prêt à importer ; `draws` est ramené au nombre d'exercices cochés (`clamped` le signale).
+// Shared game ready to import; `draws` is capped at the number of checked exercises (`clamped` reports it).
 export function parseGame(text, exerciseCount) {
   const data = parse(
     text,
@@ -115,16 +115,16 @@ export function parseExercises(text) {
   ).exercises;
 }
 
-// Le jeu importé remplace celui qui porte le même nom (en gardant son id et, à défaut d'en apporter un,
-// son AppId Steam), sinon il s'ajoute.
+// The imported game replaces the one with the same name (keeping its id and, unless it brings one,
+// its Steam AppId), otherwise it is added.
 export function importGame(games, { name, steamAppId, events }) {
   const existing = games.find((g) => sameName(g.name, name));
   const game = withOptional({ id: existing?.id ?? newId(name, games), name, events }, 'steamAppId', steamAppId ?? existing?.steamAppId);
   return existing ? games.map((g) => (g === existing ? game : g)) : [...games, game];
 }
 
-// Les exercices importés mettent à jour ceux qui portent le même nom, qui restent cochés ou non, et
-// ajoutent les autres, cochés.
+// Imported exercises update those with the same name, which stay checked or not, and
+// add the others, checked.
 export function mergeExercises(exercises, imported) {
   const merged = exercises.map((ex) => ({ ...ex }));
   let added = 0;

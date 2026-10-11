@@ -3,21 +3,21 @@ import { invoke } from '@tauri-apps/api/core';
 import { clone } from '../configDraft.js';
 import { defineShared } from './shared.js';
 
-// Rafraîchissement du compte à rebours de la pause.
+// Refresh rate of the pause countdown.
 const PAUSE_TICK_MS = 250;
 
 export const [provideSession, useSession] = defineShared(({ call }, { config, draft, game, gameId, store }) => {
   const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], jokers: 0, jokersEarned: 0, skipped: [] });
   const notice = ref('');
-  // Pause après un exercice fait : aucun autre ne peut être noté fait avant sa fin.
+  // Pause after an exercise is done: no other can be marked done before it ends.
   const pauseEnd = ref(0);
   const now = ref(0);
   let ticker;
-  // Série dont un exercice a lancé la pause : l'annuler arrête la pause.
+  // Set whose exercise started the pause: dismissing it stops the pause.
   let pauseDrawId = 0;
   const pauseLeft = computed(() => Math.max(0, Math.ceil((pauseEnd.value - now.value) / 1000)));
 
-  // Pause propre de l'exercice, la pause globale à défaut.
+  // Exercise-specific pause, otherwise the global pause.
   function pauseAfter(item) {
     const { exercises, pause } = config.value;
     return exercises.find((ex) => ex.id === item.exerciseId)?.pause ?? pause;
@@ -51,15 +51,15 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     session.value = await invoke('get_session');
   }
 
-  // Configuration enregistrée aussitôt et appliquée à la séance ; false si le backend la refuse.
+  // Configuration saved right away and applied to the session; false if the backend refuses it.
   async function saveNow(cfg) {
     if (!(await store(cfg))) return false;
     await reload();
     return true;
   }
 
-  // Action validée : `change` modifie la configuration enregistrée, enregistrée aussitôt, puis le
-  // brouillon, qui garde ses autres modifications en cours ; false si le backend refuse.
+  // Confirmed action: `change` modifies the saved configuration, saved right away, then the
+  // draft, which keeps its other pending changes; false if the backend refuses.
   async function saveChange(change) {
     const cfg = clone(config.value);
     change(cfg);
@@ -77,11 +77,11 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
       }
       session.value = await call('get_session');
     } catch {
-      /* erreur déjà affichée */
+      /* error already shown */
     }
   }
 
-  // Fait, joker ou annulation d'une série : en cas d'échec, on resynchronise la file.
+  // Done, joker or dismissal of a set: on failure, the queue is resynced.
   async function act(command, draw, args = {}) {
     try {
       session.value = await call(command, { drawId: draw.id, ...args });
@@ -92,7 +92,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     }
   }
 
-  // Série commencée dont l'annulation attend confirmation : ses exercices faits ne compteront pas.
+  // Started set whose dismissal awaits confirmation: its done exercises will not count.
   const confirmDismiss = ref(0);
 
   function dismiss(draw) {
@@ -105,9 +105,9 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     if ((await act('dismiss', draw)) && draw.id === pauseDrawId) skipPause();
   }
 
-  // Exercices de la série encore à faire.
+  // Exercises of the set still to do.
   const remaining = (draw) => draw.items.filter((it) => !it.done);
-  // Coût en jokers absent quand l'action n'est plus possible.
+  // Joker cost absent when the action is no longer possible.
   const canAfford = (cost) => cost != null && session.value.jokers >= cost;
   const setSkipCost = (draw) => remaining(draw).reduce((sum, it) => sum + it.skipCost, 0);
 
@@ -140,7 +140,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     try {
       session.value = await call('cancel_session');
     } catch {
-      /* erreur déjà affichée */
+      /* error already shown */
     }
   }
 

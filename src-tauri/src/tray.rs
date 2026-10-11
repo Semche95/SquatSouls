@@ -1,4 +1,4 @@
-//! Icône dans la zone de notification, et fenêtre masquée plutôt que fermée, selon la configuration.
+//! Notification area icon, and window hidden rather than closed, depending on the configuration.
 
 use crate::fitness::Config;
 use crate::state::AppState;
@@ -11,7 +11,7 @@ const TRAY_ID: &str = "main";
 const SHOW: &str = "show";
 const QUIT: &str = "quit";
 
-/// Affiche la fenêtre principale au premier plan.
+/// Shows the main window in the foreground.
 pub(crate) fn show_main(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.unminimize();
@@ -20,7 +20,7 @@ pub(crate) fn show_main(app: &AppHandle) {
     }
 }
 
-/// Ajoute ou retire l'icône selon la configuration.
+/// Adds or removes the icon depending on the configuration.
 pub(crate) fn apply(app: &AppHandle, config: &Config) -> tauri::Result<()> {
     match (config.tray, app.tray_by_id(TRAY_ID)) {
         (true, None) => build(app),
@@ -32,7 +32,7 @@ pub(crate) fn apply(app: &AppHandle, config: &Config) -> tauri::Result<()> {
     }
 }
 
-/// Clic sur l'icône : affiche la fenêtre. Menu : Afficher et Quitter (seul accès au menu sous Linux).
+/// Click on the icon: shows the window. Menu: Show and Quit (the only way to the menu on Linux).
 fn build(app: &AppHandle) -> tauri::Result<()> {
     let menu = Menu::with_items(
         app,
@@ -67,7 +67,7 @@ fn build(app: &AppHandle) -> tauri::Result<()> {
     Ok(())
 }
 
-/// Avec l'icône et le réglage, fermer la fenêtre la masque : l'appli et la détection continuent.
+/// With the icon and the setting, closing the window hides it: the app and detection keep running.
 pub(crate) fn on_window_event(window: &Window, event: &WindowEvent) {
     let WindowEvent::CloseRequested { api, .. } = event else {
         return;

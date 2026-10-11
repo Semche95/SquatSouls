@@ -10,9 +10,9 @@ import ShareImport from './ShareImport.vue';
 
 const { config, draft, editedGameId, editedGame, newGame, notify, copy } = useConfig();
 const { saveNow, saveChange } = useSession();
-// Import d'un jeu partagé : formulaire à droite, comme la création.
+// Import of a shared game: form on the right, like creation.
 const importing = ref(false);
-// Jeu dont la suppression attend confirmation ; changer de jeu la referme.
+// Game whose removal awaits confirmation; switching games closes it.
 const confirmRemove = ref(null);
 const newGameName = ref(null);
 const nameTaken = computed(() => config.value.games.some((g) => sameName(g.name, newGame.value.name)));
@@ -30,13 +30,13 @@ async function openNewGame() {
   newGameName.value.focus();
 }
 
-// Création, import et suppression validés par l'utilisateur sont enregistrés aussitôt,
-// seules les autres modifications du brouillon attendent « Enregistrer ».
+// Creation, import and removal confirmed by the user are saved right away,
+// only the other draft changes wait for "Enregistrer".
 function saveGames(games) {
   return saveNow({ ...config.value, games });
 }
 
-// Un jeu Steam détecté et ajouté sort de la liste des jeux ignorés.
+// A detected Steam game once added leaves the ignored games list.
 async function createGame() {
   const { name, source, steamAppId } = newGame.value;
   const model = draft.value.games.find((g) => g.id === source);

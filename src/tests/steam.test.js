@@ -3,7 +3,7 @@ import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { config, emptySession, setup, mountApp } from './app.js';
 
-// Configuration avec la détection activée, Elden Ring portant son AppId Steam.
+// Configuration with detection enabled, Elden Ring carrying its Steam AppId.
 const steamConfig = (extra = {}) => ({
   ...config,
   steamDetection: true,
@@ -28,20 +28,20 @@ async function openSettings(w) {
   await w.findAll('.subtabs button')[2].trigger('click');
 }
 const status = (w) => w.find('.status').text();
-// Case à cocher des réglages, d'après son libellé.
+// Settings checkbox, by its label.
 const check = (w, label) => w.findAll('.check').find((c) => c.text() === label).find('input');
 const notifications = () => invoke.mock.calls.filter(([cmd]) => cmd === 'notify').map(([, n]) => n);
 const lastSaved = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)?.[1].config;
 
-describe('détection du jeu Steam', () => {
-  it('ne lit aucun processus tant que l\'option n\'est pas cochée', async () => {
+describe('Steam game detection', () => {
+  it('reads no process until the option is checked', async () => {
     setupSteam({ cfg: config });
     const w = await mountApp();
     expect(invoke.mock.calls.some(([cmd]) => cmd === 'running_steam_app')).toBe(false);
     expect(banner(w).exists()).toBe(false);
   });
 
-  it('propose de sélectionner le jeu configuré qui tourne', async () => {
+  it('offers to select the running configured game', async () => {
     setupSteam();
     const w = await mountApp();
     expect(banner(w).text()).toContain('Elden Ring détecté.');
@@ -52,18 +52,18 @@ describe('détection du jeu Steam', () => {
     expect(lastSaved()).toBeUndefined();
   });
 
-  it('propose chacun des jeux qui portent l\'AppId détecté', async () => {
-    const challenge = { ...config.games[0], id: 'er-nohit', name: 'Elden Ring sans coup', steamAppId: 1245620 };
+  it('offers each of the games carrying the detected AppId', async () => {
+    const challenge = { ...config.games[0], id: 'er-nohit', name: 'Elden Ring no-hit', steamAppId: 1245620 };
     setupSteam({ cfg: steamConfig({ games: [...steamConfig().games, challenge] }) });
     const w = await mountApp();
-    expect(banner(w).findAll('button').map((b) => b.text())).toEqual(['Elden Ring', 'Elden Ring sans coup']);
+    expect(banner(w).findAll('button').map((b) => b.text())).toEqual(['Elden Ring', 'Elden Ring no-hit']);
     await banner(w).findAll('button')[1].trigger('click');
     await flushPromises();
     expect(w.find('.play select').element.value).toBe('er-nohit');
     expect(banner(w).exists()).toBe(false);
   });
 
-  it('montre dans les réglages le jeu détecté, même déjà sélectionné', async () => {
+  it('shows the detected game in the settings, even when already selected', async () => {
     setupSteam({ get_last_game: 'er' });
     const w = await mountApp();
     expect(banner(w).exists()).toBe(false);
@@ -71,14 +71,14 @@ describe('détection du jeu Steam', () => {
     expect(status(w)).toBe('Jeu détecté : Elden Ring.');
   });
 
-  it('montre dans les réglages qu\'aucun jeu Steam ne tourne', async () => {
+  it('shows in the settings that no Steam game is running', async () => {
     setupSteam({ running_steam_app: null });
     const w = await mountApp();
     await openSettings(w);
     expect(status(w)).toBe('Aucun jeu Steam détecté.');
   });
 
-  it('signale dans les réglages un Steam Store qui limite les requêtes', async () => {
+  it('reports in the settings a Steam Store rate-limiting requests', async () => {
     setupSteam({
       running_steam_app: 367520,
       steam_game_name: () => {
@@ -91,7 +91,7 @@ describe('détection du jeu Steam', () => {
     expect(status(w)).toContain('le Steam Store limite les requêtes');
   });
 
-  it('ne signale plus la limite une fois le Steam Store de nouveau joignable', async () => {
+  it('no longer reports the limit once the Steam Store is reachable again', async () => {
     vi.useFakeTimers();
     let blocked = true;
     setupSteam({
@@ -109,13 +109,13 @@ describe('détection du jeu Steam', () => {
     expect(status(w)).toBe('Jeu Steam détecté, nom pas encore connu.');
   });
 
-  it('ne propose rien quand le jeu de la séance est déjà fixé', async () => {
+  it('offers nothing when the session\'s game is already locked', async () => {
     setupSteam({ get_session: emptySession({ gameId: 'sekiro' }) });
     const w = await mountApp();
     expect(banner(w).exists()).toBe(false);
   });
 
-  it('propose aussi les variantes sans AppId d\'un jeu qui le porte, et leur donne l\'AppId', async () => {
+  it('also offers the variants without AppId of a game carrying it, and gives them the AppId', async () => {
     const variant = { ...config.games[0], id: 'er-2', name: 'elden ring 2' };
     setupSteam({ cfg: steamConfig({ games: [...steamConfig().games, variant] }) });
     const w = await mountApp();
@@ -126,7 +126,7 @@ describe('détection du jeu Steam', () => {
     expect(lastSaved().games.find((g) => g.id === 'er-2').steamAppId).toBe(1245620);
   });
 
-  it('reconnaît à son nom un jeu sans AppId et lui donne celui détecté', async () => {
+  it('recognizes a game without AppId by its name and gives it the detected one', async () => {
     setupSteam({ cfg: { ...config, steamDetection: true }, steam_game_name: 'ELDEN RING' });
     const w = await mountApp();
     expect(banner(w).text()).toContain('Elden Ring détecté.');
@@ -135,13 +135,13 @@ describe('détection du jeu Steam', () => {
     expect(lastSaved().games[0].steamAppId).toBe(1245620);
   });
 
-  it('ne propose rien quand le Steam Store ne répond pas', async () => {
-    setupSteam({ running_steam_app: 367520, steam_game_name: new Error('Steam Store injoignable') });
+  it('offers nothing when the Steam Store does not answer', async () => {
+    setupSteam({ running_steam_app: 367520, steam_game_name: new Error('Steam Store unreachable') });
     const w = await mountApp();
     expect(banner(w).exists()).toBe(false);
   });
 
-  it('ajoute un jeu inconnu avec son nom et son AppId', async () => {
+  it('adds an unknown game with its name and AppId', async () => {
     setupSteam({ running_steam_app: 367520, steam_game_name: 'Hollow Knight' });
     const w = await mountApp();
     expect(banner(w).text()).toContain('Hollow Knight détecté.');
@@ -152,14 +152,14 @@ describe('détection du jeu Steam', () => {
     expect(lastSaved().games.at(-1)).toMatchObject({ name: 'Hollow Knight', steamAppId: 367520 });
   });
 
-  it('ignore un jeu inconnu, le liste dans les réglages et peut l\'en retirer ou l\'ajouter', async () => {
+  it('ignores an unknown game, lists it in the settings and can remove or add it from there', async () => {
     setupSteam({ running_steam_app: 367520, steam_game_name: 'Hollow Knight' });
     const w = await mountApp();
     await banner(w).find('.ghost').trigger('click');
     await flushPromises();
     expect(lastSaved().ignoredGames).toEqual([{ appId: 367520, name: 'Hollow Knight' }]);
     expect(banner(w).exists()).toBe(false);
-    expect(invoke.mock.calls.filter(([cmd]) => cmd === 'steam_game_name')).toHaveLength(1);
+    expect(invoke.mock.calls.filter(([cmd]) => cmd === 'steam_game_name')).toEqual([['steam_game_name', { appId: 367520, language: 'french' }]]);
 
     await openSettings(w);
     expect(status(w)).toBe('Jeu détecté : Hollow Knight (ignoré).');
@@ -171,7 +171,7 @@ describe('détection du jeu Steam', () => {
     expect(ignored()).toHaveLength(0);
   });
 
-  it('ajoute un jeu ignoré depuis les réglages et le retire de la liste', async () => {
+  it('adds an ignored game from the settings and removes it from the list', async () => {
     setupSteam({ cfg: steamConfig({ ignoredGames: [{ appId: 367520, name: 'Hollow Knight' }] }), running_steam_app: null });
     const w = await mountApp();
     await openSettings(w);
@@ -182,7 +182,7 @@ describe('détection du jeu Steam', () => {
     expect(lastSaved().ignoredGames).toEqual([]);
   });
 
-  it('active la détection depuis les réglages avec Enregistrer', async () => {
+  it('enables detection from the settings with Enregistrer', async () => {
     setupSteam({ cfg: config, running_steam_app: null });
     const w = await mountApp();
     await openSettings(w);
@@ -196,8 +196,8 @@ describe('détection du jeu Steam', () => {
   });
 });
 
-describe('notification d\'un jeu Steam lancé', () => {
-  it('notifie une seule fois un jeu configuré, et de nouveau une fois relancé', async () => {
+describe('launched Steam game notification', () => {
+  it('notifies a configured game only once, and again once relaunched', async () => {
     vi.useFakeTimers();
     let running = 1245620;
     setupSteam({ running_steam_app: () => running });
@@ -211,7 +211,7 @@ describe('notification d\'un jeu Steam lancé', () => {
     expect(notifications()).toHaveLength(2);
   });
 
-  it('notifie un jeu inconnu une fois son nom connu', async () => {
+  it('notifies an unknown game once its name is known', async () => {
     setupSteam({ running_steam_app: 367520, steam_game_name: 'Hollow Knight' });
     await mountApp();
     expect(notifications()).toEqual([
@@ -219,17 +219,17 @@ describe('notification d\'un jeu Steam lancé', () => {
     ]);
   });
 
-  it('ne notifie ni un jeu ignoré, ni un jeu au nom inconnu, ni quand la notification est décochée', async () => {
+  it('notifies neither an ignored game, nor a game with an unknown name, nor when notification is unchecked', async () => {
     setupSteam({ cfg: steamConfig({ ignoredGames: [{ appId: 367520, name: 'Hollow Knight' }] }), running_steam_app: 367520 });
     await mountApp();
-    setupSteam({ running_steam_app: 1, steam_game_name: new Error('Steam Store injoignable') });
+    setupSteam({ running_steam_app: 1, steam_game_name: new Error('Steam Store unreachable') });
     await mountApp();
     setupSteam({ cfg: steamConfig({ steamNotify: false }) });
     await mountApp();
     expect(notifications()).toEqual([]);
   });
 
-  it('montre la case de notification sous la détection cochée', async () => {
+  it('shows the notification checkbox under the checked detection', async () => {
     setupSteam({ cfg: config, running_steam_app: null });
     const w = await mountApp();
     await openSettings(w);
@@ -240,8 +240,8 @@ describe('notification d\'un jeu Steam lancé', () => {
   });
 });
 
-describe('zone de notification', () => {
-  it('replie ses réglages tant que l\'icône n\'est pas cochée, et les enregistre avec Enregistrer', async () => {
+describe('notification area', () => {
+  it('collapses its settings until the icon is checked, and saves them with Enregistrer', async () => {
     setupSteam({ cfg: config, running_steam_app: null });
     const w = await mountApp();
     await openSettings(w);

@@ -1,7 +1,7 @@
 [package]
 name = "squat-souls"
 version = "0.1.0"
-description = "Tire un exercice et un nombre de répétitions selon les événements des jeux"
+description = "Turns in-game events into bodyweight exercises with a random number of reps"
 edition = "2021"
 
 [lib]

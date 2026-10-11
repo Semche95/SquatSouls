@@ -1,6 +1,6 @@
--- Ajoute `retry_at` aux bases dont `steam_names` en manque (brouillon de V3), sans échouer sur les autres
--- ni perdre leurs dates : dans la sous-requête, `retry_at` désigne la colonne de `steam_names` si elle
--- existe, sinon le NULL de la requête englobante.
+-- Adds `retry_at` to databases whose `steam_names` lacks it (V3 draft), without failing on the others
+-- or losing their dates: in the subquery, `retry_at` refers to the `steam_names` column if it
+-- exists, otherwise to the NULL of the enclosing query.
 CREATE TABLE steam_names_new (
     app_id INTEGER PRIMARY KEY,
     name TEXT,

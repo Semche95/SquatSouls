@@ -11,9 +11,9 @@ const { config } = useConfig();
 const { session } = useSession();
 
 const history = ref([]);
-// Historique complet, affiché en grand par-dessus le Bilan (null quand il est fermé).
+// Full history, shown large over the Summary tab (null when closed).
 const fullHistory = ref(null);
-// Jeu fixé au premier événement de la séance, absent avant.
+// Game set on the session's first event, absent before.
 const gameName = computed(() => config.value?.games.find((g) => g.id === session.value.gameId)?.name);
 const jokersSpent = computed(() => session.value.skipped.reduce((sum, k) => sum + k.jokers, 0));
 
@@ -21,7 +21,7 @@ async function openFullHistory() {
   try {
     fullHistory.value = await call('get_full_history');
   } catch {
-    /* erreur déjà affichée */
+    /* error already shown */
   }
 }
 
@@ -39,7 +39,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main class="panel bilan">
+  <main class="panel summary">
     <section class="group current">
       <header class="group-head">
         <h2 class="group-title">Séance actuelle</h2>

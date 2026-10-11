@@ -2,7 +2,7 @@
 import { plural } from '../format.js';
 import CountInput from './CountInput.vue';
 
-// ev appartient au brouillon : on l'édite en place.
+// ev belongs to the draft: it is edited in place.
 defineProps({ ev: Object });
 defineEmits(['remove']);
 </script>

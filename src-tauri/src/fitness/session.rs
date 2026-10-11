@@ -1,13 +1,13 @@
-//! Tirage et séance.
+//! Draw and session.
 
 use super::{Config, Exercise, Game, GameEvent};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// Jokers pour réduire un exercice de moitié.
+/// Jokers to halve an exercise.
 pub const HALVE_COST: u32 = 1;
-/// Jokers pour sauter un exercice entier.
+/// Jokers to skip a whole exercise.
 pub const SKIP_COST: u32 = 2;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -17,18 +17,18 @@ pub struct DrawItem {
     pub name: String,
     pub unit: String,
     pub amount: u32,
-    /// Vrai une fois réduit de moitié avec un joker.
+    /// True once halved with a joker.
     pub halved: bool,
-    /// Vrai une fois noté fait : il reste affiché jusqu'à la fin de la série.
+    /// True once marked done: it stays displayed until the end of the set.
     pub done: bool,
-    /// Jokers pour le réduire de moitié, absent si ce n'est plus possible.
+    /// Jokers to halve it, absent when no longer possible.
     pub halve_cost: Option<u32>,
-    /// Jokers pour sauter ce qu'il en reste.
+    /// Jokers to skip what is left of it.
     pub skip_cost: u32,
 }
 
 impl DrawItem {
-    /// Tire le nombre de l'exercice entre ses bornes.
+    /// Draws the exercise's number between its bounds.
     fn drawn<R: Rng + ?Sized>(ex: &Exercise, rng: &mut R) -> Self {
         DrawItem {
             exercise_id: ex.id.clone(),
@@ -49,7 +49,7 @@ impl DrawItem {
         self
     }
 
-    /// Reprend le nom et l'unité de l'exercice et ramène son nombre entre ses bornes, s'il n'a pas été réduit.
+    /// Takes the exercise's name and unit and clamps its number between its bounds, if it was not halved.
     fn refit(&mut self, ex: &Exercise) {
         self.name = ex.name.clone();
         self.unit = ex.unit.clone();
@@ -68,25 +68,25 @@ pub struct Draw {
     pub event_id: String,
     pub event_name: String,
     pub items: Vec<DrawItem>,
-    /// Jokers gagnés à la validation (événement de récompense).
+    /// Jokers earned on completion (reward event).
     pub jokers: u32,
-    /// Vrai quand la limite de l'événement pour la séance est dépassée.
+    /// True when the event's limit for the session is exceeded.
     pub capped: bool,
     pub trigger_count: u32,
     pub max_per_session: Option<u32>,
-    /// Exercices déjà faits de la série, retirés si elle est annulée.
+    /// Exercises of the set already done, removed if it is dismissed.
     #[serde(skip)]
     pub logged: Vec<LogEntry>,
-    /// Exercices tels que tirés, réservés au prochain déclenchement si la série est annulée.
+    /// Exercises as drawn, reserved for the next trigger if the set is dismissed.
     #[serde(skip)]
     pub drawn: Vec<DrawItem>,
-    /// Vrai une fois des jokers dépensés sur la série.
+    /// True once jokers have been spent on the set.
     #[serde(skip)]
     pub forfeited: bool,
 }
 
 impl Draw {
-    /// Dépense des jokers sur la série : elle ne rapporte plus les siens.
+    /// Spends jokers on the set: it no longer earns its own.
     fn forfeit(&mut self, items: Vec<DrawItem>, jokers: u32, halved: bool, now: i64) -> Skipped {
         self.jokers = 0;
         self.forfeited = true;
@@ -101,11 +101,11 @@ impl Draw {
     }
 }
 
-/// Une série faite, telle qu'enregistrée dans l'historique.
+/// A set done, as saved in the history.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct LogEntry {
     pub at: i64,
-    /// Début de la séance.
+    /// Start of the session.
     pub session: i64,
     pub game: String,
     pub event: String,
@@ -123,13 +123,13 @@ pub struct Total {
     pub sets: u32,
 }
 
-/// Ce qu'un joker a retiré d'une série : un ou plusieurs exercices sautés, ou la moitié d'un exercice.
+/// What a joker removed from a set: one or more skipped exercises, or half of an exercise.
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct Skipped {
     pub at: i64,
     pub game: String,
     pub event: String,
-    /// Exercices avec la quantité retirée.
+    /// Exercises with the removed amount.
     pub items: Vec<DrawItem>,
     pub jokers: u32,
     pub halved: bool,
@@ -147,17 +147,17 @@ pub struct TriggerCount {
 #[serde(rename_all = "camelCase")]
 pub struct SessionView {
     pub started_at: i64,
-    /// Jeu de la séance, fixé au premier événement.
+    /// Game of the session, set on the first event.
     pub game_id: Option<String>,
     pub pending: Vec<Draw>,
     pub sets: usize,
     pub totals: Vec<Total>,
-    /// Séries faites, la plus récente en premier.
+    /// Sets done, most recent first.
     pub log: Vec<LogEntry>,
     pub triggers: Vec<TriggerCount>,
     pub jokers: u32,
     pub jokers_earned: u32,
-    /// Séries sautées, la plus récente en premier.
+    /// Skipped sets, most recent first.
     pub skipped: Vec<Skipped>,
 }
 
@@ -171,11 +171,11 @@ pub struct Session {
     jokers: u32,
     jokers_earned: u32,
     skipped: Vec<Skipped>,
-    /// Exercices pas encore sortis dans le tour en cours : chacun sort une fois avant qu'un autre revienne.
+    /// Exercises not drawn yet in the current round: each comes out once before another comes back.
     bag: Vec<String>,
-    /// Exercices de la dernière série tirée, que le tour suivant ne reprend pas aussitôt.
+    /// Exercises of the last drawn set, which the next round does not pick again right away.
     last: Vec<String>,
-    /// Exercices des séries annulées, par jeu et événement : le prochain déclenchement les redonne.
+    /// Exercises of dismissed sets, by game and event: the next trigger gives them back.
     reserved: HashMap<(String, String), Vec<DrawItem>>,
     next_id: u64,
 }
@@ -199,20 +199,23 @@ impl Session {
             .games
             .iter()
             .find(|g| g.id == game_id)
-            .ok_or_else(|| format!("Jeu inconnu : {game_id}"))?;
+            .ok_or_else(|| format!("Unknown game: {game_id}"))?;
         if self.game_id.as_ref().is_some_and(|id| id != &game.id) {
-            return Err("La séance a déjà commencé sur un autre jeu : lance une nouvelle séance pour changer.".into());
+            return Err(
+                "The session already started on another game: start a new session to switch."
+                    .into(),
+            );
         }
         let ev = game
             .events
             .iter()
             .find(|e| e.id == event_id)
-            .ok_or_else(|| format!("Événement inconnu : {event_id}"))?;
+            .ok_or_else(|| format!("Unknown event: {event_id}"))?;
 
         self.game_id = Some(game.id.clone());
         let key = (game.id.clone(), ev.id.clone());
         let count = self.triggers.entry(key.clone()).or_insert(0);
-        // Une fois la limite atteinte, le compteur ne bouge plus.
+        // Once the limit is reached, the counter no longer moves.
         let capped = ev.max_per_session.is_some_and(|max| *count >= max);
         if !capped {
             *count += 1;
@@ -253,9 +256,9 @@ impl Session {
         Ok(draw)
     }
 
-    /// Tire `n` exercices distincts, hors de `exclude`, dans le tour en cours, en commençant un nouveau tour quand il est épuisé.
-    /// Un exercice de la dernière série ne ressort pas aussitôt, sauf s'il ne reste que lui à tirer.
-    /// S'arrête plus tôt quand il ne reste plus d'exercice à tirer.
+    /// Draws `n` distinct exercises, outside `exclude`, from the current round, starting a new round when it runs out.
+    /// An exercise of the last set does not come out again right away, unless it is the only one left to draw.
+    /// Stops early when there is no exercise left to draw.
     fn pick<'a, R: Rng + ?Sized>(
         &mut self,
         config: &'a Config,
@@ -295,7 +298,7 @@ impl Session {
         picks
     }
 
-    /// Note un exercice fait : il passe dans les séries faites. La série finie rapporte ses jokers.
+    /// Marks an exercise done: it moves to the sets done. The finished set earns its jokers.
     pub fn complete_exercise(
         &mut self,
         id: u64,
@@ -321,7 +324,7 @@ impl Session {
         Ok(entry)
     }
 
-    /// Retire la série quand il ne lui reste rien à faire, avec les jokers qu'elle rapporte encore.
+    /// Removes the set when nothing is left to do, with the jokers it still earns.
     fn finish_if_done(&mut self, id: u64) -> Result<(), String> {
         if self.pending_draw(id)?.items.iter().all(|it| it.done) {
             let draw = self.take_pending(id)?;
@@ -331,8 +334,8 @@ impl Session {
         Ok(())
     }
 
-    /// Annule un déclenchement : il n'est plus compté, ni les exercices déjà faits de la série, renvoyés pour les retirer de l'historique.
-    /// Ses exercices tels que tirés sont réservés au prochain déclenchement du même événement.
+    /// Dismisses a trigger: it is no longer counted, nor are the set's exercises already done, returned to remove them from the history.
+    /// Its exercises as drawn are reserved for the next trigger of the same event.
     pub fn dismiss(&mut self, id: u64) -> Result<Vec<LogEntry>, String> {
         let draw = self.take_pending(id)?;
         let key = (draw.game_id, draw.event_id);
@@ -348,14 +351,14 @@ impl Session {
         Ok(draw.logged)
     }
 
-    /// Réduit un exercice de moitié (arrondi au supérieur) : l'autre moitié compte comme sautée.
+    /// Halves an exercise (rounded up): the other half counts as skipped.
     pub fn halve(&mut self, id: u64, exercise_id: &str, now: i64) -> Result<(), String> {
         let jokers = self.jokers;
         let (draw, pos) = self.pending_item(id, exercise_id)?;
         let item = &mut draw.items[pos];
         let cost = item
             .halve_cost
-            .ok_or("Cet exercice ne peut plus être réduit.")?;
+            .ok_or("This exercise can no longer be reduced.")?;
         if jokers < cost {
             return Err(NOT_ENOUGH_JOKERS.into());
         }
@@ -373,7 +376,7 @@ impl Session {
         Ok(())
     }
 
-    /// Saute un exercice : le reste de la série demeure à faire, sauf s'il n'y a plus rien.
+    /// Skips an exercise: the rest of the set remains to do, unless nothing is left.
     pub fn skip_exercise(&mut self, id: u64, exercise_id: &str, now: i64) -> Result<(), String> {
         let jokers = self.jokers;
         let (draw, pos) = self.pending_item(id, exercise_id)?;
@@ -388,7 +391,7 @@ impl Session {
         Ok(())
     }
 
-    /// Saute ce qui reste d'une série : le déclenchement reste compté.
+    /// Skips what is left of a set: the trigger stays counted.
     pub fn skip_set(&mut self, id: u64, now: i64) -> Result<(), String> {
         let draw = self.pending_draw(id)?;
         let cost = skip_set_cost(draw);
@@ -410,8 +413,8 @@ impl Session {
         self.skipped.push(skipped);
     }
 
-    /// Adapte les séries à faire et réservées à une nouvelle configuration, et recommence le tour.
-    /// La série d'un événement supprimé est retirée ; une série finie par l'ajustement rapporte ses jokers.
+    /// Adapts the sets to do and the reserved sets to a new configuration, and restarts the round.
+    /// The set of a removed event is dropped; a set finished by the adjustment earns its jokers.
     pub fn apply_config<R: Rng + ?Sized>(&mut self, config: &Config, rng: &mut R) {
         self.bag.clear();
         for mut draw in std::mem::take(&mut self.pending) {
@@ -446,9 +449,9 @@ impl Session {
         }
     }
 
-    /// Ajuste une série telle que tirée (`drawn`) et, pour une série à faire, ses exercices restants (`items`) :
-    /// un exercice supprimé ou décoché est remplacé, un nombre est ramené entre les bornes et la série prend ou perd
-    /// des exercices pour en compter `draws`. Les exercices déjà faits ne changent pas.
+    /// Adjusts a set as drawn (`drawn`) and, for a set to do, its remaining exercises (`items`):
+    /// a removed or unchecked exercise is replaced, a number is clamped between the bounds and the set gains or loses
+    /// exercises to count `draws` of them. Exercises already done do not change.
     fn refit<R: Rng + ?Sized>(
         &mut self,
         config: &Config,
@@ -468,7 +471,7 @@ impl Session {
                 .map(|it| it.done)
         };
 
-        // Exercices supprimés ou décochés : remplacés par d'autres, sauf ceux déjà faits.
+        // Removed or unchecked exercises: replaced by others, except those already done.
         for i in 0..drawn.len() {
             let id = drawn[i].exercise_id.clone();
             if exercise(&id).is_some() {
@@ -492,7 +495,7 @@ impl Session {
         drawn.retain(|it| exercise(&it.exercise_id).is_some());
 
         for it in drawn.iter_mut() {
-            it.refit(exercise(&it.exercise_id).expect("exercice retenu"));
+            it.refit(exercise(&it.exercise_id).expect("retained exercise"));
         }
         if let Some(items) = items.as_mut() {
             for it in items.iter_mut().filter(|it| !it.done) {
@@ -502,7 +505,7 @@ impl Session {
             }
         }
 
-        // Moins d'exercices : on retire d'abord ceux déjà sautés, puis ceux qui restent à faire, puis ceux faits.
+        // Fewer exercises: remove first those already skipped, then those left to do, then those done.
         let draws = draws as usize;
         for rank in [None, Some(false), Some(true)] {
             while drawn.len() > draws {
@@ -521,7 +524,7 @@ impl Session {
             }
         }
 
-        // Plus d'exercices : on tire ceux qui manquent.
+        // More exercises: draw the missing ones.
         if drawn.len() < draws {
             let mut exclude = ids(drawn);
             if let Some(items) = &items {
@@ -537,7 +540,7 @@ impl Session {
         }
     }
 
-    /// Vrai si la séance a commencé sur un jeu absent de `config`.
+    /// True if the session started on a game missing from `config`.
     pub fn game_removed(&self, config: &Config) -> bool {
         self.game_id
             .as_ref()
@@ -548,7 +551,7 @@ impl Session {
         self.pending
             .iter()
             .position(|d| d.id == id)
-            .ok_or_else(|| "Cette série n'est plus en attente.".into())
+            .ok_or_else(|| "This set is no longer pending.".into())
     }
 
     fn pending_draw(&self, id: u64) -> Result<&Draw, String> {
@@ -560,7 +563,7 @@ impl Session {
         Ok(self.pending.remove(pos))
     }
 
-    /// Série en attente et position de l'exercice, encore à faire, dans celle-ci.
+    /// Pending set and position in it of the exercise, still to do.
     fn pending_item(&mut self, id: u64, exercise_id: &str) -> Result<(&mut Draw, usize), String> {
         let pos = self.pending_pos(id)?;
         let draw = &mut self.pending[pos];
@@ -568,9 +571,9 @@ impl Session {
             .items
             .iter()
             .position(|it| it.exercise_id == exercise_id)
-            .ok_or("Cet exercice n'est plus dans la série.")?;
+            .ok_or("This exercise is no longer in the set.")?;
         if draw.items[item].done {
-            return Err("Cet exercice est déjà fait.".into());
+            return Err("This exercise is already done.".into());
         }
         Ok((draw, item))
     }
@@ -602,7 +605,7 @@ impl Session {
     }
 }
 
-const NOT_ENOUGH_JOKERS: &str = "Pas assez de jokers.";
+const NOT_ENOUGH_JOKERS: &str = "Not enough jokers.";
 
 fn find_event<'a>(
     config: &'a Config,
@@ -613,7 +616,7 @@ fn find_event<'a>(
     Some((game, game.events.iter().find(|e| e.id == event_id)?))
 }
 
-/// Jokers pour sauter tout ce qui reste d'une série.
+/// Jokers to skip everything left of a set.
 pub fn skip_set_cost(draw: &Draw) -> u32 {
     draw.items
         .iter()
@@ -622,7 +625,7 @@ pub fn skip_set_cost(draw: &Draw) -> u32 {
         .sum()
 }
 
-/// Cumule les séries par exercice, dans l'ordre de première apparition.
+/// Sums sets by exercise, in order of first appearance.
 pub fn totals(entries: &[LogEntry]) -> Vec<Total> {
     let mut out: Vec<Total> = Vec::new();
     for e in entries {

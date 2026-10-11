@@ -22,7 +22,7 @@ fn app_id_is_read_from_the_environment() {
 
 #[test]
 fn other_processes_have_no_app_id() {
-    // Un AppId hors de `SteamLaunch`, ou nul (raccourci hors Steam), ne compte pas.
+    // An AppId outside `SteamLaunch`, or zero (non-Steam shortcut), does not count.
     assert_eq!(steam_app_id(&["tool", "AppId=1245620"], &NONE), None);
     assert_eq!(steam_app_id(&["game"], &["SteamAppId=0"]), None);
     assert_eq!(steam_app_id(&NONE, &NONE), None);
@@ -64,6 +64,8 @@ fn app_id_is_read_from_the_steam_registry() {
 const SEKIRO: &str =
     r#"{"814380":{"success":true,"data":{"type":"game","name":"Sekiro™: Shadows Die Twice"}}}"#;
 const START: i64 = 1_700_000_000;
+/// Steam Store language of the names asked in the tests.
+const LANGUAGE: &str = "english";
 
 fn forget(_: &SteamNames) {}
 
@@ -72,7 +74,7 @@ fn ok(json: &str) -> impl FnOnce(&str) -> SteamResponse + '_ {
 }
 
 fn never(_: &str) -> SteamResponse {
-    panic!("appel interdit")
+    panic!("call not allowed")
 }
 
 #[test]
@@ -80,16 +82,17 @@ fn name_is_read_from_the_store_without_trademarks_and_asked_once() {
     let mut names = SteamNames::default();
     let name = names.name(
         814380,
+        LANGUAGE,
         START,
         |url| {
-            assert!(url.contains("appids=814380"));
+            assert!(url.contains("appids=814380") && url.contains("l=english"));
             Some((200, SEKIRO.into()))
         },
         forget,
     );
     assert_eq!(name.as_deref(), Ok("Sekiro: Shadows Die Twice"));
     let much_later = START + STEAM_RETRY_DELAY * 100;
-    let again = names.name(814380, much_later, never, forget);
+    let again = names.name(814380, LANGUAGE, much_later, never, forget);
     assert_eq!(again.as_deref(), Ok("Sekiro: Shadows Die Twice"));
 }
 
@@ -97,31 +100,39 @@ fn name_is_read_from_the_store_without_trademarks_and_asked_once() {
 fn unknown_or_unanswered_app_is_asked_again_after_a_delay() {
     let mut names = SteamNames::default();
     let later = START + STEAM_STORE_INTERVAL;
-    let unknown = names.name(1, START, ok(r#"{"1":{"success":false}}"#), forget);
+    let unknown = names.name(1, LANGUAGE, START, ok(r#"{"1":{"success":false}}"#), forget);
     assert_eq!(unknown, Err(SteamNameError::Unknown));
     assert_eq!(
-        names.name(2, later, |_| None, forget),
+        names.name(2, LANGUAGE, later, |_| None, forget),
         Err(SteamNameError::Unknown)
     );
     let soon = START + STEAM_RETRY_DELAY - 1;
     assert_eq!(
-        names.name(1, soon, never, forget),
+        names.name(1, LANGUAGE, soon, never, forget),
         Err(SteamNameError::Unknown)
     );
-    let json = r#"{"1":{"data":{"name":"Retrouvé"}}}"#;
-    let found = names.name(1, START + STEAM_RETRY_DELAY, ok(json), forget);
-    assert_eq!(found.as_deref(), Ok("Retrouvé"));
+    let json = r#"{"1":{"data":{"name":"Found"}}}"#;
+    let found = names.name(1, LANGUAGE, START + STEAM_RETRY_DELAY, ok(json), forget);
+    assert_eq!(found.as_deref(), Ok("Found"));
 }
 
 #[test]
 fn store_is_called_at_most_once_per_interval() {
     let mut names = SteamNames::default();
-    names.name(814380, START, ok(SEKIRO), forget).unwrap();
+    names
+        .name(814380, LANGUAGE, START, ok(SEKIRO), forget)
+        .unwrap();
     let soon = START + STEAM_STORE_INTERVAL - 1;
-    let waited = names.name(1245620, soon, never, forget);
+    let waited = names.name(1245620, LANGUAGE, soon, never, forget);
     assert_eq!(waited, Err(SteamNameError::Wait));
     let json = r#"{"1245620":{"data":{"name":"ELDEN RING"}}}"#;
-    let name = names.name(1245620, START + STEAM_STORE_INTERVAL, ok(json), forget);
+    let name = names.name(
+        1245620,
+        LANGUAGE,
+        START + STEAM_STORE_INTERVAL,
+        ok(json),
+        forget,
+    );
     assert_eq!(name.as_deref(), Ok("ELDEN RING"));
 }
 
@@ -129,12 +140,24 @@ fn store_is_called_at_most_once_per_interval() {
 fn rate_limited_store_is_not_called_for_a_while() {
     for status in [429, 403] {
         let mut names = SteamNames::default();
-        let refused = names.name(814380, START, |_| Some((status, String::new())), forget);
+        let refused = names.name(
+            814380,
+            LANGUAGE,
+            START,
+            |_| Some((status, String::new())),
+            forget,
+        );
         assert_eq!(refused, Err(SteamNameError::Blocked));
         let soon = START + STEAM_BLOCK_DELAY - 1;
-        let blocked = names.name(814380, soon, never, forget);
+        let blocked = names.name(814380, LANGUAGE, soon, never, forget);
         assert_eq!(blocked, Err(SteamNameError::Blocked));
-        let name = names.name(814380, START + STEAM_BLOCK_DELAY, ok(SEKIRO), forget);
+        let name = names.name(
+            814380,
+            LANGUAGE,
+            START + STEAM_BLOCK_DELAY,
+            ok(SEKIRO),
+            forget,
+        );
         assert!(name.is_ok());
     }
 }
@@ -145,12 +168,16 @@ fn state_is_handed_over_after_each_call() {
     let mut remembered = None;
     let refused = |_: &str| Some((429, String::new()));
     names
-        .name(814380, START, refused, |s| remembered = Some(s.clone()))
+        .name(814380, LANGUAGE, START, refused, |s| {
+            remembered = Some(s.clone())
+        })
         .unwrap_err();
     assert_eq!(remembered.as_ref(), Some(&names));
     remembered = None;
     names
-        .name(814380, START + 1, never, |s| remembered = Some(s.clone()))
+        .name(814380, LANGUAGE, START + 1, never, |s| {
+            remembered = Some(s.clone())
+        })
         .unwrap_err();
     assert_eq!(remembered, None);
 }

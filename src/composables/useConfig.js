@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { byName, clone, normalized, numberError } from '../configDraft.js';
 import { defineShared } from './shared.js';
 
-// Durée d'affichage d'une confirmation.
+// Display duration of a confirmation.
 const CONFIG_MSG_MS = 3000;
 
 function findOr(games, id) {
@@ -12,37 +12,37 @@ function findOr(games, id) {
 
 export const [provideConfig, useConfig] = defineShared(() => {
   const config = ref(null);
-  // Copie de travail éditée dans l'onglet Configuration, envoyée telle quelle à l'enregistrement.
+  // Working copy edited in the Configuration tab, sent as is when saving.
   const draft = ref(null);
   const configError = ref('');
-  // Confirmation passagère (enregistrement, copie, import).
+  // Transient confirmation (save, copy, import).
   const configMsg = ref('');
   let configMsgTimer;
-  // Onglet affiché, et sous-onglet de la configuration.
-  const tab = ref('jouer');
-  const cfgTab = ref('jeux');
+  // Displayed tab, and configuration sub-tab.
+  const tab = ref('play');
+  const cfgTab = ref('games');
   const editedGameId = ref('');
-  // Création d'un jeu : formulaire à droite, rien n'est ajouté avant validation.
-  // Un jeu Steam détecté le préremplit avec son nom et son AppId.
+  // Game creation: form on the right, nothing is added before confirmation.
+  // A detected Steam game prefills it with its name and AppId.
   const newGame = ref(null);
-  // Dernier jeu choisi, gardé par le backend d'un lancement à l'autre (vide tant qu'aucun n'est choisi).
+  // Last chosen game, kept by the backend from one launch to the next (empty until one is chosen).
   const gameId = ref('');
 
   const game = computed(() => config.value?.games.find((g) => g.id === gameId.value) ?? null);
   const editedGame = computed(() => findOr(draft.value?.games ?? [], editedGameId.value));
   const dirty = computed(() => !!draft.value && JSON.stringify(draft.value) !== JSON.stringify(config.value));
-  // Premier champ mal rempli du brouillon, qui bloque « Enregistrer » (vide si tout est valide).
+  // First badly filled field of the draft, which blocks "Enregistrer" (empty if everything is valid).
   const draftError = computed(() => (draft.value ? numberError(normalized(draft.value)) : ''));
 
-  // Jeu mémorisé ou en cours supprimé : on redemande le jeu. La config est surveillée aussi, car un jeu
-  // mémorisé inconnu laisse `game` à null avant comme après son chargement.
+  // Remembered or current game removed: ask for the game again. The config is watched too, because an
+  // unknown remembered game leaves `game` null both before and after it loads.
   watch([config, game], ([cfg, g]) => {
     if (cfg && !g) gameId.value = '';
   });
   watch(gameId, (id) => {
     if (id) invoke('set_last_game', { gameId: id }).catch(() => {});
   });
-  // Garde la liste « Jeu » sur le jeu réellement édité (le premier par nom tant qu'aucun n'est choisi).
+  // Keeps the "Jeu" list on the game actually edited (the first by name until one is chosen).
   watch(editedGame, (g) => {
     if (g && g.id !== editedGameId.value) editedGameId.value = g.id;
   });
@@ -53,7 +53,7 @@ export const [provideConfig, useConfig] = defineShared(() => {
     configError.value = view.error ?? '';
   }
 
-  // Enregistre `cfg` sans toucher au brouillon ; renvoie false si le backend refuse.
+  // Saves `cfg` without touching the draft; returns false if the backend refuses.
   async function store(cfg) {
     const clean = normalized(cfg);
     configError.value = numberError(clean);
@@ -74,7 +74,7 @@ export const [provideConfig, useConfig] = defineShared(() => {
     if (msg) configMsgTimer = setTimeout(() => (configMsg.value = ''), CONFIG_MSG_MS);
   }
 
-  // Copie un texte partagé dans le presse-papiers.
+  // Copies a shared text to the clipboard.
   async function copy(text) {
     try {
       await navigator.clipboard.writeText(text);

@@ -1,6 +1,6 @@
 import { inject, provide } from 'vue';
 
-// État créé par App et partagé avec ses descendants : un état de module survivrait d'un montage à l'autre.
+// State created by App and shared with its descendants: module state would survive from one mount to the next.
 export function defineShared(factory) {
   const key = Symbol();
   const provideShared = (...deps) => {

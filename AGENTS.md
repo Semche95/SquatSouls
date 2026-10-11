@@ -1,52 +1,52 @@
 # AGENTS.md
 
-Appli desktop Tauri 2 (Rust) + Vue 3 (Vite). Voir `README.md` pour l'usage.
+Tauri 2 (Rust) + Vue 3 (Vite) desktop app. See `README.md` for usage.
 
-## Règles métier
+## Business rules
 
-Les règles métier sont décrites dans la section « Règles métier » de `README.md`, qui fait référence.
+The business rules are described in the "Business rules" section of `README.md`, which is the reference.
 
-- La lire avant de modifier le comportement de l'appli.
-- La mettre à jour dans la même modification dès qu'une règle change ou s'ajoute (tirage, limites, jokers, séance, historique, validation de la configuration).
+- Read it before changing the app's behavior.
+- Update it in the same change as soon as a rule changes or is added (draw, limits, jokers, session, history, configuration validation).
 
 ## Structure
 
-- `src/` : interface Vue (`App.vue` en-tête et onglets, `components/` un composant par onglet et ses blocs, `composables/` état partagé via provide/inject, `format.js`, `configDraft.js` et `share.js` (partage de jeux et d'exercices) fonctions pures, `style.css`)
-- `src-tauri/src/` : backend Rust (`lib.rs` lancement, `commands.rs` commandes Tauri, `state.rs` état partagé et chargement de la configuration, `tray.rs` icône de la zone de notification et fenêtre masquée, `fitness/` logique métier : `config.rs` configuration, `seed.json` configuration par défaut, `session.rs` tirage et séance, `history.rs` bilan de l'historique, `steam.rs` détection du jeu Steam en cours, `store.rs` stockage SQLite)
-- `src-tauri/migrations/` : migrations SQL du schéma, une par fichier `V<n>__<nom>.sql`, datées dans la base à leur application. Une migration créée ne se modifie jamais, on en ajoute toujours une nouvelle
-- `src/tests/` : tests de l'interface (Vitest), un fichier par onglet ou module ; `app.js` données et montage partagés, `setup.js` simulation du backend Tauri
-- `src-tauri/tests/` : tests du backend (tests d'intégration Cargo sur l'API publique de `fitness`), un fichier par module
+- `src/`: Vue interface (`App.vue` header and tabs, `components/` one component per tab and its blocks, `composables/` shared state via provide/inject, `format.js`, `configDraft.js` and `share.js` (game and exercise sharing) pure functions, `locale.js` interface language, `style.css`)
+- `src-tauri/src/`: Rust backend (`lib.rs` startup, `commands.rs` Tauri commands, `state.rs` shared state and configuration loading, `tray.rs` notification area icon and hidden window, `fitness/` business logic: `config.rs` configuration, `seed.json` default configuration, `session.rs` draw and session, `history.rs` history summary, `steam.rs` detection of the running Steam game, `store.rs` SQLite storage)
+- `src-tauri/migrations/`: SQL schema migrations, one per `V<n>__<name>.sql` file, dated in the database when applied. A migration is never modified once created, a new one is always added
+- `src/tests/`: interface tests (Vitest), one file per tab or module; `app.js` shared data and mounting, `setup.js` Tauri backend mock
+- `src-tauri/tests/`: backend tests (Cargo integration tests on the public API of `fitness`), one file per module
 
-## Commandes
+## Commands
 
 ```bash
-pnpm tauri dev          # lancer en développement
-pnpm tauri build        # build de production
-cd src-tauri && cargo test # tests backend
-pnpm test                   # tests interface (Vitest)
+pnpm tauri dev          # run in development
+pnpm tauri build        # production build
+cd src-tauri && cargo test # backend tests
+pnpm test                   # interface tests (Vitest)
 ```
 
 ## Conventions
 
-- Textes de l'interface et documentation en français.
-- Ne jamais modifier, renommer, fusionner ni supprimer une migration de `src-tauri/migrations/` une fois créée, même pas commitée, même pour corriger une erreur : toute évolution du schéma passe par un nouveau fichier `V<n+1>__<nom>.sql`.
-- En JavaScript, chaînes entre guillemets simples, jamais doubles, en échappant l'apostrophe (`'moins d\'une minute'`).
-- Un bouton désactivé doit se voir comme tel : vérifier que `style.css` lui donne un style `:disabled` (opacité réduite, pas de curseur de clic ni d'effet au survol), sans se contenter de l'attribut `disabled`. La raison de la désactivation s'affiche dans une infobulle en l'entourant de `DisabledTip` (`components/DisabledTip.vue`), jamais avec un `title`.
-- Toute modification du format de partage/import (`share.js`) est versionnée : incrémenter `VERSION`, ajouter le lecteur de la nouvelle version dans `READERS` en gardant ceux des précédentes, et tester l'import des textes des anciennes versions.
-- Les tests ne vivent que dans `src/tests/` (interface) et `src-tauri/tests/` (backend) : aucun fichier `*.test.js` ailleurs dans `src/`, aucun module `#[cfg(test)]` dans `src-tauri/src/`.
-- Ne jamais citer dans les sources (commentaires compris) un fichier ou dossier ignoré par git (`.claude/`, skills, `todo.md`) : la référence serait cassée pour qui clone le dépôt.
-- Suivre la règle DRY partout (Rust, Vue, CSS, tests) : factoriser toute logique, valeur ou style dupliqué plutôt que le recopier.
-- Lancer `cargo test` après toute modification du code Rust, `pnpm test` après toute modification de `src/`.
-- Ne jamais commiter sans l'accord explicite de l'utilisateur : accepter une opération qui y mène ne vaut pas accord, faire le travail en local puis demander.
-- Ne jamais pousser (`git push`, force push compris), même sur demande explicite : l'utilisateur pousse lui-même.
-- Ne jamais commiter les fichiers de `.claude/` (skills, réglages) sauf demande explicite : indexer les fichiers un par un et vérifier `git diff --cached --stat` avant chaque commit.
-- Commits en Conventional Commits, une seule ligne, sans `Co-Authored-By`.
-- Chaque commit est cohérent : une seule évolution, avec son code, ses tests et sa documentation, et les tests passent. Découper par morceau de fichier (et non par fichier entier) quand un fichier mêle plusieurs évolutions.
+- Interface texts in French; code (identifiers, comments, developer logs, test names) and documentation in English.
+- Never modify, rename, merge or delete a migration in `src-tauri/migrations/` once created, even uncommitted, even to fix a mistake, not even its comments (refinery checksums their content): every schema change goes through a new `V<n+1>__<name>.sql` file. Migration comments are written in English from the start, so they never need translating.
+- In JavaScript, strings in single quotes, never double, escaping the apostrophe (`'moins d\'une minute'`).
+- A disabled button must look disabled: check that `style.css` gives it a `:disabled` style (reduced opacity, no pointer cursor nor hover effect), rather than relying on the `disabled` attribute alone. The reason it is disabled is shown in a tooltip by wrapping it in `DisabledTip` (`components/DisabledTip.vue`), never with a `title`.
+- Any change to the share/import format (`share.js`) is versioned: increment `VERSION`, add the new version's reader to `READERS` while keeping those of the previous ones, and test importing texts from the old versions.
+- Tests only live in `src/tests/` (interface) and `src-tauri/tests/` (backend): no `*.test.js` file elsewhere in `src/`, no `#[cfg(test)]` module in `src-tauri/src/`.
+- Never mention in the sources (comments included) a file or folder ignored by git (`.claude/`, skills, `todo.md`): the reference would be broken for anyone cloning the repository.
+- Follow the DRY rule everywhere (Rust, Vue, CSS, tests): factor out any duplicated logic, value or style rather than copying it.
+- Run `cargo test` after any change to the Rust code, `pnpm test` after any change to `src/`.
+- Never commit without the user's explicit agreement: accepting an operation that leads to it is not agreement; do the work locally, then ask.
+- Never push (`git push`, force push included), even on explicit request: the user pushes themselves.
+- Never commit the files in `.claude/` (skills, settings) unless explicitly asked: stage files one by one and check `git diff --cached --stat` before each commit.
+- Commits in Conventional Commits, a single line, without `Co-Authored-By`.
+- Each commit is consistent: a single change, with its code, tests and documentation, and the tests pass. Split by file hunk (not by whole file) when a file mixes several changes.
 
-## Économie de tokens
+## Token economy
 
-- Ne pas lire `node_modules/`, `src-tauri/target/`, `src-tauri/gen/`, `dist/` ni les fichiers de verrouillage (`package-lock.json`, `Cargo.lock`).
-- Chercher avec `grep` avant d'ouvrir un fichier, et ne lire que la partie utile des gros fichiers.
-- Confier à un sous-agent les recherches larges ou les tâches verbeuses (exploration de plusieurs fichiers, analyse de logs) quand seule la conclusion compte : il garde le détail dans son propre contexte.
-- Filtrer les sorties longues (`cargo test 2>&1 | tail`, `cargo build -q`).
-- Réponses courtes : pas de récapitulatif du code modifié, pas de relecture d'un fichier qu'on vient d'écrire.
+- Do not read `node_modules/`, `src-tauri/target/`, `src-tauri/gen/`, `dist/` or lock files (`package-lock.json`, `Cargo.lock`).
+- Search with `grep` before opening a file, and only read the useful part of large files.
+- Hand broad searches or verbose tasks (exploring several files, analyzing logs) to a subagent when only the conclusion matters: it keeps the details in its own context.
+- Filter long outputs (`cargo test 2>&1 | tail`, `cargo build -q`).
+- Short answers: no summary of the modified code, no rereading of a file just written.

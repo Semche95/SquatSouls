@@ -1,4 +1,4 @@
-//! Configuration : exercices, jeux et événements, validation et configuration par défaut (`seed.json`).
+//! Configuration: exercises, games and events, validation and default configuration (`seed.json`).
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -7,15 +7,15 @@ use std::collections::HashSet;
 pub struct Exercise {
     pub id: String,
     pub name: String,
-    /// Unité affichée après le nombre tiré : "rép.", "s", "rép. par jambe"...
+    /// Unit shown after the drawn number: "rép.", "s", "rép. par jambe"...
     pub unit: String,
-    /// Intervalle du nombre tiré, bornes incluses.
+    /// Range of the drawn number, bounds included.
     pub min: u32,
     pub max: u32,
-    /// Pause propre à l'exercice, en secondes ; à défaut, la pause globale.
+    /// Exercise-specific pause, in seconds; otherwise, the global pause.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pause: Option<u32>,
-    /// Un exercice décoché reste défini mais n'est plus tiré.
+    /// An unchecked exercise stays defined but is no longer drawn.
     #[serde(default = "default_enabled")]
     pub enabled: bool,
 }
@@ -25,12 +25,12 @@ pub struct Exercise {
 pub struct GameEvent {
     pub id: String,
     pub name: String,
-    /// Nombre d'exercices différents tirés à chaque déclenchement.
+    /// Number of distinct exercises drawn on each trigger.
     pub draws: u32,
-    /// Au-delà de ce nombre de déclenchements dans la séance, plus aucune série.
+    /// Beyond this number of triggers in the session, no more sets.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub max_per_session: Option<u32>,
-    /// Récompense : jokers gagnés en validant la série de chaque déclenchement.
+    /// Reward: jokers earned by completing the set of each trigger.
     #[serde(default)]
     pub jokers: u32,
 }
@@ -40,13 +40,13 @@ pub struct GameEvent {
 pub struct Game {
     pub id: String,
     pub name: String,
-    /// AppId Steam qui fait reconnaître le jeu quand il tourne.
+    /// Steam AppId used to recognize the game while it runs.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub steam_app_id: Option<u32>,
     pub events: Vec<GameEvent>,
 }
 
-/// Jeu Steam détecté que l'utilisateur ne veut plus se voir proposer.
+/// Detected Steam game the user no longer wants to be offered.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct IgnoredGame {
@@ -57,22 +57,22 @@ pub struct IgnoredGame {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Config {
-    /// Pause après chaque série validée, en secondes, pour les exercices sans pause propre.
+    /// Pause after each completed set, in seconds, for exercises without their own pause.
     #[serde(default = "default_pause")]
     pub pause: u32,
-    /// Détection du jeu Steam en cours, désactivée par défaut.
+    /// Detection of the running Steam game, disabled by default.
     #[serde(default)]
     pub steam_detection: bool,
-    /// Notification système à chaque jeu Steam lancé, quand la détection est active.
+    /// System notification for each launched Steam game, when detection is enabled.
     #[serde(default = "default_steam_notify")]
     pub steam_notify: bool,
-    /// Icône dans la zone de notification, désactivée par défaut.
+    /// Icon in the notification area, disabled by default.
     #[serde(default)]
     pub tray: bool,
-    /// Avec l'icône, fermer la fenêtre la masque au lieu de quitter.
+    /// With the icon, closing the window hides it instead of quitting.
     #[serde(default)]
     pub close_to_tray: bool,
-    /// Avec l'icône, l'appli démarre fenêtre masquée.
+    /// With the icon, the app starts with its window hidden.
     #[serde(default)]
     pub start_hidden: bool,
     #[serde(default)]
@@ -84,19 +84,19 @@ pub struct Config {
 impl Config {
     pub fn validate(&self) -> Result<(), String> {
         if self.exercises.is_empty() {
-            return Err("Aucun exercice défini.".into());
+            return Err("No exercise defined.".into());
         }
         let mut exercise_ids = HashSet::new();
         for ex in &self.exercises {
             if ex.id.trim().is_empty() || ex.name.trim().is_empty() {
-                return Err("Un exercice a un id ou un nom vide.".into());
+                return Err("An exercise has an empty id or name.".into());
             }
             if !exercise_ids.insert(ex.id.as_str()) {
-                return Err(format!("L'exercice « {} » est défini deux fois.", ex.id));
+                return Err(format!("Exercise \"{}\" is defined twice.", ex.id));
             }
             if ex.max == 0 || ex.min > ex.max {
                 return Err(format!(
-                    "Intervalle invalide pour « {} » ({} à {}).",
+                    "Invalid range for \"{}\" ({} to {}).",
                     ex.name, ex.min, ex.max
                 ));
             }
@@ -104,51 +104,51 @@ impl Config {
 
         let active = self.active_exercises().count();
         if active == 0 {
-            return Err("Aucun exercice coché pour le tirage.".into());
+            return Err("No exercise checked for the draw.".into());
         }
 
         if self.games.is_empty() {
-            return Err("Aucun jeu défini.".into());
+            return Err("No game defined.".into());
         }
         let mut game_ids = HashSet::new();
         let mut game_names = HashSet::new();
         for game in &self.games {
             if game.id.trim().is_empty() || game.name.trim().is_empty() {
-                return Err("Un jeu a un id ou un nom vide.".into());
+                return Err("A game has an empty id or name.".into());
             }
             if !game_ids.insert(game.id.as_str()) {
-                return Err(format!("Le jeu « {} » est défini deux fois.", game.id));
+                return Err(format!("Game \"{}\" is defined twice.", game.id));
             }
             if !game_names.insert(game.name.trim().to_lowercase()) {
-                return Err(format!("Deux jeux s'appellent « {} ».", game.name.trim()));
+                return Err(format!("Two games are named \"{}\".", game.name.trim()));
             }
             if game.events.is_empty() {
-                return Err(format!("Le jeu « {} » n'a aucun événement.", game.name));
+                return Err(format!("Game \"{}\" has no event.", game.name));
             }
             let mut event_ids = HashSet::new();
             for ev in &game.events {
                 let at = format!("{} › {}", game.name, ev.name);
                 if ev.id.trim().is_empty() || ev.name.trim().is_empty() {
-                    return Err(format!("{} : id ou nom d'événement vide.", game.name));
+                    return Err(format!("{}: empty event id or name.", game.name));
                 }
                 if !event_ids.insert(ev.id.as_str()) {
                     return Err(format!(
-                        "{} : l'événement « {} » est défini deux fois.",
+                        "{}: event \"{}\" is defined twice.",
                         game.name, ev.id
                     ));
                 }
                 if ev.draws == 0 {
-                    return Err(format!("{at} : il faut tirer au moins 1 exercice."));
+                    return Err(format!("{at}: at least 1 exercise must be drawn."));
                 }
                 if ev.draws as usize > active {
                     return Err(format!(
-                        "{at} : {} exercices à tirer mais seulement {active} cochés.",
+                        "{at}: {} exercises to draw but only {active} checked.",
                         ev.draws
                     ));
                 }
                 if ev.max_per_session == Some(0) {
                     return Err(format!(
-                        "{at} : la limite par séance doit valoir au moins 1 (ou être vide)."
+                        "{at}: the per-session limit must be at least 1 (or empty)."
                     ));
                 }
             }
@@ -156,7 +156,7 @@ impl Config {
         Ok(())
     }
 
-    /// Exercices cochés, seuls à pouvoir être tirés.
+    /// Checked exercises, the only ones that can be drawn.
     pub fn active_exercises(&self) -> impl Iterator<Item = &Exercise> {
         self.exercises.iter().filter(|ex| ex.enabled)
     }
@@ -188,7 +188,7 @@ fn default_steam_notify() -> bool {
     DEFAULT_STEAM_NOTIFY
 }
 
-/// Configuration par défaut, écrite dans une base neuve et utilisée si la configuration enregistrée est invalide.
+/// Default configuration, written to a new database and used if the saved configuration is invalid.
 pub fn default_config() -> Config {
-    serde_json::from_str(include_str!("seed.json")).expect("seed.json invalide")
+    serde_json::from_str(include_str!("seed.json")).expect("invalid seed.json")
 }

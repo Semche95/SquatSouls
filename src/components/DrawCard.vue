@@ -4,11 +4,11 @@ import { plural } from '../format.js';
 import { useSession } from '../composables/useSession.js';
 import DisabledTip from './DisabledTip.vue';
 
-// current : série en tête de file, la seule à faire ; les suivantes ne peuvent qu'être annulées.
+// current: set at the head of the queue, the only one to do; the next ones can only be dismissed.
 const props = defineProps({ draw: Object, current: Boolean });
 
 const { session, pauseLeft, confirmDismiss, dismiss, dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet } = useSession();
-// Exercice visé par les raccourcis : le premier restant de la série en cours.
+// Exercise targeted by shortcuts: the first remaining one of the current set.
 const keyed = computed(() => remaining(props.draw)[0]);
 </script>
 

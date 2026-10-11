@@ -3,20 +3,20 @@ import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { config, emptySession, draw, responses, setup, mountApp, press, expectTip } from './app.js';
 
-describe('séance', () => {
-  it('tire une série au clic sur un événement', async () => {
+describe('session', () => {
+  it('draws a set on clicking an event', async () => {
     setup({ draw: { id: 7, capped: false } });
     const w = await mountApp();
-    responses.get_session = emptySession({ pending: [draw], triggers: [{ gameId: 'er', eventId: 'mort', count: 1 }] });
+    responses.get_session = emptySession({ pending: [draw], triggers: [{ gameId: 'er', eventId: 'death', count: 1 }] });
     await w.find('.event').trigger('click');
     await flushPromises();
-    expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'mort' });
+    expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'death' });
     expect(w.find('.card.current').text()).toContain('Squats');
     expect(w.find('.event .count').text()).toBe('1 / 15');
   });
 
-  it('ne propose que d\'annuler les séries en file d\'attente', async () => {
-    const both = { ...draw, items: [...draw.items, { exerciseId: 'pompes', name: 'Pompes', amount: 8, unit: 'reps', halveCost: 1, skipCost: 2 }] };
+  it('only offers to dismiss queued sets', async () => {
+    const both = { ...draw, items: [...draw.items, { exerciseId: 'push-ups', name: 'Push-ups', amount: 8, unit: 'reps', halveCost: 1, skipCost: 2 }] };
     setup({ get_session: emptySession({ pending: [draw, { ...both, id: 8 }], jokers: 5 }) });
     const w = await mountApp();
     const queued = w.find('.queue .card');
@@ -24,15 +24,15 @@ describe('séance', () => {
     expect(queued.findAll('.card-actions button').map((b) => b.text())).toEqual(['Annuler']);
   });
 
-  it('prévient quand la limite par séance est atteinte', async () => {
-    setup({ draw: { capped: true, eventName: 'Mort', maxPerSession: 15 } });
+  it('warns when the per-session limit is reached', async () => {
+    setup({ draw: { capped: true, eventName: 'Death', maxPerSession: 15 } });
     const w = await mountApp();
     await w.find('.event').trigger('click');
     await flushPromises();
-    expect(w.find('.banner.info').text()).toBe('Mort : limite de 15 atteinte pour la séance, pas de série.');
+    expect(w.find('.banner.info').text()).toBe('Death : limite de 15 atteinte pour la séance, pas de série.');
   });
 
-  it('note fait chaque exercice d\'une série', async () => {
+  it('marks each exercise of a set done', async () => {
     setup({
       get_session: emptySession({ pending: [draw], jokers: 1 }),
       complete_exercise: emptySession(),
@@ -45,9 +45,9 @@ describe('séance', () => {
     expect(w.find('.card').exists()).toBe(false);
   });
 
-  it('barre les exercices faits et vise le premier restant', async () => {
-    const pompes = { exerciseId: 'pompes', name: 'Pompes', amount: 8, unit: 'reps', halved: false, done: false, halveCost: 1, skipCost: 2 };
-    const started = { ...draw, items: [{ ...draw.items[0], done: true }, pompes] };
+  it('strikes through done exercises and targets the first remaining one', async () => {
+    const pushUps = { exerciseId: 'push-ups', name: 'Push-ups', amount: 8, unit: 'reps', halved: false, done: false, halveCost: 1, skipCost: 2 };
+    const started = { ...draw, items: [{ ...draw.items[0], done: true }, pushUps] };
     setup({ get_session: emptySession({ pending: [started], jokers: 4 }) });
     const w = await mountApp();
     const [done, left] = w.findAll('.items li');
@@ -58,7 +58,7 @@ describe('séance', () => {
     expect(w.text()).not.toContain('Sauter la série');
   });
 
-  it('annule d\'un clic une série pas commencée', async () => {
+  it('dismisses a set not started in one click', async () => {
     setup({ get_session: emptySession({ pending: [draw] }), dismiss: emptySession() });
     const w = await mountApp();
     await w.find('.card-actions .ghost').trigger('click');
@@ -66,8 +66,8 @@ describe('séance', () => {
     expect(invoke).toHaveBeenCalledWith('dismiss', { drawId: 7 });
   });
 
-  it('demande confirmation avant d\'annuler une série commencée', async () => {
-    const started = { ...draw, items: [{ ...draw.items[0], done: true }, { ...draw.items[0], exerciseId: 'pompes', name: 'Pompes' }] };
+  it('asks for confirmation before dismissing a started set', async () => {
+    const started = { ...draw, items: [{ ...draw.items[0], done: true }, { ...draw.items[0], exerciseId: 'push-ups', name: 'Push-ups' }] };
     setup({ get_session: emptySession({ pending: [started] }), dismiss: emptySession() });
     const w = await mountApp();
     await press('Backspace');
@@ -83,18 +83,18 @@ describe('séance', () => {
   });
 
   describe('jokers', () => {
-    const second = { exerciseId: 'pompes', name: 'Pompes', amount: 8, unit: 'reps', halved: false, halveCost: 1, skipCost: 2 };
+    const second = { exerciseId: 'push-ups', name: 'Push-ups', amount: 8, unit: 'reps', halved: false, halveCost: 1, skipCost: 2 };
     const both = { ...draw, items: [...draw.items, second] };
     const jokerButtons = (w) => w.findAll('.item-actions .ghost');
 
-    it('sont cachés sans joker', async () => {
+    it('are hidden without a joker', async () => {
       setup({ get_session: emptySession({ pending: [both] }) });
       const w = await mountApp();
       expect(jokerButtons(w)).toHaveLength(0);
       expect(w.text()).not.toContain('Sauter la série');
     });
 
-    it('réduisent ou sautent un exercice selon les jokers disponibles', async () => {
+    it('halve or skip an exercise depending on available jokers', async () => {
       setup({ get_session: emptySession({ pending: [both], jokers: 1 }), halve: emptySession() });
       const w = await mountApp();
       const [half, skip] = jokerButtons(w);
@@ -107,14 +107,14 @@ describe('séance', () => {
       expect(invoke).toHaveBeenCalledWith('halve', { drawId: 7, exerciseId: 'squat' });
     });
 
-    it('sautent toute la série avec assez de jokers', async () => {
+    it('skip the whole set with enough jokers', async () => {
       setup({ get_session: emptySession({ pending: [both], jokers: 4 }), skip_set: emptySession() });
       const w = await mountApp();
       await w.find('.card-actions .ghost').trigger('click');
       expect(invoke).toHaveBeenCalledWith('skip_set', { drawId: 7 });
     });
 
-    it('ne proposent plus la moitié d\'un exercice déjà réduit', async () => {
+    it('no longer offer to halve an exercise already halved', async () => {
       const halved = { ...draw, items: [{ ...draw.items[0], amount: 5, halved: true, halveCost: null, skipCost: 1 }] };
       setup({ get_session: emptySession({ pending: [halved], jokers: 1 }) });
       const w = await mountApp();
@@ -123,55 +123,55 @@ describe('séance', () => {
     });
   });
 
-  describe('pause après un exercice fait', () => {
-    const both = { ...draw, items: [...draw.items, { exerciseId: 'pompes', name: 'Pompes', amount: 8, unit: 'reps' }] };
+  describe('pause after an exercise is done', () => {
+    const both = { ...draw, items: [...draw.items, { exerciseId: 'push-ups', name: 'Push-ups', amount: 8, unit: 'reps' }] };
     const next = { ...draw, id: 8 };
-    const faits = (w) => w.findAll('.item-actions .primary');
+    const doneButtons = (w) => w.findAll('.item-actions .primary');
 
-    // Squats (premier) suivent la pause globale, Pompes (second) ont leur pause propre.
+    // Squats (first) follow the global pause, Push-ups (second) have their own pause.
     async function completeOne(index = 1, pause = config.pause, own = 90) {
       vi.useFakeTimers();
       setup({
-        get_config: { config: { ...config, pause, exercises: [...config.exercises, { id: 'pompes', name: 'Pompes', unit: 'reps', min: 8, max: 12, pause: own }] } },
+        get_config: { config: { ...config, pause, exercises: [...config.exercises, { id: 'push-ups', name: 'Push-ups', unit: 'reps', min: 8, max: 12, pause: own }] } },
         get_session: emptySession({ pending: [both, next] }),
         complete_exercise: emptySession({ pending: [both, next] }),
       });
       const w = await mountApp();
-      await faits(w)[index].trigger('click');
+      await doneButtons(w)[index].trigger('click');
       await flushPromises();
       return w;
     }
 
-    it('prend la pause propre de l\'exercice et bloque tout exercice jusqu\'à sa fin', async () => {
+    it('takes the exercise\'s own pause and blocks every exercise until it ends', async () => {
       const w = await completeOne();
       expect(w.find('.pause-left').text()).toBe('1:30');
-      expect(faits(w).every((b) => b.element.disabled)).toBe(true);
+      expect(doneButtons(w).every((b) => b.element.disabled)).toBe(true);
       await press('Enter');
       expect(invoke.mock.calls.filter(([cmd]) => cmd === 'complete_exercise')).toHaveLength(1);
       await vi.advanceTimersByTimeAsync(30_000);
       expect(w.find('.pause-left').text()).toBe('1:00');
       await vi.advanceTimersByTimeAsync(60_000);
       expect(w.find('.banner.pause').exists()).toBe(false);
-      expect(faits(w).some((b) => b.element.disabled)).toBe(false);
+      expect(doneButtons(w).some((b) => b.element.disabled)).toBe(false);
     });
 
-    it('prend la pause globale sans pause propre', async () => {
+    it('takes the global pause without an own pause', async () => {
       const w = await completeOne(0);
       expect(w.find('.pause-left').text()).toBe('1:00');
     });
 
-    it('se passe avec le bouton ou Échap', async () => {
+    it('is skipped with the button or Escape', async () => {
       const w = await completeOne();
       await w.find('.banner.pause button').trigger('click');
       expect(w.find('.banner.pause').exists()).toBe(false);
-      await faits(w)[1].trigger('click');
+      await doneButtons(w)[1].trigger('click');
       await flushPromises();
       expect(w.find('.banner.pause').exists()).toBe(true);
       await press('Escape');
       expect(w.find('.banner.pause').exists()).toBe(false);
     });
 
-    it('s\'arrête quand on annule la série qui l\'a lancée, pas une autre', async () => {
+    it('stops when the set that started it is dismissed, not another one', async () => {
       const w = await completeOne();
       responses.dismiss = emptySession({ pending: [both] });
       await w.findAll('.card')[1].find('.card-actions button').trigger('click');
@@ -183,23 +183,23 @@ describe('séance', () => {
       expect(w.find('.banner.pause').exists()).toBe(false);
     });
 
-    it('n\'en fait pas quand toutes les pauses valent 0', async () => {
+    it('does not pause when every pause is 0', async () => {
       const w = await completeOne(1, 0, 0);
       expect(w.find('.banner.pause').exists()).toBe(false);
     });
   });
 
-  it('recharge la séance si une action échoue', async () => {
-    setup({ get_session: emptySession({ pending: [draw] }), complete_exercise: new Error('série inconnue') });
+  it('reloads the session if an action fails', async () => {
+    setup({ get_session: emptySession({ pending: [draw] }), complete_exercise: new Error('unknown set') });
     const w = await mountApp();
     responses.get_session = emptySession();
     await w.find('.item-actions .primary').trigger('click');
     await flushPromises();
-    expect(w.find('.banner.error').text()).toContain('série inconnue');
+    expect(w.find('.banner.error').text()).toContain('unknown set');
     expect(w.find('.card').exists()).toBe(false);
   });
 
-  it('verrouille le jeu pendant la séance', async () => {
+  it('locks the game during the session', async () => {
     setup({ get_session: emptySession({ gameId: 'sekiro' }) });
     const w = await mountApp();
     const select = w.find('select');
@@ -207,7 +207,7 @@ describe('séance', () => {
     expect(select.element.value).toBe('sekiro');
   });
 
-  it('ne propose de terminer la séance qu\'avec des séries faites et aucune en attente', async () => {
+  it('only offers to end the session with sets done and none pending', async () => {
     setup({ get_session: emptySession() });
     let w = await mountApp();
     expect(w.find('.session-actions .primary').element.disabled).toBe(true);
@@ -218,7 +218,7 @@ describe('séance', () => {
     await expectTip(w.find('.session-actions .primary'), 'Des séries sont encore à faire');
   });
 
-  it('demande confirmation avant de terminer la séance, puis enchaîne sur une nouvelle', async () => {
+  it('asks for confirmation before ending the session, then starts a new one', async () => {
     setup({ get_session: emptySession({ sets: 1 }), new_session: emptySession() });
     const w = await mountApp();
     await w.find('.session-actions .primary').trigger('click');
@@ -234,13 +234,13 @@ describe('séance', () => {
     expect(w.find('.event').element.disabled).toBe(false);
   });
 
-  it('désactive l\'annulation tant que la séance est vide', async () => {
+  it('disables cancelling while the session is empty', async () => {
     setup();
     const w = await mountApp();
     expect(w.find('.session-actions .danger').element.disabled).toBe(true);
   });
 
-  it('demande confirmation avant d\'annuler la séance', async () => {
+  it('asks for confirmation before cancelling the session', async () => {
     setup({ get_session: emptySession({ gameId: 'er' }), cancel_session: emptySession() });
     const w = await mountApp();
     await w.find('.session-actions .danger').trigger('click');
