@@ -13,7 +13,7 @@ defineEmits(['remove']);
       <span class="cfg-event-head">
         <strong>{{ ev.name || '(sans nom)' }}</strong>
         <span class="muted">
-          tire {{ ev.draws }}<template v-if="ev.maxPerSession"> · {{ ev.maxPerSession }} par séance</template>
+          {{ plural(ev.draws, 'exercice') }} par série<template v-if="ev.maxPerSession"> · {{ ev.maxPerSession }} fois max par séance</template>
         </span>
         <span v-if="ev.jokers" class="reward-tag">+{{ plural(ev.jokers, 'joker') }}</span>
       </span>

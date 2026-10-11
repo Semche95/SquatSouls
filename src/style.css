@@ -906,39 +906,60 @@ kbd.dark {
 .cfg-import .banner.error {
   margin-bottom: 0;
 }
+/* Événement en accordéon : une carte par événement, l'en-tête et le contenu sur le même fond,
+   séparés par un trait une fois ouvert. */
 .cfg-event {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--line);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
 }
-.cfg-event[open] > * + * {
-  margin-top: 12px;
+.cfg-event + .cfg-event {
+  margin-top: 8px;
+}
+.cfg-event[open] {
+  border-color: var(--gold);
+}
+.cfg-event > :not(summary) {
+  margin: 12px;
 }
 .cfg-event summary {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 10px 12px;
   cursor: pointer;
   list-style: none;
 }
 .cfg-event summary::-webkit-details-marker {
   display: none;
 }
-.cfg-event summary:hover strong {
-  color: var(--gold);
+.cfg-event summary:hover {
+  background: var(--gold-soft);
+}
+.cfg-event[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+/* Champs plus sombres que la carte pour s'en détacher. */
+.config .cfg-event input {
+  background: var(--panel);
 }
 .cfg-event-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
 }
-.cfg-event-head strong::before {
+/* Chevron centré sur sa propre boîte pour rester aligné sur le texte une fois tourné. */
+.cfg-event-head::before {
   content: "▸";
-  display: inline-block;
+  display: inline-flex;
+  justify-content: center;
   width: 1em;
-  color: var(--muted);
+  line-height: 1;
+  color: var(--gold);
   transition: transform 0.12s;
 }
-.cfg-event[open] .cfg-event-head strong::before {
+.cfg-event[open] .cfg-event-head::before {
   transform: rotate(90deg);
 }
 .cfg-event-head .muted {
