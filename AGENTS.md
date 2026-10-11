@@ -33,6 +33,7 @@ pnpm test                   # tests interface (Vitest)
 - Suivre la règle DRY partout (Rust, Vue, CSS, tests) : factoriser toute logique, valeur ou style dupliqué plutôt que le recopier.
 - Lancer `cargo test` après toute modification du code Rust, `pnpm test` après toute modification de `src/`.
 - Commits en Conventional Commits, une seule ligne, sans `Co-Authored-By`.
+- Chaque commit est cohérent : une seule évolution, avec son code, ses tests et sa documentation, et les tests passent. Découper par morceau de fichier (et non par fichier entier) quand un fichier mêle plusieurs évolutions.
 
 ## Économie de tokens
 
