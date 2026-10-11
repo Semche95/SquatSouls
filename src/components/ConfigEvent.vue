@@ -1,15 +1,15 @@
 <script setup>
-import { plural } from "../format.js";
-import { useConfig } from "../composables/useConfig.js";
+import { plural } from '../format.js';
+import { useConfig } from '../composables/useConfig.js';
 
 // ev appartient au brouillon : on l'édite en place.
 defineProps({ ev: Object });
-defineEmits(["remove"]);
+defineEmits(['remove']);
 
 const { draft } = useConfig();
 
 function setMaxPerSession(ev, value) {
-  if (value === "") delete ev.maxPerSession;
+  if (value === '') delete ev.maxPerSession;
   else ev.maxPerSession = Number(value);
 }
 </script>
@@ -18,11 +18,11 @@ function setMaxPerSession(ev, value) {
   <details class="cfg-event">
     <summary>
       <span class="cfg-event-head">
-        <strong>{{ ev.name || "(sans nom)" }}</strong>
+        <strong>{{ ev.name || '(sans nom)' }}</strong>
         <span class="muted">
           tire {{ ev.draws }}<template v-if="ev.maxPerSession"> · {{ ev.maxPerSession }} par séance</template>
         </span>
-        <span v-if="ev.jokers" class="reward-tag">+{{ plural(ev.jokers, "joker") }}</span>
+        <span v-if="ev.jokers" class="reward-tag">+{{ plural(ev.jokers, 'joker') }}</span>
       </span>
     </summary>
     <div class="field">

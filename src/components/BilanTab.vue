@@ -1,9 +1,9 @@
 <script setup>
-import { onMounted, ref } from "vue";
-import { formatDay, formatDuration, formatTime, plural } from "../format.js";
-import { useApi } from "../composables/useApi.js";
-import { useSession } from "../composables/useSession.js";
-import { useKeydown } from "../composables/useKeydown.js";
+import { onMounted, ref } from 'vue';
+import { formatDay, formatDuration, formatTime, plural } from '../format.js';
+import { useApi } from '../composables/useApi.js';
+import { useSession } from '../composables/useSession.js';
+import { useKeydown } from '../composables/useKeydown.js';
 
 const { call } = useApi();
 const { session } = useSession();
@@ -14,19 +14,19 @@ const fullHistory = ref(null);
 
 async function openFullHistory() {
   try {
-    fullHistory.value = await call("get_full_history");
+    fullHistory.value = await call('get_full_history');
   } catch {
     /* erreur déjà affichée */
   }
 }
 
 useKeydown((e) => {
-  if (fullHistory.value && e.code === "Escape") fullHistory.value = null;
+  if (fullHistory.value && e.code === 'Escape') fullHistory.value = null;
 });
 
 onMounted(async () => {
   try {
-    history.value = await call("get_history", { days: 7 });
+    history.value = await call('get_history', { days: 7 });
   } catch {
     history.value = [];
   }
@@ -48,7 +48,7 @@ onMounted(async () => {
             <li v-for="t in session.totals" :key="t.exercise + t.unit">
               <span class="total-amount">{{ t.amount }} <small>{{ t.unit }}</small></span>
               <strong>{{ t.exercise }}</strong>
-              <span class="muted">{{ plural(t.sets, "série") }}</span>
+              <span class="muted">{{ plural(t.sets, 'série') }}</span>
             </li>
           </ul>
         </div>
@@ -66,13 +66,13 @@ onMounted(async () => {
       <div v-if="session.jokersEarned || session.skipped.length">
         <h2>Jokers</h2>
         <p class="muted">
-          {{ session.jokersEarned }} gagné{{ session.jokersEarned > 1 ? "s" : "" }} ·
-          {{ session.skipped.length }} utilisé{{ session.skipped.length > 1 ? "s" : "" }}
+          {{ session.jokersEarned }} gagné{{ session.jokersEarned > 1 ? 's' : '' }} ·
+          {{ session.skipped.length }} utilisé{{ session.skipped.length > 1 ? 's' : '' }}
         </p>
         <ul v-if="session.skipped.length" class="log">
           <li v-for="(k, i) in session.skipped" :key="i">
             <span class="muted">{{ formatTime(k.at) }}</span>
-            <span>{{ k.items.map((it) => `${it.amount} ${it.unit} · ${it.name}`).join(", ") }}</span>
+            <span>{{ k.items.map((it) => `${it.amount} ${it.unit} · ${it.name}`).join(', ') }}</span>
             <span class="muted">{{ k.event }} (sautée)</span>
           </li>
         </ul>
@@ -81,8 +81,8 @@ onMounted(async () => {
 
     <section class="group" :class="{ full: fullHistory }">
       <header class="group-head">
-        <h2 class="group-title">{{ fullHistory ? "Historique complet" : "Historique" }}</h2>
-        <span v-if="fullHistory" class="muted">{{ plural(fullHistory.length, "jour") }} d'activité</span>
+        <h2 class="group-title">{{ fullHistory ? 'Historique complet' : 'Historique' }}</h2>
+        <span v-if="fullHistory" class="muted">{{ plural(fullHistory.length, 'jour') }} d'activité</span>
         <span v-else class="muted">7 derniers jours, par séance</span>
         <button v-if="fullHistory" class="ghost" @click="fullHistory = null">Fermer</button>
         <button v-else class="ghost" @click="openFullHistory">Tout voir</button>

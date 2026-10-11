@@ -1,18 +1,18 @@
 <script setup>
-import { computed, ref } from "vue";
-import { useSession } from "../composables/useSession.js";
+import { computed, ref } from 'vue';
+import { useSession } from '../composables/useSession.js';
 
 const { session, newSession, cancelSession } = useSession();
 
 // "" ou l'action de séance en attente de confirmation : "end" ou "cancel".
-const confirmSession = ref("");
+const confirmSession = ref('');
 // Terminer n'a de sens qu'avec au moins une série faite et aucune en attente.
 const canEnd = computed(() => session.value.sets > 0 && !session.value.pending.length);
 // Rien à annuler tant qu'aucun événement n'a été déclenché.
 const canCancel = computed(() => !!session.value.gameId);
 
 function confirmed(action) {
-  confirmSession.value = "";
+  confirmSession.value = '';
   action();
 }
 </script>

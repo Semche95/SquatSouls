@@ -1,12 +1,12 @@
-import { ref } from "vue";
-import { invoke } from "@tauri-apps/api/core";
-import { defineShared } from "./shared.js";
+import { ref } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
+import { defineShared } from './shared.js';
 
 export const [provideApi, useApi] = defineShared(() => {
-  const error = ref("");
+  const error = ref('');
 
   async function call(command, args) {
-    error.value = "";
+    error.value = '';
     try {
       return await invoke(command, args);
     } catch (e) {

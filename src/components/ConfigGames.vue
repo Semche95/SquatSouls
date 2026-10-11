@@ -1,9 +1,9 @@
 <script setup>
-import { computed, nextTick, ref } from "vue";
-import { byName, clone, newId, sameName } from "../configDraft.js";
-import { useConfig } from "../composables/useConfig.js";
-import { useSession } from "../composables/useSession.js";
-import ConfigEvent from "./ConfigEvent.vue";
+import { computed, nextTick, ref } from 'vue';
+import { byName, clone, newId, sameName } from '../configDraft.js';
+import { useConfig } from '../composables/useConfig.js';
+import { useSession } from '../composables/useSession.js';
+import ConfigEvent from './ConfigEvent.vue';
 
 const { config, draft, editedGameId, editedGame, newGame, store } = useConfig();
 const { reload } = useSession();
@@ -13,7 +13,7 @@ const newGameName = ref(null);
 const nameTaken = computed(() => config.value.games.some((g) => sameName(g.name, newGame.value.name)));
 
 async function openNewGame() {
-  newGame.value = { name: "", source: "" };
+  newGame.value = { name: '', source: '' };
   await nextTick();
   newGameName.value.focus();
 }
@@ -41,11 +41,11 @@ async function removeGame(game) {
   confirmRemove.value = null;
   if (!(await saveGames(config.value.games.filter((g) => g.id !== game.id)))) return;
   draft.value.games = draft.value.games.filter((g) => g !== game);
-  editedGameId.value = "";
+  editedGameId.value = '';
 }
 
 function addEvent(game) {
-  game.events.push({ id: newId("Nouvel événement", game.events), name: "Nouvel événement", draws: 1, jokers: 0 });
+  game.events.push({ id: newId('Nouvel événement', game.events), name: 'Nouvel événement', draws: 1, jokers: 0 });
 }
 </script>
 
@@ -75,7 +75,7 @@ function addEvent(game) {
           <span>Événements</span>
           <select v-model="newGame.source" aria-label="Événements du nouveau jeu">
             <option value="">Aucun (un événement à remplir)</option>
-            <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">Copier depuis {{ g.name || "(sans nom)" }}</option>
+            <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">Copier depuis {{ g.name || '(sans nom)' }}</option>
           </select>
         </label>
         <div class="row">
@@ -90,7 +90,7 @@ function addEvent(game) {
           <button class="ghost danger" :disabled="draft.games.length < 2" @click="confirmRemove = editedGame">Supprimer ce jeu</button>
         </div>
         <div v-if="confirmRemove === editedGame" class="banner confirm">
-          <p>Supprimer {{ editedGame.name || "ce jeu" }} et tous ses événements ?</p>
+          <p>Supprimer {{ editedGame.name || 'ce jeu' }} et tous ses événements ?</p>
           <div class="card-actions">
             <button class="danger" @click="removeGame(editedGame)">Supprimer</button>
             <button class="ghost" @click="confirmRemove = null">Garder le jeu</button>

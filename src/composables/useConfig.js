@@ -1,7 +1,7 @@
-import { computed, ref, watch } from "vue";
-import { invoke } from "@tauri-apps/api/core";
-import { byName, clone, normalized } from "../configDraft.js";
-import { defineShared } from "./shared.js";
+import { computed, ref, watch } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
+import { byName, clone, normalized } from '../configDraft.js';
+import { defineShared } from './shared.js';
 
 function findOr(games, id) {
   return games.find((g) => g.id === id) ?? byName(games)[0] ?? null;
@@ -11,13 +11,13 @@ export const [provideConfig, useConfig] = defineShared(() => {
   const config = ref(null);
   // Copie de travail éditée dans l'onglet Configuration, envoyée telle quelle à l'enregistrement.
   const draft = ref(null);
-  const configError = ref("");
-  const cfgTab = ref("jeux");
-  const editedGameId = ref("");
+  const configError = ref('');
+  const cfgTab = ref('jeux');
+  const editedGameId = ref('');
   // Création d'un jeu : formulaire à droite, rien n'est ajouté avant validation.
   const newGame = ref(null);
   // Dernier jeu choisi, gardé par le backend d'un lancement à l'autre (vide tant qu'aucun n'est choisi).
-  const gameId = ref("");
+  const gameId = ref('');
 
   const game = computed(() => config.value?.games.find((g) => g.id === gameId.value) ?? null);
   const editedGame = computed(() => findOr(draft.value?.games ?? [], editedGameId.value));
@@ -25,10 +25,10 @@ export const [provideConfig, useConfig] = defineShared(() => {
 
   // Jeu mémorisé ou en cours supprimé : on redemande le jeu.
   watch(game, (g) => {
-    if (config.value && !g) gameId.value = "";
+    if (config.value && !g) gameId.value = '';
   });
   watch(gameId, (id) => {
-    if (id) invoke("set_last_game", { gameId: id }).catch(() => {});
+    if (id) invoke('set_last_game', { gameId: id }).catch(() => {});
   });
   // Garde la liste « Jeu » sur le jeu réellement édité (le premier par nom tant qu'aucun n'est choisi).
   watch(editedGame, (g) => {
@@ -38,14 +38,14 @@ export const [provideConfig, useConfig] = defineShared(() => {
   function applyConfigView(view) {
     config.value = view.config;
     draft.value = clone(view.config);
-    configError.value = view.error ?? "";
+    configError.value = view.error ?? '';
   }
 
   // Enregistre `cfg` sans toucher au brouillon ; renvoie false si le backend refuse.
   async function store(cfg) {
     try {
-      config.value = (await invoke("save_config", { config: normalized(cfg) })).config;
-      configError.value = "";
+      config.value = (await invoke('save_config', { config: normalized(cfg) })).config;
+      configError.value = '';
       return true;
     } catch (e) {
       configError.value = String(e);

@@ -1,6 +1,6 @@
 <script setup>
-import { plural } from "../format.js";
-import { useSession } from "../composables/useSession.js";
+import { plural } from '../format.js';
+import { useSession } from '../composables/useSession.js';
 
 // current : série en tête de file, la seule pilotable au clavier.
 defineProps({ draw: Object, current: Boolean });
@@ -14,7 +14,7 @@ const { session, act } = useSession();
       <span>{{ draw.eventName }}</span>
       <span class="muted">{{ draw.gameName }}</span>
     </header>
-    <p v-if="draw.jokers" class="reward">+{{ plural(draw.jokers, "joker") }}</p>
+    <p v-if="draw.jokers" class="reward">+{{ plural(draw.jokers, 'joker') }}</p>
     <ul class="items">
       <li v-for="it in draw.items" :key="it.exerciseId">
         <span class="amount">{{ it.amount }}</span>

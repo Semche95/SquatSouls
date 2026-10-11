@@ -1,4 +1,4 @@
-import { inject, provide } from "vue";
+import { inject, provide } from 'vue';
 
 // État créé par App et partagé avec ses descendants : un état de module survivrait d'un montage à l'autre.
 export function defineShared(factory) {

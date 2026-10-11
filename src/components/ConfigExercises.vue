@@ -1,12 +1,12 @@
 <script setup>
-import { newId } from "../configDraft.js";
-import { useConfig } from "../composables/useConfig.js";
+import { newId } from '../configDraft.js';
+import { useConfig } from '../composables/useConfig.js';
 
 const { draft } = useConfig();
 
 function addExercise() {
   const list = draft.value.exercises;
-  list.push({ id: newId("Nouvel exercice", list), name: "Nouvel exercice", unit: "rép.", min: 5, max: 10 });
+  list.push({ id: newId('Nouvel exercice', list), name: 'Nouvel exercice', unit: 'rép.', min: 5, max: 10 });
 }
 </script>
 

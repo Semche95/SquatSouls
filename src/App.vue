@@ -1,16 +1,16 @@
 <script setup>
-import { onMounted, ref } from "vue";
-import { invoke } from "@tauri-apps/api/core";
-import { pickSlogan } from "./slogans.js";
-import { formatTime } from "./format.js";
-import { provideApi } from "./composables/useApi.js";
-import { provideConfig } from "./composables/useConfig.js";
-import { provideSession } from "./composables/useSession.js";
-import PlayTab from "./components/PlayTab.vue";
-import BilanTab from "./components/BilanTab.vue";
-import ConfigTab from "./components/ConfigTab.vue";
+import { onMounted, ref } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
+import { pickSlogan } from './slogans.js';
+import { formatTime } from './format.js';
+import { provideApi } from './composables/useApi.js';
+import { provideConfig } from './composables/useConfig.js';
+import { provideSession } from './composables/useSession.js';
+import PlayTab from './components/PlayTab.vue';
+import BilanTab from './components/BilanTab.vue';
+import ConfigTab from './components/ConfigTab.vue';
 
-const tab = ref("jouer");
+const tab = ref('jouer');
 // Tiré une fois au lancement, affiché sous le titre.
 const slogan = pickSlogan();
 
@@ -23,9 +23,9 @@ const { session } = provideSession(api, cfg);
 onMounted(async () => {
   try {
     // Lu avant la config : un jeu inconnu y est ensuite remis à vide.
-    gameId.value = await invoke("get_last_game").catch(() => "");
-    applyConfigView(await call("get_config"));
-    session.value = await call("get_session");
+    gameId.value = await invoke('get_last_game').catch(() => '');
+    applyConfigView(await call('get_config'));
+    session.value = await call('get_session');
   } catch {
     /* erreur déjà affichée */
   }
@@ -57,7 +57,7 @@ onMounted(async () => {
         </div>
         <div>
           <dt>Séance depuis</dt>
-          <dd>{{ session.startedAt ? formatTime(session.startedAt) : "–" }}</dd>
+          <dd>{{ session.startedAt ? formatTime(session.startedAt) : '–' }}</dd>
         </div>
       </dl>
     </header>

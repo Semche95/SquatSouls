@@ -1,12 +1,12 @@
 <script setup>
-import { computed } from "vue";
-import { plural } from "../format.js";
-import { byName } from "../configDraft.js";
-import { useConfig } from "../composables/useConfig.js";
-import { useSession } from "../composables/useSession.js";
-import { useKeydown } from "../composables/useKeydown.js";
-import DrawCard from "./DrawCard.vue";
-import SessionActions from "./SessionActions.vue";
+import { computed } from 'vue';
+import { plural } from '../format.js';
+import { byName } from '../configDraft.js';
+import { useConfig } from '../composables/useConfig.js';
+import { useSession } from '../composables/useSession.js';
+import { useKeydown } from '../composables/useKeydown.js';
+import DrawCard from './DrawCard.vue';
+import SessionActions from './SessionActions.vue';
 
 const { config, gameId, game } = useConfig();
 const { session, notice, trigger, act } = useSession();
@@ -23,7 +23,7 @@ function triggerCount(eventId) {
 
 useKeydown((e) => {
   if (e.repeat) return;
-  if (e.target.closest?.("input, textarea, select")) return;
+  if (e.target.closest?.('input, textarea, select')) return;
   // e.code ignore la disposition : 1-9 marchent sur AZERTY sans Maj.
   const digit = e.code.match(/^(?:Digit|Numpad)([1-9])$/);
   if (digit) {
@@ -35,16 +35,16 @@ useKeydown((e) => {
     return;
   }
   // Toujours bloquées : sinon elles activeraient le bouton qui a le focus (ex. « Annuler la séance »).
-  const validate = e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Space";
-  const joker = e.code === "KeyJ";
-  if (!validate && !joker && e.code !== "Backspace") return;
+  const validate = e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space';
+  const joker = e.code === 'KeyJ';
+  if (!validate && !joker && e.code !== 'Backspace') return;
   e.preventDefault();
   const first = session.value.pending[0];
   if (!first) return;
-  if (validate) act("complete", first);
+  if (validate) act('complete', first);
   else if (joker) {
-    if (session.value.jokers) act("use_joker", first);
-  } else act("dismiss", first);
+    if (session.value.jokers) act('use_joker', first);
+  } else act('dismiss', first);
 });
 </script>
 
@@ -63,7 +63,7 @@ useKeydown((e) => {
         <kbd v-if="i < 9">{{ i + 1 }}</kbd>
         <span class="event-name">
           {{ ev.name }}
-          <span v-if="ev.jokers" class="reward-tag">+{{ plural(ev.jokers, "joker") }}</span>
+          <span v-if="ev.jokers" class="reward-tag">+{{ plural(ev.jokers, 'joker') }}</span>
         </span>
         <span v-if="triggerCount(ev.id)" class="count">
           <template v-if="ev.maxPerSession">{{ Math.min(triggerCount(ev.id), ev.maxPerSession) }} / {{ ev.maxPerSession }}</template>
@@ -81,7 +81,7 @@ useKeydown((e) => {
       <h2>
         À faire
         <span class="jokers" :class="{ none: !session.jokers }" title="J : sauter la plus ancienne série">
-          {{ session.jokers ? plural(session.jokers, "joker") : "aucun joker" }}
+          {{ session.jokers ? plural(session.jokers, 'joker') : 'aucun joker' }}
         </span>
       </h2>
       <p v-if="!session.pending.length" class="empty">

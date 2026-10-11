@@ -1,20 +1,20 @@
-import { afterEach, beforeEach, vi } from "vitest";
-import { flushPromises, mount } from "@vue/test-utils";
-import { invoke } from "@tauri-apps/api/core";
-import App from "../App.vue";
+import { afterEach, beforeEach, vi } from 'vitest';
+import { flushPromises, mount } from '@vue/test-utils';
+import { invoke } from '@tauri-apps/api/core';
+import App from '../App.vue';
 
 export const config = {
-  exercises: [{ id: "squat", name: "Squats", unit: "reps", min: 10, max: 15 }],
+  exercises: [{ id: 'squat', name: 'Squats', unit: 'reps', min: 10, max: 15 }],
   games: [
     {
-      id: "er",
-      name: "Elden Ring",
+      id: 'er',
+      name: 'Elden Ring',
       events: [
-        { id: "mort", name: "Mort", draws: 1, jokers: 0, maxPerSession: 15 },
-        { id: "boss", name: "Boss vaincu", draws: 1, jokers: 2 },
+        { id: 'mort', name: 'Mort', draws: 1, jokers: 0, maxPerSession: 15 },
+        { id: 'boss', name: 'Boss vaincu', draws: 1, jokers: 2 },
       ],
     },
-    { id: "sekiro", name: "Sekiro", events: [{ id: "feu", name: "Feu de camp", draws: 1, jokers: 0 }] },
+    { id: 'sekiro', name: 'Sekiro', events: [{ id: 'feu', name: 'Feu de camp', draws: 1, jokers: 0 }] },
   ],
 };
 
@@ -22,7 +22,7 @@ export function emptySession(extra = {}) {
   return { pending: [], sets: 0, totals: [], log: [], triggers: [], jokers: 0, jokersEarned: 0, skipped: [], ...extra };
 }
 
-export const draw = { id: 7, eventName: "Mort", gameName: "Elden Ring", jokers: 0, items: [{ exerciseId: "squat", name: "Squats", amount: 10, unit: "reps" }] };
+export const draw = { id: 7, eventName: 'Mort', gameName: 'Elden Ring', jokers: 0, items: [{ exerciseId: 'squat', name: 'Squats', amount: 10, unit: 'reps' }] };
 
 // Réponses du backend simulé, modifiables par test.
 export let responses;
@@ -34,14 +34,14 @@ export function setup(over = {}) {
     get_config: { config },
     get_session: emptySession(),
     get_history: [],
-    get_last_game: "er",
+    get_last_game: 'er',
     set_last_game: undefined,
     ...over,
   };
   invoke.mockImplementation(async (cmd, args) => {
     const r = responses[cmd];
     if (r instanceof Error) throw r;
-    return typeof r === "function" ? r(args) : r;
+    return typeof r === 'function' ? r(args) : r;
   });
 }
 
@@ -53,7 +53,7 @@ export async function mountApp() {
 }
 
 export function press(code, init = {}) {
-  window.dispatchEvent(new KeyboardEvent("keydown", { code, bubbles: true, cancelable: true, ...init }));
+  window.dispatchEvent(new KeyboardEvent('keydown', { code, bubbles: true, cancelable: true, ...init }));
   return flushPromises();
 }
 
