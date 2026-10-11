@@ -74,7 +74,7 @@ export function shareGame(game) {
 // Champ facultatif absent (pause propre d'un exercice, AppId Steam d'un jeu) : la clé est omise.
 const withOptional = (item, key, value) => (value === undefined ? item : { ...item, [key]: value });
 
-// La pause globale n'est pas partagée : chacun garde la sienne.
+// La pause globale et les exercices cochés ne sont pas partagés : chacun garde les siens.
 export function shareExercises(exercises) {
   return share(EXERCISES, { exercises: exercises.map(({ name, unit, min, max, pause }) => withOptional({ name, unit, min, max }, 'pause', pause)) });
 }
@@ -82,7 +82,7 @@ export function shareExercises(exercises) {
 const validEvent = (ev) =>
   isText(ev?.name) && isCount(ev.draws, 1) && (ev.maxPerSession === undefined || isCount(ev.maxPerSession, 1)) && (ev.jokers === undefined || isCount(ev.jokers, 0));
 
-// Jeu partagé prêt à importer ; `draws` est ramené au nombre d'exercices définis (`clamped` le signale).
+// Jeu partagé prêt à importer ; `draws` est ramené au nombre d'exercices cochés (`clamped` le signale).
 export function parseGame(text, exerciseCount) {
   const data = parse(
     text,
@@ -123,7 +123,8 @@ export function importGame(games, { name, steamAppId, events }) {
   return existing ? games.map((g) => (g === existing ? game : g)) : [...games, game];
 }
 
-// Les exercices importés mettent à jour ceux qui portent le même nom et ajoutent les autres.
+// Les exercices importés mettent à jour ceux qui portent le même nom, qui restent cochés ou non, et
+// ajoutent les autres, cochés.
 export function mergeExercises(exercises, imported) {
   const merged = exercises.map((ex) => ({ ...ex }));
   let added = 0;
@@ -132,10 +133,10 @@ export function mergeExercises(exercises, imported) {
     const i = merged.findIndex((e) => sameName(e.name, name));
     const ex = merged[i];
     if (!ex) {
-      merged.push(withOptional({ id: newId(name, merged), name: name.trim(), unit, min, max }, 'pause', pause));
+      merged.push(withOptional({ id: newId(name, merged), name: name.trim(), enabled: true, unit, min, max }, 'pause', pause));
       added++;
     } else if (ex.unit !== unit || ex.min !== min || ex.max !== max || ex.pause !== pause) {
-      merged[i] = withOptional({ id: ex.id, name: ex.name, unit, min, max }, 'pause', pause);
+      merged[i] = withOptional({ id: ex.id, name: ex.name, enabled: ex.enabled, unit, min, max }, 'pause', pause);
       updated++;
     }
   }

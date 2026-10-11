@@ -558,6 +558,38 @@ fn a_removed_exercise_is_replaced_in_the_sets_to_do() {
 }
 
 #[test]
+fn an_unchecked_exercise_is_never_drawn() {
+    let mut cfg = default_config();
+    let unchecked = cfg.exercises[0].id.clone();
+    cfg.exercises[0].enabled = false;
+    let mut s = Session::new(0);
+    let mut r = rng();
+    for _ in 0..100 {
+        let d = s.draw(&cfg, "elden-ring", "repos", &mut r).unwrap();
+        assert_ne!(d.items[0].exercise_id, unchecked);
+    }
+}
+
+#[test]
+fn an_unchecked_exercise_is_replaced_in_the_sets_to_do() {
+    let mut cfg = default_config();
+    let mut s = Session::new(0);
+    let mut r = rng();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let unchecked = boss.items[0].exercise_id.clone();
+    cfg.exercises
+        .iter_mut()
+        .find(|ex| ex.id == unchecked)
+        .unwrap()
+        .enabled = false;
+    s.apply_config(&cfg, &mut r);
+    let draw = pending(&s, boss.id).unwrap();
+    assert_eq!(draw.items.len(), 2);
+    assert_eq!(draw.items[1], boss.items[1]);
+    assert!(draw.items.iter().all(|it| it.exercise_id != unchecked));
+}
+
+#[test]
 fn removed_events_and_new_jokers_apply_to_the_sets_to_do() {
     let mut cfg = default_config();
     let mut s = Session::new(0);

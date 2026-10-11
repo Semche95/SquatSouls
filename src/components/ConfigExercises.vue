@@ -23,7 +23,7 @@ async function importShared(imported) {
 
 function addExercise() {
   const list = draft.value.exercises;
-  list.push({ id: newId('Nouvel exercice', list), name: 'Nouvel exercice', unit: 'rép.', min: 5, max: 10 });
+  list.push({ id: newId('Nouvel exercice', list), name: 'Nouvel exercice', enabled: true, unit: 'rép.', min: 5, max: 10 });
 }
 </script>
 
@@ -41,10 +41,11 @@ function addExercise() {
     </label>
     <table class="cfg-table">
       <thead>
-        <tr><th>Nom</th><th>Unité</th><th>Min</th><th>Max</th><th>Pause (s)</th><th></th></tr>
+        <tr><th></th><th>Nom</th><th>Unité</th><th>Min</th><th>Max</th><th>Pause (s)</th><th></th></tr>
       </thead>
       <tbody>
-        <tr v-for="(ex, i) in draft.exercises" :key="ex.id">
+        <tr v-for="(ex, i) in draft.exercises" :key="ex.id" :class="{ 'cfg-off': !ex.enabled }">
+          <td><input v-model="ex.enabled" type="checkbox" aria-label="Tirer cet exercice" /></td>
           <td class="cfg-name"><input v-model="ex.name" aria-label="Nom de l'exercice" /></td>
           <td class="cfg-unit"><input v-model="ex.unit" aria-label="Unité" placeholder="rép., s…" /></td>
           <td><CountInput v-model="ex.min" aria-label="Minimum" /></td>

@@ -275,7 +275,7 @@ impl Session {
                 if refilled {
                     break;
                 }
-                self.bag = config.exercises.iter().map(|ex| ex.id.clone()).collect();
+                self.bag = config.active_exercises().map(|ex| ex.id.clone()).collect();
                 refilled = true;
                 continue;
             }
@@ -290,7 +290,7 @@ impl Session {
                 &fresh
             };
             let id = self.bag.swap_remove(pool[rng.random_range(0..pool.len())]);
-            picks.extend(config.exercises.iter().find(|ex| ex.id == id));
+            picks.extend(config.active_exercises().find(|ex| ex.id == id));
         }
         picks
     }
@@ -447,7 +447,7 @@ impl Session {
     }
 
     /// Ajuste une série telle que tirée (`drawn`) et, pour une série à faire, ses exercices restants (`items`) :
-    /// un exercice supprimé est remplacé, un nombre est ramené entre les bornes et la série prend ou perd
+    /// un exercice supprimé ou décoché est remplacé, un nombre est ramené entre les bornes et la série prend ou perd
     /// des exercices pour en compter `draws`. Les exercices déjà faits ne changent pas.
     fn refit<R: Rng + ?Sized>(
         &mut self,
@@ -457,7 +457,7 @@ impl Session {
         mut items: Option<&mut Vec<DrawItem>>,
         rng: &mut R,
     ) {
-        let exercise = |id: &str| config.exercises.iter().find(|ex| ex.id == id);
+        let exercise = |id: &str| config.active_exercises().find(|ex| ex.id == id);
         let ids = |list: &[DrawItem]| -> Vec<String> {
             list.iter().map(|it| it.exercise_id.clone()).collect()
         };
@@ -468,7 +468,7 @@ impl Session {
                 .map(|it| it.done)
         };
 
-        // Exercices supprimés : remplacés par d'autres, sauf ceux déjà faits.
+        // Exercices supprimés ou décochés : remplacés par d'autres, sauf ceux déjà faits.
         for i in 0..drawn.len() {
             let id = drawn[i].exercise_id.clone();
             if exercise(&id).is_some() {

@@ -57,7 +57,9 @@ impl Store {
     pub fn config(&self) -> Result<Config> {
         let exercises = self
             .conn
-            .prepare("SELECT id, name, unit, min, max, pause FROM exercises ORDER BY position")?
+            .prepare(
+                "SELECT id, name, unit, min, max, pause, enabled FROM exercises ORDER BY position",
+            )?
             .query_map([], |r| {
                 Ok(Exercise {
                     id: r.get(0)?,
@@ -66,6 +68,7 @@ impl Store {
                     min: r.get(3)?,
                     max: r.get(4)?,
                     pause: r.get(5)?,
+                    enabled: r.get(6)?,
                 })
             })?
             .collect::<Result<_>>()?;
@@ -168,9 +171,9 @@ impl Store {
             &old.exercises,
             &config.exercises,
             |e| e.id.as_str(),
-            "INSERT INTO exercises (id, position, name, unit, min, max, pause) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-             ON CONFLICT (id) DO UPDATE SET position = ?2, name = ?3, unit = ?4, min = ?5, max = ?6, pause = ?7",
-            |stmt, pos, e| stmt.execute(params![e.id, pos, e.name, e.unit, e.min, e.max, e.pause]),
+            "INSERT INTO exercises (id, position, name, unit, min, max, pause, enabled) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+             ON CONFLICT (id) DO UPDATE SET position = ?2, name = ?3, unit = ?4, min = ?5, max = ?6, pause = ?7, enabled = ?8",
+            |stmt, pos, e| stmt.execute(params![e.id, pos, e.name, e.unit, e.min, e.max, e.pause, e.enabled]),
             "DELETE FROM exercises WHERE id = ?1",
             |stmt, e| stmt.execute([&e.id]),
         )?;

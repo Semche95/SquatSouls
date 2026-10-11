@@ -15,6 +15,9 @@ pub struct Exercise {
     /// Pause propre à l'exercice, en secondes ; à défaut, la pause globale.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pause: Option<u32>,
+    /// Un exercice décoché reste défini mais n'est plus tiré.
+    #[serde(default = "default_enabled")]
+    pub enabled: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -99,6 +102,11 @@ impl Config {
             }
         }
 
+        let active = self.active_exercises().count();
+        if active == 0 {
+            return Err("Aucun exercice coché pour le tirage.".into());
+        }
+
         if self.games.is_empty() {
             return Err("Aucun jeu défini.".into());
         }
@@ -132,11 +140,10 @@ impl Config {
                 if ev.draws == 0 {
                     return Err(format!("{at} : il faut tirer au moins 1 exercice."));
                 }
-                if ev.draws as usize > self.exercises.len() {
+                if ev.draws as usize > active {
                     return Err(format!(
-                        "{at} : {} exercices à tirer mais seulement {} définis.",
-                        ev.draws,
-                        self.exercises.len()
+                        "{at} : {} exercices à tirer mais seulement {active} cochés.",
+                        ev.draws
                     ));
                 }
                 if ev.max_per_session == Some(0) {
@@ -147,6 +154,11 @@ impl Config {
             }
         }
         Ok(())
+    }
+
+    /// Exercices cochés, seuls à pouvoir être tirés.
+    pub fn active_exercises(&self) -> impl Iterator<Item = &Exercise> {
+        self.exercises.iter().filter(|ex| ex.enabled)
     }
 }
 
@@ -164,6 +176,10 @@ pub const DEFAULT_PAUSE: u32 = 60;
 
 fn default_pause() -> u32 {
     DEFAULT_PAUSE
+}
+
+fn default_enabled() -> bool {
+    true
 }
 
 pub const DEFAULT_STEAM_NOTIFY: bool = true;

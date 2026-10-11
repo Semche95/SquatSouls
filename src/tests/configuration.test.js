@@ -140,6 +140,21 @@ describe('configuration', () => {
     expect(sent.exercises[0]).toMatchObject({ min: 10, max: 0 });
   });
 
+  it('décoche un exercice pour l\'exclure du tirage sans le supprimer', async () => {
+    setup();
+    const w = await openConfig();
+    await w.findAll('.subtabs button')[1].trigger('click');
+    const row = w.find('.cfg-table tbody tr');
+    expect(row.classes()).not.toContain('cfg-off');
+    await w.find('input[aria-label="Tirer cet exercice"]').setValue(false);
+    expect(row.classes()).toContain('cfg-off');
+    responses.save_config = (args) => ({ config: args.config });
+    await w.find('.cfg-actions .primary').trigger('click');
+    await flushPromises();
+    const sent = invoke.mock.calls.find(([cmd]) => cmd === 'save_config')[1].config;
+    expect(sent.exercises).toEqual([expect.objectContaining({ id: 'squat', enabled: false })]);
+  });
+
   it('règle la pause globale et la pause propre d\'un exercice', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
@@ -297,8 +312,8 @@ describe('configuration', () => {
       await w.find('.cfg-import').trigger('submit');
       await flushPromises();
       expect(savedConfig().exercises).toEqual([
-        { id: 'squat', name: 'Squats', unit: 'reps', min: 12, max: 20 },
-        { id: 'pompes', name: 'Pompes', unit: 'rép.', min: 8, max: 12 },
+        { id: 'squat', name: 'Squats', enabled: true, unit: 'reps', min: 12, max: 20 },
+        { id: 'pompes', name: 'Pompes', enabled: true, unit: 'rép.', min: 8, max: 12 },
       ]);
       expect(savedConfig().games[0].name).toBe('Elden Ring');
       expect(w.find('.banner.ok').text()).toBe('Exercices importés : 1 ajouté, 1 mis à jour.');

@@ -704,6 +704,10 @@ kbd.dark {
 .cfg-table th:last-child {
   width: 1%;
 }
+/* Exercice décoché : gardé dans la liste mais hors du tirage. */
+.cfg-off input:not([type='checkbox']) {
+  opacity: 0.5;
+}
 /* Configuration : jeux et exercices sur des sous-onglets séparés. */
 .subtabs {
   align-self: flex-start;

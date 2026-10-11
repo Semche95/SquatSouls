@@ -42,9 +42,10 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 
 ### Tirage
 
-- Chaque jeu propose une liste d'événements. Déclencher un événement tire `draws` exercices distincts parmi tous les exercices définis, chacun avec un nombre entier pris au hasard entre son `min` et son `max` (inclus).
+- Chaque jeu propose une liste d'événements. Déclencher un événement tire `draws` exercices distincts parmi les exercices cochés, chacun avec un nombre entier pris au hasard entre son `min` et son `max` (inclus).
 - Les exercices sortent par tours : dans une séance, chaque exercice sort une fois avant que l'un d'eux puisse revenir. Quand un tour est épuisé, un nouveau commence ; il ne reprend aussitôt ni un exercice de la série précédente, ni un exercice déjà sorti dans le même tirage (sauf s'il ne reste que lui à tirer pour le premier cas). Une configuration enregistrée recommence le tour.
 - L'intervalle appartient à l'exercice : il est le même quel que soit l'événement.
+- Un exercice décoché dans la configuration reste défini mais n'est plus tiré, jusqu'à ce qu'il soit coché de nouveau. La case s'enregistre avec **Enregistrer**, n'est pas transmise par le partage des exercices, et un exercice importé arrive coché (ou garde son état s'il existait déjà).
 - Un tirage devient une série « à faire ». Les séries à faire se traitent de la plus ancienne à la plus récente.
 
 ### Limite par séance
@@ -84,7 +85,7 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 - Une configuration enregistrée s'applique immédiatement, sans redémarrer. Elle ne touche ni aux séries faites ni aux compteurs (renommer un jeu ou un événement garde ses compteurs). Les séries à faire restent telles que tirées, avec les noms à jour, sauf :
   - un événement supprimé retire ses séries à faire ;
   - un nombre d'exercices tirés (`draws`) changé ajuste ses séries : les exercices manquants sont tirés, ou des exercices pas encore faits sont retirés ; une série où il ne reste rien à faire est finie et rapporte ses jokers ;
-  - un exercice supprimé est remplacé par un autre tiré au hasard, absent de la série ;
+  - un exercice supprimé ou décoché est remplacé par un autre exercice coché tiré au hasard, absent de la série ;
   - un minimum ou un maximum changé ramène le nombre d'un exercice à faire dans les nouvelles bornes, sauf s'il a été réduit de moitié ;
   - des jokers changés s'appliquent aux séries de l'événement, sauf à celles où des jokers ont déjà été dépensés, qui n'en rapportent plus.
 
@@ -98,7 +99,7 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 
 ### Configuration
 
-- La configuration est validée avant d'être enregistrée. Elle est refusée si : il n'y a aucun exercice ou aucun jeu, un id ou un nom est vide, un id est en double, deux jeux portent le même nom (sans tenir compte de la casse ni des espaces autour), un jeu n'a aucun événement, `draws` vaut 0 ou dépasse le nombre d'exercices définis, `maxPerSession` vaut 0, ou un exercice a `max` à 0 ou `min` supérieur à `max`.
+- La configuration est validée avant d'être enregistrée. Elle est refusée si : il n'y a aucun exercice, aucun exercice coché ou aucun jeu, un id ou un nom est vide, un id est en double, deux jeux portent le même nom (sans tenir compte de la casse ni des espaces autour), un jeu n'a aucun événement, `draws` vaut 0 ou dépasse le nombre d'exercices cochés, `maxPerSession` vaut 0, ou un exercice a `max` à 0 ou `min` supérieur à `max`.
 - Chaque champ numérique (pauses, minimum, maximum, exercices tirés, limite, jokers) doit être un nombre entier, 0 ou plus, et pas trop grand. Ce format se vérifie pendant la saisie : un champ mal rempli (texte, nombre négatif ou décimal) s'encadre en rouge et le problème s'affiche aussitôt dans une infobulle pendant la saisie ; une fois le champ quitté, l'infobulle se ferme et se rouvre à son survol. Les autres erreurs et les confirmations n'apparaissent qu'à l'enregistrement. Tant qu'un champ est mal rempli, **Enregistrer** est désactivé et son infobulle nomme le premier champ fautif (par exemple « Squats › minimum : il faut un nombre entier, 0 ou plus. »). Un champ obligatoire vidé vaut 0, un champ facultatif vidé (pause propre, limite) est retiré.
 - Les jeux sont toujours listés par nom, sans tenir compte de la casse ni des accents, dans l'onglet Jouer comme dans la configuration. Sans jeu choisi, la configuration s'ouvre sur le premier de la liste.
 - Une base neuve (premier lancement, aucun jeu enregistré) reçoit la configuration par défaut, décrite dans `src-tauri/src/fitness/seed.json`. Si la configuration enregistrée est illisible ou invalide, la configuration par défaut est utilisée et l'erreur est affichée.

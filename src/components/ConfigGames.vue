@@ -64,7 +64,8 @@ function openImport() {
   importing.value = true;
 }
 
-const parseShared = (text) => parseGame(text, config.value.exercises.length);
+const activeCount = () => config.value.exercises.filter((ex) => ex.enabled).length;
+const parseShared = (text) => parseGame(text, activeCount());
 const takenName = (name) => config.value.games.some((g) => sameName(g.name, name));
 
 function shareEdited() {
@@ -75,7 +76,7 @@ async function importShared(game) {
   if (!(await saveGames(importGame(config.value.games, game)))) return;
   draft.value.games = importGame(draft.value.games, clone(game));
   selectGame(config.value.games.find((g) => sameName(g.name, game.name)).id);
-  const count = config.value.exercises.length;
+  const count = activeCount();
   notify(game.clamped ? `${game.name} importé, tirages limités à ${plural(count, 'exercice')}.` : `${game.name} importé.`);
 }
 

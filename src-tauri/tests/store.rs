@@ -16,6 +16,7 @@ fn config_changes_are_saved() {
     let mut cfg = default_config();
     cfg.exercises.swap(0, 1);
     cfg.exercises[0].max = 30;
+    cfg.exercises[1].enabled = false;
     cfg.exercises.pop();
     cfg.games.remove(1);
     cfg.games[0].name = "Elden Ring Nightreign".into();
@@ -77,7 +78,7 @@ fn applied_migrations_are_dated() {
     std::fs::remove_file(&path).unwrap();
     assert_eq!(
         applied.iter().map(|a| a.0).collect::<Vec<_>>(),
-        [1, 2, 3, 4],
+        [1, 2, 3, 4, 5],
         "une migration n'est appliquée qu'une fois"
     );
     assert!(
@@ -120,7 +121,7 @@ fn database_migrated_before_refinery_keeps_its_data() {
         let applied = applied(&path);
         std::fs::remove_file(&path).unwrap();
         assert_eq!(history.len(), 1, "{name}");
-        assert_eq!(applied.len(), 4, "{name}");
+        assert_eq!(applied.len(), 5, "{name}");
     }
 }
 

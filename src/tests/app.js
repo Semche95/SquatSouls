@@ -11,7 +11,7 @@ export const config = {
   closeToTray: false,
   startHidden: false,
   ignoredGames: [],
-  exercises: [{ id: 'squat', name: 'Squats', unit: 'reps', min: 10, max: 15 }],
+  exercises: [{ id: 'squat', name: 'Squats', enabled: true, unit: 'reps', min: 10, max: 15 }],
   games: [
     {
       id: 'er',
