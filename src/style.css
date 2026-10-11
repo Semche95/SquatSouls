@@ -708,7 +708,6 @@ kbd.dark {
 .subtabs {
   align-self: flex-start;
 }
-.cfg-exercises,
 /* Réglages : une carte par thème, chaque option est un libellé suivi d'un interrupteur à droite,
    ses options secondaires en retrait sous un trait. */
 .cfg-settings {
@@ -826,8 +825,12 @@ kbd.dark {
 .ignored li:last-child {
   border-bottom: none;
 }
+/* Le nom prend toute la largeur laissée par les autres colonnes. */
+.cfg-name {
+  width: 100%;
+}
 .cfg-unit {
-  width: 30%;
+  min-width: 11em;
 }
 .cfg-pause {
   align-self: flex-start;

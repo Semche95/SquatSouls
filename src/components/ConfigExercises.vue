@@ -45,7 +45,7 @@ function addExercise() {
       </thead>
       <tbody>
         <tr v-for="(ex, i) in draft.exercises" :key="ex.id">
-          <td><input v-model="ex.name" aria-label="Nom de l'exercice" /></td>
+          <td class="cfg-name"><input v-model="ex.name" aria-label="Nom de l'exercice" /></td>
           <td class="cfg-unit"><input v-model="ex.unit" aria-label="Unité" placeholder="rép., s…" /></td>
           <td><CountInput v-model="ex.min" aria-label="Minimum" /></td>
           <td><CountInput v-model="ex.max" aria-label="Maximum" /></td>
