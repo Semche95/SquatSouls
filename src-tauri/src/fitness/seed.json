@@ -424,6 +424,63 @@
           "jokers": 1
         }
       ]
+    },
+    {
+      "id": "deep-rock-galactic",
+      "name": "Deep Rock Galactic",
+      "events": [
+        {
+          "id": "a-terre",
+          "name": "Nain à terre",
+          "draws": 1,
+          "maxPerSession": 15,
+          "jokers": 0
+        },
+        {
+          "id": "niveau",
+          "name": "Montée de niveau de classe",
+          "draws": 1,
+          "maxPerSession": 10,
+          "jokers": 0
+        },
+        {
+          "id": "mission",
+          "name": "Mission accomplie",
+          "draws": 1,
+          "maxPerSession": 10,
+          "jokers": 0
+        },
+        {
+          "id": "laisse",
+          "name": "Laissé dans la grotte à l'extraction",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "echec",
+          "name": "Mission échouée",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "dreadnought",
+          "name": "Dreadnought vaincu",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "deep-dive",
+          "name": "Deep Dive terminée",
+          "draws": 3,
+          "jokers": 1
+        },
+        {
+          "id": "elite-deep-dive",
+          "name": "Elite Deep Dive terminée",
+          "draws": 3,
+          "jokers": 2
+        }
+      ]
     }
   ]
 }
