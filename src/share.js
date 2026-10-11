@@ -1,6 +1,8 @@
+import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
 import { newId, sameName } from './configDraft.js';
 
-// Texte partagé entre utilisateurs : un jeu (nom et événements) ou la liste des exercices, sans id.
+// Texte partagé entre utilisateurs : un jeu (nom et événements) ou la liste des exercices, sans id,
+// en JSON compressé (deflate) puis encodé en base64.
 const MARK = 'squatsouls';
 const GAME = 'jeu';
 const EXERCISES = 'exercices';
@@ -9,14 +11,19 @@ const isText = (v) => typeof v === 'string' && v.trim() !== '';
 const isCount = (v, min) => Number.isInteger(v) && v >= min;
 
 function share(kind, data) {
-  return JSON.stringify({ [MARK]: kind, ...data });
+  return btoa(String.fromCharCode(...deflateSync(strToU8(JSON.stringify({ [MARK]: kind, ...data })))));
+}
+
+// JSON contenu dans un texte partagé ; lève une erreur si le texte n'en est pas un.
+export function unpack(text) {
+  return strFromU8(inflateSync(Uint8Array.from(atob(text), (c) => c.charCodeAt(0))));
 }
 
 // Renvoie le contenu du texte collé s'il est du type attendu et que `valid` l'accepte, sinon lève `error`.
 function parse(text, kind, valid, error) {
   let data = null;
   try {
-    data = JSON.parse(text);
+    data = JSON.parse(unpack(text));
   } catch {
     // Texte quelconque : refusé ci-dessous.
   }

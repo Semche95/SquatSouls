@@ -84,7 +84,7 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 ### Partage
 
 - Un jeu se partage seul : son nom et ses événements (nombre tiré, limite, jokers), sans les exercices, propres à chacun. Les exercices se partagent à part : nom, unité, minimum et maximum.
-- **Partager** copie dans le presse-papiers un texte à transmettre, tiré de la configuration enregistrée (les modifications en cours n'y sont pas).
+- **Partager** copie dans le presse-papiers un texte compressé à transmettre (illisible tel quel, il résiste aux retours à la ligne ajoutés par les messageries), tiré de la configuration enregistrée (les modifications en cours n'y sont pas).
 - **Importer** demande de coller ce texte et n'est possible que s'il est valide. L'import s'enregistre aussitôt, sans passer par **Enregistrer**, et garde les autres modifications en cours.
 - Un jeu importé s'ajoute, ou remplace le jeu qui porte le même nom (sans tenir compte de la casse ni des espaces autour) : le formulaire l'annonce avant l'import. Un événement qui tire plus d'exercices qu'il n'en est défini est ramené à ce nombre, et le message de confirmation le signale.
 - Des exercices importés mettent à jour l'unité, le minimum et le maximum de ceux qui portent le même nom et ajoutent les autres ; aucun exercice n'est retiré.

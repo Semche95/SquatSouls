@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { importGame, mergeExercises, parseExercises, parseGame, shareExercises, shareGame } from '../share.js';
+import { importGame, mergeExercises, parseExercises, parseGame, shareExercises, shareGame, unpack } from '../share.js';
 import { config } from './app.js';
 
 const exercises = [
@@ -10,7 +10,7 @@ const exercises = [
 describe('partage d\'un jeu', () => {
   it('partage le nom et les événements sans id ni exercices, puis les relit', () => {
     const text = shareGame(config.games[0]);
-    expect(text).not.toContain('"id"');
+    expect(unpack(text)).not.toContain('"id"');
     expect(parseGame(text, 3)).toEqual({
       name: 'Elden Ring',
       events: [
@@ -52,8 +52,10 @@ describe('partage d\'un jeu', () => {
 describe('partage des exercices', () => {
   it('partage les exercices sans id, puis les relit', () => {
     const text = shareExercises(exercises);
-    expect(text).not.toContain('"id"');
+    expect(unpack(text)).not.toContain('"id"');
     expect(parseExercises(text)).toEqual(exercises.map(({ id, ...ex }) => ex));
+    // Les espaces et retours à la ligne ajoutés par une messagerie sont ignorés.
+    expect(parseExercises(` ${text.slice(0, 10)}\n${text.slice(10)} `)).toEqual(parseExercises(text));
   });
 
   it('refuse un texte qui n\'est pas une liste d\'exercices valide', () => {
