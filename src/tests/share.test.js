@@ -23,6 +23,13 @@ describe('partage d\'un jeu', () => {
     });
   });
 
+  it('ignore l\'identifiant placé devant le texte compressé', () => {
+    const text = shareGame(config.games[0]);
+    const payload = text.slice(text.indexOf(':') + 1);
+    expect(parseGame(`squatsouls/exercises:${payload}`, 3)).toEqual(parseGame(text, 3));
+    expect(parseGame(payload, 3)).toEqual(parseGame(text, 3));
+  });
+
   it('ramène le nombre tiré au nombre d\'exercices définis', () => {
     const text = shareGame({ name: 'Nioh', events: [{ name: 'Mort', draws: 5, jokers: 0 }] });
     expect(parseGame(text, 2)).toMatchObject({ events: [{ draws: 2 }], clamped: true });
@@ -46,7 +53,7 @@ describe('partage d\'un jeu', () => {
 
   it('demande une mise à jour pour un texte d\'une version inconnue du format', () => {
     const shared = shareGame(config.games[0]);
-    const payload = JSON.stringify({ ...unpack(shared).data, version: 2 });
+    const payload = JSON.stringify({ version: 2, kind: 'game', ...unpack(shared).data });
     const text = shared.slice(0, shared.indexOf(':') + 1) + btoa(String.fromCharCode(...deflateSync(strToU8(payload))));
     expect(() => parseGame(text, 3)).toThrow('Ce texte vient d\'une version plus récente de SquatSouls : la mettre à jour pour l\'importer.');
   });
