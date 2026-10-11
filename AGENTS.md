@@ -31,8 +31,12 @@ pnpm test                   # tests interface (Vitest)
 - En JavaScript, chaînes entre guillemets simples, jamais doubles, en échappant l'apostrophe (`'moins d\'une minute'`).
 - Un bouton désactivé doit se voir comme tel : vérifier que `style.css` lui donne un style `:disabled` (opacité réduite, pas de curseur de clic ni d'effet au survol), sans se contenter de l'attribut `disabled`. La raison de la désactivation s'affiche dans une infobulle en l'entourant de `DisabledTip` (`components/DisabledTip.vue`), jamais avec un `title`.
 - Les tests ne vivent que dans `src/tests/` (interface) et `src-tauri/tests/` (backend) : aucun fichier `*.test.js` ailleurs dans `src/`, aucun module `#[cfg(test)]` dans `src-tauri/src/`.
+- Ne jamais citer dans les sources (commentaires compris) un fichier ou dossier ignoré par git (`.claude/`, skills, `todo.md`) : la référence serait cassée pour qui clone le dépôt.
 - Suivre la règle DRY partout (Rust, Vue, CSS, tests) : factoriser toute logique, valeur ou style dupliqué plutôt que le recopier.
 - Lancer `cargo test` après toute modification du code Rust, `pnpm test` après toute modification de `src/`.
+- Ne jamais commiter sans l'accord explicite de l'utilisateur : accepter une opération qui y mène ne vaut pas accord, faire le travail en local puis demander.
+- Ne jamais pousser (`git push`, force push compris), même sur demande explicite : l'utilisateur pousse lui-même.
+- Ne jamais commiter les fichiers de `.claude/` (skills, réglages) sauf demande explicite : indexer les fichiers un par un et vérifier `git diff --cached --stat` avant chaque commit.
 - Commits en Conventional Commits, une seule ligne, sans `Co-Authored-By`.
 - Chaque commit est cohérent : une seule évolution, avec son code, ses tests et sa documentation, et les tests passent. Découper par morceau de fichier (et non par fichier entier) quand un fichier mêle plusieurs évolutions.
 
