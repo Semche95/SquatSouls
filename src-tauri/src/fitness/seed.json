@@ -398,12 +398,6 @@
           "jokers": 1
         },
         {
-          "id": "victoire-premier",
-          "name": "Partie gagnée sans mourir au premier essai",
-          "draws": 2,
-          "jokers": 2
-        },
-        {
           "id": "legendaire",
           "name": "Objet légendaire obtenu",
           "draws": 1,
