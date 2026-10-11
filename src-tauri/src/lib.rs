@@ -25,7 +25,9 @@ pub fn run() {
         .setup(|app| {
             let dir = app.path().app_config_dir()?;
             fs::create_dir_all(&dir)?;
-            let store = Store::open(&dir.join("squatsouls.db"))?;
+            // Le build de développement a sa propre base pour ne pas toucher aux données réelles
+            let db = if cfg!(debug_assertions) { "squatsouls-dev.db" } else { "squatsouls.db" };
+            let store = Store::open(&dir.join(db))?;
             app.manage(Mutex::new(store.steam_names()?));
             let state = AppState::new(store);
             tray::apply(app.handle(), &state.config)?;
