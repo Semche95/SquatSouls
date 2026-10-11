@@ -20,6 +20,23 @@ const status = computed(() => {
 
 <template>
   <section class="group cfg-settings">
+    <h2 class="group-title">Zone de notification</h2>
+    <div class="setting">
+      <label class="check">
+        <input v-model="draft.tray" type="checkbox" />
+        Afficher l'icône dans la zone de notification
+      </label>
+      <template v-if="draft.tray">
+        <label class="check nested">
+          <input v-model="draft.closeToTray" type="checkbox" />
+          Fermer la fenêtre la masque au lieu de quitter
+        </label>
+        <label class="check nested">
+          <input v-model="draft.startHidden" type="checkbox" />
+          Démarrer masqué
+        </label>
+      </template>
+    </div>
     <h2 class="group-title">Détection des jeux Steam</h2>
     <div class="setting">
       <label class="check">

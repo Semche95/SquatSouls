@@ -1,6 +1,7 @@
 mod commands;
 pub mod fitness;
 mod state;
+mod tray;
 
 use fitness::Store;
 use state::AppState;
@@ -26,9 +27,15 @@ pub fn run() {
             fs::create_dir_all(&dir)?;
             let store = Store::open(&dir.join("squatsouls.db"))?;
             app.manage(Mutex::new(store.steam_names()?));
-            app.manage(Mutex::new(AppState::new(store)));
+            let state = AppState::new(store);
+            tray::apply(app.handle(), &state.config)?;
+            if !(state.config.tray && state.config.start_hidden) {
+                tray::show_main(app.handle());
+            }
+            app.manage(Mutex::new(state));
             Ok(())
         })
+        .on_window_event(tray::on_window_event)
         .invoke_handler(tauri::generate_handler![
             commands::get_config,
             commands::save_config,

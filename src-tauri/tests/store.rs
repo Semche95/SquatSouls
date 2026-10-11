@@ -160,12 +160,16 @@ fn steam_names_receive_retry_at_even_from_draft_schema() {
 }
 
 #[test]
-fn steam_and_notify_settings_are_saved() {
+fn steam_and_tray_settings_are_saved() {
     let mut s = store();
     let mut cfg = default_config();
     assert!(!cfg.steam_detection && cfg.steam_notify);
+    assert!(!cfg.tray && !cfg.close_to_tray && !cfg.start_hidden);
     cfg.steam_detection = true;
     cfg.steam_notify = false;
+    cfg.tray = true;
+    cfg.close_to_tray = true;
+    cfg.start_hidden = true;
     cfg.games[0].steam_app_id = None;
     cfg.ignored_games = vec![
         IgnoredGame {

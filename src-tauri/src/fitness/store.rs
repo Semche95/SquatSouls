@@ -20,6 +20,9 @@ const LAST_GAME: &str = "last_game";
 const PAUSE: &str = "pause";
 const STEAM_DETECTION: &str = "steam_detection";
 const STEAM_NOTIFY: &str = "steam_notify";
+const TRAY: &str = "tray";
+const CLOSE_TO_TRAY: &str = "close_to_tray";
+const START_HIDDEN: &str = "start_hidden";
 const STEAM_LAST_CALL: &str = "steam_last_call";
 const STEAM_BLOCKED_UNTIL: &str = "steam_blocked_until";
 
@@ -108,6 +111,9 @@ impl Store {
             pause: self.parsed_setting(PAUSE, DEFAULT_PAUSE)?,
             steam_detection: self.parsed_setting(STEAM_DETECTION, false)?,
             steam_notify: self.parsed_setting(STEAM_NOTIFY, DEFAULT_STEAM_NOTIFY)?,
+            tray: self.parsed_setting(TRAY, false)?,
+            close_to_tray: self.parsed_setting(CLOSE_TO_TRAY, false)?,
+            start_hidden: self.parsed_setting(START_HIDDEN, false)?,
             ignored_games,
             exercises,
             games,
@@ -129,6 +135,17 @@ impl Store {
                 STEAM_NOTIFY,
                 old.steam_notify.to_string(),
                 config.steam_notify.to_string(),
+            ),
+            (TRAY, old.tray.to_string(), config.tray.to_string()),
+            (
+                CLOSE_TO_TRAY,
+                old.close_to_tray.to_string(),
+                config.close_to_tray.to_string(),
+            ),
+            (
+                START_HIDDEN,
+                old.start_hidden.to_string(),
+                config.start_hidden.to_string(),
             ),
         ];
         for (key, old, new) in settings {

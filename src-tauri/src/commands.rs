@@ -5,6 +5,7 @@ use crate::fitness::{
     SteamResponse,
 };
 use crate::state::{lock, now, AppState, ConfigView, Shared};
+use crate::tray;
 use chrono::Local;
 use std::sync::Mutex;
 use std::time::Duration;
@@ -20,9 +21,18 @@ pub(crate) fn get_config(state: Shared) -> Result<ConfigView, String> {
 }
 
 #[tauri::command]
-pub(crate) fn save_config(state: Shared, config: Config) -> Result<ConfigView, String> {
+pub(crate) fn save_config(
+    app: AppHandle,
+    state: Shared,
+    config: Config,
+) -> Result<ConfigView, String> {
     config.validate()?;
-    lock(&state)?.store_config(config)
+    let mut s = lock(&state)?;
+    let view = s.store_config(config)?;
+    tray::apply(&app, &s.config).map_err(|e| {
+        format!("Configuration enregistrée, zone de notification indisponible : {e}")
+    })?;
+    Ok(view)
 }
 
 #[tauri::command]

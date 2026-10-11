@@ -63,6 +63,15 @@ pub struct Config {
     /// Notification système à chaque jeu Steam lancé, quand la détection est active.
     #[serde(default = "default_steam_notify")]
     pub steam_notify: bool,
+    /// Icône dans la zone de notification, désactivée par défaut.
+    #[serde(default)]
+    pub tray: bool,
+    /// Avec l'icône, fermer la fenêtre la masque au lieu de quitter.
+    #[serde(default)]
+    pub close_to_tray: bool,
+    /// Avec l'icône, l'appli démarre fenêtre masquée.
+    #[serde(default)]
+    pub start_hidden: bool,
     #[serde(default)]
     pub ignored_games: Vec<IgnoredGame>,
     pub exercises: Vec<Exercise>,

@@ -7,6 +7,9 @@ export const config = {
   pause: 60,
   steamDetection: false,
   steamNotify: true,
+  tray: false,
+  closeToTray: false,
+  startHidden: false,
   ignoredGames: [],
   exercises: [{ id: 'squat', name: 'Squats', unit: 'reps', min: 10, max: 15 }],
   games: [

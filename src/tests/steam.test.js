@@ -239,3 +239,19 @@ describe('notification d\'un jeu Steam lancé', () => {
     expect(notify()).toHaveLength(1);
   });
 });
+
+describe('zone de notification', () => {
+  it('replie ses réglages tant que l\'icône n\'est pas cochée, et les enregistre avec Enregistrer', async () => {
+    setupSteam({ cfg: config, running_steam_app: null });
+    const w = await mountApp();
+    await openSettings(w);
+    const hide = 'Fermer la fenêtre la masque au lieu de quitter';
+    expect(w.findAll('.check').some((c) => c.text() === hide)).toBe(false);
+    await check(w, 'Afficher l\'icône dans la zone de notification').setValue(true);
+    await check(w, hide).setValue(true);
+    await check(w, 'Démarrer masqué').setValue(true);
+    await w.find('.cfg-actions .primary').trigger('click');
+    await flushPromises();
+    expect(lastSaved()).toMatchObject({ tray: true, closeToTray: true, startHidden: true });
+  });
+});

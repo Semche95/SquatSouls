@@ -29,6 +29,7 @@ Sous Linux, l'appli force `GDK_BACKEND=x11` et `WEBKIT_DISABLE_DMABUF_RENDERER=1
 - « Terminer la séance » et « Annuler la séance », en bas de l'onglet Jouer, demandent une confirmation.
 - L'onglet **Bilan** montre la séance actuelle et les 7 derniers jours. **Tout voir** affiche tout l'historique en grand (Échap pour fermer).
 - Avec **Détecter le jeu Steam en cours** (Configuration › Réglages), l'onglet Jouer propose de sélectionner le jeu Steam lancé, ou de l'ajouter s'il n'est pas encore configuré, et une notification système signale chaque jeu lancé.
+- Avec **Afficher l'icône dans la zone de notification** (Configuration › Réglages), l'appli peut rester ouverte fenêtre masquée.
 
 ## Règles métier
 
@@ -106,6 +107,12 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 - **Notifier quand un jeu est lancé**, visible sous la case de détection cochée et cochée par défaut, envoie une notification système une seule fois par lancement : pour un jeu configuré (« à sélectionner dans Jouer ») ou inconnu (« l'ajouter depuis Jouer ») une fois son nom connu, jamais pour un jeu ignoré. Un jeu relancé après qu'aucun jeu n'a tourné est de nouveau notifié. Elle s'enregistre avec **Enregistrer**.
 - Sous la case, les Réglages montrent l'état de la détection enregistrée : le jeu détecté (même déjà sélectionné ou ignoré), aucun jeu, ou un Steam Store qui limite les requêtes. Si les processus sont illisibles, rien n'est détecté ; le passage suivant réessaie.
 
+### Zone de notification
+
+- Facultative, désactivée par défaut : la case **Afficher l'icône dans la zone de notification** des Réglages fait partie de la configuration et s'enregistre avec **Enregistrer**, qui ajoute ou retire aussitôt l'icône.
+- Cochée, elle déplie deux cases, décochées par défaut : **Fermer la fenêtre la masque au lieu de quitter** (l'appli et la détection Steam continuent) et **Démarrer masqué** (l'appli démarre sans fenêtre). Sans l'icône, elles sont sans effet : fermer la fenêtre quitte l'appli, qui démarre toujours fenêtre affichée.
+- Un clic sur l'icône affiche la fenêtre ; son menu propose **Afficher** et **Quitter** (sous Linux, seul le menu est disponible).
+
 ### Partage
 
 - Un jeu se partage seul : son nom, son AppId Steam s'il en a un, et ses événements (nombre tiré, limite, jokers), sans les exercices, propres à chacun. Les exercices se partagent à part : nom, unité, minimum, maximum et pause propre. La pause globale n'est pas partagée.
@@ -121,11 +128,11 @@ L'onglet **Configuration** se règle avec des champs :
 - **Exercices** : la pause globale après chaque série, puis le nom, l'unité, le minimum, le maximum et la pause propre (vide pour suivre la pause globale) de chaque exercice. Le dernier exercice ne peut pas être supprimé. **Partager** et **Importer** échangent la liste avec d'autres utilisateurs.
 - **Jeux** : choisir le jeu à modifier dans la liste (qui affiche les noms enregistrés, par ordre alphabétique), le renommer, le supprimer (après confirmation) ou en ajouter un. Un nouveau jeu demande un nom qu'aucun autre jeu ne porte et reprend soit les événements d'un autre jeu, soit un seul événement à remplir. **Partager** copie le jeu ouvert, **Importer un jeu** en ajoute ou en remplace un à partir d'un texte partagé. Le bouton **Créer**, l'import et la confirmation de suppression enregistrent aussitôt, sans passer par **Enregistrer** ; les autres modifications en cours restent à enregistrer.
 - **Événements** du jeu : repliés sur une ligne qui résume le nombre tiré, la limite et les jokers, ils se déplient d'un clic pour régler le nom, le nombre d'exercices tirés, la limite par séance (vide pour aucune) et les jokers gagnés.
-- **Réglages** : la détection du jeu Steam en cours et sa notification, et la liste des jeux ignorés (voir Détection des jeux Steam).
+- **Réglages** : l'icône dans la zone de notification (voir Zone de notification), la détection du jeu Steam en cours et sa notification, et la liste des jeux ignorés (voir Détection des jeux Steam).
 
 Dès qu'une modification est en cours, deux boutons apparaissent : **Enregistrer** valide la configuration et l'applique aussitôt à l'onglet Jouer, **Réinitialiser les modifications** revient à la dernière version enregistrée.
 
-Tout est enregistré dans une base SQLite, `~/.config/com.semche.squatsouls/squatsouls.db` : configuration (dont la pause globale, la détection Steam, sa notification et les jeux ignorés), historique, dernier jeu choisi et noms donnés par le Steam Store. À l'enregistrement, seuls les exercices, jeux et événements modifiés sont réécrits. Au lancement, la base reçoit les migrations de schéma qui lui manquent, chacune datée à son application (une migration créée ne se modifie jamais, toute évolution du schéma en ajoute une nouvelle) ; une base créée par une version plus récente de l'appli est refusée.
+Tout est enregistré dans une base SQLite, `~/.config/com.semche.squatsouls/squatsouls.db` : configuration (dont la pause globale, la zone de notification, la détection Steam, sa notification et les jeux ignorés), historique, dernier jeu choisi et noms donnés par le Steam Store. À l'enregistrement, seuls les exercices, jeux et événements modifiés sont réécrits. Au lancement, la base reçoit les migrations de schéma qui lui manquent, chacune datée à son application (une migration créée ne se modifie jamais, toute évolution du schéma en ajoute une nouvelle) ; une base créée par une version plus récente de l'appli est refusée.
 
 ## Tests
 
