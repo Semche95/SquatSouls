@@ -1,4 +1,4 @@
-//! Configuration : exercices, jeux et événements, validation et configuration par défaut.
+//! Configuration : exercices, jeux et événements, validation et configuration par défaut (`seed.json`).
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -124,91 +124,7 @@ pub fn event(id: &str, name: &str, draws: u32, max: Option<u32>) -> GameEvent {
     }
 }
 
-fn reward(id: &str, name: &str, jokers: u32) -> GameEvent {
-    GameEvent {
-        jokers,
-        ..event(id, name, 2, None)
-    }
-}
-
-/// Événements communs aux Souls, avec le vocabulaire propre à chaque jeu.
-fn souls_events(rest: &str, discovered: &str, level: &str, lost: &str) -> Vec<GameEvent> {
-    vec![
-        event("mort", "Mort", 1, Some(15)),
-        event("repos", rest, 1, None),
-        event("decouverte", discovered, 1, None),
-        event("niveau", level, 1, None),
-        event("perte", lost, 1, None),
-        event("boss", "Boss vaincu", 2, None),
-        reward("boss-premier", "Boss vaincu au premier essai", 1),
-        reward("boss-nohit", "Boss vaincu sans prendre un coup", 2),
-    ]
-}
-
+/// Configuration par défaut, écrite dans une base neuve et utilisée si la configuration enregistrée est invalide.
 pub fn default_config() -> Config {
-    let ex = |id: &str, name: &str, unit: &str, min, max| Exercise {
-        id: id.into(),
-        name: name.into(),
-        unit: unit.into(),
-        min,
-        max,
-    };
-    let game = |id: &str, name: &str, events| Game {
-        id: id.into(),
-        name: name.into(),
-        events,
-    };
-    let ds = || {
-        souls_events(
-            "Repos à un feu connu",
-            "Nouveau feu allumé",
-            "Montée de niveau",
-            "Âmes perdues",
-        )
-    };
-    Config {
-        exercises: vec![
-            ex("pompes", "Pompes", "rép.", 8, 12),
-            ex("tractions", "Tractions", "rép.", 2, 4),
-            ex("squats", "Squats", "rép.", 12, 18),
-            ex("fentes", "Fentes", "rép. par jambe", 5, 8),
-            ex("gainage", "Gainage (planche)", "s", 20, 45),
-            ex("superman", "Superman", "rép.", 10, 15),
-        ],
-        games: vec![
-            game(
-                "elden-ring",
-                "Elden Ring",
-                souls_events(
-                    "Repos à un site de grâce connu",
-                    "Site de grâce découvert",
-                    "Montée de niveau",
-                    "Runes perdues",
-                ),
-            ),
-            game("ds1", "Dark Souls", ds()),
-            game("ds2", "Dark Souls II", ds()),
-            game("ds3", "Dark Souls III", ds()),
-            game(
-                "bloodborne",
-                "Bloodborne",
-                souls_events(
-                    "Repos à une lanterne connue",
-                    "Lanterne allumée",
-                    "Montée de niveau",
-                    "Échos de sang perdus",
-                ),
-            ),
-            game(
-                "sekiro",
-                "Sekiro",
-                souls_events(
-                    "Repos à une statue du Sculpteur",
-                    "Statue du Sculpteur découverte",
-                    "Point de compétence gagné",
-                    "Sen et expérience perdus",
-                ),
-            ),
-        ],
-    }
+    serde_json::from_str(include_str!("seed.json")).expect("seed.json invalide")
 }

@@ -1,0 +1,441 @@
+{
+  "exercises": [
+    {
+      "id": "pompes",
+      "name": "Pompes",
+      "unit": "rép.",
+      "min": 8,
+      "max": 12
+    },
+    {
+      "id": "tractions",
+      "name": "Tractions",
+      "unit": "rép.",
+      "min": 2,
+      "max": 4
+    },
+    {
+      "id": "squats",
+      "name": "Squats",
+      "unit": "rép.",
+      "min": 12,
+      "max": 18
+    },
+    {
+      "id": "fentes",
+      "name": "Fentes",
+      "unit": "rép. par jambe",
+      "min": 5,
+      "max": 8
+    },
+    {
+      "id": "gainage",
+      "name": "Gainage (planche)",
+      "unit": "s",
+      "min": 20,
+      "max": 45
+    },
+    {
+      "id": "superman",
+      "name": "Superman",
+      "unit": "rép.",
+      "min": 10,
+      "max": 15
+    }
+  ],
+  "games": [
+    {
+      "id": "elden-ring",
+      "name": "Elden Ring",
+      "events": [
+        {
+          "id": "mort",
+          "name": "Mort",
+          "draws": 1,
+          "maxPerSession": 15,
+          "jokers": 0
+        },
+        {
+          "id": "repos",
+          "name": "Repos à un site de grâce connu",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "decouverte",
+          "name": "Site de grâce découvert",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "niveau",
+          "name": "Montée de niveau",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "perte",
+          "name": "Runes perdues",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "boss",
+          "name": "Boss vaincu",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "boss-premier",
+          "name": "Boss vaincu au premier essai",
+          "draws": 2,
+          "jokers": 1
+        },
+        {
+          "id": "boss-nohit",
+          "name": "Boss vaincu sans prendre un coup",
+          "draws": 2,
+          "jokers": 2
+        }
+      ]
+    },
+    {
+      "id": "ds1",
+      "name": "Dark Souls",
+      "events": [
+        {
+          "id": "mort",
+          "name": "Mort",
+          "draws": 1,
+          "maxPerSession": 15,
+          "jokers": 0
+        },
+        {
+          "id": "repos",
+          "name": "Repos à un feu connu",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "decouverte",
+          "name": "Nouveau feu allumé",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "niveau",
+          "name": "Montée de niveau",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "perte",
+          "name": "Âmes perdues",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "boss",
+          "name": "Boss vaincu",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "boss-premier",
+          "name": "Boss vaincu au premier essai",
+          "draws": 2,
+          "jokers": 1
+        },
+        {
+          "id": "boss-nohit",
+          "name": "Boss vaincu sans prendre un coup",
+          "draws": 2,
+          "jokers": 2
+        }
+      ]
+    },
+    {
+      "id": "ds2",
+      "name": "Dark Souls II",
+      "events": [
+        {
+          "id": "mort",
+          "name": "Mort",
+          "draws": 1,
+          "maxPerSession": 15,
+          "jokers": 0
+        },
+        {
+          "id": "repos",
+          "name": "Repos à un feu connu",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "decouverte",
+          "name": "Nouveau feu allumé",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "niveau",
+          "name": "Montée de niveau",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "perte",
+          "name": "Âmes perdues",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "boss",
+          "name": "Boss vaincu",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "boss-premier",
+          "name": "Boss vaincu au premier essai",
+          "draws": 2,
+          "jokers": 1
+        },
+        {
+          "id": "boss-nohit",
+          "name": "Boss vaincu sans prendre un coup",
+          "draws": 2,
+          "jokers": 2
+        }
+      ]
+    },
+    {
+      "id": "ds3",
+      "name": "Dark Souls III",
+      "events": [
+        {
+          "id": "mort",
+          "name": "Mort",
+          "draws": 1,
+          "maxPerSession": 15,
+          "jokers": 0
+        },
+        {
+          "id": "repos",
+          "name": "Repos à un feu connu",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "decouverte",
+          "name": "Nouveau feu allumé",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "niveau",
+          "name": "Montée de niveau",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "perte",
+          "name": "Âmes perdues",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "boss",
+          "name": "Boss vaincu",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "boss-premier",
+          "name": "Boss vaincu au premier essai",
+          "draws": 2,
+          "jokers": 1
+        },
+        {
+          "id": "boss-nohit",
+          "name": "Boss vaincu sans prendre un coup",
+          "draws": 2,
+          "jokers": 2
+        }
+      ]
+    },
+    {
+      "id": "bloodborne",
+      "name": "Bloodborne",
+      "events": [
+        {
+          "id": "mort",
+          "name": "Mort",
+          "draws": 1,
+          "maxPerSession": 15,
+          "jokers": 0
+        },
+        {
+          "id": "repos",
+          "name": "Repos à une lanterne connue",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "decouverte",
+          "name": "Lanterne allumée",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "niveau",
+          "name": "Montée de niveau",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "perte",
+          "name": "Échos de sang perdus",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "boss",
+          "name": "Boss vaincu",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "boss-premier",
+          "name": "Boss vaincu au premier essai",
+          "draws": 2,
+          "jokers": 1
+        },
+        {
+          "id": "boss-nohit",
+          "name": "Boss vaincu sans prendre un coup",
+          "draws": 2,
+          "jokers": 2
+        }
+      ]
+    },
+    {
+      "id": "sekiro",
+      "name": "Sekiro",
+      "events": [
+        {
+          "id": "mort",
+          "name": "Mort",
+          "draws": 1,
+          "maxPerSession": 15,
+          "jokers": 0
+        },
+        {
+          "id": "repos",
+          "name": "Repos à une statue du Sculpteur",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "decouverte",
+          "name": "Statue du Sculpteur découverte",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "niveau",
+          "name": "Point de compétence gagné",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "perte",
+          "name": "Sen et expérience perdus",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "boss",
+          "name": "Boss vaincu",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "boss-premier",
+          "name": "Boss vaincu au premier essai",
+          "draws": 2,
+          "jokers": 1
+        },
+        {
+          "id": "boss-nohit",
+          "name": "Boss vaincu sans prendre un coup",
+          "draws": 2,
+          "jokers": 2
+        }
+      ]
+    },
+    {
+      "id": "megabonk",
+      "name": "Megabonk",
+      "events": [
+        {
+          "id": "mort",
+          "name": "Mort",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "boss-portail",
+          "name": "Boss du portail vaincu",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "boss-final",
+          "name": "Boss final vaincu (Tier 3)",
+          "draws": 2,
+          "jokers": 1
+        },
+        {
+          "id": "victoire-premier",
+          "name": "Partie gagnée sans mourir au premier essai",
+          "draws": 2,
+          "jokers": 2
+        },
+        {
+          "id": "legendaire",
+          "name": "Objet légendaire obtenu",
+          "draws": 1,
+          "maxPerSession": 20,
+          "jokers": 0
+        },
+        {
+          "id": "sanctuaire-defi",
+          "name": "Sanctuaire de défi terminé",
+          "draws": 1,
+          "maxPerSession": 10,
+          "jokers": 0
+        },
+        {
+          "id": "sanctuaire-risque",
+          "name": "Sanctuaire à risque activé (cupidité ou malédiction)",
+          "draws": 1,
+          "maxPerSession": 5,
+          "jokers": 0
+        },
+        {
+          "id": "vague-finale",
+          "name": "Rattrapé par la vague finale",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "defi",
+          "name": "Défi accompli",
+          "draws": 2,
+          "jokers": 1
+        }
+      ]
+    }
+  ]
+}

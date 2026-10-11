@@ -44,19 +44,6 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 - Chaque jeu propose une liste d'événements. Déclencher un événement tire `draws` exercices distincts parmi tous les exercices définis, chacun avec un nombre entier pris au hasard entre son `min` et son `max` (inclus).
 - L'intervalle appartient à l'exercice : il est le même quel que soit l'événement.
 - Un tirage devient une série « à faire ». Les séries à faire se traitent de la plus ancienne à la plus récente.
-- Exercices par défaut : pompes 8 à 12, tractions 2 à 4, squats 12 à 18, fentes 5 à 8 par jambe, gainage 20 à 45 s, superman 10 à 15.
-- Événements par défaut, communs à tous les Souls (seul le vocabulaire change selon le jeu) :
-
-| Événement | Tirés | Particularité |
-|---|---|---|
-| Mort | 1 | 15 au plus par séance |
-| Repos à un feu connu | 1 | |
-| Nouveau feu allumé | 1 | |
-| Montée de niveau | 1 | |
-| Âmes perdues | 1 | |
-| Boss vaincu | 2 | |
-| Boss vaincu au premier essai | 2 | rapporte 1 joker |
-| Boss vaincu sans prendre un coup | 2 | rapporte 2 jokers |
 
 ### Limite par séance
 
@@ -92,7 +79,7 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 
 - La configuration est validée avant d'être enregistrée. Elle est refusée si : il n'y a aucun exercice ou aucun jeu, un id ou un nom est vide, un id est en double, deux jeux portent le même nom (sans tenir compte de la casse ni des espaces autour), un jeu n'a aucun événement, `draws` vaut 0 ou dépasse le nombre d'exercices définis, `maxPerSession` vaut 0, ou un exercice a `max` à 0 ou `min` supérieur à `max`.
 - Les jeux sont toujours listés par nom, sans tenir compte de la casse ni des accents, dans l'onglet Jouer comme dans la configuration. Sans jeu choisi, la configuration s'ouvre sur le premier de la liste.
-- Une base neuve reçoit la configuration par défaut. Si la configuration enregistrée est illisible ou invalide, la configuration par défaut est utilisée et l'erreur est affichée.
+- Une base neuve (premier lancement, aucun jeu enregistré) reçoit la configuration par défaut, décrite dans `src-tauri/src/fitness/seed.json`. Si la configuration enregistrée est illisible ou invalide, la configuration par défaut est utilisée et l'erreur est affichée.
 
 ## Configuration
 
