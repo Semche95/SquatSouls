@@ -12,13 +12,16 @@ use tauri::Manager;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // WebKitGTK plante sous Wayland (presse-papiers, rendu DMABUF) : passer par XWayland
-    // sans rendu DMABUF. Fixé avant tout fil, set_var n'étant pas sûr en multi-fil.
+    // sans rendu DMABUF. Une variable déjà définie au lancement est respectée, pour pouvoir revenir à
+    // Wayland (`GDK_BACKEND=wayland`). Fixé avant tout fil, set_var n'étant pas sûr en multi-fil.
     #[cfg(target_os = "linux")]
     for (key, value) in [
         ("GDK_BACKEND", "x11"),
         ("WEBKIT_DISABLE_DMABUF_RENDERER", "1"),
     ] {
-        std::env::set_var(key, value);
+        if std::env::var_os(key).is_none() {
+            std::env::set_var(key, value);
+        }
     }
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())

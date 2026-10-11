@@ -19,7 +19,7 @@ Le binaire seul est dans `src-tauri/target/release/squat-souls` après le build.
 
 Le workflow GitHub Actions **Build** (`.github/workflows/build.yml`) compile les paquets Linux (`.deb`, `.rpm`, `.AppImage`) et Windows (`.msi`, `.exe`). Il se lance à la main depuis l'onglet Actions (**Run workflow**), et les paquets s'y téléchargent dans les artefacts de l'exécution.
 
-Sous Linux, l'appli force `GDK_BACKEND=x11` et `WEBKIT_DISABLE_DMABUF_RENDERER=1` au lancement : WebKitGTK plante ou reste blanc sous Wayland (presse-papiers, GPU NVIDIA), elle passe donc par XWayland sans rendu DMABUF.
+Sous Linux, l'appli force `GDK_BACKEND=x11` et `WEBKIT_DISABLE_DMABUF_RENDERER=1` au lancement : WebKitGTK plante ou reste blanc sous Wayland (presse-papiers, GPU NVIDIA), elle passe donc par XWayland sans rendu DMABUF. Une de ces variables déjà définie au lancement est gardée telle quelle : `GDK_BACKEND=wayland squatsouls` revient à Wayland, par exemple pour un meilleur rendu HiDPI si WebKitGTK s'y montre stable.
 
 ## Utilisation
 
