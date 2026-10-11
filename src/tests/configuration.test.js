@@ -188,6 +188,17 @@ describe('configuration', () => {
     expect(w.find('.banner.error').text()).toContain('champ manquant');
   });
 
+  it('refuse un nombre négatif ou décimal avec un message clair', async () => {
+    setup();
+    const w = await openConfig();
+    await w.findAll('.subtabs button')[1].trigger('click');
+    await w.find('input[aria-label="Minimum"]').setValue('-2');
+    await w.find('.cfg-actions .primary').trigger('click');
+    await flushPromises();
+    expect(w.find('.banner.error').text()).toBe('Squats › minimum : il faut un nombre entier, 0 ou plus.');
+    expect(invoke).not.toHaveBeenCalledWith('save_config', expect.anything());
+  });
+
   describe('partage', () => {
     const savedConfig = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)[1].config;
 

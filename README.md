@@ -89,6 +89,7 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 ### Configuration
 
 - La configuration est validée avant d'être enregistrée. Elle est refusée si : il n'y a aucun exercice ou aucun jeu, un id ou un nom est vide, un id est en double, deux jeux portent le même nom (sans tenir compte de la casse ni des espaces autour), un jeu n'a aucun événement, `draws` vaut 0 ou dépasse le nombre d'exercices définis, `maxPerSession` vaut 0, ou un exercice a `max` à 0 ou `min` supérieur à `max`.
+- Avant tout envoi, chaque champ numérique (pauses, minimum, maximum, exercices tirés, limite, jokers) doit être un nombre entier, 0 ou plus, et pas trop grand. Sinon un message nomme le premier champ fautif (par exemple « Squats › minimum : il faut un nombre entier, 0 ou plus. ») et rien n'est enregistré. Un champ obligatoire vidé vaut 0, un champ facultatif vidé (pause propre, limite) est retiré.
 - Les jeux sont toujours listés par nom, sans tenir compte de la casse ni des accents, dans l'onglet Jouer comme dans la configuration. Sans jeu choisi, la configuration s'ouvre sur le premier de la liste.
 - Une base neuve (premier lancement, aucun jeu enregistré) reçoit la configuration par défaut, décrite dans `src-tauri/src/fitness/seed.json`. Si la configuration enregistrée est illisible ou invalide, la configuration par défaut est utilisée et l'erreur est affichée.
 

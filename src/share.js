@@ -1,5 +1,5 @@
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
-import { newId, sameName } from './configDraft.js';
+import { isCount, newId, sameName } from './configDraft.js';
 
 // Texte partagé entre utilisateurs : un jeu (nom et événements) ou la liste des exercices, sans id,
 // en JSON compressé (deflate) puis encodé en base64.
@@ -8,7 +8,6 @@ const GAME = 'jeu';
 const EXERCISES = 'exercices';
 
 const isText = (v) => typeof v === 'string' && v.trim() !== '';
-const isCount = (v, min) => Number.isInteger(v) && v >= min;
 
 function share(kind, data) {
   return btoa(String.fromCharCode(...deflateSync(strToU8(JSON.stringify({ [MARK]: kind, ...data })))));

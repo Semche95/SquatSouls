@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import { byName, clone, normalized } from '../configDraft.js';
+import { byName, clone, normalized, numberError } from '../configDraft.js';
 import { defineShared } from './shared.js';
 
 // Durée d'affichage d'une confirmation.
@@ -49,8 +49,11 @@ export const [provideConfig, useConfig] = defineShared(() => {
 
   // Enregistre `cfg` sans toucher au brouillon ; renvoie false si le backend refuse.
   async function store(cfg) {
+    const clean = normalized(cfg);
+    configError.value = numberError(clean);
+    if (configError.value) return false;
     try {
-      config.value = (await invoke('save_config', { config: normalized(cfg) })).config;
+      config.value = (await invoke('save_config', { config: clean })).config;
       configError.value = '';
       return true;
     } catch (e) {
