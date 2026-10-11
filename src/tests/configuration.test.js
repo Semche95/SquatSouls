@@ -200,10 +200,11 @@ describe('configuration', () => {
       const submit = () => w.find('.cfg-import .primary');
       expect(submit().element.disabled).toBe(true);
       await text.setValue('pas un jeu');
-      expect(w.find('.cfg-import').text()).toContain('Ce texte n\'est pas un jeu partagé valide.');
+      expect(w.find('.cfg-import .banner.error').text()).toBe('Ce texte n\'est pas un jeu partagé valide.');
+      expect(text.attributes('aria-invalid')).toBe('true');
       expect(submit().element.disabled).toBe(true);
       await text.setValue(shareGame({ name: 'sekiro', events: [{ name: 'Mort', draws: 3, jokers: 1 }] }));
-      expect(w.find('.cfg-import').text()).toContain('sekiro existe déjà : il sera remplacé.');
+      expect(w.find('.cfg-import .banner.warn').text()).toBe('sekiro existe déjà : il sera remplacé.');
       await w.find('.cfg-import').trigger('submit');
       await flushPromises();
       expect(savedConfig().games.map((g) => g.id)).toEqual(['er', 'sekiro']);

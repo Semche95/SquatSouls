@@ -117,7 +117,7 @@ function addEvent(game) {
       <div v-else-if="importing" class="cfg-game">
         <h3 class="group-title">Importer un jeu</h3>
         <ShareImport v-slot="{ result }" :parse="parseShared" @import="importShared" @cancel="importing = false">
-          <p v-if="takenName(result.name)" class="muted">{{ result.name }} existe déjà : il sera remplacé.</p>
+          <p v-if="takenName(result.name)" class="banner warn">{{ result.name }} existe déjà : il sera remplacé.</p>
         </ShareImport>
       </div>
       <div v-else-if="editedGame" class="cfg-game">

@@ -18,13 +18,14 @@ const result = computed(() => {
     return e;
   }
 });
-const importable = computed(() => !!result.value && !(result.value instanceof Error));
+const invalid = computed(() => result.value instanceof Error);
+const importable = computed(() => !!result.value && !invalid.value);
 </script>
 
 <template>
   <form class="cfg-import" @submit.prevent="emit('import', result)">
-    <textarea ref="input" v-model="text" rows="5" aria-label="Texte partagé" placeholder="Coller ici le texte partagé"></textarea>
-    <p v-if="result instanceof Error" class="muted">{{ result.message }}</p>
+    <textarea ref="input" v-model="text" rows="5" aria-label="Texte partagé" placeholder="Coller ici le texte partagé" :aria-invalid="invalid"></textarea>
+    <p v-if="invalid" class="banner error" role="alert">{{ result.message }}</p>
     <slot v-else-if="importable" :result="result" />
     <div class="row">
       <button class="primary" :disabled="!importable">Importer</button>
