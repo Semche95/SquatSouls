@@ -25,6 +25,10 @@ fn validation_catches_mistakes() {
     assert!(cfg.validate().unwrap_err().contains("deux fois"));
 
     let mut cfg = default_config();
+    cfg.games[1].name = format!(" {} ", cfg.games[0].name.to_uppercase());
+    assert!(cfg.validate().unwrap_err().contains("Deux jeux"));
+
+    let mut cfg = default_config();
     cfg.exercises.clear();
     assert!(cfg.validate().unwrap_err().contains("Aucun exercice"));
 }

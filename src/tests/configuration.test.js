@@ -71,6 +71,16 @@ describe("configuration", () => {
     expect(lies).toMatchObject({ id: "lies-of-p", events: [{ name: "Nouvel événement", draws: 1 }] });
   });
 
+  it("refuse de créer un jeu au nom déjà pris", async () => {
+    setup();
+    const w = await openConfig();
+    await w.find(".group-head button").trigger("click");
+    await flushPromises();
+    await w.find("input[aria-label='Nom du nouveau jeu']").setValue(" dark souls ");
+    expect(w.find("form.cfg-game").text()).toContain("Un jeu porte déjà ce nom.");
+    expect(w.find("form.cfg-game .primary").element.disabled).toBe(true);
+  });
+
   it("règle l'intervalle d'un exercice et garde au moins un exercice", async () => {
     setup();
     const w = await openConfig();

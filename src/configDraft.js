@@ -11,6 +11,11 @@ export function newId(name, items) {
   return id;
 }
 
+// Deux noms identiques aux espaces autour et à la casse près désignent le même jeu.
+export function sameName(a, b) {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
 // Un champ numérique vidé vaut "" : on le ramène à 0 pour que le backend le refuse proprement.
 export function normalized(cfg) {
   const c = clone(cfg);

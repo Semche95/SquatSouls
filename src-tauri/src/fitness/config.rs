@@ -67,12 +67,16 @@ impl Config {
             return Err("Aucun jeu défini.".into());
         }
         let mut game_ids = HashSet::new();
+        let mut game_names = HashSet::new();
         for game in &self.games {
             if game.id.trim().is_empty() || game.name.trim().is_empty() {
                 return Err("Un jeu a un id ou un nom vide.".into());
             }
             if !game_ids.insert(game.id.as_str()) {
                 return Err(format!("Le jeu « {} » est défini deux fois.", game.id));
+            }
+            if !game_names.insert(game.name.trim().to_lowercase()) {
+                return Err(format!("Deux jeux s'appellent « {} ».", game.name.trim()));
             }
             if game.events.is_empty() {
                 return Err(format!("Le jeu « {} » n'a aucun événement.", game.name));

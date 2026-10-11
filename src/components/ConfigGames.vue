@@ -1,9 +1,11 @@
 <script setup>
-import { clone, newId } from "../configDraft.js";
+import { computed } from "vue";
+import { clone, newId, sameName } from "../configDraft.js";
 import { useConfig } from "../composables/useConfig.js";
 import ConfigEvent from "./ConfigEvent.vue";
 
 const { draft, editedGameId, editedGame, newGame } = useConfig();
+const nameTaken = computed(() => draft.value.games.some((g) => sameName(g.name, newGame.value.name)));
 
 function openNewGame() {
   newGame.value = { name: "", source: "" };
@@ -51,6 +53,7 @@ function addEvent(game) {
           <span>Nom</span>
           <input v-model="newGame.name" aria-label="Nom du nouveau jeu" />
         </label>
+        <p v-if="nameTaken" class="muted">Un jeu porte déjà ce nom.</p>
         <label class="field">
           <span>Événements</span>
           <select v-model="newGame.source" aria-label="Événements du nouveau jeu">
@@ -59,7 +62,7 @@ function addEvent(game) {
           </select>
         </label>
         <div class="row">
-          <button class="primary" :disabled="!newGame.name.trim()">Créer</button>
+          <button class="primary" :disabled="!newGame.name.trim() || nameTaken">Créer</button>
           <button type="button" class="ghost" @click="newGame = null">Annuler</button>
         </div>
       </form>
