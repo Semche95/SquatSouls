@@ -15,6 +15,15 @@ describe('séance', () => {
     expect(w.find('.event .count').text()).toBe('1 / 15');
   });
 
+  it('ne propose que d\'annuler les séries en file d\'attente', async () => {
+    const both = { ...draw, items: [...draw.items, { exerciseId: 'pompes', name: 'Pompes', amount: 8, unit: 'reps', halveCost: 1, skipCost: 2 }] };
+    setup({ get_session: emptySession({ pending: [draw, { ...both, id: 8 }], jokers: 5 }) });
+    const w = await mountApp();
+    const queued = w.find('.queue .card');
+    expect(queued.find('.item-actions').exists()).toBe(false);
+    expect(queued.findAll('.card-actions button').map((b) => b.text())).toEqual(['Annuler']);
+  });
+
   it('prévient quand la limite par séance est atteinte', async () => {
     setup({ draw: { capped: true, eventName: 'Mort', maxPerSession: 15 } });
     const w = await mountApp();
