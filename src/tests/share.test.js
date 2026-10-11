@@ -1,12 +1,12 @@
 import { deflateSync, strToU8 } from 'fflate';
 import { describe, expect, it } from 'vitest';
-import { importGame, mergeExercises, parseExercises, parseGame, shareExercises, shareGame, unpack } from '../share.js';
+import { importGame, mergeExercises, parseExercises, parseGame, shareExercises, shareGame, toBase64, unpack } from '../share.js';
 import { config } from './app.js';
 
 // Texte partagé écrit dans une version donnée du format, avec le contenu de `shared`.
 function packed(version, shared, data = unpack(shared).data) {
   const payload = JSON.stringify({ version, kind: unpack(shared).kind, ...data });
-  return shared.slice(0, shared.indexOf(':') + 1) + btoa(String.fromCharCode(...deflateSync(strToU8(payload))));
+  return shared.slice(0, shared.indexOf(':') + 1) + toBase64(deflateSync(strToU8(payload)));
 }
 
 const exercises = [
@@ -102,6 +102,11 @@ describe('partage des exercices', () => {
     // Les espaces et retours à la ligne ajoutés par une messagerie sont ignorés.
     const cut = text.indexOf(':') + 10;
     expect(parseExercises(` ${text.slice(0, cut)}\n${text.slice(cut)} `)).toEqual(parseExercises(text));
+  });
+
+  it('partage une liste trop longue pour tenir dans les arguments d\'un appel de fonction', () => {
+    const long = Array.from({ length: 20000 }, (_, i) => ({ name: `Exercice ${i} ${Math.random()}`, unit: 'rép.', min: 1, max: 5 }));
+    expect(parseExercises(shareExercises(long))).toEqual(long);
   });
 
   it('refuse un texte qui n\'est pas une liste d\'exercices valide', () => {

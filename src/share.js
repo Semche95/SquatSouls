@@ -20,16 +20,21 @@ const READERS = {
 
 const isText = (v) => typeof v === 'string' && v.trim() !== '';
 
+// Base64 octet par octet : étaler un gros tableau en arguments de String.fromCharCode dépasserait la
+// limite d'arguments d'un appel de fonction.
+export const toBase64 = (bytes) => btoa(Array.from(bytes, (b) => String.fromCharCode(b)).join(''));
+const fromBase64 = (text) => Uint8Array.from(atob(text), (c) => c.charCodeAt(0));
+
 function share(kind, data, id) {
   const payload = JSON.stringify({ version: VERSION, kind, ...data });
-  return `${MARK}/${id ? `${kind}/${id}` : kind}:` + btoa(String.fromCharCode(...deflateSync(strToU8(payload))));
+  return `${MARK}/${id ? `${kind}/${id}` : kind}:` + toBase64(deflateSync(strToU8(payload)));
 }
 
 // Version, type et contenu d'un texte partagé (contenu absent si la version est inconnue) ; lève une
 // erreur si le contenu est illisible. L'identifiant, ignoré, précède le dernier `:`, absent du base64.
 export function unpack(text) {
   const payload = text.slice(text.lastIndexOf(':') + 1);
-  const { version, kind, ...data } = JSON.parse(strFromU8(inflateSync(Uint8Array.from(atob(payload), (c) => c.charCodeAt(0)))));
+  const { version, kind, ...data } = JSON.parse(strFromU8(inflateSync(fromBase64(payload))));
   return { version, kind, data: READERS[version]?.(data) };
 }
 
