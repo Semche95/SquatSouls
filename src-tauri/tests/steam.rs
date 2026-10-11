@@ -28,6 +28,39 @@ fn other_processes_have_no_app_id() {
     assert_eq!(steam_app_id(&NONE, &NONE), None);
 }
 
+const REGISTRY: &str = r#""Registry"
+{
+	"HKCU"
+	{
+		"Software"
+		{
+			"Valve"
+			{
+				"Steam"
+				{
+					"language"		"french"
+					"RunningAppID"		"RUNNING"
+				}
+			}
+		}
+	}
+}
+"#;
+
+fn registry(running: &str) -> String {
+    REGISTRY.replace("RUNNING", running)
+}
+
+#[test]
+fn app_id_is_read_from_the_steam_registry() {
+    assert_eq!(running_app_id_in_vdf(&registry("1245620")), Some(1245620));
+    assert_eq!(running_app_id_in_vdf(&registry("0")), None);
+    assert_eq!(
+        running_app_id_in_vdf(&REGISTRY.replace("RunningAppID", "Other")),
+        None
+    );
+}
+
 const SEKIRO: &str =
     r#"{"814380":{"success":true,"data":{"type":"game","name":"Sekiro™: Shadows Die Twice"}}}"#;
 const START: i64 = 1_700_000_000;

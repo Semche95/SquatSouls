@@ -160,13 +160,48 @@ pub(crate) async fn running_steam_app() -> Result<Option<u32>, String> {
                 .map(|a| a.to_string_lossy().into_owned())
                 .collect()
         };
-        system
-            .processes()
-            .values()
+        let processes = system.processes().values();
+        let steam_running = || {
+            processes.clone().any(|p| {
+                p.name()
+                    .to_string_lossy()
+                    .to_lowercase()
+                    .starts_with("steam")
+            })
+        };
+        // Steam ne remet pas sa note à zéro s'il plante : elle ne compte que s'il tourne.
+        processes
+            .clone()
             .find_map(|p| steam_app_id(&text(p.cmd()), &text(p.environ())))
+            .or_else(|| steam_running().then(noted_steam_app).flatten())
     })
     .await
     .map_err(|e| format!("Processus illisibles : {e}"))
+}
+
+/// AppId du jeu en cours noté par Steam, pour les processus dont l'environnement est illisible
+/// (Windows, macOS) : dans le registre sous Windows.
+#[cfg(windows)]
+fn noted_steam_app() -> Option<u32> {
+    use winreg::{enums::HKEY_CURRENT_USER, RegKey};
+    let id: u32 = RegKey::predef(HKEY_CURRENT_USER)
+        .open_subkey(r"Software\Valve\Steam")
+        .ok()?
+        .get_value("RunningAppID")
+        .ok()?;
+    (id != 0).then_some(id)
+}
+
+/// AppId du jeu en cours noté par Steam : dans son `registry.vdf` sous macOS et Linux.
+#[cfg(not(windows))]
+fn noted_steam_app() -> Option<u32> {
+    let home = std::path::PathBuf::from(std::env::var_os("HOME")?);
+    let vdf = if cfg!(target_os = "macos") {
+        home.join("Library/Application Support/Steam/registry.vdf")
+    } else {
+        home.join(".steam/registry.vdf")
+    };
+    crate::fitness::running_app_id_in_vdf(&std::fs::read_to_string(vdf).ok()?)
 }
 
 /// Délai maximal d'un appel au Steam Store.

@@ -1,4 +1,5 @@
-//! Détection du jeu Steam en cours : AppId lu sur un processus, nom lu dans la réponse du Steam Store.
+//! Détection du jeu Steam en cours : AppId lu sur un processus ou noté par Steam, nom lu dans la
+//! réponse du Steam Store.
 
 use serde::Serialize;
 use serde_json::Value;
@@ -21,6 +22,20 @@ pub fn steam_app_id<S: AsRef<str>>(cmd: &[S], environ: &[S]) -> Option<u32> {
         .parse()
         .ok()
         .filter(|&id| id != 0)
+}
+
+/// AppId du jeu en cours noté par Steam dans son `registry.vdf` (macOS, Linux) : valeur de la
+/// clé `RunningAppID`, à zéro sans jeu lancé.
+pub fn running_app_id_in_vdf(vdf: &str) -> Option<u32> {
+    vdf.lines().find_map(|line| {
+        let mut fields = line.split('"').map(str::trim).filter(|f| !f.is_empty());
+        fields
+            .next()?
+            .eq_ignore_ascii_case("RunningAppID")
+            .then(|| fields.next()?.parse().ok())
+            .flatten()
+            .filter(|&id| id != 0)
+    })
 }
 
 /// Adresse de la fiche d'un jeu sur l'API du Steam Store, qui ne demande pas de clé.
