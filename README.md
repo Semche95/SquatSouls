@@ -17,6 +17,8 @@ pnpm tauri build      # binaire + paquets dans src-tauri/target/release/bundle/
 
 Le binaire seul est dans `src-tauri/target/release/squat-souls` après le build.
 
+Le workflow GitHub Actions **Build** (`.github/workflows/build.yml`) compile les paquets Linux (`.deb`, `.rpm`, `.AppImage`) et Windows (`.msi`, `.exe`). Il se lance à la main depuis l'onglet Actions (**Run workflow**), et les paquets s'y téléchargent dans les artefacts de l'exécution.
+
 Si la fenêtre reste blanche sous Wayland (cas fréquent avec un GPU NVIDIA) :
 
 ```bash
