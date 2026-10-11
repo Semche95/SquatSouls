@@ -1,6 +1,6 @@
 //! Tirage et séance.
 
-use super::Config;
+use super::{Config, Exercise};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -147,6 +147,8 @@ pub struct Session {
     jokers: u32,
     jokers_earned: u32,
     skipped: Vec<Skipped>,
+    /// Exercices pas encore sortis dans le tour en cours : chacun sort une fois avant qu'un autre revienne.
+    bag: Vec<String>,
     next_id: u64,
 }
 
@@ -194,11 +196,9 @@ impl Session {
         let items = if capped {
             Vec::new()
         } else {
-            let picks = rand::seq::index::sample(rng, config.exercises.len(), ev.draws as usize);
-            picks
-                .iter()
-                .map(|i| {
-                    let ex = &config.exercises[i];
+            self.pick(config, ev.draws as usize, rng)
+                .into_iter()
+                .map(|ex| {
                     DrawItem::new(
                         ex.id.clone(),
                         ex.name.clone(),
@@ -227,6 +227,30 @@ impl Session {
             self.pending.push(draw.clone());
         }
         Ok(draw)
+    }
+
+    /// Tire `n` exercices distincts dans le tour en cours, en commençant un nouveau tour quand il est épuisé.
+    fn pick<'a, R: Rng + ?Sized>(
+        &mut self,
+        config: &'a Config,
+        n: usize,
+        rng: &mut R,
+    ) -> Vec<&'a Exercise> {
+        let mut picks: Vec<&Exercise> = Vec::new();
+        while picks.len() < n {
+            let candidates: Vec<usize> = (0..self.bag.len())
+                .filter(|&i| picks.iter().all(|ex| ex.id != self.bag[i]))
+                .collect();
+            if candidates.is_empty() {
+                self.bag = config.exercises.iter().map(|ex| ex.id.clone()).collect();
+                continue;
+            }
+            let id = self
+                .bag
+                .swap_remove(candidates[rng.random_range(0..candidates.len())]);
+            picks.extend(config.exercises.iter().find(|ex| ex.id == id));
+        }
+        picks
     }
 
     /// Note un exercice fait : il passe dans les séries faites. La série finie rapporte ses jokers.
@@ -341,9 +365,10 @@ impl Session {
         self.skipped.push(skipped);
     }
 
-    /// Retire les tirages en attente (utile quand la configuration change).
+    /// Retire les tirages en attente et recommence le tour (utile quand la configuration change).
     pub fn clear_pending(&mut self) {
         self.pending.clear();
+        self.bag.clear();
     }
 
     /// Vrai si la séance a commencé sur un jeu absent de `config`.

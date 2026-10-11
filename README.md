@@ -45,6 +45,7 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 ### Tirage
 
 - Chaque jeu propose une liste d'événements. Déclencher un événement tire `draws` exercices distincts parmi tous les exercices définis, chacun avec un nombre entier pris au hasard entre son `min` et son `max` (inclus).
+- Les exercices sortent par tours : dans une séance, chaque exercice sort une fois avant que l'un d'eux puisse revenir. Quand un tour est épuisé, un nouveau commence ; un tirage à cheval sur deux tours ne reprend pas dans le nouveau tour l'exercice qui vient de sortir. Une configuration enregistrée recommence le tour.
 - L'intervalle appartient à l'exercice : il est le même quel que soit l'événement.
 - Un tirage devient une série « à faire ». Les séries à faire se traitent de la plus ancienne à la plus récente.
 

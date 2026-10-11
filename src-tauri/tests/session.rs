@@ -61,6 +61,49 @@ fn every_option_can_be_drawn() {
 }
 
 #[test]
+fn each_exercise_comes_out_once_per_round() {
+    let cfg = default_config();
+    let n = cfg.exercises.len();
+    let mut s = Session::new(0);
+    let mut r = rng();
+    for _ in 0..20 {
+        let round: HashSet<_> = (0..n)
+            .map(|_| {
+                s.draw(&cfg, "elden-ring", "repos", &mut r).unwrap().items[0]
+                    .exercise_id
+                    .clone()
+            })
+            .collect();
+        assert_eq!(
+            round.len(),
+            n,
+            "aucun exercice ne revient avant la fin du tour"
+        );
+    }
+}
+
+#[test]
+fn a_draw_across_two_rounds_stays_distinct() {
+    let cfg = default_config();
+    let n = cfg.exercises.len();
+    let mut s = Session::new(0);
+    let mut r = rng();
+    // Un exercice tiré seul décale le tour : avec un nombre pair d'exercices, les tirages de 2 chevauchent alors deux tours.
+    assert_eq!(n % 2, 0);
+    s.draw(&cfg, "ds3", "repos", &mut r).unwrap();
+    let mut out: Vec<String> = Vec::new();
+    for _ in 0..50 {
+        let d = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+        assert_ne!(d.items[0].exercise_id, d.items[1].exercise_id);
+        out.extend(d.items.into_iter().map(|it| it.exercise_id));
+    }
+    // Après le premier exercice tiré seul, chaque tour complet compte chaque exercice une fois.
+    for round in out[n - 1..].chunks_exact(n) {
+        assert_eq!(round.iter().collect::<HashSet<_>>().len(), n);
+    }
+}
+
+#[test]
 fn death_cap_applies_per_game_and_session() {
     let cfg = default_config();
     let mut s = Session::new(0);
