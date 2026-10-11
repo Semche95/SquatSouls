@@ -102,12 +102,12 @@ fn a_new_round_does_not_start_with_the_last_set() {
 
 #[test]
 fn a_draw_across_two_rounds_stays_distinct() {
-    let cfg = default_config();
+    let mut cfg = default_config();
+    // Un exercice tiré seul décale le tour : avec un nombre pair d'exercices, les tirages de 2 chevauchent alors deux tours.
+    cfg.exercises.truncate(cfg.exercises.len() / 2 * 2);
     let n = cfg.exercises.len();
     let mut s = Session::new(0);
     let mut r = rng();
-    // Un exercice tiré seul décale le tour : avec un nombre pair d'exercices, les tirages de 2 chevauchent alors deux tours.
-    assert_eq!(n % 2, 0);
     s.draw(&cfg, "ds3", "repos", &mut r).unwrap();
     let mut out: Vec<String> = Vec::new();
     for _ in 0..50 {

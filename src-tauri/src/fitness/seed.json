@@ -9,6 +9,13 @@
       "max": 12
     },
     {
+      "id": "pompes-mur",
+      "name": "Pompes contre un mur",
+      "unit": "rép.",
+      "min": 10,
+      "max": 15
+    },
+    {
       "id": "tractions",
       "name": "Tractions",
       "unit": "rép.",
@@ -23,11 +30,39 @@
       "max": 18
     },
     {
+      "id": "assis-debout",
+      "name": "Assis-debout",
+      "unit": "rép.",
+      "min": 8,
+      "max": 12
+    },
+    {
       "id": "fentes",
       "name": "Fentes",
       "unit": "rép. par jambe",
       "min": 5,
       "max": 8
+    },
+    {
+      "id": "extensions-jambes",
+      "name": "Extensions de jambes assis",
+      "unit": "rép. par jambe",
+      "min": 10,
+      "max": 15
+    },
+    {
+      "id": "montees-genoux",
+      "name": "Montées de genoux assis",
+      "unit": "rép. par jambe",
+      "min": 10,
+      "max": 15
+    },
+    {
+      "id": "mollets",
+      "name": "Élévations des mollets (appui sur une chaise)",
+      "unit": "rép.",
+      "min": 12,
+      "max": 20
     },
     {
       "id": "gainage",
@@ -37,11 +72,25 @@
       "max": 45
     },
     {
+      "id": "gainage-genoux",
+      "name": "Gainage sur les genoux",
+      "unit": "s",
+      "min": 15,
+      "max": 30
+    },
+    {
       "id": "superman",
       "name": "Superman",
       "unit": "rép.",
       "min": 10,
       "max": 15
+    },
+    {
+      "id": "cercles-bras",
+      "name": "Cercles de bras",
+      "unit": "s",
+      "min": 20,
+      "max": 40
     }
   ],
   "games": [
