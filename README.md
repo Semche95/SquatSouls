@@ -32,6 +32,7 @@ WEBKIT_DISABLE_DMABUF_RENDERER=1 pnpm tauri dev
 - Après chaque exercice fait, une pause s'affiche avec son compte à rebours : l'exercice suivant ne se note fait qu'à sa fin. **Passer** (ou Échap) l'écourte.
 - « Terminer la séance » et « Annuler la séance », en bas de l'onglet Jouer, demandent une confirmation.
 - L'onglet **Bilan** montre la séance actuelle et les 7 derniers jours. **Tout voir** affiche tout l'historique en grand (Échap pour fermer).
+- Avec **Détecter le jeu Steam en cours** (Configuration › Réglages), l'onglet Jouer propose de sélectionner le jeu Steam lancé, ou de l'ajouter s'il n'est pas encore configuré.
 
 ## Règles métier
 
@@ -97,12 +98,23 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 - Les jeux sont toujours listés par nom, sans tenir compte de la casse ni des accents, dans l'onglet Jouer comme dans la configuration. Sans jeu choisi, la configuration s'ouvre sur le premier de la liste.
 - Une base neuve (premier lancement, aucun jeu enregistré) reçoit la configuration par défaut, décrite dans `src-tauri/src/fitness/seed.json`. Si la configuration enregistrée est illisible ou invalide, la configuration par défaut est utilisée et l'erreur est affichée.
 
+### Détection des jeux Steam
+
+- Facultative, désactivée par défaut : la case **Détecter le jeu Steam en cours** des Réglages fait partie de la configuration et s'enregistre avec **Enregistrer**.
+- Activée, l'appli lit les processus toutes les 10 secondes et y cherche l'AppId d'un jeu lancé par Steam (`SteamLaunch AppId=…` dans sa ligne de commande, ou `SteamAppId` dans son environnement). Seuls les jeux Steam sont détectés, et aucune liste de jeux n'est embarquée.
+- Un jeu configuré se reconnaît à son AppId Steam. Plusieurs jeux peuvent porter le même : un jeu de la configuration est un réglage de défi, et un même jeu Steam peut en avoir plusieurs. Si aucun jeu ne porte l'AppId détecté, un jeu sans AppId se reconnaît à son nom (sans tenir compte de la casse ni des espaces autour). Les jeux de la configuration par défaut ont leur AppId, sauf Bloodborne, absent de Steam.
+- Jeu configuré : l'onglet Jouer propose un bouton par jeu reconnu pour le sélectionner, sauf si l'un d'eux l'est déjà ou si le jeu de la séance est fixé. Reconnu à son nom, il reçoit alors l'AppId détecté, enregistré aussitôt.
+- Jeu inconnu : son nom est demandé à l'API du Steam Store (sans les marques ™ et ®), puis l'onglet Jouer propose de l'**Ajouter** ou de l'**Ignorer**. **Ajouter** ouvre la création d'un jeu, préremplie avec ce nom et l'AppId, qui s'enregistre avec **Créer**. **Ignorer** l'ajoute aussitôt aux jeux ignorés, qui ne sont plus jamais proposés.
+- Les Réglages listent les jeux ignorés : **Ajouter** ouvre la même création, et le jeu créé quitte la liste ; **Retirer** l'enlève aussitôt de la liste, et il sera de nouveau proposé.
+- Pour ne jamais être bloqué par Steam, le Steam Store n'est appelé que pour un jeu inconnu et non ignoré : une seule fois par jeu tant que l'appli reste ouverte (réponse ou échec gardés), au plus une fois par minute, avec 10 s maximum d'attente. S'il refuse pour excès de requêtes (code 429 ou 403), il n'est plus appelé avant le prochain lancement : les jeux inconnus ne sont plus proposés, les jeux configurés restent détectés.
+- Sous la case, les Réglages montrent l'état de la détection enregistrée : le jeu détecté (même déjà sélectionné ou ignoré), aucun jeu, ou un Steam Store qui limite les requêtes. Si les processus sont illisibles, rien n'est détecté ; le passage suivant réessaie.
+
 ### Partage
 
-- Un jeu se partage seul : son nom et ses événements (nombre tiré, limite, jokers), sans les exercices, propres à chacun. Les exercices se partagent à part : nom, unité, minimum, maximum et pause propre. La pause globale n'est pas partagée.
+- Un jeu se partage seul : son nom, son AppId Steam s'il en a un, et ses événements (nombre tiré, limite, jokers), sans les exercices, propres à chacun. Les exercices se partagent à part : nom, unité, minimum, maximum et pause propre. La pause globale n'est pas partagée.
 - **Partager** copie dans le presse-papiers un texte compressé à transmettre (illisible tel quel, il résiste aux retours à la ligne ajoutés par les messageries), tiré de la configuration enregistrée (les modifications en cours n'y sont pas). Il commence par un court identifiant qui indique le contenu : `squatsouls/game/elden-ring:` ou `squatsouls/exercises:`. Cet identifiant n'est qu'indicatif : l'import l'ignore et lit la version du format et le type de contenu dans le texte compressé. L'import lit chaque texte selon sa version et refuse, en demandant de mettre à jour l'appli, une version qu'il ne connaît pas.
 - **Importer** demande de coller ce texte et n'est possible que s'il est valide. Un jeu collé dans l'import des exercices, ou l'inverse, est refusé avec un message qui indique où l'importer. L'import s'enregistre aussitôt, sans passer par **Enregistrer**, et garde les autres modifications en cours.
-- Un jeu importé s'ajoute, ou remplace le jeu qui porte le même nom (sans tenir compte de la casse ni des espaces autour) : le formulaire l'annonce avant l'import. Un événement qui tire plus d'exercices qu'il n'en est défini est ramené à ce nombre, et le message de confirmation le signale.
+- Un jeu importé s'ajoute, ou remplace le jeu qui porte le même nom (sans tenir compte de la casse ni des espaces autour) : le formulaire l'annonce avant l'import. Sans AppId Steam dans l'import, le jeu remplacé garde le sien. Un événement qui tire plus d'exercices qu'il n'en est défini est ramené à ce nombre, et le message de confirmation le signale.
 - Des exercices importés mettent à jour l'unité, le minimum, le maximum et la pause propre de ceux qui portent le même nom (sans pause propre dans l'import, l'exercice repasse à la pause globale) et ajoutent les autres ; aucun exercice n'est retiré.
 
 ## Configuration
@@ -112,10 +124,11 @@ L'onglet **Configuration** se règle avec des champs :
 - **Exercices** : la pause globale après chaque série, puis le nom, l'unité, le minimum, le maximum et la pause propre (vide pour suivre la pause globale) de chaque exercice. Le dernier exercice ne peut pas être supprimé. **Partager** et **Importer** échangent la liste avec d'autres utilisateurs.
 - **Jeux** : choisir le jeu à modifier dans la liste (qui affiche les noms enregistrés, par ordre alphabétique), le renommer, le supprimer (après confirmation) ou en ajouter un. Un nouveau jeu demande un nom qu'aucun autre jeu ne porte et reprend soit les événements d'un autre jeu, soit un seul événement à remplir. **Partager** copie le jeu ouvert, **Importer un jeu** en ajoute ou en remplace un à partir d'un texte partagé. Le bouton **Créer**, l'import et la confirmation de suppression enregistrent aussitôt, sans passer par **Enregistrer** ; les autres modifications en cours restent à enregistrer.
 - **Événements** du jeu : repliés sur une ligne qui résume le nombre tiré, la limite et les jokers, ils se déplient d'un clic pour régler le nom, le nombre d'exercices tirés, la limite par séance (vide pour aucune) et les jokers gagnés.
+- **Réglages** : la détection du jeu Steam en cours, et la liste des jeux ignorés (voir Détection des jeux Steam).
 
 Dès qu'une modification est en cours, deux boutons apparaissent : **Enregistrer** valide la configuration et l'applique aussitôt à l'onglet Jouer, **Réinitialiser les modifications** revient à la dernière version enregistrée.
 
-Tout est enregistré dans une base SQLite, `~/.config/com.semche.squatsouls/squatsouls.db` : configuration (dont la pause globale), historique et dernier jeu choisi. À l'enregistrement, seuls les exercices, jeux et événements modifiés sont réécrits. Au lancement, la base reçoit les migrations de schéma qui lui manquent ; une base créée par une version plus récente de l'appli est refusée.
+Tout est enregistré dans une base SQLite, `~/.config/com.semche.squatsouls/squatsouls.db` : configuration (dont la pause globale, la détection Steam et les jeux ignorés), historique et dernier jeu choisi. À l'enregistrement, seuls les exercices, jeux et événements modifiés sont réécrits. Au lancement, la base reçoit les migrations de schéma qui lui manquent ; une base créée par une version plus récente de l'appli est refusée.
 
 ## Tests
 

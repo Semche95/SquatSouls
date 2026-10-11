@@ -1,11 +1,12 @@
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
+import { clone } from '../configDraft.js';
 import { defineShared } from './shared.js';
 
 // Rafraîchissement du compte à rebours de la pause.
 const PAUSE_TICK_MS = 250;
 
-export const [provideSession, useSession] = defineShared(({ call }, { config, game, gameId, store }) => {
+export const [provideSession, useSession] = defineShared(({ call }, { config, draft, game, gameId, store }) => {
   const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], jokers: 0, jokersEarned: 0, skipped: [] });
   const notice = ref('');
   // Pause après un exercice fait : aucun autre ne peut être noté fait avant sa fin.
@@ -54,6 +55,16 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, ga
   async function saveNow(cfg) {
     if (!(await store(cfg))) return false;
     await reload();
+    return true;
+  }
+
+  // Action validée : `change` modifie la configuration enregistrée, enregistrée aussitôt, puis le
+  // brouillon, qui garde ses autres modifications en cours ; false si le backend refuse.
+  async function saveChange(change) {
+    const cfg = clone(config.value);
+    change(cfg);
+    if (!(await saveNow(cfg))) return false;
+    change(draft.value);
     return true;
   }
 
@@ -134,7 +145,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, ga
   }
 
   return {
-    session, notice, pauseLeft, skipPause, reload, saveNow, trigger, act, confirmDismiss, dismiss,
+    session, notice, pauseLeft, skipPause, reload, saveNow, saveChange, trigger, act, confirmDismiss, dismiss,
     dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet, newSession, cancelSession,
   };
 });

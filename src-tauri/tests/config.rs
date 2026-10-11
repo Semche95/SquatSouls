@@ -28,6 +28,11 @@ fn validation_catches_mistakes() {
     cfg.games[1].name = format!(" {} ", cfg.games[0].name.to_uppercase());
     assert!(cfg.validate().unwrap_err().contains("Deux jeux"));
 
+    // Plusieurs jeux peuvent partager un AppId Steam : un même jeu, configuré pour des défis différents.
+    let mut cfg = default_config();
+    cfg.games[1].steam_app_id = cfg.games[0].steam_app_id;
+    cfg.validate().unwrap();
+
     let mut cfg = default_config();
     cfg.exercises.clear();
     assert!(cfg.validate().unwrap_err().contains("Aucun exercice"));

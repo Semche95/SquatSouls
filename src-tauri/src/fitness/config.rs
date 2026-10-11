@@ -33,17 +33,35 @@ pub struct GameEvent {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct Game {
     pub id: String,
     pub name: String,
+    /// AppId Steam qui fait reconnaître le jeu quand il tourne.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub steam_app_id: Option<u32>,
     pub events: Vec<GameEvent>,
 }
 
+/// Jeu Steam détecté que l'utilisateur ne veut plus se voir proposer.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct IgnoredGame {
+    pub app_id: u32,
+    pub name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct Config {
     /// Pause après chaque série validée, en secondes, pour les exercices sans pause propre.
     #[serde(default = "default_pause")]
     pub pause: u32,
+    /// Détection du jeu Steam en cours, désactivée par défaut.
+    #[serde(default)]
+    pub steam_detection: bool,
+    #[serde(default)]
+    pub ignored_games: Vec<IgnoredGame>,
     pub exercises: Vec<Exercise>,
     pub games: Vec<Game>,
 }

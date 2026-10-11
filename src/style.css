@@ -307,17 +307,27 @@ kbd.dark {
   background: var(--panel);
   color: var(--muted);
 }
-.banner.pause {
+.banner.pause,
+.banner.steam {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+.banner.pause {
   border-color: var(--gold);
+}
+.banner.steam {
+  border-color: var(--line);
+  background: var(--panel);
 }
 .pause-left {
   font-size: 1.3rem;
   font-variant-numeric: tabular-nums;
 }
-.banner.pause button {
+/* Actions poussées à droite du texte. */
+.banner.pause button,
+.banner.steam .row,
+.ignored .row {
   margin-left: auto;
 }
 /* Confirmation flottante, à droite des sous-onglets de la configuration, sans rien décaler ni masquer. */
@@ -694,8 +704,48 @@ kbd.dark {
 .subtabs {
   align-self: flex-start;
 }
-.cfg-exercises {
+.cfg-exercises,
+.cfg-settings {
   max-width: 640px;
+}
+/* Réglages : une case à cocher suivie de son libellé, l'état de la détection en dessous. */
+.setting {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.config .check input {
+  width: auto;
+  margin: 0;
+  accent-color: var(--gold);
+}
+.setting .small {
+  padding-left: calc(13px + 10px);
+}
+.group-title.sub {
+  font-size: 1rem;
+  color: var(--muted);
+}
+.ignored {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ignored li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+.ignored li:last-child {
+  border-bottom: none;
 }
 .cfg-unit {
   width: 30%;

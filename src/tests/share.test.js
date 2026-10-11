@@ -3,6 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { importGame, mergeExercises, parseExercises, parseGame, shareExercises, shareGame, unpack } from '../share.js';
 import { config } from './app.js';
 
+// Texte partagé écrit dans une version donnée du format, avec le contenu de `shared`.
+function packed(version, shared, data = unpack(shared).data) {
+  const payload = JSON.stringify({ version, kind: unpack(shared).kind, ...data });
+  return shared.slice(0, shared.indexOf(':') + 1) + btoa(String.fromCharCode(...deflateSync(strToU8(payload))));
+}
+
 const exercises = [
   { id: 'squat', name: 'Squats', unit: 'rép.', min: 10, max: 15 },
   { id: 'pompes', name: 'Pompes', unit: 'rép.', min: 8, max: 12, pause: 90 },
@@ -30,6 +36,15 @@ describe('partage d\'un jeu', () => {
     expect(parseGame(payload, 3)).toEqual(parseGame(text, 3));
   });
 
+  it('partage l\'AppId Steam du jeu et relit un texte de la version 1, qui n\'en a pas', () => {
+    const game = { ...config.games[0], steamAppId: 1245620 };
+    expect(parseGame(shareGame(game), 3).steamAppId).toBe(1245620);
+    const { steamAppId, ...v1 } = unpack(shareGame(game)).data;
+    const read = parseGame(packed(1, shareGame(game), v1), 3);
+    expect(read).toEqual(parseGame(shareGame(config.games[0]), 3));
+    expect(read).not.toHaveProperty('steamAppId');
+  });
+
   it('ramène le nombre tiré au nombre d\'exercices définis', () => {
     const text = shareGame({ name: 'Nioh', events: [{ name: 'Mort', draws: 5, jokers: 0 }] });
     expect(parseGame(text, 2)).toMatchObject({ events: [{ draws: 2 }], clamped: true });
@@ -43,6 +58,8 @@ describe('partage d\'un jeu', () => {
       shareGame({ name: 'Nioh', events: [{ name: 'Mort', draws: 0 }] }),
       shareGame({ name: 'Nioh', events: [{ name: 'Mort', draws: 1, maxPerSession: 0 }] }),
       shareGame({ name: 'Nioh', events: [{ name: 'Mort', draws: 1, jokers: -1 }] }),
+      shareGame({ name: 'Nioh', steamAppId: 0, events: [{ name: 'Mort', draws: 1 }] }),
+      shareGame({ name: 'Nioh', steamAppId: '485510', events: [{ name: 'Mort', draws: 1 }] }),
     ];
     for (const text of invalid) expect(() => parseGame(text, 3)).toThrow('Ce texte n\'est pas un jeu partagé valide.');
   });
@@ -52,9 +69,7 @@ describe('partage d\'un jeu', () => {
   });
 
   it('demande une mise à jour pour un texte d\'une version inconnue du format', () => {
-    const shared = shareGame(config.games[0]);
-    const payload = JSON.stringify({ version: 2, kind: 'game', ...unpack(shared).data });
-    const text = shared.slice(0, shared.indexOf(':') + 1) + btoa(String.fromCharCode(...deflateSync(strToU8(payload))));
+    const text = packed(999, shareGame(config.games[0]));
     expect(() => parseGame(text, 3)).toThrow('Ce texte vient d\'une version plus récente de SquatSouls : la mettre à jour pour l\'importer.');
   });
 
@@ -65,6 +80,15 @@ describe('partage d\'un jeu', () => {
       ['sekiro', events],
     ]);
     expect(importGame(config.games, { name: 'Nioh', events }).at(-1)).toEqual({ id: 'nioh', name: 'Nioh', events });
+  });
+
+  it('reprend l\'AppId Steam importé, ou à défaut celui du jeu remplacé, même porté par un autre jeu', () => {
+    const events = [{ id: 'feu', name: 'Feu', draws: 1, jokers: 0 }];
+    const games = [{ ...config.games[0], steamAppId: 1245620 }, { ...config.games[1], steamAppId: 814380 }];
+    expect(importGame(games, { name: 'Sekiro', events })[1].steamAppId).toBe(814380);
+    expect(importGame(games, { name: 'Sekiro', steamAppId: 814381, events })[1].steamAppId).toBe(814381);
+    expect(importGame(games, { name: 'Nioh', steamAppId: 485510, events }).at(-1).steamAppId).toBe(485510);
+    expect(importGame(games, { name: 'Sekiro sans prothèse', steamAppId: 814380, events }).at(-1).steamAppId).toBe(814380);
   });
 });
 

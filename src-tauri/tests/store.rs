@@ -24,6 +24,7 @@ fn config_changes_are_saved() {
     cfg.games.push(Game {
         id: "lies-of-p".into(),
         name: "Lies of P".into(),
+        steam_app_id: Some(1627720),
         events: vec![event("mort", "Mort", 2, None)],
     });
     s.save_config(&cfg).unwrap();
@@ -59,13 +60,25 @@ fn set_user_version(path: &std::path::Path, version: i64) {
         .unwrap();
 }
 
+/// Ramène une base au schéma d'avant la détection Steam, numéroté `version` (0 : avant toute numérotation).
+fn drop_steam_schema(path: &std::path::Path, version: i64) {
+    rusqlite::Connection::open(path)
+        .unwrap()
+        .execute_batch(&format!(
+            "ALTER TABLE games DROP COLUMN steam_app_id; DROP TABLE ignored_games;
+             PRAGMA user_version = {version};"
+        ))
+        .unwrap();
+}
+
 #[test]
 fn database_without_schema_version_keeps_its_data() {
     let path = temp_db("unversioned");
     let mut cfg = Store::open(&path).unwrap().config().unwrap();
     cfg.games.truncate(1);
+    cfg.games[0].steam_app_id = None;
     Store::open(&path).unwrap().save_config(&cfg).unwrap();
-    set_user_version(&path, 0);
+    drop_steam_schema(&path, 0);
     let reopened = Store::open(&path).unwrap().config().unwrap();
     let version: i64 = rusqlite::Connection::open(&path)
         .unwrap()
@@ -74,6 +87,50 @@ fn database_without_schema_version_keeps_its_data() {
     std::fs::remove_file(&path).unwrap();
     assert_eq!(reopened, cfg);
     assert!(version > 0);
+}
+
+#[test]
+fn database_before_steam_detection_receives_its_schema() {
+    let path = temp_db("before-steam");
+    let mut cfg = Store::open(&path).unwrap().config().unwrap();
+    drop_steam_schema(&path, 1);
+    let mut s = Store::open(&path).unwrap();
+    let reopened = s.config().unwrap();
+    cfg.games.iter_mut().for_each(|g| g.steam_app_id = None);
+    cfg.steam_detection = true;
+    cfg.ignored_games.push(IgnoredGame {
+        app_id: 1627720,
+        name: "Lies of P".into(),
+    });
+    s.save_config(&cfg).unwrap();
+    let saved = s.config().unwrap();
+    std::fs::remove_file(&path).unwrap();
+    assert!(reopened.games.iter().all(|g| g.steam_app_id.is_none()));
+    assert_eq!(saved, cfg);
+}
+
+#[test]
+fn steam_settings_are_saved() {
+    let mut s = store();
+    let mut cfg = default_config();
+    assert!(!cfg.steam_detection);
+    cfg.steam_detection = true;
+    cfg.games[0].steam_app_id = None;
+    cfg.ignored_games = vec![
+        IgnoredGame {
+            app_id: 1627720,
+            name: "Lies of P".into(),
+        },
+        IgnoredGame {
+            app_id: 367520,
+            name: "Hollow Knight".into(),
+        },
+    ];
+    s.save_config(&cfg).unwrap();
+    assert_eq!(s.config().unwrap(), cfg);
+    cfg.ignored_games.remove(0);
+    s.save_config(&cfg).unwrap();
+    assert_eq!(s.config().unwrap(), cfg);
 }
 
 #[test]

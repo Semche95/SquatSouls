@@ -2,7 +2,7 @@ mod commands;
 pub mod fitness;
 mod state;
 
-use fitness::Store;
+use fitness::{SteamNames, Store};
 use state::AppState;
 use std::fs;
 use std::sync::Mutex;
@@ -16,6 +16,7 @@ pub fn run() {
             fs::create_dir_all(&dir)?;
             let store = Store::open(&dir.join("squatsouls.db"))?;
             app.manage(Mutex::new(AppState::new(store)));
+            app.manage(Mutex::new(SteamNames::default()));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -33,7 +34,9 @@ pub fn run() {
             commands::get_last_game,
             commands::set_last_game,
             commands::get_history,
-            commands::get_full_history
+            commands::get_full_history,
+            commands::running_steam_app,
+            commands::steam_game_name
         ])
         .run(tauri::generate_context!())
         .expect("erreur au lancement de Squat Souls");

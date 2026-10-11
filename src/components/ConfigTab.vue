@@ -5,6 +5,7 @@ import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import ConfigExercises from './ConfigExercises.vue';
 import ConfigGames from './ConfigGames.vue';
+import ConfigSettings from './ConfigSettings.vue';
 import DisabledTip from './DisabledTip.vue';
 
 const { config, draft, configError, configMsg, notify, cfgTab, newGame, dirty, draftError } = useConfig();
@@ -34,8 +35,10 @@ function discardChanges() {
       <nav class="subtabs">
         <button :class="{ active: cfgTab === 'jeux' }" @click="cfgTab = 'jeux'">Jeux</button>
         <button :class="{ active: cfgTab === 'exercices' }" @click="cfgTab = 'exercices'">Exercices</button>
+        <button :class="{ active: cfgTab === 'reglages' }" @click="cfgTab = 'reglages'">Réglages</button>
       </nav>
       <ConfigExercises v-if="cfgTab === 'exercices'" />
+      <ConfigSettings v-else-if="cfgTab === 'reglages'" />
       <ConfigGames v-else />
     </template>
 

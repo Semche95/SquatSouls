@@ -2,17 +2,19 @@
 
 use super::{
     active_days, default_config, last_days, window_start, Config, DayTotals, Exercise, Game,
-    GameEvent, LogEntry, DEFAULT_PAUSE,
+    GameEvent, IgnoredGame, LogEntry, DEFAULT_PAUSE,
 };
 use chrono::NaiveDate;
 use rusqlite::{params, Connection, Result, Transaction};
 use std::collections::HashMap;
 use std::path::Path;
+use std::str::FromStr;
 
 /// Migrations du schéma, dans l'ordre : `user_version` retient combien la base en a reçu.
 /// Une migration publiée ne change plus, toute évolution s'ajoute à la fin.
 /// La première crée le schéma sans écraser celui d'une base antérieure à cette numérotation.
-const MIGRATIONS: &[&str] = &["
+const MIGRATIONS: &[&str] = &[
+    "
 CREATE TABLE IF NOT EXISTS exercises (
     id TEXT PRIMARY KEY,
     position INTEGER NOT NULL,
@@ -57,10 +59,20 @@ CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
-"];
+",
+    "
+ALTER TABLE games ADD COLUMN steam_app_id INTEGER;
+CREATE TABLE ignored_games (
+    app_id INTEGER PRIMARY KEY,
+    position INTEGER NOT NULL,
+    name TEXT NOT NULL
+);
+",
+];
 
 const LAST_GAME: &str = "last_game";
 const PAUSE: &str = "pause";
+const STEAM_DETECTION: &str = "steam_detection";
 
 pub struct Store {
     conn: Connection,
@@ -110,10 +122,10 @@ impl Store {
         )?;
         let games = self
             .conn
-            .prepare("SELECT id, name FROM games ORDER BY position")?
-            .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get(1)?)))?
+            .prepare("SELECT id, name, steam_app_id FROM games ORDER BY position")?
+            .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get(1)?, r.get(2)?)))?
             .map(|row| {
-                let (id, name) = row?;
+                let (id, name, steam_app_id) = row?;
                 let events = events
                     .query_map([&id], |r| {
                         Ok(GameEvent {
@@ -125,15 +137,28 @@ impl Store {
                         })
                     })?
                     .collect::<Result<_>>()?;
-                Ok(Game { id, name, events })
+                Ok(Game {
+                    id,
+                    name,
+                    steam_app_id,
+                    events,
+                })
             })
             .collect::<Result<_>>()?;
-        let pause = self
-            .setting(PAUSE)?
-            .map_or(Ok(DEFAULT_PAUSE), |v| v.parse())
-            .unwrap_or(DEFAULT_PAUSE);
+        let ignored_games = self
+            .conn
+            .prepare("SELECT app_id, name FROM ignored_games ORDER BY position")?
+            .query_map([], |r| {
+                Ok(IgnoredGame {
+                    app_id: r.get(0)?,
+                    name: r.get(1)?,
+                })
+            })?
+            .collect::<Result<_>>()?;
         Ok(Config {
-            pause,
+            pause: self.parsed_setting(PAUSE, DEFAULT_PAUSE)?,
+            steam_detection: self.parsed_setting(STEAM_DETECTION, false)?,
+            ignored_games,
             exercises,
             games,
         })
@@ -146,6 +171,19 @@ impl Store {
         if old.pause != config.pause {
             set_setting(&tx, PAUSE, &config.pause.to_string())?;
         }
+        if old.steam_detection != config.steam_detection {
+            set_setting(&tx, STEAM_DETECTION, &config.steam_detection.to_string())?;
+        }
+        // Liste courte : réécrite en entier quand elle change, dans son ordre.
+        if old.ignored_games != config.ignored_games {
+            tx.execute("DELETE FROM ignored_games", [])?;
+            let mut stmt = tx.prepare(
+                "INSERT OR IGNORE INTO ignored_games (app_id, position, name) VALUES (?1, ?2, ?3)",
+            )?;
+            for (pos, g) in config.ignored_games.iter().enumerate() {
+                stmt.execute(params![g.app_id, pos as i64, g.name])?;
+            }
+        }
         sync(
             &tx,
             &old.exercises,
@@ -157,23 +195,23 @@ impl Store {
             "DELETE FROM exercises WHERE id = ?1",
             |stmt, e| stmt.execute([&e.id]),
         )?;
-        // Le nom seul est comparé : les événements sont synchronisés à part, jeu par jeu.
-        let heads = |games: &[Game]| -> Vec<(String, String)> {
+        // Le nom et l'AppId seuls sont comparés : les événements sont synchronisés à part, jeu par jeu.
+        let heads = |games: &[Game]| -> Vec<(String, String, Option<u32>)> {
             games
                 .iter()
-                .map(|g| (g.id.clone(), g.name.clone()))
+                .map(|g| (g.id.clone(), g.name.clone(), g.steam_app_id))
                 .collect()
         };
         sync(
             &tx,
             &heads(&old.games),
             &heads(&config.games),
-            |(id, _)| id.as_str(),
-            "INSERT INTO games (id, position, name) VALUES (?1, ?2, ?3)
-             ON CONFLICT (id) DO UPDATE SET position = ?2, name = ?3",
-            |stmt, pos, (id, name)| stmt.execute(params![id, pos, name]),
+            |(id, ..)| id.as_str(),
+            "INSERT INTO games (id, position, name, steam_app_id) VALUES (?1, ?2, ?3, ?4)
+             ON CONFLICT (id) DO UPDATE SET position = ?2, name = ?3, steam_app_id = ?4",
+            |stmt, pos, (id, name, app_id)| stmt.execute(params![id, pos, name, app_id]),
             "DELETE FROM games WHERE id = ?1",
-            |stmt, (id, _)| stmt.execute([id]),
+            |stmt, (id, ..)| stmt.execute([id]),
         )?;
         for game in &config.games {
             let before = old.games.iter().find(|g| g.id == game.id);
@@ -304,6 +342,14 @@ impl Store {
 
     pub fn set_last_game(&self, game_id: &str) -> Result<()> {
         set_setting(&self.conn, LAST_GAME, game_id)
+    }
+
+    /// Réglage converti en `T`, `default` s'il est absent ou illisible.
+    fn parsed_setting<T: FromStr>(&self, key: &str, default: T) -> Result<T> {
+        Ok(self
+            .setting(key)?
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(default))
     }
 
     fn setting(&self, key: &str) -> Result<Option<String>> {

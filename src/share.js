@@ -6,14 +6,16 @@ import { isCount, newId, sameName } from './configDraft.js';
 // JSON compressé ; le court identifiant placé devant (`squatsouls/game/sekiro:`, `squatsouls/exercises:`)
 // n'est qu'indicatif et l'import l'ignore.
 const MARK = 'squatsouls';
-const VERSION = 1;
+const VERSION = 2;
 const GAME = 'game';
 const EXERCISES = 'exercises';
 
 // Lecture du contenu selon la version du format qui l'a écrit. Changer le format, c'est passer à une
 // nouvelle version et lui ajouter un lecteur, en gardant ceux des précédentes pour importer leurs textes.
+// Version 2 : un jeu peut porter l'AppId Steam qui le fait détecter.
 const READERS = {
   1: (data) => data,
+  2: (data) => data,
 };
 
 const isText = (v) => typeof v === 'string' && v.trim() !== '';
@@ -61,15 +63,15 @@ function parse(text, kind, valid) {
 
 export function shareGame(game) {
   const events = game.events.map(({ name, draws, maxPerSession, jokers }) => ({ name, draws, maxPerSession, jokers }));
-  return share(GAME, { name: game.name, events }, newId(game.name, []));
+  return share(GAME, { name: game.name, steamAppId: game.steamAppId, events }, newId(game.name, []));
 }
 
-// Exercice sans pause propre : la clé est absente, il suit la pause globale.
-const withPause = (ex, pause) => (pause === undefined ? ex : { ...ex, pause });
+// Champ facultatif absent (pause propre d'un exercice, AppId Steam d'un jeu) : la clé est omise.
+const withOptional = (item, key, value) => (value === undefined ? item : { ...item, [key]: value });
 
 // La pause globale n'est pas partagée : chacun garde la sienne.
 export function shareExercises(exercises) {
-  return share(EXERCISES, { exercises: exercises.map(({ name, unit, min, max, pause }) => withPause({ name, unit, min, max }, pause)) });
+  return share(EXERCISES, { exercises: exercises.map(({ name, unit, min, max, pause }) => withOptional({ name, unit, min, max }, 'pause', pause)) });
 }
 
 const validEvent = (ev) =>
@@ -80,7 +82,12 @@ export function parseGame(text, exerciseCount) {
   const data = parse(
     text,
     GAME,
-    (d) => isText(d.name) && Array.isArray(d.events) && d.events.length > 0 && d.events.every(validEvent),
+    (d) =>
+      isText(d.name) &&
+      (d.steamAppId === undefined || isCount(d.steamAppId, 1)) &&
+      Array.isArray(d.events) &&
+      d.events.length > 0 &&
+      d.events.every(validEvent),
   );
   const events = [];
   for (const { name, draws, maxPerSession, jokers = 0 } of data.events) {
@@ -88,7 +95,8 @@ export function parseGame(text, exerciseCount) {
     if (maxPerSession !== undefined) ev.maxPerSession = maxPerSession;
     events.push(ev);
   }
-  return { name: data.name.trim(), events, clamped: data.events.some((ev) => ev.draws > exerciseCount) };
+  const game = { name: data.name.trim(), events, clamped: data.events.some((ev) => ev.draws > exerciseCount) };
+  return withOptional(game, 'steamAppId', data.steamAppId);
 }
 
 const validExercise = (ex) =>
@@ -102,10 +110,11 @@ export function parseExercises(text) {
   ).exercises;
 }
 
-// Le jeu importé remplace celui qui porte le même nom (en gardant son id), sinon il s'ajoute.
-export function importGame(games, { name, events }) {
+// Le jeu importé remplace celui qui porte le même nom (en gardant son id et, à défaut d'en apporter un,
+// son AppId Steam), sinon il s'ajoute.
+export function importGame(games, { name, steamAppId, events }) {
   const existing = games.find((g) => sameName(g.name, name));
-  const game = { id: existing?.id ?? newId(name, games), name, events };
+  const game = withOptional({ id: existing?.id ?? newId(name, games), name, events }, 'steamAppId', steamAppId ?? existing?.steamAppId);
   return existing ? games.map((g) => (g === existing ? game : g)) : [...games, game];
 }
 
@@ -118,10 +127,10 @@ export function mergeExercises(exercises, imported) {
     const i = merged.findIndex((e) => sameName(e.name, name));
     const ex = merged[i];
     if (!ex) {
-      merged.push(withPause({ id: newId(name, merged), name: name.trim(), unit, min, max }, pause));
+      merged.push(withOptional({ id: newId(name, merged), name: name.trim(), unit, min, max }, 'pause', pause));
       added++;
     } else if (ex.unit !== unit || ex.min !== min || ex.max !== max || ex.pause !== pause) {
-      merged[i] = withPause({ id: ex.id, name: ex.name, unit, min, max }, pause);
+      merged[i] = withOptional({ id: ex.id, name: ex.name, unit, min, max }, 'pause', pause);
       updated++;
     }
   }

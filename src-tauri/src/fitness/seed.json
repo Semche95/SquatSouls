@@ -48,6 +48,7 @@
     {
       "id": "elden-ring",
       "name": "Elden Ring",
+      "steamAppId": 1245620,
       "events": [
         {
           "id": "mort",
@@ -103,6 +104,7 @@
     {
       "id": "ds1",
       "name": "Dark Souls",
+      "steamAppId": 570940,
       "events": [
         {
           "id": "mort",
@@ -158,6 +160,7 @@
     {
       "id": "ds2",
       "name": "Dark Souls II",
+      "steamAppId": 335300,
       "events": [
         {
           "id": "mort",
@@ -213,6 +216,7 @@
     {
       "id": "ds3",
       "name": "Dark Souls III",
+      "steamAppId": 374320,
       "events": [
         {
           "id": "mort",
@@ -323,6 +327,7 @@
     {
       "id": "sekiro",
       "name": "Sekiro",
+      "steamAppId": 814380,
       "events": [
         {
           "id": "mort",
@@ -378,6 +383,7 @@
     {
       "id": "megabonk",
       "name": "Megabonk",
+      "steamAppId": 3405340,
       "events": [
         {
           "id": "mort",
@@ -428,6 +434,7 @@
     {
       "id": "deep-rock-galactic",
       "name": "Deep Rock Galactic",
+      "steamAppId": 548430,
       "events": [
         {
           "id": "a-terre",

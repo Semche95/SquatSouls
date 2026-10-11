@@ -1,24 +1,25 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { pickSlogan } from './slogans.js';
 import { formatTime } from './format.js';
 import { provideApi } from './composables/useApi.js';
 import { provideConfig } from './composables/useConfig.js';
 import { provideSession } from './composables/useSession.js';
+import { provideSteam } from './composables/useSteam.js';
 import PlayTab from './components/PlayTab.vue';
 import BilanTab from './components/BilanTab.vue';
 import ConfigTab from './components/ConfigTab.vue';
 
-const tab = ref('jouer');
 // Tiré une fois au lancement, affiché sous le titre.
 const slogan = pickSlogan();
 
 const api = provideApi();
 const { error, call } = api;
 const cfg = provideConfig();
-const { configError, gameId, applyConfigView } = cfg;
-const { session } = provideSession(api, cfg);
+const { configError, gameId, tab, applyConfigView } = cfg;
+const { session, saveChange } = provideSession(api, cfg);
+provideSteam(cfg, { saveChange });
 
 onMounted(async () => {
   try {

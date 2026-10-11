@@ -9,7 +9,7 @@ import ConfigEvent from './ConfigEvent.vue';
 import ShareImport from './ShareImport.vue';
 
 const { config, draft, editedGameId, editedGame, newGame, notify, copy } = useConfig();
-const { saveNow } = useSession();
+const { saveNow, saveChange } = useSession();
 // Import d'un jeu partagé : formulaire à droite, comme la création.
 const importing = ref(false);
 // Jeu dont la suppression attend confirmation ; changer de jeu la referme.
@@ -36,13 +36,18 @@ function saveGames(games) {
   return saveNow({ ...config.value, games });
 }
 
+// Un jeu Steam détecté et ajouté sort de la liste des jeux ignorés.
 async function createGame() {
-  const { name, source } = newGame.value;
+  const { name, source, steamAppId } = newGame.value;
   const model = draft.value.games.find((g) => g.id === source);
   const game = { id: newId(name, draft.value.games), name: name.trim(), events: model ? clone(model.events) : [] };
+  if (steamAppId) game.steamAppId = steamAppId;
   if (!model) addEvent(game);
-  if (!(await saveGames([...config.value.games, game]))) return;
-  draft.value.games.push(clone(config.value.games.at(-1)));
+  const created = await saveChange((cfg) => {
+    cfg.games.push(clone(game));
+    cfg.ignoredGames = cfg.ignoredGames.filter((g) => g.appId !== steamAppId);
+  });
+  if (!created) return;
   editedGameId.value = game.id;
   newGame.value = null;
 }

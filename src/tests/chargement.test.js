@@ -31,7 +31,8 @@ describe('chargement', () => {
   it('redemande le jeu si le jeu mémorisé n\'existe plus', async () => {
     setup({ get_last_game: 'inconnu' });
     const w = await mountApp();
-    expect(w.find('select').element.value).toBe('');
+    // « Choisir un jeu » est affiché, et non un choix vide.
+    expect(w.find('select').element.selectedIndex).toBe(0);
     expect(w.find('.events').exists()).toBe(false);
   });
 

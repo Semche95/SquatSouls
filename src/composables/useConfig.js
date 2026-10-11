@@ -18,9 +18,12 @@ export const [provideConfig, useConfig] = defineShared(() => {
   // Confirmation passagère (enregistrement, copie, import).
   const configMsg = ref('');
   let configMsgTimer;
+  // Onglet affiché, et sous-onglet de la configuration.
+  const tab = ref('jouer');
   const cfgTab = ref('jeux');
   const editedGameId = ref('');
   // Création d'un jeu : formulaire à droite, rien n'est ajouté avant validation.
+  // Un jeu Steam détecté le préremplit avec son nom et son AppId.
   const newGame = ref(null);
   // Dernier jeu choisi, gardé par le backend d'un lancement à l'autre (vide tant qu'aucun n'est choisi).
   const gameId = ref('');
@@ -31,9 +34,10 @@ export const [provideConfig, useConfig] = defineShared(() => {
   // Premier champ mal rempli du brouillon, qui bloque « Enregistrer » (vide si tout est valide).
   const draftError = computed(() => (draft.value ? numberError(normalized(draft.value)) : ''));
 
-  // Jeu mémorisé ou en cours supprimé : on redemande le jeu.
-  watch(game, (g) => {
-    if (config.value && !g) gameId.value = '';
+  // Jeu mémorisé ou en cours supprimé : on redemande le jeu. La config est surveillée aussi, car un jeu
+  // mémorisé inconnu laisse `game` à null avant comme après son chargement.
+  watch([config, game], ([cfg, g]) => {
+    if (cfg && !g) gameId.value = '';
   });
   watch(gameId, (id) => {
     if (id) invoke('set_last_game', { gameId: id }).catch(() => {});
@@ -80,5 +84,5 @@ export const [provideConfig, useConfig] = defineShared(() => {
     }
   }
 
-  return { config, draft, configError, configMsg, notify, copy, cfgTab, editedGameId, newGame, gameId, game, editedGame, dirty, draftError, applyConfigView, store };
+  return { config, draft, configError, configMsg, notify, copy, tab, cfgTab, editedGameId, newGame, gameId, game, editedGame, dirty, draftError, applyConfigView, store };
 });

@@ -5,15 +5,25 @@ import { byName } from '../configDraft.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import { useKeydown } from '../composables/useKeydown.js';
+import { useSteam } from '../composables/useSteam.js';
 import DrawCard from './DrawCard.vue';
 import SessionActions from './SessionActions.vue';
 import DisabledTip from './DisabledTip.vue';
 
 const { config, gameId, game } = useConfig();
 const { session, notice, pauseLeft, skipPause, trigger, confirmDismiss, dismiss, remaining, complete, halve, skipExercise } = useSession();
+const { detected, selectDetected, addGame, ignoreDetected } = useSteam();
 
 // Le jeu est figé dès le premier événement de la séance, jusqu'à la suivante.
 const gameLocked = computed(() => !!session.value.gameId);
+// Jeu Steam détecté : un jeu inconnu est proposé à l'ajout, sauf s'il est ignoré ; les jeux configurés
+// qui lui correspondent, à la sélection, sauf si l'un d'eux l'est déjà ou que le jeu de la séance est fixé.
+const steamOffer = computed(() => {
+  const d = detected.value;
+  if (!d?.name) return false;
+  if (!d.games.length) return !d.ignored;
+  return !gameLocked.value && !d.games.some((g) => g.id === gameId.value);
+});
 // Série en cours mise en avant, puis la file des suivantes.
 const stage = computed(() => [session.value.pending.slice(0, 1), session.value.pending.slice(1)]);
 
@@ -68,6 +78,19 @@ useKeydown((e) => {
         </select>
       </DisabledTip>
     </label>
+
+    <p v-if="steamOffer" class="banner steam">
+      {{ detected.name }} détecté.
+      <span class="row">
+        <template v-if="detected.games.length">
+          <button v-for="g in detected.games" :key="g.id" class="primary" @click="selectDetected(g)">{{ g.name }}</button>
+        </template>
+        <template v-else>
+          <button class="primary" @click="addGame(detected)">Ajouter</button>
+          <button class="ghost" @click="ignoreDetected">Ignorer</button>
+        </template>
+      </span>
+    </p>
 
     <div v-if="game" class="events">
       <button v-for="(ev, i) in game.events" :key="ev.id" class="event" @click="trigger(ev)">
