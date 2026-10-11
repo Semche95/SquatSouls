@@ -239,3 +239,42 @@ pub(crate) async fn steam_game_name(app: AppHandle, app_id: u32) -> Result<Strin
     .await
     .map_err(|_| SteamNameError::Unknown)?
 }
+
+/// Notification système. Sous Linux, le plugin la signerait du nom de l'exécutable avec une icône
+/// système absente hors installation : elle porte ici le nom de l'appli et son icône.
+#[tauri::command]
+pub(crate) async fn notify(app: AppHandle, title: String, body: String) -> Result<(), String> {
+    #[cfg(target_os = "linux")]
+    {
+        let icon = app
+            .path()
+            .app_cache_dir()
+            .map_err(|e| e.to_string())?
+            .join("icon.png");
+        spawn_blocking(move || {
+            std::fs::create_dir_all(icon.parent().expect("dossier du cache"))?;
+            std::fs::write(&icon, include_bytes!("../icons/128x128.png"))?;
+            notify_rust::Notification::new()
+                .appname(&app.package_info().name)
+                .summary(&title)
+                .body(&body)
+                .icon(&icon.to_string_lossy())
+                .show()
+                .map(drop)
+                .map_err(std::io::Error::other)
+        })
+        .await
+        .map_err(|e| e.to_string())?
+        .map_err(|e| format!("Notification non envoyée : {e}"))
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        use tauri_plugin_notification::NotificationExt;
+        app.notification()
+            .builder()
+            .title(title)
+            .body(body)
+            .show()
+            .map_err(|e| format!("Notification non envoyée : {e}"))
+    }
+}

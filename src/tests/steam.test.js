@@ -28,6 +28,9 @@ async function openSettings(w) {
   await w.findAll('.subtabs button')[2].trigger('click');
 }
 const status = (w) => w.find('.setting .small').text();
+// Case à cocher des réglages, d'après son libellé.
+const check = (w, label) => w.findAll('.check').find((c) => c.text() === label).find('input');
+const notifications = () => invoke.mock.calls.filter(([cmd]) => cmd === 'notify').map(([, n]) => n);
 const lastSaved = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)?.[1].config;
 
 describe('détection du jeu Steam', () => {
@@ -184,11 +187,55 @@ describe('détection du jeu Steam', () => {
     const w = await mountApp();
     await openSettings(w);
     expect(w.find('.setting .small').exists()).toBe(false);
-    await w.find('.check input').setValue(true);
+    await check(w, 'Détecter le jeu Steam en cours').setValue(true);
     expect(lastSaved()).toBeUndefined();
     await w.find('.cfg-actions .primary').trigger('click');
     await flushPromises();
     expect(lastSaved().steamDetection).toBe(true);
     expect(invoke.mock.calls.some(([cmd]) => cmd === 'running_steam_app')).toBe(true);
+  });
+});
+
+describe('notification d\'un jeu Steam lancé', () => {
+  it('notifie une seule fois un jeu configuré, et de nouveau une fois relancé', async () => {
+    vi.useFakeTimers();
+    let running = 1245620;
+    setupSteam({ running_steam_app: () => running });
+    await mountApp();
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(notifications()).toEqual([{ title: 'Elden Ring lancé', body: 'À sélectionner dans Jouer pour commencer la séance.' }]);
+    running = null;
+    await vi.advanceTimersByTimeAsync(10000);
+    running = 1245620;
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(notifications()).toHaveLength(2);
+  });
+
+  it('notifie un jeu inconnu une fois son nom connu', async () => {
+    setupSteam({ running_steam_app: 367520, steam_game_name: 'Hollow Knight' });
+    await mountApp();
+    expect(notifications()).toEqual([
+      { title: 'Hollow Knight lancé', body: 'Jeu pas encore configuré : l\'ajouter depuis Jouer.' },
+    ]);
+  });
+
+  it('ne notifie ni un jeu ignoré, ni un jeu au nom inconnu, ni quand la notification est décochée', async () => {
+    setupSteam({ cfg: steamConfig({ ignoredGames: [{ appId: 367520, name: 'Hollow Knight' }] }), running_steam_app: 367520 });
+    await mountApp();
+    setupSteam({ running_steam_app: 1, steam_game_name: new Error('Steam Store injoignable') });
+    await mountApp();
+    setupSteam({ cfg: steamConfig({ steamNotify: false }) });
+    await mountApp();
+    expect(notifications()).toEqual([]);
+  });
+
+  it('montre la case de notification sous la détection cochée', async () => {
+    setupSteam({ cfg: config, running_steam_app: null });
+    const w = await mountApp();
+    await openSettings(w);
+    const notify = () => w.findAll('.check').filter((c) => c.text() === 'Notifier quand un jeu est lancé');
+    expect(notify()).toHaveLength(0);
+    await check(w, 'Détecter le jeu Steam en cours').setValue(true);
+    expect(notify()).toHaveLength(1);
   });
 });

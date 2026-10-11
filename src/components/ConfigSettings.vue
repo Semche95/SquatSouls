@@ -26,6 +26,10 @@ const status = computed(() => {
         <input v-model="draft.steamDetection" type="checkbox" />
         Détecter le jeu Steam en cours
       </label>
+      <label v-if="draft.steamDetection" class="check nested">
+        <input v-model="draft.steamNotify" type="checkbox" />
+        Notifier quand un jeu est lancé
+      </label>
       <p v-if="config.steamDetection" class="muted small">{{ status }}</p>
     </div>
     <template v-if="config.ignoredGames.length">

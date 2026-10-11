@@ -20,7 +20,11 @@ chrono = "0.4"
 rusqlite = { version = "0.39", features = ["bundled"] }
 sysinfo = { version = "0.38.4", default-features = false, features = ["system"] }
 ureq = "3.4.2"
+tauri-plugin-notification = "2"
 refinery = { version = "0.9", features = ["rusqlite"] }
+
+[target."cfg(target_os = \"linux\")".dependencies]
+notify-rust = "4.18"
 
 [target."cfg(windows)".dependencies]
 winreg = "0.56.0"

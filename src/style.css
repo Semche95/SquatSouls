@@ -712,7 +712,7 @@ kbd.dark {
 .cfg-settings {
   max-width: 640px;
 }
-/* Réglages : une case à cocher suivie de son libellé, l'état de la détection en dessous. */
+/* Réglages : une case à cocher suivie de son libellé, ses cases secondaires et l'état de la détection en dessous, en retrait. */
 .setting {
   display: flex;
   flex-direction: column;
@@ -729,7 +729,8 @@ kbd.dark {
   margin: 0;
   accent-color: var(--gold);
 }
-.setting .small {
+.setting .small,
+.setting .nested {
   padding-left: calc(13px + 10px);
 }
 .group-title.sub {

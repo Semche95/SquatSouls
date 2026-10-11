@@ -60,6 +60,9 @@ pub struct Config {
     /// Détection du jeu Steam en cours, désactivée par défaut.
     #[serde(default)]
     pub steam_detection: bool,
+    /// Notification système à chaque jeu Steam lancé, quand la détection est active.
+    #[serde(default = "default_steam_notify")]
+    pub steam_notify: bool,
     #[serde(default)]
     pub ignored_games: Vec<IgnoredGame>,
     pub exercises: Vec<Exercise>,
@@ -152,6 +155,12 @@ pub const DEFAULT_PAUSE: u32 = 60;
 
 fn default_pause() -> u32 {
     DEFAULT_PAUSE
+}
+
+pub const DEFAULT_STEAM_NOTIFY: bool = true;
+
+fn default_steam_notify() -> bool {
+    DEFAULT_STEAM_NOTIFY
 }
 
 /// Configuration par défaut, écrite dans une base neuve et utilisée si la configuration enregistrée est invalide.

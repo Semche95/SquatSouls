@@ -6,6 +6,7 @@ import App from '../App.vue';
 export const config = {
   pause: 60,
   steamDetection: false,
+  steamNotify: true,
   ignoredGames: [],
   exercises: [{ id: 'squat', name: 'Squats', unit: 'reps', min: 10, max: 15 }],
   games: [

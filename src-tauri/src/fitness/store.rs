@@ -2,7 +2,7 @@
 
 use super::{
     active_days, default_config, last_days, window_start, Config, DayTotals, Exercise, Game,
-    GameEvent, IgnoredGame, LogEntry, SteamName, SteamNames, DEFAULT_PAUSE,
+    GameEvent, IgnoredGame, LogEntry, SteamName, SteamNames, DEFAULT_PAUSE, DEFAULT_STEAM_NOTIFY,
 };
 use chrono::NaiveDate;
 use refinery::Target;
@@ -19,6 +19,7 @@ refinery::embed_migrations!("migrations");
 const LAST_GAME: &str = "last_game";
 const PAUSE: &str = "pause";
 const STEAM_DETECTION: &str = "steam_detection";
+const STEAM_NOTIFY: &str = "steam_notify";
 const STEAM_LAST_CALL: &str = "steam_last_call";
 const STEAM_BLOCKED_UNTIL: &str = "steam_blocked_until";
 
@@ -106,6 +107,7 @@ impl Store {
         Ok(Config {
             pause: self.parsed_setting(PAUSE, DEFAULT_PAUSE)?,
             steam_detection: self.parsed_setting(STEAM_DETECTION, false)?,
+            steam_notify: self.parsed_setting(STEAM_NOTIFY, DEFAULT_STEAM_NOTIFY)?,
             ignored_games,
             exercises,
             games,
@@ -116,11 +118,23 @@ impl Store {
     pub fn save_config(&mut self, config: &Config) -> Result<()> {
         let old = self.config()?;
         let tx = self.conn.transaction()?;
-        if old.pause != config.pause {
-            set_setting(&tx, PAUSE, &config.pause.to_string())?;
-        }
-        if old.steam_detection != config.steam_detection {
-            set_setting(&tx, STEAM_DETECTION, &config.steam_detection.to_string())?;
+        let settings = [
+            (PAUSE, old.pause.to_string(), config.pause.to_string()),
+            (
+                STEAM_DETECTION,
+                old.steam_detection.to_string(),
+                config.steam_detection.to_string(),
+            ),
+            (
+                STEAM_NOTIFY,
+                old.steam_notify.to_string(),
+                config.steam_notify.to_string(),
+            ),
+        ];
+        for (key, old, new) in settings {
+            if old != new {
+                set_setting(&tx, key, &new)?;
+            }
         }
         // Liste courte : réécrite en entier quand elle change, dans son ordre.
         if old.ignored_games != config.ignored_games {

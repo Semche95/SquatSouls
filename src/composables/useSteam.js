@@ -15,6 +15,8 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
   // Le Steam Store a limité les requêtes : les jeux inconnus ne sont plus proposés.
   const storeBlocked = ref(false);
   let timer;
+  // AppId du dernier jeu notifié, oublié quand plus aucun jeu ne tourne : un jeu relancé est de nouveau notifié.
+  let notified = null;
 
   // Plusieurs jeux peuvent porter le même AppId (un même jeu, pour des défis différents), et un jeu sans AppId
   // dont le nom reprend le leur en est une variante. Sans aucun, un jeu ignoré garde le nom noté en l'ignorant ;
@@ -37,12 +39,25 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
     return { appId, name: named[0]?.name ?? name, games: named, ignored: false };
   }
 
+  // Une notification par lancement, une fois le nom connu, sauf pour un jeu ignoré.
+  async function notify(found) {
+    if (found?.appId !== notified) notified = null;
+    if (!found?.name || found.ignored || notified !== null || !config.value.steamNotify) return;
+    notified = found.appId;
+    await invoke('notify', {
+      title: `${found.name} lancé`,
+      body: found.games.length ? 'À sélectionner dans Jouer pour commencer la séance.' : 'Jeu pas encore configuré : l\'ajouter depuis Jouer.',
+    });
+  }
+
   // Processus illisibles : rien n'est détecté, le prochain passage réessaie.
   async function scan() {
     try {
       const appId = await invoke('running_steam_app');
       const found = appId ? await identify(appId) : null;
-      if (config.value.steamDetection) detected.value = found;
+      if (!config.value.steamDetection) return;
+      detected.value = found;
+      await notify(found);
     } catch {
       detected.value = null;
     }
