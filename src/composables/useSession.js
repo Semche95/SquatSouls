@@ -12,6 +12,8 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, ga
   const pauseEnd = ref(0);
   const now = ref(0);
   let ticker;
+  // Série dont un exercice a lancé la pause : l'annuler arrête la pause.
+  let pauseDrawId = 0;
   const pauseLeft = computed(() => Math.max(0, Math.ceil((pauseEnd.value - now.value) / 1000)));
 
   // Pause propre de l'exercice, la pause globale à défaut.
@@ -20,9 +22,10 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, ga
     return exercises.find((ex) => ex.id === item.exerciseId)?.pause ?? pause;
   }
 
-  function startPause(seconds) {
+  function startPause(seconds, drawId) {
     skipPause();
     if (!seconds) return;
+    pauseDrawId = drawId;
     now.value = Date.now();
     pauseEnd.value = now.value + seconds * 1000;
     ticker = setInterval(() => {
@@ -34,6 +37,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, ga
   function skipPause() {
     clearInterval(ticker);
     pauseEnd.value = 0;
+    pauseDrawId = 0;
   }
 
   onScopeDispose(skipPause);
@@ -85,9 +89,9 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, ga
     else dismissNow(draw);
   }
 
-  function dismissNow(draw) {
+  async function dismissNow(draw) {
     confirmDismiss.value = 0;
-    act('dismiss', draw);
+    if ((await act('dismiss', draw)) && draw.id === pauseDrawId) skipPause();
   }
 
   // Exercices de la série encore à faire.
@@ -98,7 +102,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, ga
 
   async function complete(draw, item) {
     if (pauseLeft.value) return;
-    if (await act('complete_exercise', draw, { exerciseId: item.exerciseId })) startPause(pauseAfter(item));
+    if (await act('complete_exercise', draw, { exerciseId: item.exerciseId })) startPause(pauseAfter(item), draw.id);
   }
 
   function halve(draw, item) {

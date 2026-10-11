@@ -61,7 +61,7 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 
 - Chaque exercice fait (**Fait**) lance une pause : sa pause propre, ou à défaut la pause globale (60 s dans la configuration par défaut). Une pause de 0 s n'en lance pas.
 - Pendant la pause, aucun exercice ne peut être noté fait, ni dans la même série ni dans une autre, y compris une série tirée pendant la pause. Les jokers et **Annuler** restent possibles et ne lancent pas de pause.
-- **Passer** (ou Échap) termine la pause tout de suite. Elle s'arrête aussi à la fin ou à l'annulation de la séance.
+- **Passer** (ou Échap) termine la pause tout de suite. Elle s'arrête aussi à l'annulation de la série dont un exercice l'a lancée, et à la fin ou à l'annulation de la séance.
 
 ### Jokers
 

@@ -162,6 +162,18 @@ describe('séance', () => {
       expect(w.find('.banner.pause').exists()).toBe(false);
     });
 
+    it('s\'arrête quand on annule la série qui l\'a lancée, pas une autre', async () => {
+      const w = await completeOne();
+      responses.dismiss = emptySession({ pending: [both] });
+      await w.findAll('.card')[1].find('.card-actions button').trigger('click');
+      await flushPromises();
+      expect(w.find('.banner.pause').exists()).toBe(true);
+      responses.dismiss = emptySession();
+      await w.findAll('.card')[0].find('.card-actions button').trigger('click');
+      await flushPromises();
+      expect(w.find('.banner.pause').exists()).toBe(false);
+    });
+
     it('n\'en fait pas quand toutes les pauses valent 0', async () => {
       const w = await completeOne(1, 0, 0);
       expect(w.find('.banner.pause').exists()).toBe(false);
