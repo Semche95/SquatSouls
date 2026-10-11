@@ -30,6 +30,7 @@ pnpm test                   # tests interface (Vitest)
 - Textes de l'interface et documentation en français.
 - En JavaScript, chaînes entre guillemets simples, jamais doubles, en échappant l'apostrophe (`'moins d\'une minute'`).
 - Un bouton désactivé doit se voir comme tel : vérifier que `style.css` lui donne un style `:disabled` (opacité réduite, pas de curseur de clic ni d'effet au survol), sans se contenter de l'attribut `disabled`. La raison de la désactivation s'affiche dans une infobulle en l'entourant de `DisabledTip` (`components/DisabledTip.vue`), jamais avec un `title`.
+- Toute modification du format de partage/import (`share.js`) est versionnée : incrémenter `VERSION`, ajouter le lecteur de la nouvelle version dans `READERS` en gardant ceux des précédentes, et tester l'import des textes des anciennes versions.
 - Les tests ne vivent que dans `src/tests/` (interface) et `src-tauri/tests/` (backend) : aucun fichier `*.test.js` ailleurs dans `src/`, aucun module `#[cfg(test)]` dans `src-tauri/src/`.
 - Ne jamais citer dans les sources (commentaires compris) un fichier ou dossier ignoré par git (`.claude/`, skills, `todo.md`) : la référence serait cassée pour qui clone le dépôt.
 - Suivre la règle DRY partout (Rust, Vue, CSS, tests) : factoriser toute logique, valeur ou style dupliqué plutôt que le recopier.
