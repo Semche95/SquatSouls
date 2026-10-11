@@ -443,10 +443,144 @@ fn a_dismissed_set_comes_back_on_the_next_trigger_of_its_event() {
     assert_eq!(again.items, boss.items, "même série, telle que tirée");
     assert_eq!(again.trigger_count, 1);
     s.dismiss(again.id).unwrap();
-    s.clear_pending();
+    let mut changed = cfg.clone();
+    changed
+        .exercises
+        .retain(|ex| boss.items.iter().all(|it| it.exercise_id != ex.id));
+    s.apply_config(&changed, &mut r);
     let fresh = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
     assert_ne!(
         fresh.items, boss.items,
-        "la configuration enregistrée vide la réserve"
+        "la configuration enregistrée remplace les exercices supprimés de la réserve"
     );
+    assert_eq!(fresh.items.len(), 2);
+}
+
+/// Événement de la configuration par défaut, à modifier.
+fn event_mut<'a>(cfg: &'a mut Config, game: &str, event: &str) -> &'a mut GameEvent {
+    cfg.games
+        .iter_mut()
+        .find(|g| g.id == game)
+        .and_then(|g| g.events.iter_mut().find(|e| e.id == event))
+        .unwrap()
+}
+
+fn pending(s: &Session, id: u64) -> Option<Draw> {
+    s.view().pending.into_iter().find(|d| d.id == id)
+}
+
+#[test]
+fn a_saved_configuration_keeps_the_sets_to_do() {
+    let mut cfg = default_config();
+    let mut s = Session::new(0);
+    let mut r = rng();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    event_mut(&mut cfg, "ds3", "boss").name = "Boss vaincu".into();
+    cfg.pause = 30;
+    s.apply_config(&cfg, &mut r);
+    let kept = pending(&s, boss.id).expect("la série reste à faire");
+    assert_eq!(kept.items, boss.items, "mêmes exercices, mêmes nombres");
+    assert_eq!(kept.event_name, "Boss vaincu");
+}
+
+#[test]
+fn changing_the_draws_adjusts_the_sets_to_do() {
+    let mut cfg = default_config();
+    let mut s = Session::new(0);
+    let mut r = rng();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    event_mut(&mut cfg, "ds3", "boss").draws = 4;
+    s.apply_config(&cfg, &mut r);
+    let more = pending(&s, boss.id).unwrap();
+    assert_eq!(more.items.len(), 4);
+    assert_eq!(
+        more.items[..2],
+        boss.items[..],
+        "les exercices tirés restent"
+    );
+    let ids: HashSet<_> = more.items.iter().map(|it| &it.exercise_id).collect();
+    assert_eq!(ids.len(), 4, "les exercices ajoutés sont distincts");
+
+    s.complete_exercise(boss.id, &more.items[3].exercise_id, 1)
+        .unwrap();
+    event_mut(&mut cfg, "ds3", "boss").draws = 2;
+    s.apply_config(&cfg, &mut r);
+    let fewer = pending(&s, boss.id).unwrap();
+    assert_eq!(fewer.items.len(), 2);
+    assert!(
+        fewer.items.iter().any(|it| it.done),
+        "l'exercice fait reste"
+    );
+
+    event_mut(&mut cfg, "ds3", "boss").draws = 1;
+    s.apply_config(&cfg, &mut r);
+    assert!(
+        pending(&s, boss.id).is_none(),
+        "plus rien à faire : la série est finie"
+    );
+}
+
+#[test]
+fn new_bounds_clamp_the_amounts_to_do() {
+    let mut cfg = default_config();
+    let mut s = Session::new(0);
+    let mut r = rng();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let id = boss.items[0].exercise_id.clone();
+    let ex = cfg.exercises.iter_mut().find(|ex| ex.id == id).unwrap();
+    ex.min = 100;
+    ex.max = 200;
+    s.apply_config(&cfg, &mut r);
+    assert_eq!(pending(&s, boss.id).unwrap().items[0].amount, 100);
+    let ex = cfg.exercises.iter_mut().find(|ex| ex.id == id).unwrap();
+    ex.min = 1;
+    ex.max = 1;
+    s.apply_config(&cfg, &mut r);
+    let item = &pending(&s, boss.id).unwrap().items[0];
+    assert_eq!(item.amount, 1);
+    assert_eq!(item.halve_cost, None, "un seul ne se réduit pas");
+}
+
+#[test]
+fn a_removed_exercise_is_replaced_in_the_sets_to_do() {
+    let mut cfg = default_config();
+    let mut s = Session::new(0);
+    let mut r = rng();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let removed = boss.items[0].exercise_id.clone();
+    cfg.exercises.retain(|ex| ex.id != removed);
+    s.apply_config(&cfg, &mut r);
+    let draw = pending(&s, boss.id).unwrap();
+    assert_eq!(draw.items.len(), 2);
+    assert_eq!(draw.items[1], boss.items[1]);
+    assert!(draw.items.iter().all(|it| it.exercise_id != removed));
+    assert_ne!(draw.items[0].exercise_id, draw.items[1].exercise_id);
+}
+
+#[test]
+fn removed_events_and_new_jokers_apply_to_the_sets_to_do() {
+    let mut cfg = default_config();
+    let mut s = Session::new(0);
+    let mut r = rng();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let first = s.draw(&cfg, "ds3", "boss-premier", &mut r).unwrap();
+    event_mut(&mut cfg, "ds3", "boss-premier").jokers = 3;
+    let ds3 = cfg.games.iter_mut().find(|g| g.id == "ds3").unwrap();
+    ds3.events.retain(|e| e.id != "boss");
+    s.apply_config(&cfg, &mut r);
+    assert!(
+        pending(&s, boss.id).is_none(),
+        "l'événement supprimé emporte sa série"
+    );
+    assert_eq!(pending(&s, first.id).unwrap().jokers, 3);
+}
+
+#[test]
+fn a_set_with_spent_jokers_still_earns_nothing() {
+    let (mut s, boss) = session_with_jokers();
+    let mut cfg = default_config();
+    s.halve(boss.id, &boss.items[0].exercise_id, 20).unwrap();
+    event_mut(&mut cfg, "ds3", "boss").jokers = 2;
+    s.apply_config(&cfg, &mut rng());
+    assert_eq!(pending(&s, boss.id).unwrap().jokers, 0);
 }

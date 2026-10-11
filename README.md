@@ -55,7 +55,7 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 ### Traitement d'une série à faire
 
 - **Fait** se note exercice par exercice : l'exercice est ajouté aux totaux et écrit dans l'historique, et reste affiché barré jusqu'à la fin de la série. La série passe dans les séries faites quand son dernier exercice est fait ou sauté, et les jokers de l'événement sont gagnés à ce moment.
-- **Annuler** (clic raté) : la série disparaît et le déclenchement est décompté, comme s'il n'avait jamais eu lieu. Rien n'en est compté : ses exercices déjà faits sont retirés des totaux et de l'historique, pour qu'annuler ne serve pas à écourter une série. Une série commencée ne s'annule donc qu'après confirmation. La série annulée est réservée : le prochain déclenchement du même événement redonne les mêmes exercices avec les mêmes nombres, tels que tirés, pour qu'annuler ne serve pas à changer de tirage. La réserve disparaît avec la séance (fin ou annulation) et quand une configuration est enregistrée.
+- **Annuler** (clic raté) : la série disparaît et le déclenchement est décompté, comme s'il n'avait jamais eu lieu. Rien n'en est compté : ses exercices déjà faits sont retirés des totaux et de l'historique, pour qu'annuler ne serve pas à écourter une série. Une série commencée ne s'annule donc qu'après confirmation. La série annulée est réservée : le prochain déclenchement du même événement redonne les mêmes exercices avec les mêmes nombres, tels que tirés, pour qu'annuler ne serve pas à changer de tirage. La réserve disparaît avec la séance (fin ou annulation) ; une configuration enregistrée l'ajuste comme les séries à faire.
 - **Jokers** : réduire de moitié ou sauter un exercice, ou sauter toute la série (voir Jokers). Le déclenchement reste compté, y compris pour la limite par séance.
 
 ### Pause entre les exercices
@@ -80,7 +80,14 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 - Le jeu est fixé au premier événement déclenché : il ne peut plus changer avant la séance suivante. Le dernier jeu choisi est retenu d'un lancement à l'autre. Au tout premier lancement, ou si ce jeu n'existe plus, aucun jeu n'est sélectionné : il faut le choisir avant de déclencher un événement.
 - **Terminer la séance** n'est possible qu'avec au moins une série faite et aucune série à faire. L'heure de fin est enregistrée dans l'historique et une nouvelle séance commence aussitôt.
 - **Annuler la séance** remet tout à zéro (compteurs, jokers, séries à faire et faites) et retire de l'historique les séries de cette séance. Le bouton reste désactivé tant qu'aucun événement n'a été déclenché.
-- Une configuration enregistrée s'applique immédiatement, sans redémarrer. Elle retire les séries à faire de la séance en cours, sans toucher aux séries faites ni aux compteurs (renommer un jeu ou un événement garde ses compteurs). Si elle supprime le jeu de la séance en cours, la séance est annulée (comme avec **Annuler la séance**) et le jeu est à choisir de nouveau.
+- Une configuration enregistrée s'applique immédiatement, sans redémarrer. Elle ne touche ni aux séries faites ni aux compteurs (renommer un jeu ou un événement garde ses compteurs). Les séries à faire restent telles que tirées, avec les noms à jour, sauf :
+  - un événement supprimé retire ses séries à faire ;
+  - un nombre d'exercices tirés (`draws`) changé ajuste ses séries : les exercices manquants sont tirés, ou des exercices pas encore faits sont retirés ; une série où il ne reste rien à faire est finie et rapporte ses jokers ;
+  - un exercice supprimé est remplacé par un autre tiré au hasard, absent de la série ;
+  - un minimum ou un maximum changé ramène le nombre d'un exercice à faire dans les nouvelles bornes, sauf s'il a été réduit de moitié ;
+  - des jokers changés s'appliquent aux séries de l'événement, sauf à celles où des jokers ont déjà été dépensés, qui n'en rapportent plus.
+
+  Les exercices déjà faits ne changent jamais. Si elle supprime le jeu de la séance en cours, la séance est annulée (comme avec **Annuler la séance**) et le jeu est à choisir de nouveau.
 
 ### Historique et bilan
 

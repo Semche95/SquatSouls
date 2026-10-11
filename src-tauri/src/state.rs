@@ -59,8 +59,7 @@ impl AppState {
         }
         self.config = config;
         self.config_error = None;
-        // Les tirages en attente peuvent viser des exercices qui n'existent plus.
-        self.session.clear_pending();
+        self.session.apply_config(&self.config, &mut rand::rng());
         Ok(self.config_view())
     }
 

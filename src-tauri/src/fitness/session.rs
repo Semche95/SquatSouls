@@ -1,6 +1,6 @@
 //! Tirage et séance.
 
-use super::{Config, Exercise};
+use super::{Config, Exercise, Game, GameEvent};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -28,16 +28,33 @@ pub struct DrawItem {
 }
 
 impl DrawItem {
-    fn new(exercise_id: String, name: String, unit: String, amount: u32) -> Self {
+    /// Tire le nombre de l'exercice entre ses bornes.
+    fn drawn<R: Rng + ?Sized>(ex: &Exercise, rng: &mut R) -> Self {
         DrawItem {
-            exercise_id,
-            name,
-            unit,
-            amount,
+            exercise_id: ex.id.clone(),
+            name: ex.name.clone(),
+            unit: ex.unit.clone(),
+            amount: 0,
             halved: false,
             done: false,
-            halve_cost: (amount >= 2).then_some(HALVE_COST),
+            halve_cost: None,
             skip_cost: SKIP_COST,
+        }
+        .with_amount(rng.random_range(ex.min..=ex.max))
+    }
+
+    fn with_amount(mut self, amount: u32) -> Self {
+        self.amount = amount;
+        self.halve_cost = (amount >= 2).then_some(HALVE_COST);
+        self
+    }
+
+    /// Reprend le nom et l'unité de l'exercice et ramène son nombre entre ses bornes, s'il n'a pas été réduit.
+    fn refit(&mut self, ex: &Exercise) {
+        self.name = ex.name.clone();
+        self.unit = ex.unit.clone();
+        if !self.halved {
+            *self = self.clone().with_amount(self.amount.clamp(ex.min, ex.max));
         }
     }
 }
@@ -63,12 +80,16 @@ pub struct Draw {
     /// Exercices tels que tirés, réservés au prochain déclenchement si la série est annulée.
     #[serde(skip)]
     pub drawn: Vec<DrawItem>,
+    /// Vrai une fois des jokers dépensés sur la série.
+    #[serde(skip)]
+    pub forfeited: bool,
 }
 
 impl Draw {
     /// Dépense des jokers sur la série : elle ne rapporte plus les siens.
     fn forfeit(&mut self, items: Vec<DrawItem>, jokers: u32, halved: bool, now: i64) -> Skipped {
         self.jokers = 0;
+        self.forfeited = true;
         Skipped {
             at: now,
             game: self.game_name.clone(),
@@ -203,16 +224,9 @@ impl Session {
         } else if let Some(items) = self.reserved.remove(&key) {
             items
         } else {
-            self.pick(config, ev.draws as usize, rng)
+            self.pick(config, ev.draws as usize, &[], rng)
                 .into_iter()
-                .map(|ex| {
-                    DrawItem::new(
-                        ex.id.clone(),
-                        ex.name.clone(),
-                        ex.unit.clone(),
-                        rng.random_range(ex.min..=ex.max),
-                    )
-                })
+                .map(|ex| DrawItem::drawn(ex, rng))
                 .collect()
         };
 
@@ -230,6 +244,7 @@ impl Session {
             max_per_session: ev.max_per_session,
             logged: Vec::new(),
             drawn: items,
+            forfeited: false,
         };
         if !capped {
             self.last = draw.items.iter().map(|it| it.exercise_id.clone()).collect();
@@ -238,21 +253,30 @@ impl Session {
         Ok(draw)
     }
 
-    /// Tire `n` exercices distincts dans le tour en cours, en commençant un nouveau tour quand il est épuisé.
+    /// Tire `n` exercices distincts, hors de `exclude`, dans le tour en cours, en commençant un nouveau tour quand il est épuisé.
     /// Un exercice de la dernière série ne ressort pas aussitôt, sauf s'il ne reste que lui à tirer.
+    /// S'arrête plus tôt quand il ne reste plus d'exercice à tirer.
     fn pick<'a, R: Rng + ?Sized>(
         &mut self,
         config: &'a Config,
         n: usize,
+        exclude: &[String],
         rng: &mut R,
     ) -> Vec<&'a Exercise> {
         let mut picks: Vec<&Exercise> = Vec::new();
+        let mut refilled = false;
         while picks.len() < n {
             let candidates: Vec<usize> = (0..self.bag.len())
-                .filter(|&i| picks.iter().all(|ex| ex.id != self.bag[i]))
+                .filter(|&i| {
+                    !exclude.contains(&self.bag[i]) && picks.iter().all(|ex| ex.id != self.bag[i])
+                })
                 .collect();
             if candidates.is_empty() {
+                if refilled {
+                    break;
+                }
                 self.bag = config.exercises.iter().map(|ex| ex.id.clone()).collect();
+                refilled = true;
                 continue;
             }
             let fresh: Vec<usize> = candidates
@@ -260,7 +284,11 @@ impl Session {
                 .copied()
                 .filter(|&i| !self.last.contains(&self.bag[i]))
                 .collect();
-            let pool = if fresh.is_empty() { &candidates } else { &fresh };
+            let pool = if fresh.is_empty() {
+                &candidates
+            } else {
+                &fresh
+            };
             let id = self.bag.swap_remove(pool[rng.random_range(0..pool.len())]);
             picks.extend(config.exercises.iter().find(|ex| ex.id == id));
         }
@@ -382,11 +410,131 @@ impl Session {
         self.skipped.push(skipped);
     }
 
-    /// Retire les tirages en attente et réservés, et recommence le tour (utile quand la configuration change).
-    pub fn clear_pending(&mut self) {
-        self.pending.clear();
+    /// Adapte les séries à faire et réservées à une nouvelle configuration, et recommence le tour.
+    /// La série d'un événement supprimé est retirée ; une série finie par l'ajustement rapporte ses jokers.
+    pub fn apply_config<R: Rng + ?Sized>(&mut self, config: &Config, rng: &mut R) {
         self.bag.clear();
-        self.reserved.clear();
+        for mut draw in std::mem::take(&mut self.pending) {
+            let Some((game, ev)) = find_event(config, &draw.game_id, &draw.event_id) else {
+                continue;
+            };
+            draw.game_name = game.name.clone();
+            draw.event_name = ev.name.clone();
+            draw.max_per_session = ev.max_per_session;
+            if !draw.forfeited {
+                draw.jokers = ev.jokers;
+            }
+            self.refit(
+                config,
+                ev.draws,
+                &mut draw.drawn,
+                Some(&mut draw.items),
+                rng,
+            );
+            if draw.items.iter().all(|it| it.done) {
+                self.jokers += draw.jokers;
+                self.jokers_earned += draw.jokers;
+            } else {
+                self.pending.push(draw);
+            }
+        }
+        for (key, mut drawn) in std::mem::take(&mut self.reserved) {
+            if let Some((_, ev)) = find_event(config, &key.0, &key.1) {
+                self.refit(config, ev.draws, &mut drawn, None, rng);
+                self.reserved.insert(key, drawn);
+            }
+        }
+    }
+
+    /// Ajuste une série telle que tirée (`drawn`) et, pour une série à faire, ses exercices restants (`items`) :
+    /// un exercice supprimé est remplacé, un nombre est ramené entre les bornes et la série prend ou perd
+    /// des exercices pour en compter `draws`. Les exercices déjà faits ne changent pas.
+    fn refit<R: Rng + ?Sized>(
+        &mut self,
+        config: &Config,
+        draws: u32,
+        drawn: &mut Vec<DrawItem>,
+        mut items: Option<&mut Vec<DrawItem>>,
+        rng: &mut R,
+    ) {
+        let exercise = |id: &str| config.exercises.iter().find(|ex| ex.id == id);
+        let ids = |list: &[DrawItem]| -> Vec<String> {
+            list.iter().map(|it| it.exercise_id.clone()).collect()
+        };
+        let in_items = |items: &Option<&mut Vec<DrawItem>>, id: &str| {
+            items
+                .as_ref()
+                .and_then(|items| items.iter().find(|it| it.exercise_id == id))
+                .map(|it| it.done)
+        };
+
+        // Exercices supprimés : remplacés par d'autres, sauf ceux déjà faits.
+        for i in 0..drawn.len() {
+            let id = drawn[i].exercise_id.clone();
+            if exercise(&id).is_some() {
+                continue;
+            }
+            let mut exclude = ids(drawn);
+            if let Some(items) = &items {
+                exclude.extend(ids(items));
+            }
+            let Some(ex) = self.pick(config, 1, &exclude, rng).pop() else {
+                continue;
+            };
+            let new = DrawItem::drawn(ex, rng);
+            if let Some(items) = items.as_mut() {
+                if let Some(it) = items.iter_mut().find(|it| it.exercise_id == id && !it.done) {
+                    *it = new.clone();
+                }
+            }
+            drawn[i] = new;
+        }
+        drawn.retain(|it| exercise(&it.exercise_id).is_some());
+
+        for it in drawn.iter_mut() {
+            it.refit(exercise(&it.exercise_id).expect("exercice retenu"));
+        }
+        if let Some(items) = items.as_mut() {
+            for it in items.iter_mut().filter(|it| !it.done) {
+                if let Some(ex) = exercise(&it.exercise_id) {
+                    it.refit(ex);
+                }
+            }
+        }
+
+        // Moins d'exercices : on retire d'abord ceux déjà sautés, puis ceux qui restent à faire, puis ceux faits.
+        let draws = draws as usize;
+        for rank in [None, Some(false), Some(true)] {
+            while drawn.len() > draws {
+                let Some(pos) = drawn
+                    .iter()
+                    .rposition(|it| in_items(&items, &it.exercise_id) == rank)
+                else {
+                    break;
+                };
+                let removed = drawn.remove(pos);
+                if let Some(items) = items.as_mut() {
+                    if rank == Some(false) {
+                        items.retain(|it| it.exercise_id != removed.exercise_id);
+                    }
+                }
+            }
+        }
+
+        // Plus d'exercices : on tire ceux qui manquent.
+        if drawn.len() < draws {
+            let mut exclude = ids(drawn);
+            if let Some(items) = &items {
+                exclude.extend(ids(items));
+            }
+            for ex in self.pick(config, draws - drawn.len(), &exclude, rng) {
+                let new = DrawItem::drawn(ex, rng);
+                if let Some(items) = items.as_mut() {
+                    items.push(new.clone());
+                }
+                drawn.push(new);
+            }
+        }
     }
 
     /// Vrai si la séance a commencé sur un jeu absent de `config`.
@@ -455,6 +603,15 @@ impl Session {
 }
 
 const NOT_ENOUGH_JOKERS: &str = "Pas assez de jokers.";
+
+fn find_event<'a>(
+    config: &'a Config,
+    game_id: &str,
+    event_id: &str,
+) -> Option<(&'a Game, &'a GameEvent)> {
+    let game = config.games.iter().find(|g| g.id == game_id)?;
+    Some((game, game.events.iter().find(|e| e.id == event_id)?))
+}
 
 /// Jokers pour sauter tout ce qui reste d'une série.
 pub fn skip_set_cost(draw: &Draw) -> u32 {
