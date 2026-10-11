@@ -124,7 +124,7 @@ L'onglet **Configuration** se règle avec des champs :
 
 Dès qu'une modification est en cours, deux boutons apparaissent : **Enregistrer** valide la configuration et l'applique aussitôt à l'onglet Jouer, **Réinitialiser les modifications** revient à la dernière version enregistrée.
 
-Tout est enregistré dans une base SQLite, `~/.config/com.semche.squatsouls/squatsouls.db` : configuration (dont la pause globale, la détection Steam et les jeux ignorés), historique, dernier jeu choisi et noms donnés par le Steam Store. À l'enregistrement, seuls les exercices, jeux et événements modifiés sont réécrits. Au lancement, la base reçoit les migrations de schéma qui lui manquent ; une base créée par une version plus récente de l'appli est refusée.
+Tout est enregistré dans une base SQLite, `~/.config/com.semche.squatsouls/squatsouls.db` : configuration (dont la pause globale, la détection Steam et les jeux ignorés), historique, dernier jeu choisi et noms donnés par le Steam Store. À l'enregistrement, seuls les exercices, jeux et événements modifiés sont réécrits. Au lancement, la base reçoit les migrations de schéma qui lui manquent, chacune datée à son application (une migration créée ne se modifie jamais, toute évolution du schéma en ajoute une nouvelle) ; une base créée par une version plus récente de l'appli est refusée.
 
 ## Tests
 

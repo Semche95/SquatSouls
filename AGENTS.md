@@ -13,6 +13,7 @@ Les règles métier sont décrites dans la section « Règles métier » de `REA
 
 - `src/` : interface Vue (`App.vue` en-tête et onglets, `components/` un composant par onglet et ses blocs, `composables/` état partagé via provide/inject, `format.js`, `configDraft.js` et `share.js` (partage de jeux et d'exercices) fonctions pures, `style.css`)
 - `src-tauri/src/` : backend Rust (`lib.rs` lancement, `commands.rs` commandes Tauri, `state.rs` état partagé et chargement de la configuration, `fitness/` logique métier : `config.rs` configuration, `seed.json` configuration par défaut, `session.rs` tirage et séance, `history.rs` bilan de l'historique, `steam.rs` détection du jeu Steam en cours, `store.rs` stockage SQLite)
+- `src-tauri/migrations/` : migrations SQL du schéma, une par fichier `V<n>__<nom>.sql`, datées dans la base à leur application. Une migration créée ne se modifie jamais, on en ajoute toujours une nouvelle
 - `src/tests/` : tests de l'interface (Vitest), un fichier par onglet ou module ; `app.js` données et montage partagés, `setup.js` simulation du backend Tauri
 - `src-tauri/tests/` : tests du backend (tests d'intégration Cargo sur l'API publique de `fitness`), un fichier par module
 
@@ -28,6 +29,7 @@ pnpm test                   # tests interface (Vitest)
 ## Conventions
 
 - Textes de l'interface et documentation en français.
+- Ne jamais modifier, renommer, fusionner ni supprimer une migration de `src-tauri/migrations/` une fois créée, même pas commitée, même pour corriger une erreur : toute évolution du schéma passe par un nouveau fichier `V<n+1>__<nom>.sql`.
 - En JavaScript, chaînes entre guillemets simples, jamais doubles, en échappant l'apostrophe (`'moins d\'une minute'`).
 - Un bouton désactivé doit se voir comme tel : vérifier que `style.css` lui donne un style `:disabled` (opacité réduite, pas de curseur de clic ni d'effet au survol), sans se contenter de l'attribut `disabled`. La raison de la désactivation s'affiche dans une infobulle en l'entourant de `DisabledTip` (`components/DisabledTip.vue`), jamais avec un `title`.
 - Toute modification du format de partage/import (`share.js`) est versionnée : incrémenter `VERSION`, ajouter le lecteur de la nouvelle version dans `READERS` en gardant ceux des précédentes, et tester l'import des textes des anciennes versions.

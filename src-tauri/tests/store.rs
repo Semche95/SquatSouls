@@ -53,60 +53,110 @@ fn temp_db(name: &str) -> std::path::PathBuf {
     path
 }
 
-fn set_user_version(path: &std::path::Path, version: i64) {
-    rusqlite::Connection::open(path)
-        .unwrap()
-        .pragma_update(None, "user_version", version)
-        .unwrap();
+fn connect(path: &std::path::Path) -> rusqlite::Connection {
+    rusqlite::Connection::open(path).unwrap()
 }
 
-/// Ramène une base au schéma d'avant la détection Steam, numéroté `version` (0 : avant toute numérotation).
-fn drop_steam_schema(path: &std::path::Path, version: i64) {
-    rusqlite::Connection::open(path)
+/// Versions et dates des migrations inscrites à l'historique de la base.
+fn applied(path: &std::path::Path) -> Vec<(i64, String)> {
+    connect(path)
+        .prepare("SELECT version, applied_on FROM refinery_schema_history ORDER BY version")
         .unwrap()
-        .execute_batch(&format!(
-            "ALTER TABLE games DROP COLUMN steam_app_id; DROP TABLE ignored_games; DROP TABLE steam_names;
-             PRAGMA user_version = {version};"
-        ))
-        .unwrap();
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
+        .unwrap()
+        .collect::<Result<_, _>>()
+        .unwrap()
 }
 
 #[test]
-fn database_without_schema_version_keeps_its_data() {
-    let path = temp_db("unversioned");
-    let mut cfg = Store::open(&path).unwrap().config().unwrap();
-    cfg.games.truncate(1);
-    cfg.games[0].steam_app_id = None;
-    Store::open(&path).unwrap().save_config(&cfg).unwrap();
-    drop_steam_schema(&path, 0);
-    let reopened = Store::open(&path).unwrap().config().unwrap();
-    let version: i64 = rusqlite::Connection::open(&path)
-        .unwrap()
-        .query_row("PRAGMA user_version", [], |r| r.get(0))
-        .unwrap();
+fn applied_migrations_are_dated() {
+    let path = temp_db("dated");
+    Store::open(&path).unwrap();
+    Store::open(&path).unwrap();
+    let applied = applied(&path);
     std::fs::remove_file(&path).unwrap();
-    assert_eq!(reopened, cfg);
-    assert!(version > 0);
+    assert_eq!(
+        applied.iter().map(|a| a.0).collect::<Vec<_>>(),
+        [1, 2, 3, 4],
+        "une migration n'est appliquée qu'une fois"
+    );
+    assert!(
+        applied
+            .iter()
+            .all(|a| chrono::DateTime::parse_from_rfc3339(&a.1).is_ok()),
+        "date et heure"
+    );
+}
+
+/// Base migrée avant refinery : ses `version` premières migrations jouées, notées dans `user_version`.
+fn legacy_db(name: &str, version: usize) -> std::path::PathBuf {
+    let path = temp_db(name);
+    let conn = connect(&path);
+    let migrations = [
+        include_str!("../migrations/V1__schema.sql"),
+        include_str!("../migrations/V2__steam_detection.sql"),
+        include_str!("../migrations/V3__steam_names.sql"),
+    ];
+    for sql in &migrations[..version] {
+        conn.execute_batch(sql).unwrap();
+    }
+    conn.pragma_update(None, "user_version", version as i64)
+        .unwrap();
+    conn.execute(
+        "INSERT INTO sets (at, session, game, event, exercise, unit, amount)
+         VALUES (1000, 1000, 'Sekiro', 'Mort', 'Squats', 'rép.', 12)",
+        [],
+    )
+    .unwrap();
+    path
 }
 
 #[test]
-fn database_before_steam_detection_receives_its_schema() {
-    let path = temp_db("before-steam");
-    let mut cfg = Store::open(&path).unwrap().config().unwrap();
-    drop_steam_schema(&path, 1);
-    let mut s = Store::open(&path).unwrap();
-    let reopened = s.config().unwrap();
-    cfg.games.iter_mut().for_each(|g| g.steam_app_id = None);
-    cfg.steam_detection = true;
-    cfg.ignored_games.push(IgnoredGame {
-        app_id: 1627720,
-        name: "Lies of P".into(),
-    });
-    s.save_config(&cfg).unwrap();
-    let saved = s.config().unwrap();
-    std::fs::remove_file(&path).unwrap();
-    assert!(reopened.games.iter().all(|g| g.steam_app_id.is_none()));
-    assert_eq!(saved, cfg);
+fn database_migrated_before_refinery_keeps_its_data() {
+    for (name, version) in [("legacy-current", 3), ("legacy-behind", 2)] {
+        let path = legacy_db(name, version);
+        let history = Store::open(&path).unwrap().full_history().unwrap();
+        Store::open(&path).unwrap().steam_names().unwrap();
+        let applied = applied(&path);
+        std::fs::remove_file(&path).unwrap();
+        assert_eq!(history.len(), 1, "{name}");
+        assert_eq!(applied.len(), 4, "{name}");
+    }
+}
+
+#[test]
+fn steam_names_receive_retry_at_even_from_draft_schema() {
+    for (name, draft) in [("names-sound", false), ("names-draft", true)] {
+        let path = legacy_db(name, 3);
+        let conn = connect(&path);
+        if draft {
+            conn.execute_batch(
+                "DROP TABLE steam_names;
+                 CREATE TABLE steam_names (app_id INTEGER PRIMARY KEY, name TEXT);",
+            )
+            .unwrap();
+        }
+        conn.execute_batch(if draft {
+            "INSERT INTO steam_names (app_id, name) VALUES (814380, 'Sekiro'), (1, NULL)"
+        } else {
+            "INSERT INTO steam_names (app_id, name, retry_at) VALUES (814380, 'Sekiro', NULL), (1, NULL, 5000)"
+        })
+        .unwrap();
+        let mut names = Store::open(&path).unwrap().steam_names().unwrap();
+        std::fs::remove_file(&path).unwrap();
+        assert_eq!(
+            names.name(814380, 1000, |_| None, |_| ()).unwrap(),
+            "Sekiro",
+            "{name}"
+        );
+        if !draft {
+            assert_eq!(
+                names.name(1, 2000, |_| panic!("redemandé avant sa date"), |_| ()),
+                Err(SteamNameError::Unknown),
+                "date de nouvel essai gardée"
+            );
+        }
+    }
 }
 
 #[test]
@@ -154,7 +204,13 @@ fn steam_names_are_kept() {
 fn newer_database_is_refused() {
     let path = temp_db("newer");
     Store::open(&path).unwrap();
-    set_user_version(&path, i64::from(i32::MAX));
+    connect(&path)
+        .execute(
+            "INSERT INTO refinery_schema_history (version, name, applied_on, checksum)
+             VALUES (999, 'future', '2100-01-01T00:00:00Z', '0')",
+            [],
+        )
+        .unwrap();
     let opened = Store::open(&path);
     std::fs::remove_file(&path).unwrap();
     assert!(opened.is_err());

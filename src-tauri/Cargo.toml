@@ -17,6 +17,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 rand = "0.9"
 chrono = "0.4"
-rusqlite = { version = "0.40.2", features = ["bundled"] }
+rusqlite = { version = "0.39", features = ["bundled"] }
 sysinfo = { version = "0.38.4", default-features = false, features = ["system"] }
 ureq = "3.4.2"
+refinery = { version = "0.9", features = ["rusqlite"] }
