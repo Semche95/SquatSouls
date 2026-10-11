@@ -2,23 +2,24 @@ import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
 import { isCount, newId, sameName } from './configDraft.js';
 
 // Texte partagé entre utilisateurs : un jeu (nom et événements) ou la liste des exercices, sans id,
-// en JSON compressé (deflate) puis encodé en base64, précédé d'un court identifiant qui donne la version
-// du format et le type de contenu (`squatsouls/v1/game/sekiro:`, `squatsouls/v1/exercises:`).
+// en JSON compressé (deflate) puis encodé en base64, précédé d'un court identifiant qui donne le type de
+// contenu (`squatsouls/game/sekiro:`, `squatsouls/exercises:`). La version du format est dans le JSON compressé.
 const MARK = 'squatsouls';
-const VERSION = 'v1';
+const VERSION = 1;
 const GAME = 'game';
 const EXERCISES = 'exercises';
 
 // Lecture du contenu selon la version du format qui l'a écrit. Changer le format, c'est passer à une
 // nouvelle version et lui ajouter un lecteur, en gardant ceux des précédentes pour importer leurs textes.
 const READERS = {
-  v1: (payload) => JSON.parse(strFromU8(inflateSync(Uint8Array.from(atob(payload), (c) => c.charCodeAt(0))))),
+  1: (data) => data,
 };
 
 const isText = (v) => typeof v === 'string' && v.trim() !== '';
 
 function share(kind, data, id) {
-  return `${MARK}/${VERSION}/${id ? `${kind}/${id}` : kind}:` + btoa(String.fromCharCode(...deflateSync(strToU8(JSON.stringify(data)))));
+  const payload = JSON.stringify({ version: VERSION, ...data });
+  return `${MARK}/${id ? `${kind}/${id}` : kind}:` + btoa(String.fromCharCode(...deflateSync(strToU8(payload))));
 }
 
 // Version, type et contenu d'un texte partagé (vide si ce n'en est pas un, contenu absent si la version
@@ -26,9 +27,10 @@ function share(kind, data, id) {
 // absent du base64.
 export function unpack(text) {
   const at = text.lastIndexOf(':');
-  const [mark, version, kind] = text.slice(0, at).trim().split('/');
+  const [mark, kind] = text.slice(0, at).trim().split('/');
   if (at < 0 || mark !== MARK) return {};
-  return { version, kind, data: READERS[version]?.(text.slice(at + 1)) };
+  const { version, ...data } = JSON.parse(strFromU8(inflateSync(Uint8Array.from(atob(text.slice(at + 1)), (c) => c.charCodeAt(0)))));
+  return { version, kind, data: READERS[version]?.(data) };
 }
 
 // Messages d'import par type : texte invalide, ou texte de ce type collé dans l'import de l'autre type.

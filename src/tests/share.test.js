@@ -1,3 +1,4 @@
+import { deflateSync, strToU8 } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { importGame, mergeExercises, parseExercises, parseGame, shareExercises, shareGame, unpack } from '../share.js';
 import { config } from './app.js';
@@ -10,7 +11,7 @@ const exercises = [
 describe('partage d\'un jeu', () => {
   it('partage le nom et les événements sans id ni exercices, puis les relit', () => {
     const text = shareGame(config.games[0]);
-    expect(text).toMatch(/^squatsouls\/v1\/game\/elden-ring:/);
+    expect(text).toMatch(/^squatsouls\/game\/elden-ring:/);
     expect(JSON.stringify(unpack(text).data)).not.toContain('"id"');
     expect(parseGame(text, 3)).toEqual({
       name: 'Elden Ring',
@@ -44,7 +45,9 @@ describe('partage d\'un jeu', () => {
   });
 
   it('demande une mise à jour pour un texte d\'une version inconnue du format', () => {
-    const text = shareGame(config.games[0]).replace('/v1/', '/v2/');
+    const shared = shareGame(config.games[0]);
+    const payload = JSON.stringify({ ...unpack(shared).data, version: 2 });
+    const text = shared.slice(0, shared.indexOf(':') + 1) + btoa(String.fromCharCode(...deflateSync(strToU8(payload))));
     expect(() => parseGame(text, 3)).toThrow('Ce texte vient d\'une version plus récente de SquatSouls : la mettre à jour pour l\'importer.');
   });
 
@@ -61,7 +64,7 @@ describe('partage d\'un jeu', () => {
 describe('partage des exercices', () => {
   it('partage les exercices sans id, avec leur pause propre, puis les relit', () => {
     const text = shareExercises(exercises);
-    expect(text).toMatch(/^squatsouls\/v1\/exercises:/);
+    expect(text).toMatch(/^squatsouls\/exercises:/);
     expect(JSON.stringify(unpack(text).data)).not.toContain('"id"');
     expect(JSON.stringify(unpack(text).data)).toContain('"pause":90');
     expect(parseExercises(text)).toEqual(exercises.map(({ id, ...ex }) => ex));
