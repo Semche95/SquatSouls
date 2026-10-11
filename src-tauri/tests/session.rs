@@ -83,6 +83,24 @@ fn each_exercise_comes_out_once_per_round() {
 }
 
 #[test]
+fn a_new_round_does_not_start_with_the_last_set() {
+    let cfg = default_config();
+    let mut s = Session::new(0);
+    let mut r = rng();
+    let mut last: Vec<String> = Vec::new();
+    for _ in 0..200 {
+        let event = if last.len() == 1 { "boss" } else { "repos" };
+        let d = s.draw(&cfg, "ds3", event, &mut r).unwrap();
+        let ids: Vec<String> = d.items.into_iter().map(|it| it.exercise_id).collect();
+        assert!(
+            ids.iter().all(|id| !last.contains(id)),
+            "un exercice de la série précédente ne ressort pas aussitôt"
+        );
+        last = ids;
+    }
+}
+
+#[test]
 fn a_draw_across_two_rounds_stays_distinct() {
     let cfg = default_config();
     let n = cfg.exercises.len();

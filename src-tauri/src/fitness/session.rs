@@ -152,6 +152,8 @@ pub struct Session {
     skipped: Vec<Skipped>,
     /// Exercices pas encore sortis dans le tour en cours : chacun sort une fois avant qu'un autre revienne.
     bag: Vec<String>,
+    /// Exercices de la dernière série tirée, que le tour suivant ne reprend pas aussitôt.
+    last: Vec<String>,
     /// Exercices des séries annulées, par jeu et événement : le prochain déclenchement les redonne.
     reserved: HashMap<(String, String), Vec<DrawItem>>,
     next_id: u64,
@@ -230,12 +232,14 @@ impl Session {
             drawn: items,
         };
         if !capped {
+            self.last = draw.items.iter().map(|it| it.exercise_id.clone()).collect();
             self.pending.push(draw.clone());
         }
         Ok(draw)
     }
 
     /// Tire `n` exercices distincts dans le tour en cours, en commençant un nouveau tour quand il est épuisé.
+    /// Un exercice de la dernière série ne ressort pas aussitôt, sauf s'il ne reste que lui à tirer.
     fn pick<'a, R: Rng + ?Sized>(
         &mut self,
         config: &'a Config,
@@ -251,9 +255,13 @@ impl Session {
                 self.bag = config.exercises.iter().map(|ex| ex.id.clone()).collect();
                 continue;
             }
-            let id = self
-                .bag
-                .swap_remove(candidates[rng.random_range(0..candidates.len())]);
+            let fresh: Vec<usize> = candidates
+                .iter()
+                .copied()
+                .filter(|&i| !self.last.contains(&self.bag[i]))
+                .collect();
+            let pool = if fresh.is_empty() { &candidates } else { &fresh };
+            let id = self.bag.swap_remove(pool[rng.random_range(0..pool.len())]);
             picks.extend(config.exercises.iter().find(|ex| ex.id == id));
         }
         picks
