@@ -398,24 +398,17 @@
           "jokers": 1
         },
         {
-          "id": "legendaire",
-          "name": "Objet légendaire obtenu",
-          "draws": 1,
-          "maxPerSession": 20,
-          "jokers": 0
-        },
-        {
-          "id": "sanctuaire-defi",
-          "name": "Sanctuaire de défi terminé",
+          "id": "mini-boss",
+          "name": "Mini-boss vaincu",
           "draws": 1,
           "maxPerSession": 10,
           "jokers": 0
         },
         {
-          "id": "sanctuaire-risque",
-          "name": "Sanctuaire à risque activé (cupidité ou malédiction)",
+          "id": "legendaire",
+          "name": "Élément légendaire obtenu (objet ou amélioration)",
           "draws": 1,
-          "maxPerSession": 5,
+          "maxPerSession": 10,
           "jokers": 0
         },
         {
