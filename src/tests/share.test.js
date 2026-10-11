@@ -10,7 +10,8 @@ const exercises = [
 describe('partage d\'un jeu', () => {
   it('partage le nom et les événements sans id ni exercices, puis les relit', () => {
     const text = shareGame(config.games[0]);
-    expect(unpack(text)).not.toContain('"id"');
+    expect(text).toMatch(/^squatsouls\/v1\/game\/elden-ring:/);
+    expect(JSON.stringify(unpack(text).data)).not.toContain('"id"');
     expect(parseGame(text, 3)).toEqual({
       name: 'Elden Ring',
       events: [
@@ -42,6 +43,11 @@ describe('partage d\'un jeu', () => {
     expect(() => parseGame(shareExercises(exercises), 3)).toThrow('Ce texte partage des exercices : l\'importer depuis l\'onglet Exercices, avec Importer.');
   });
 
+  it('demande une mise à jour pour un texte d\'une version inconnue du format', () => {
+    const text = shareGame(config.games[0]).replace('/v1/', '/v2/');
+    expect(() => parseGame(text, 3)).toThrow('Ce texte vient d\'une version plus récente de SquatSouls : la mettre à jour pour l\'importer.');
+  });
+
   it('remplace le jeu du même nom en gardant son id, sinon l\'ajoute', () => {
     const events = [{ id: 'feu', name: 'Feu', draws: 1, jokers: 0 }];
     expect(importGame(config.games, { name: ' sekiro ', events }).map((g) => [g.id, g.events])).toEqual([
@@ -55,11 +61,13 @@ describe('partage d\'un jeu', () => {
 describe('partage des exercices', () => {
   it('partage les exercices sans id, avec leur pause propre, puis les relit', () => {
     const text = shareExercises(exercises);
-    expect(unpack(text)).not.toContain('"id"');
-    expect(unpack(text)).toContain('"pause":90');
+    expect(text).toMatch(/^squatsouls\/v1\/exercises:/);
+    expect(JSON.stringify(unpack(text).data)).not.toContain('"id"');
+    expect(JSON.stringify(unpack(text).data)).toContain('"pause":90');
     expect(parseExercises(text)).toEqual(exercises.map(({ id, ...ex }) => ex));
     // Les espaces et retours à la ligne ajoutés par une messagerie sont ignorés.
-    expect(parseExercises(` ${text.slice(0, 10)}\n${text.slice(10)} `)).toEqual(parseExercises(text));
+    const cut = text.indexOf(':') + 10;
+    expect(parseExercises(` ${text.slice(0, cut)}\n${text.slice(cut)} `)).toEqual(parseExercises(text));
   });
 
   it('refuse un texte qui n\'est pas une liste d\'exercices valide', () => {
