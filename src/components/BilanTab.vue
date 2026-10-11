@@ -2,15 +2,19 @@
 import { computed, onMounted, ref } from 'vue';
 import { formatDay, formatDuration, formatTime, plural } from '../format.js';
 import { useApi } from '../composables/useApi.js';
+import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import { useKeydown } from '../composables/useKeydown.js';
 
 const { call } = useApi();
+const { config } = useConfig();
 const { session } = useSession();
 
 const history = ref([]);
 // Historique complet, affiché en grand par-dessus le Bilan (null quand il est fermé).
 const fullHistory = ref(null);
+// Jeu fixé au premier événement de la séance, absent avant.
+const gameName = computed(() => config.value?.games.find((g) => g.id === session.value.gameId)?.name);
 const jokersSpent = computed(() => session.value.skipped.reduce((sum, k) => sum + k.jokers, 0));
 
 async function openFullHistory() {
@@ -39,7 +43,7 @@ onMounted(async () => {
     <section class="group current">
       <header class="group-head">
         <h2 class="group-title">Séance actuelle</h2>
-        <span class="muted">en cours depuis {{ formatTime(session.startedAt) }}</span>
+        <span class="muted"><template v-if="gameName">{{ gameName }} · </template>en cours depuis {{ formatTime(session.startedAt) }}</span>
       </header>
       <p v-if="!session.sets" class="empty">Aucune série faite pendant cette séance.</p>
       <div v-else class="session-detail">

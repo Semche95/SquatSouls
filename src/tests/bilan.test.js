@@ -7,6 +7,7 @@ describe('bilan', () => {
   it('charge l\'historique des 7 derniers jours', async () => {
     setup({
       get_session: emptySession({
+        gameId: 'er',
         startedAt: 0,
         sets: 1,
         totals: [{ exercise: 'Squats', unit: 'reps', sets: 1, amount: 10 }],
@@ -28,6 +29,7 @@ describe('bilan', () => {
     await w.findAll('.tabs button')[1].trigger('click');
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('get_history', { days: 7 });
+    expect(w.find('.current .group-head').text()).toContain('Elden Ring · en cours depuis');
     expect(w.find('.totals').text()).toContain('10 reps');
     const days = w.findAll('.days li');
     expect(days[0].text()).toContain('repos');
