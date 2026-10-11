@@ -9,8 +9,10 @@ use rusqlite::{params, Connection, Result, Transaction};
 use std::collections::HashMap;
 use std::path::Path;
 
-const SCHEMA: &str = "
-PRAGMA foreign_keys = ON;
+/// Migrations du schéma, dans l'ordre : `user_version` retient combien la base en a reçu.
+/// Une migration publiée ne change plus, toute évolution s'ajoute à la fin.
+/// La première crée le schéma sans écraser celui d'une base antérieure à cette numérotation.
+const MIGRATIONS: &[&str] = &["
 CREATE TABLE IF NOT EXISTS exercises (
     id TEXT PRIMARY KEY,
     position INTEGER NOT NULL,
@@ -55,7 +57,7 @@ CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
-";
+"];
 
 const LAST_GAME: &str = "last_game";
 const PAUSE: &str = "pause";
@@ -73,18 +75,10 @@ impl Store {
         Self::init(Connection::open_in_memory()?)
     }
 
-    /// Crée les tables au besoin et remplit une base neuve avec la configuration par défaut.
-    fn init(conn: Connection) -> Result<Self> {
-        conn.execute_batch(SCHEMA)?;
-        // Base créée avant les pauses par exercice : la colonne est ajoutée en place.
-        let has_pause: bool = conn.query_row(
-            "SELECT EXISTS (SELECT 1 FROM pragma_table_info('exercises') WHERE name = 'pause')",
-            [],
-            |r| r.get(0),
-        )?;
-        if !has_pause {
-            conn.execute_batch("ALTER TABLE exercises ADD COLUMN pause INTEGER")?;
-        }
+    /// Met le schéma à jour et remplit une base neuve avec la configuration par défaut.
+    fn init(mut conn: Connection) -> Result<Self> {
+        conn.execute_batch("PRAGMA foreign_keys = ON")?;
+        migrate(&mut conn)?;
         let mut store = Store { conn };
         let empty: bool =
             store
@@ -322,6 +316,27 @@ impl Store {
             other => other.map(Some),
         }
     }
+}
+
+/// Applique dans une transaction les migrations que la base n'a pas encore reçues,
+/// et refuse une base au schéma inconnu, venue d'une version plus récente de l'appli.
+fn migrate(conn: &mut Connection) -> Result<()> {
+    let latest = MIGRATIONS.len() as i64;
+    let version: i64 = conn.query_row("PRAGMA user_version", [], |r| r.get(0))?;
+    if !(0..=latest).contains(&version) {
+        return Err(rusqlite::Error::SqliteFailure(
+            rusqlite::ffi::Error::new(rusqlite::ffi::SQLITE_ERROR),
+            Some(format!(
+                "base au schéma {version}, inconnu de cette version de l'appli (schéma {latest}) : mettre à jour Squat Souls"
+            )),
+        ));
+    }
+    let tx = conn.transaction()?;
+    for migration in &MIGRATIONS[version as usize..] {
+        tx.execute_batch(migration)?;
+    }
+    tx.pragma_update(None, "user_version", latest)?;
+    tx.commit()
 }
 
 fn set_setting(conn: &Connection, key: &str, value: &str) -> Result<()> {

@@ -45,21 +45,45 @@ fn pauses_are_saved() {
     assert_eq!(s.config().unwrap(), cfg);
 }
 
+/// Chemin d'une base temporaire propre au test `name`, effacée au préalable.
+fn temp_db(name: &str) -> std::path::PathBuf {
+    let path = std::env::temp_dir().join(format!("squatsouls-{name}-{}.db", std::process::id()));
+    let _ = std::fs::remove_file(&path);
+    path
+}
+
+fn set_user_version(path: &std::path::Path, version: i64) {
+    rusqlite::Connection::open(path)
+        .unwrap()
+        .pragma_update(None, "user_version", version)
+        .unwrap();
+}
+
 #[test]
-fn older_database_gets_pauses() {
-    let path = std::env::temp_dir().join(format!("squatsouls-{}.db", std::process::id()));
-    let conn = rusqlite::Connection::open(&path).unwrap();
-    conn.execute_batch(
-        "CREATE TABLE exercises (id TEXT PRIMARY KEY, position INTEGER NOT NULL, name TEXT NOT NULL,
-         unit TEXT NOT NULL, min INTEGER NOT NULL, max INTEGER NOT NULL);
-         INSERT INTO exercises VALUES ('squats', 0, 'Squats', 'rép.', 10, 15);",
-    )
-    .unwrap();
-    drop(conn);
-    let cfg = Store::open(&path).unwrap().config().unwrap();
+fn database_without_schema_version_keeps_its_data() {
+    let path = temp_db("unversioned");
+    let mut cfg = Store::open(&path).unwrap().config().unwrap();
+    cfg.games.truncate(1);
+    Store::open(&path).unwrap().save_config(&cfg).unwrap();
+    set_user_version(&path, 0);
+    let reopened = Store::open(&path).unwrap().config().unwrap();
+    let version: i64 = rusqlite::Connection::open(&path)
+        .unwrap()
+        .query_row("PRAGMA user_version", [], |r| r.get(0))
+        .unwrap();
     std::fs::remove_file(&path).unwrap();
-    assert_eq!(cfg.pause, DEFAULT_PAUSE);
-    assert_eq!(cfg.exercises[0].pause, None);
+    assert_eq!(reopened, cfg);
+    assert!(version > 0);
+}
+
+#[test]
+fn newer_database_is_refused() {
+    let path = temp_db("newer");
+    Store::open(&path).unwrap();
+    set_user_version(&path, i64::from(i32::MAX));
+    let opened = Store::open(&path);
+    std::fs::remove_file(&path).unwrap();
+    assert!(opened.is_err());
 }
 
 #[test]
