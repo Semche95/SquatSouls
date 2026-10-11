@@ -1,21 +1,21 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Souls Fit",
+  "productName": "Squat Souls",
   "version": "0.1.0",
-  "identifier": "com.semche.soulsfit",
+  "identifier": "com.semche.squatsouls",
   "build": {
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run build",
+    "beforeBuildCommand": "pnpm build",
     "frontendDist": "../dist"
   },
   "app": {
     "windows": [
       {
-        "title": "Souls Fit",
-        "width": 560,
-        "height": 760,
-        "minWidth": 440,
+        "title": "Squat Souls",
+        "width": 1100,
+        "height": 800,
+        "minWidth": 480,
         "minHeight": 560
       }
     ],

@@ -1,7 +1,10 @@
 mod fitness;
 
 use chrono::Local;
-use fitness::{append_history, default_config, read_history, Config, DayTotals, Draw, Session, SessionView};
+use fitness::{
+    append_history, append_session_end, default_config, read_full_history, read_history,
+    remove_session, Config, DayTotals, Draw, Session, SessionView,
+};
 use serde::Serialize;
 use std::fs;
 use std::io::ErrorKind;
@@ -15,6 +18,8 @@ struct AppState {
     config_error: Option<String>,
     config_path: PathBuf,
     history_path: PathBuf,
+    /// Fichier qui garde le dernier jeu choisi d'un lancement à l'autre.
+    last_game_path: PathBuf,
     session: Session,
 }
 
@@ -24,8 +29,6 @@ type Shared<'a> = State<'a, Mutex<AppState>>;
 #[serde(rename_all = "camelCase")]
 struct ConfigView {
     config: Config,
-    json: String,
-    path: String,
     error: Option<String>,
 }
 
@@ -33,8 +36,6 @@ impl AppState {
     fn config_view(&self) -> ConfigView {
         ConfigView {
             config: self.config.clone(),
-            json: to_json(&self.config),
-            path: self.config_path.display().to_string(),
             error: self.config_error.clone(),
         }
     }
@@ -59,7 +60,9 @@ fn now() -> i64 {
 }
 
 fn lock<'a>(state: &'a Shared) -> Result<MutexGuard<'a, AppState>, String> {
-    state.lock().map_err(|_| "État de l'application inaccessible.".to_string())
+    state
+        .lock()
+        .map_err(|_| "État de l'application inaccessible.".to_string())
 }
 
 fn load_config(path: &Path) -> (Config, Option<String>) {
@@ -72,7 +75,10 @@ fn load_config(path: &Path) -> (Config, Option<String>) {
                 Ok(config) => (config, None),
                 Err(e) => (
                     default_config(),
-                    Some(format!("{} ignoré, configuration par défaut utilisée. {e}", path.display())),
+                    Some(format!(
+                        "{} ignoré, configuration par défaut utilisée. {e}",
+                        path.display()
+                    )),
                 ),
             }
         }
@@ -81,7 +87,10 @@ fn load_config(path: &Path) -> (Config, Option<String>) {
             let _ = fs::write(path, to_json(&config));
             (config, None)
         }
-        Err(e) => (default_config(), Some(format!("Lecture de {} impossible : {e}", path.display()))),
+        Err(e) => (
+            default_config(),
+            Some(format!("Lecture de {} impossible : {e}", path.display())),
+        ),
     }
 }
 
@@ -91,21 +100,17 @@ fn get_config(state: Shared) -> Result<ConfigView, String> {
 }
 
 #[tauri::command]
-fn save_config(state: Shared, json: String) -> Result<ConfigView, String> {
-    let config: Config = serde_json::from_str(&json).map_err(|e| format!("JSON invalide : {e}"))?;
+fn save_config(state: Shared, config: Config) -> Result<ConfigView, String> {
     config.validate()?;
     lock(&state)?.store_config(config)
 }
 
 #[tauri::command]
-fn reset_config(state: Shared) -> Result<ConfigView, String> {
-    lock(&state)?.store_config(default_config())
-}
-
-#[tauri::command]
 fn draw(state: Shared, game_id: String, event_id: String) -> Result<Draw, String> {
     let mut guard = lock(&state)?;
-    let AppState { config, session, .. } = &mut *guard;
+    let AppState {
+        config, session, ..
+    } = &mut *guard;
     session.draw(config, &game_id, &event_id, &mut rand::rng())
 }
 
@@ -127,6 +132,13 @@ fn dismiss(state: Shared, draw_id: u64) -> Result<SessionView, String> {
 }
 
 #[tauri::command]
+fn use_joker(state: Shared, draw_id: u64) -> Result<SessionView, String> {
+    let mut s = lock(&state)?;
+    s.session.use_joker(draw_id, now())?;
+    Ok(s.session.view())
+}
+
+#[tauri::command]
 fn get_session(state: Shared) -> Result<SessionView, String> {
     Ok(lock(&state)?.session.view())
 }
@@ -134,14 +146,49 @@ fn get_session(state: Shared) -> Result<SessionView, String> {
 #[tauri::command]
 fn new_session(state: Shared) -> Result<SessionView, String> {
     let mut s = lock(&state)?;
+    if s.session.view().sets > 0 {
+        if let Err(e) = append_session_end(&s.history_path, s.session.started_at, now()) {
+            eprintln!("Fin de séance non enregistrée : {e}");
+        }
+    }
     s.session = Session::new(now());
     Ok(s.session.view())
 }
 
 #[tauri::command]
+fn cancel_session(state: Shared) -> Result<SessionView, String> {
+    let mut s = lock(&state)?;
+    remove_session(&s.history_path, s.session.started_at)
+        .map_err(|e| format!("Historique non modifié : {e}"))?;
+    s.session = Session::new(now());
+    Ok(s.session.view())
+}
+
+#[tauri::command]
+fn get_last_game(state: Shared) -> Result<String, String> {
+    let s = lock(&state)?;
+    Ok(fs::read_to_string(&s.last_game_path)
+        .map(|id| id.trim().to_string())
+        .unwrap_or_default())
+}
+
+#[tauri::command]
+fn set_last_game(state: Shared, game_id: String) -> Result<(), String> {
+    let s = lock(&state)?;
+    fs::write(&s.last_game_path, game_id).map_err(|e| format!("Dernier jeu non enregistré : {e}"))
+}
+
+#[tauri::command]
 fn get_history(state: Shared, days: u32) -> Result<Vec<DayTotals>, String> {
     let s = lock(&state)?;
-    read_history(&s.history_path, days, Local::now().date_naive()).map_err(|e| format!("Historique illisible : {e}"))
+    read_history(&s.history_path, days, Local::now().date_naive())
+        .map_err(|e| format!("Historique illisible : {e}"))
+}
+
+#[tauri::command]
+fn get_full_history(state: Shared) -> Result<Vec<DayTotals>, String> {
+    let s = lock(&state)?;
+    read_full_history(&s.history_path).map_err(|e| format!("Historique illisible : {e}"))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -160,6 +207,7 @@ pub fn run() {
                 config_error,
                 config_path,
                 history_path: data_dir.join("history.jsonl"),
+                last_game_path: data_dir.join("last_game"),
                 session: Session::new(now()),
             }));
             Ok(())
@@ -167,14 +215,18 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_config,
             save_config,
-            reset_config,
             draw,
             complete,
             dismiss,
+            use_joker,
             get_session,
             new_session,
-            get_history
+            cancel_session,
+            get_last_game,
+            set_last_game,
+            get_history,
+            get_full_history
         ])
         .run(tauri::generate_context!())
-        .expect("erreur au lancement de Souls Fit");
+        .expect("erreur au lancement de Squat Souls");
 }

@@ -1,11 +1,11 @@
 [package]
-name = "souls-fit"
+name = "squat-souls"
 version = "0.1.0"
 description = "Tire un exercice et un nombre de répétitions selon les événements des jeux"
 edition = "2021"
 
 [lib]
-name = "souls_fit_lib"
+name = "squat_souls_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

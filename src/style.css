@@ -30,7 +30,7 @@ body {
 
 button,
 select,
-textarea {
+input {
   font: inherit;
   color: inherit;
 }
@@ -51,14 +51,17 @@ button:active {
 }
 
 .app {
-  max-width: 720px;
+  max-width: 1280px;
+  min-height: 100vh;
   margin: 0 auto;
-  padding: 18px 16px 32px;
+  padding: 18px 16px 16px;
+  display: flex;
+  flex-direction: column;
 }
 
 .top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
@@ -73,7 +76,35 @@ button:active {
   color: var(--gold);
 }
 
-.tabs {
+/* Prend la place laissée par les onglets : un slogan long passe à la ligne au lieu de les pousser. */
+.brand {
+  flex: 1 1 0;
+  min-width: 12rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.splash {
+  margin: 0;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--muted);
+  animation: splash-in 0.8s ease-out;
+}
+@keyframes splash-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .splash {
+    animation: none;
+  }
+}
+
+.tabs,
+.subtabs {
   display: flex;
   gap: 4px;
   background: var(--panel);
@@ -81,13 +112,20 @@ button:active {
   border-radius: 10px;
   padding: 3px;
 }
-.tabs button {
+.tabs button,
+.subtabs button {
   border: none;
   background: transparent;
   padding: 6px 12px;
   color: var(--muted);
 }
-.tabs button.active {
+.tabs button:hover:not(.active),
+.subtabs button:hover:not(.active) {
+  background: var(--gold-soft);
+  color: var(--text);
+}
+.tabs button.active,
+.subtabs button.active {
   background: var(--panel-2);
   color: var(--text);
 }
@@ -104,6 +142,7 @@ button:active {
 }
 
 .panel {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -160,6 +199,35 @@ h2 {
 .event:hover {
   background: var(--gold-soft);
 }
+.event {
+  position: relative;
+  overflow: hidden;
+}
+/* Jauge de la limite par séance, en bas de la tuile. */
+.gauge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--line);
+}
+.gauge > span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  transition: width 0.2s;
+}
+.stage,
+.stage-current,
+.queue {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hud {
+  display: none;
+}
 .event-name {
   flex: 1;
   line-height: 1.25;
@@ -194,6 +262,27 @@ kbd.dark {
   border: 1px solid;
   font-size: 0.9rem;
 }
+.banner.confirm {
+  border-color: var(--red);
+  display: grid;
+  gap: 10px;
+}
+.banner.confirm.validate {
+  border-color: var(--gold);
+}
+.banner.confirm p,
+.banner.confirm .card-actions {
+  margin: 0;
+}
+/* Poussé en bas de la fenêtre, sous le contenu de l'onglet Jouer. */
+.session-actions {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+}
+.session-actions > button {
+  flex: 1;
+}
 .banner.error {
   border-color: var(--red);
   background: rgba(194, 91, 79, 0.12);
@@ -204,9 +293,16 @@ kbd.dark {
   background: var(--panel);
   color: var(--muted);
 }
+/* Confirmation flottante : passe par-dessus le contenu sans le décaler. */
 .banner.ok {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
   border-color: var(--green);
-  background: rgba(127, 166, 106, 0.12);
+  background: linear-gradient(rgba(127, 166, 106, 0.12), rgba(127, 166, 106, 0.12)), var(--bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 .link {
   border: none;
@@ -232,6 +328,26 @@ kbd.dark {
 }
 .pending h2 {
   margin-bottom: 0;
+}
+.jokers {
+  margin-left: 8px;
+  color: var(--gold);
+  font-size: 0.85rem;
+  font-weight: normal;
+}
+.jokers.none {
+  color: var(--muted);
+}
+.reward-tag {
+  display: block;
+  color: var(--gold);
+  font-size: 0.8rem;
+}
+.reward {
+  margin: 0;
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 1.6rem;
+  color: var(--gold);
 }
 .card {
   background: var(--panel);
@@ -298,6 +414,13 @@ kbd.dark {
 .primary:hover {
   background: #d8b46c;
 }
+.primary:disabled {
+  opacity: 0.45;
+  cursor: default;
+  background: var(--gold);
+  border-color: var(--gold);
+  transform: none;
+}
 .ghost {
   background: transparent;
 }
@@ -305,42 +428,101 @@ kbd.dark {
   border-color: var(--red);
   color: #f0b2a9;
 }
-.wide {
-  width: 100%;
-  margin-top: 10px;
+.danger:disabled {
+  opacity: 0.4;
+  cursor: default;
+  border-color: var(--red);
+  transform: none;
 }
-
-.section-head {
+/* Historique complet : la carte occupe toute la fenêtre, en plus grand. */
+.group.full {
+  position: fixed;
+  inset: 16px;
+  z-index: 10;
+  overflow-y: auto;
+  font-size: 1.15rem;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.6);
+}
+.group.full .group-head {
+  position: sticky;
+  top: -14px;
+  margin: -14px -14px 0;
+  padding: 14px;
+  background: var(--panel);
+}
+.group.full .chip {
+  font-size: 0.95rem;
+}
+.group.full .day-games {
+  font-size: 1rem;
+}
+/* Bilan : chaque bloc est une carte, la séance actuelle est mise en avant. */
+.group {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-
-.totals {
-  width: 100%;
-  border-collapse: collapse;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  overflow: hidden;
 }
-.totals th,
-.totals td {
-  padding: 9px 12px;
-  text-align: left;
-  border-bottom: 1px solid var(--line);
+.group.current {
+  border-color: var(--gold);
+  box-shadow: inset 4px 0 0 var(--gold);
 }
-.totals th {
-  font-weight: 500;
-  color: var(--muted);
-  font-size: 0.8rem;
+.group-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
 }
-.totals tr:last-child td {
+.group.current .group-title {
+  color: var(--gold);
+}
+.group .log li:last-child,
+.group .days li:last-child {
   border-bottom: none;
 }
-.totals td:nth-child(2),
-.totals td:nth-child(3) {
+.group-title {
+  margin: 0;
+  font-size: 1.15rem;
+  text-transform: none;
+  letter-spacing: 0;
+  color: inherit;
+}
+
+/* Totaux de la séance : une tuile par exercice. */
+.totals {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.totals li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.total-amount {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 2rem;
+  line-height: 1.1;
+  color: var(--gold);
   font-variant-numeric: tabular-nums;
+}
+.total-amount small {
+  font-family: "Inter", "Noto Sans", system-ui, sans-serif;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.totals .muted {
+  font-size: 0.8rem;
 }
 
 .log,
@@ -363,7 +545,7 @@ kbd.dark {
 .days li {
   display: flex;
   gap: 12px;
-  align-items: center;
+  align-items: baseline;
   padding: 8px 4px;
   border-bottom: 1px solid var(--line);
 }
@@ -383,6 +565,20 @@ kbd.dark {
   flex-wrap: wrap;
   gap: 6px;
 }
+.day-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.day-session {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.day-games {
+  color: var(--gold);
+  font-size: 0.85rem;
+}
 .chip {
   background: var(--gold-soft);
   border: 1px solid rgba(201, 164, 92, 0.3);
@@ -391,22 +587,162 @@ kbd.dark {
   font-size: 0.8rem;
 }
 
-.config textarea {
+.config input,
+.config select {
+  font: inherit;
+  color: inherit;
   width: 100%;
-  min-height: 420px;
-  resize: vertical;
-  background: var(--panel);
+  background: var(--panel-2);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 12px;
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.82rem;
-  line-height: 1.45;
-  tab-size: 2;
+  border-radius: 8px;
+  padding: 6px 8px;
 }
-.config textarea:focus {
+.config input:focus,
+.config select:focus {
   outline: none;
   border-color: var(--gold);
+}
+.config .field input,
+.config .field select {
+  flex: 1;
+}
+.config .field button {
+  flex: none;
+}
+.config button:disabled {
+  opacity: 0.4;
+  cursor: default;
+  transform: none;
+}
+.icon {
+  padding: 4px 10px;
+}
+.cfg-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.cfg-table th {
+  text-align: left;
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding: 0 8px 4px;
+}
+.cfg-table td {
+  padding: 5px 8px;
+}
+.cfg-table :is(th, td):first-child {
+  padding-left: 0;
+}
+.cfg-table td:last-child,
+.cfg-table th:last-child {
+  width: 1%;
+}
+/* Configuration : jeux et exercices sur des sous-onglets séparés. */
+.subtabs {
+  align-self: flex-start;
+}
+.cfg-exercises {
+  max-width: 640px;
+}
+.cfg-unit {
+  width: 30%;
+}
+.cfg-table input[type="number"] {
+  width: 5.5em;
+}
+/* Configuration : sections et événements à plat, sans cadre de carte. */
+.config .group {
+  padding: 0;
+  background: none;
+  border: none;
+}
+.config .group > button,
+.cfg-game > button {
+  align-self: flex-start;
+}
+.config .group-head {
+  justify-content: flex-start;
+}
+/* Jeux : liste à gauche, jeu sélectionné détaillé à droite. */
+.cfg-games {
+  display: grid;
+  grid-template-columns: minmax(140px, 200px) 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.cfg-game-list {
+  flex-direction: column;
+}
+.cfg-game-list button {
+  text-align: left;
+}
+.cfg-game {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.cfg-event {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.cfg-event[open] > * + * {
+  margin-top: 12px;
+}
+.cfg-event summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+}
+.cfg-event summary::-webkit-details-marker {
+  display: none;
+}
+.cfg-event summary:hover strong {
+  color: var(--gold);
+}
+.cfg-event-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.cfg-event-head strong::before {
+  content: "▸";
+  display: inline-block;
+  width: 1em;
+  color: var(--muted);
+  transition: transform 0.12s;
+}
+.cfg-event[open] .cfg-event-head strong::before {
+  transform: rotate(90deg);
+}
+.cfg-event-head .muted {
+  margin-left: auto;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.cfg-params {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.cfg-params label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.cfg-params input {
+  color: var(--text);
+}
+.cfg-actions {
+  position: sticky;
+  bottom: 0;
+  padding: 10px 0;
+  background: var(--bg);
 }
 code {
   font-family: "JetBrains Mono", ui-monospace, monospace;
@@ -418,4 +754,171 @@ code {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.event:disabled {
+  opacity: 0.45;
+  cursor: default;
+  background: var(--panel);
+}
+
+
+/* Fenêtre large : barre latérale (titre, onglets, état de la séance) et contenu à pleine largeur. */
+@media (min-width: 900px) {
+  .app {
+    max-width: 1440px;
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+    grid-auto-rows: min-content;
+    column-gap: 28px;
+    padding: 0 24px 0 0;
+  }
+  .app > :not(.top) {
+    grid-column: 2;
+  }
+  .app > :nth-child(2) {
+    margin-top: 24px;
+  }
+  .top {
+    grid-column: 1;
+    grid-row: 1 / span 10;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 28px;
+    margin: 0;
+    padding: 24px 20px;
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+  }
+  .brand {
+    flex: none;
+    min-width: 0;
+  }
+  .top h1 {
+    font-size: 1.6rem;
+  }
+  .tabs {
+    flex-direction: column;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .tabs button {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border-left: 2px solid transparent;
+    border-radius: 0 8px 8px 0;
+  }
+  .tabs button.active {
+    border-left-color: var(--gold);
+  }
+  .hud {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: auto 0 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+  .hud dt {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+  .hud dd {
+    margin: 0;
+    font-family: "Cinzel", Georgia, serif;
+    font-size: 1.8rem;
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
+  }
+  .panel {
+    padding-bottom: 24px;
+    gap: 24px;
+  }
+
+  /* Jouer : tuiles d'événements plus grandes, série en cours en grand et file à côté. */
+  .play .field {
+    max-width: 360px;
+  }
+  .events {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .event {
+    min-height: 76px;
+    padding: 14px 16px;
+    font-size: 1.05rem;
+  }
+  .stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 14px;
+  }
+  .card.current {
+    padding: 22px 26px;
+  }
+  .card.current .card-head {
+    font-size: 1rem;
+  }
+  .card.current .items {
+    gap: 14px;
+    margin: 6px 0 4px;
+  }
+  .card.current .amount {
+    font-size: 4.5rem;
+  }
+  .card.current .what strong {
+    font-size: 1.5rem;
+  }
+  .card.current .card-actions {
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .card.current .card-actions button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    padding: 11px 16px;
+    font-size: 1.05rem;
+  }
+  .queue .card {
+    padding: 10px 14px;
+  }
+  .queue .card-head {
+    margin-bottom: 4px;
+  }
+  .queue .reward {
+    font-size: 1.1rem;
+  }
+  .queue .card-actions {
+    margin-top: 8px;
+  }
+  .queue .card-actions button {
+    padding: 5px 12px;
+    font-size: 0.9rem;
+  }
+
+  /* Bilan : totaux en tuiles à côté du journal. */
+  .session-detail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 24px;
+  }
+  .totals {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  }
+  .group-head button {
+    white-space: nowrap;
+  }
+
 }

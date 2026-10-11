@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    souls_fit_lib::run()
+    squat_souls_lib::run()
 }
