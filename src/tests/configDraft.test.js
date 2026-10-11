@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { newId, normalized } from "./configDraft.js";
+import { newId, normalized } from "../configDraft.js";
 
 describe("newId", () => {
   it("dérive l'id du nom sans accents et évite les doublons", () => {

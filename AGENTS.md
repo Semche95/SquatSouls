@@ -13,6 +13,7 @@ Les règles métier sont décrites dans la section « Règles métier » de `REA
 
 - `src/` : interface Vue (`App.vue` en-tête et onglets, `components/` un composant par onglet et ses blocs, `composables/` état partagé via provide/inject, `format.js` et `configDraft.js` fonctions pures, `style.css`)
 - `src-tauri/src/` : backend Rust (`lib.rs` lancement, `commands.rs` commandes Tauri, `state.rs` état partagé et chargement de la configuration, `fitness/` logique métier : `config.rs` configuration, `session.rs` tirage et séance, `history.rs` bilan de l'historique, `store.rs` stockage SQLite)
+- `src/tests/` : tests de l'interface (Vitest), un fichier par onglet ou module ; `app.js` données et montage partagés, `setup.js` simulation du backend Tauri
 - `src-tauri/tests/` : tests du backend (tests d'intégration Cargo sur l'API publique de `fitness`), un fichier par module
 
 ## Commandes
@@ -28,6 +29,7 @@ pnpm test                   # tests interface (Vitest)
 
 - Textes de l'interface et documentation en français.
 - Un bouton désactivé doit se voir comme tel : vérifier que `style.css` lui donne un style `:disabled` (opacité réduite, pas de curseur de clic ni d'effet au survol), sans se contenter de l'attribut `disabled`.
+- Les tests ne vivent que dans `src/tests/` (interface) et `src-tauri/tests/` (backend) : aucun fichier `*.test.js` ailleurs dans `src/`, aucun module `#[cfg(test)]` dans `src-tauri/src/`.
 - Suivre la règle DRY partout (Rust, Vue, CSS, tests) : factoriser toute logique, valeur ou style dupliqué plutôt que le recopier.
 - Lancer `cargo test` après toute modification du code Rust, `pnpm test` après toute modification de `src/`.
 - Commits en Conventional Commits, une seule ligne, sans `Co-Authored-By`.

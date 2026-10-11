@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDuration, plural } from "./format.js";
+import { formatDuration, plural } from "../format.js";
 
 describe("plural", () => {
   it("accorde au-delà de un", () => {
