@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { byName, newId, normalized, numberError } from '../configDraft.js';
+import { byName, countError, newId, normalized, numberError, parseCount } from '../configDraft.js';
 
 describe('newId', () => {
   it('dérive l\'id du nom sans accents et évite les doublons', () => {
@@ -23,6 +23,21 @@ describe('normalized', () => {
     expect(normalized(cfg)).toEqual({ pause: 0, exercises: [{ min: 0, max: 5 }], games: [{ events: [{ draws: 0, jokers: 0 }] }] });
     expect(cfg.exercises[0].min).toBe('');
   });
+
+  it('garde un texte invalide pour qu\'il soit signalé', () => {
+    expect(normalized({ pause: 'abc', exercises: [], games: [] }).pause).toBe('abc');
+  });
+});
+
+describe('parseCount et countError', () => {
+  it('lit un nombre entier saisi et signale tout autre texte', () => {
+    expect(parseCount(' 12 ')).toBe(12);
+    expect(parseCount('')).toBe('');
+    expect(countError(parseCount(''))).toBe('');
+    expect(countError(parseCount('12'))).toBe('');
+    for (const text of ['abc', '-2', '1.5', '3e2']) expect(countError(parseCount(text))).toBe('il faut un nombre entier, 0 ou plus');
+    expect(countError(parseCount('99999999999'))).toBe('nombre trop grand');
+  });
 });
 
 describe('numberError', () => {
@@ -42,5 +57,6 @@ describe('numberError', () => {
     expect(numberError(cfg({ ex: { pause: -3 } }))).toBe('Squats › pause : il faut un nombre entier, 0 ou plus.');
     expect(numberError(cfg({ ev: { maxPerSession: 2.5 } }))).toBe('Elden Ring › Mort › limite par séance : il faut un nombre entier, 0 ou plus.');
     expect(numberError(cfg({ ev: { jokers: 1e10 } }))).toBe('Elden Ring › Mort › jokers gagnés : nombre trop grand.');
+    expect(numberError(cfg({ ev: { draws: 'deux' } }))).toBe('Elden Ring › Mort › exercices tirés : il faut un nombre entier, 0 ou plus.');
   });
 });

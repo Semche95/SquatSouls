@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, responses, setup, mountApp } from './app.js';
+import { config, emptySession, responses, setup, mountApp, shownTip, expectTip } from './app.js';
 import { shareExercises, shareGame } from '../share.js';
 
 describe('configuration', () => {
@@ -188,15 +188,48 @@ describe('configuration', () => {
     expect(w.find('.banner.error').text()).toContain('champ manquant');
   });
 
-  it('refuse un nombre négatif ou décimal avec un message clair', async () => {
+  it('signale un format invalide dès la saisie', async () => {
     setup();
     const w = await openConfig();
     await w.findAll('.subtabs button')[1].trigger('click');
-    await w.find('input[aria-label="Minimum"]').setValue('-2');
-    await w.find('.cfg-actions .primary').trigger('click');
-    await flushPromises();
-    expect(w.find('.banner.error').text()).toBe('Squats › minimum : il faut un nombre entier, 0 ou plus.');
-    expect(invoke).not.toHaveBeenCalledWith('save_config', expect.anything());
+    const min = w.find('input[aria-label="Minimum"]');
+    await min.trigger('focus');
+    await min.setValue('abc');
+    await vi.waitFor(() => expect(shownTip()).toBe('il faut un nombre entier, 0 ou plus'));
+    await min.trigger('blur');
+    await vi.waitFor(() => expect(shownTip()).toBeUndefined());
+    await min.trigger('mouseenter');
+    await vi.waitFor(() => expect(shownTip()).toBe('il faut un nombre entier, 0 ou plus'));
+    await min.trigger('mouseleave');
+    await min.trigger('focus');
+    expect(min.attributes('aria-invalid')).toBe('true');
+    expect(w.find('.banner.error').exists()).toBe(false);
+    await min.setValue('12');
+    expect(min.attributes('aria-invalid')).toBe('false');
+    await vi.waitFor(() => expect(shownTip()).toBeUndefined());
+  });
+
+  it('ramène à 0 un champ obligatoire vidé en le quittant', async () => {
+    setup();
+    const w = await openConfig();
+    await w.findAll('.subtabs button')[1].trigger('click');
+    const min = w.find('input[aria-label="Minimum"]');
+    await min.setValue('');
+    await min.trigger('change');
+    expect(min.element.value).toBe('0');
+  });
+
+  it('désactive l\'enregistrement tant qu\'un champ est mal rempli et en donne la raison', async () => {
+    setup();
+    const w = await openConfig();
+    await w.findAll('.subtabs button')[1].trigger('click');
+    const min = w.find('input[aria-label="Minimum"]');
+    const save = () => w.find('.cfg-actions .primary');
+    await min.setValue('-2');
+    expect(save().attributes('disabled')).toBeDefined();
+    await expectTip(save(), 'Squats › minimum : il faut un nombre entier, 0 ou plus.');
+    await min.setValue('2');
+    expect(save().attributes('disabled')).toBeUndefined();
   });
 
   describe('partage', () => {

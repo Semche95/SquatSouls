@@ -28,6 +28,8 @@ export const [provideConfig, useConfig] = defineShared(() => {
   const game = computed(() => config.value?.games.find((g) => g.id === gameId.value) ?? null);
   const editedGame = computed(() => findOr(draft.value?.games ?? [], editedGameId.value));
   const dirty = computed(() => !!draft.value && JSON.stringify(draft.value) !== JSON.stringify(config.value));
+  // Premier champ mal rempli du brouillon, qui bloque « Enregistrer » (vide si tout est valide).
+  const draftError = computed(() => (draft.value ? numberError(normalized(draft.value)) : ''));
 
   // Jeu mémorisé ou en cours supprimé : on redemande le jeu.
   watch(game, (g) => {
@@ -78,5 +80,5 @@ export const [provideConfig, useConfig] = defineShared(() => {
     }
   }
 
-  return { config, draft, configError, configMsg, notify, copy, cfgTab, editedGameId, newGame, gameId, game, editedGame, dirty, applyConfigView, store };
+  return { config, draft, configError, configMsg, notify, copy, cfgTab, editedGameId, newGame, gameId, game, editedGame, dirty, draftError, applyConfigView, store };
 });

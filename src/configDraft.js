@@ -26,10 +26,17 @@ const MAX_COUNT = 4294967295;
 
 export const isCount = (v, min) => Number.isInteger(v) && v >= min && v <= MAX_COUNT;
 
-// Le backend refuse sans explication un nombre négatif, décimal ou trop grand : on le signale avant.
-function countError(value, label) {
-  if (value === undefined || isCount(value, 0)) return '';
-  return Number.isInteger(value) && value > MAX_COUNT ? `${label} : nombre trop grand.` : `${label} : il faut un nombre entier, 0 ou plus.`;
+// Texte saisi dans un champ numérique : un nombre s'il n'a que des chiffres, sinon le texte tel quel
+// (vide, il vaut '' ; autre chose, countError le signale).
+export function parseCount(text) {
+  const t = text.trim();
+  return /^\d+$/.test(t) ? Number(t) : t;
+}
+
+// Le backend refuse sans explication un nombre négatif, décimal ou trop grand : on le signale dès la saisie.
+export function countError(value) {
+  if (value === undefined || value === '' || isCount(value, 0)) return '';
+  return Number.isInteger(value) && value > MAX_COUNT ? 'nombre trop grand' : 'il faut un nombre entier, 0 ou plus';
 }
 
 // Premier champ numérique invalide de la configuration, '' s'il n'y en a pas.
@@ -45,30 +52,27 @@ export function numberError(cfg) {
     }
   }
   for (const [value, label] of fields) {
-    const error = countError(value, label);
-    if (error) return error;
+    const error = countError(value);
+    if (error) return `${label} : ${error}.`;
   }
   return '';
 }
 
-// Nombre facultatif saisi dans un champ : vidé, la clé disparaît.
-export function setOptional(item, key, value) {
-  if (value === '') delete item[key];
-  else item[key] = Number(value);
-}
+// Un champ obligatoire vidé vaut "" : on le ramène à 0 pour que le backend le refuse proprement.
+// Un texte invalide est gardé pour que numberError le signale.
+const orZero = (v) => (v === '' || v === undefined ? 0 : v);
 
-// Un champ numérique vidé vaut "" : on le ramène à 0 pour que le backend le refuse proprement.
 export function normalized(cfg) {
   const c = clone(cfg);
-  c.pause = Number(c.pause) || 0;
+  c.pause = orZero(c.pause);
   for (const ex of c.exercises) {
-    ex.min = Number(ex.min) || 0;
-    ex.max = Number(ex.max) || 0;
+    ex.min = orZero(ex.min);
+    ex.max = orZero(ex.max);
   }
   for (const g of c.games) {
     for (const ev of g.events) {
-      ev.draws = Number(ev.draws) || 0;
-      ev.jokers = Number(ev.jokers) || 0;
+      ev.draws = orZero(ev.draws);
+      ev.jokers = orZero(ev.jokers);
     }
   }
   return c;

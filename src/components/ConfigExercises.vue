@@ -1,10 +1,11 @@
 <script setup>
 import { ref } from 'vue';
-import { newId, setOptional } from '../configDraft.js';
+import { newId } from '../configDraft.js';
 import { plural } from '../format.js';
 import { mergeExercises, parseExercises, shareExercises } from '../share.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
+import CountInput from './CountInput.vue';
 import ShareImport from './ShareImport.vue';
 
 const { config, draft, notify, copy } = useConfig();
@@ -36,7 +37,7 @@ function addExercise() {
     <ShareImport v-if="importing" :parse="parseExercises" @import="importShared" @cancel="importing = false" />
     <label class="field cfg-pause">
       <span>Pause après chaque série (s)</span>
-      <input v-model.number="draft.pause" type="number" @change="draft.pause = Number(draft.pause) || 0" min="0" />
+      <CountInput v-model="draft.pause" />
     </label>
     <table class="cfg-table">
       <thead>
@@ -46,18 +47,9 @@ function addExercise() {
         <tr v-for="(ex, i) in draft.exercises" :key="ex.id">
           <td><input v-model="ex.name" aria-label="Nom de l'exercice" /></td>
           <td class="cfg-unit"><input v-model="ex.unit" aria-label="Unité" placeholder="rép., s…" /></td>
-          <td><input v-model.number="ex.min" type="number" @change="ex.min = Number(ex.min) || 0" min="0" aria-label="Minimum" /></td>
-          <td><input v-model.number="ex.max" type="number" @change="ex.max = Number(ex.max) || 0" min="1" aria-label="Maximum" /></td>
-          <td>
-            <input
-              :value="ex.pause ?? ''"
-              type="number"
-              min="0"
-              :placeholder="String(draft.pause)"
-              aria-label="Pause"
-              @input="setOptional(ex, 'pause', $event.target.value)"
-            />
-          </td>
+          <td><CountInput v-model="ex.min" aria-label="Minimum" /></td>
+          <td><CountInput v-model="ex.max" aria-label="Maximum" /></td>
+          <td><CountInput v-model="ex.pause" optional :placeholder="String(draft.pause)" aria-label="Pause" /></td>
           <td>
             <button
               class="ghost icon"

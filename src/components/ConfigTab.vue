@@ -5,8 +5,9 @@ import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import ConfigExercises from './ConfigExercises.vue';
 import ConfigGames from './ConfigGames.vue';
+import DisabledTip from './DisabledTip.vue';
 
-const { config, draft, configError, configMsg, notify, cfgTab, newGame, dirty } = useConfig();
+const { config, draft, configError, configMsg, notify, cfgTab, newGame, dirty, draftError } = useConfig();
 const { saveNow } = useSession();
 onBeforeUnmount(() => notify(''));
 
@@ -39,7 +40,9 @@ function discardChanges() {
     </template>
 
     <div v-if="dirty" class="row cfg-actions">
-      <button class="primary" @click="saveConfig">Enregistrer</button>
+      <DisabledTip :tip="draftError" error>
+        <button class="primary" :disabled="!!draftError" @click="saveConfig">Enregistrer</button>
+      </DisabledTip>
       <button class="ghost" @click="discardChanges">Réinitialiser les modifications</button>
     </div>
   </main>

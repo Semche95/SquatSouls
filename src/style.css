@@ -701,7 +701,7 @@ kbd.dark {
   width: 5.5em;
 }
 
-.cfg-table input[type="number"] {
+.cfg-table .count-input {
   width: 5.5em;
 }
 /* Infobulle (floating-vue) aux couleurs de l'appli, bordée de rouge pour une erreur. */
@@ -759,7 +759,7 @@ kbd.dark {
   resize: vertical;
   word-break: break-all;
 }
-.cfg-import textarea[aria-invalid='true'] {
+.config :is(input, textarea)[aria-invalid='true'] {
   border-color: var(--red);
 }
 /* L'écart entre les blocs vient déjà du formulaire. */

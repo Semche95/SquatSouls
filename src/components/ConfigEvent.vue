@@ -1,13 +1,10 @@
 <script setup>
 import { plural } from '../format.js';
-import { setOptional } from '../configDraft.js';
-import { useConfig } from '../composables/useConfig.js';
+import CountInput from './CountInput.vue';
 
 // ev appartient au brouillon : on l'édite en place.
 defineProps({ ev: Object });
 defineEmits(['remove']);
-
-const { draft } = useConfig();
 </script>
 
 <template>
@@ -29,21 +26,15 @@ const { draft } = useConfig();
     <div class="cfg-params">
       <label>
         <span>Exercices tirés</span>
-        <input v-model.number="ev.draws" type="number" @change="ev.draws = Number(ev.draws) || 0" min="1" :max="draft.exercises.length" />
+        <CountInput v-model="ev.draws" />
       </label>
       <label>
         <span>Limite par séance</span>
-        <input
-          :value="ev.maxPerSession ?? ''"
-          type="number"
-          min="1"
-          placeholder="aucune"
-          @input="setOptional(ev, 'maxPerSession', $event.target.value)"
-        />
+        <CountInput v-model="ev.maxPerSession" optional placeholder="aucune" />
       </label>
       <label>
         <span>Jokers gagnés</span>
-        <input v-model.number="ev.jokers" type="number" @change="ev.jokers = Number(ev.jokers) || 0" min="0" />
+        <CountInput v-model="ev.jokers" />
       </label>
     </div>
   </details>
