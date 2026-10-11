@@ -418,6 +418,15 @@ kbd.dark {
   font-size: 1.1rem;
   font-weight: 600;
 }
+.item-jokers {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.item-jokers button {
+  padding: 4px 10px;
+  font-size: 0.85rem;
+}
 .card-actions {
   display: flex;
   gap: 8px;
@@ -441,6 +450,12 @@ kbd.dark {
 }
 .ghost {
   background: transparent;
+}
+.ghost:disabled {
+  opacity: 0.4;
+  cursor: default;
+  border-color: var(--line);
+  transform: none;
 }
 .danger {
   border-color: var(--red);

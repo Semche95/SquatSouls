@@ -9,7 +9,7 @@ import DrawCard from './DrawCard.vue';
 import SessionActions from './SessionActions.vue';
 
 const { config, gameId, game } = useConfig();
-const { session, notice, pauseLeft, skipPause, trigger, act } = useSession();
+const { session, notice, pauseLeft, skipPause, trigger, act, halve, skipExercise } = useSession();
 
 // Le jeu est figé dès le premier événement de la séance, jusqu'à la suivante.
 const gameLocked = computed(() => !!session.value.gameId);
@@ -40,15 +40,17 @@ useKeydown((e) => {
     return;
   }
   const validate = e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space';
-  const joker = e.code === 'KeyJ';
-  if (!validate && !joker && e.code !== 'Backspace') return;
+  const skip = e.code === 'KeyJ';
+  const half = e.code === 'KeyH';
+  if (!validate && !skip && !half && e.code !== 'Backspace') return;
   e.preventDefault();
   const first = session.value.pending[0];
   if (!first) return;
+  // Les jokers portent sur le premier exercice de la série.
   if (validate) act('complete', first);
-  else if (joker) {
-    if (session.value.jokers) act('use_joker', first);
-  } else act('dismiss', first);
+  else if (skip) skipExercise(first, first.items[0]);
+  else if (half) halve(first, first.items[0]);
+  else act('dismiss', first);
 });
 </script>
 

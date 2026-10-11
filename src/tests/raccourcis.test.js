@@ -23,21 +23,23 @@ describe('raccourcis clavier', () => {
 
   it('agit sur la plus ancienne série', async () => {
     const other = { ...draw, id: 8 };
-    setup({ get_session: emptySession({ pending: [draw, other], jokers: 1 }), complete: () => responses.get_session, dismiss: () => responses.get_session, use_joker: () => responses.get_session });
+    setup({ get_session: emptySession({ pending: [draw, other], jokers: 3 }), complete: () => responses.get_session, dismiss: () => responses.get_session, halve: () => responses.get_session, skip_exercise: () => responses.get_session });
     await mountApp();
     await press('Enter');
     expect(invoke).toHaveBeenCalledWith('complete', { drawId: 7 });
     await press('Backspace');
     expect(invoke).toHaveBeenCalledWith('dismiss', { drawId: 7 });
+    await press('KeyH');
+    expect(invoke).toHaveBeenCalledWith('halve', { drawId: 7, exerciseId: 'squat' });
     await press('KeyJ');
-    expect(invoke).toHaveBeenCalledWith('use_joker', { drawId: 7 });
+    expect(invoke).toHaveBeenCalledWith('skip_exercise', { drawId: 7, exerciseId: 'squat' });
   });
 
-  it('n\'utilise pas de joker sans joker disponible', async () => {
-    setup({ get_session: emptySession({ pending: [draw] }) });
+  it('n\'utilise pas de joker sans assez de jokers', async () => {
+    setup({ get_session: emptySession({ pending: [draw], jokers: 1 }) });
     await mountApp();
     await press('KeyJ');
-    expect(invoke).not.toHaveBeenCalledWith('use_joker', expect.anything());
+    expect(invoke).not.toHaveBeenCalledWith('skip_exercise', expect.anything());
   });
 
   it('est inactif hors de l\'onglet Jouer et après la fin de séance', async () => {

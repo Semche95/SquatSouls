@@ -5,6 +5,11 @@ use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// Jokers pour réduire un exercice de moitié.
+pub const HALVE_COST: u32 = 1;
+/// Jokers pour sauter un exercice entier.
+pub const SKIP_COST: u32 = 2;
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct DrawItem {
@@ -12,6 +17,26 @@ pub struct DrawItem {
     pub name: String,
     pub unit: String,
     pub amount: u32,
+    /// Vrai une fois réduit de moitié avec un joker.
+    pub halved: bool,
+    /// Jokers pour le réduire de moitié, absent si ce n'est plus possible.
+    pub halve_cost: Option<u32>,
+    /// Jokers pour sauter ce qu'il en reste.
+    pub skip_cost: u32,
+}
+
+impl DrawItem {
+    fn new(exercise_id: String, name: String, unit: String, amount: u32) -> Self {
+        DrawItem {
+            exercise_id,
+            name,
+            unit,
+            amount,
+            halved: false,
+            halve_cost: (amount >= 2).then_some(HALVE_COST),
+            skip_cost: SKIP_COST,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -29,6 +54,21 @@ pub struct Draw {
     pub capped: bool,
     pub trigger_count: u32,
     pub max_per_session: Option<u32>,
+}
+
+impl Draw {
+    /// Dépense des jokers sur la série : elle ne rapporte plus les siens.
+    fn forfeit(&mut self, items: Vec<DrawItem>, jokers: u32, halved: bool, now: i64) -> Skipped {
+        self.jokers = 0;
+        Skipped {
+            at: now,
+            game: self.game_name.clone(),
+            event: self.event_name.clone(),
+            items,
+            jokers,
+            halved,
+        }
+    }
 }
 
 /// Une série faite, telle qu'enregistrée dans l'historique.
@@ -53,13 +93,16 @@ pub struct Total {
     pub sets: u32,
 }
 
-/// Une série sautée grâce à un joker.
+/// Ce qu'un joker a retiré d'une série : un ou plusieurs exercices sautés, ou la moitié d'un exercice.
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct Skipped {
     pub at: i64,
     pub game: String,
     pub event: String,
+    /// Exercices avec la quantité retirée.
     pub items: Vec<DrawItem>,
+    pub jokers: u32,
+    pub halved: bool,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
@@ -150,12 +193,12 @@ impl Session {
                 .iter()
                 .map(|i| {
                     let ex = &config.exercises[i];
-                    DrawItem {
-                        exercise_id: ex.id.clone(),
-                        name: ex.name.clone(),
-                        unit: ex.unit.clone(),
-                        amount: rng.random_range(ex.min..=ex.max),
-                    }
+                    DrawItem::new(
+                        ex.id.clone(),
+                        ex.name.clone(),
+                        ex.unit.clone(),
+                        rng.random_range(ex.min..=ex.max),
+                    )
                 })
                 .collect()
         };
@@ -210,20 +253,65 @@ impl Session {
         Ok(())
     }
 
-    /// Dépense un joker pour sauter une série : le déclenchement reste compté.
-    pub fn use_joker(&mut self, id: u64, now: i64) -> Result<(), String> {
-        if self.jokers == 0 {
-            return Err("Aucun joker disponible.".into());
+    /// Réduit un exercice de moitié (arrondi au supérieur) : l'autre moitié compte comme sautée.
+    pub fn halve(&mut self, id: u64, exercise_id: &str, now: i64) -> Result<(), String> {
+        let jokers = self.jokers;
+        let (draw, pos) = self.pending_item(id, exercise_id)?;
+        let item = &mut draw.items[pos];
+        let cost = item
+            .halve_cost
+            .ok_or("Cet exercice ne peut plus être réduit.")?;
+        if jokers < cost {
+            return Err(NOT_ENOUGH_JOKERS.into());
         }
-        let draw = self.take_pending(id)?;
-        self.jokers -= 1;
-        self.skipped.push(Skipped {
-            at: now,
-            game: draw.game_name,
-            event: draw.event_name,
-            items: draw.items,
-        });
+        let removed = item.amount / 2;
+        item.amount -= removed;
+        item.halved = true;
+        item.halve_cost = None;
+        item.skip_cost -= cost;
+        let removed = DrawItem {
+            amount: removed,
+            ..item.clone()
+        };
+        let skipped = draw.forfeit(vec![removed], cost, true, now);
+        self.spend(skipped);
         Ok(())
+    }
+
+    /// Saute un exercice : le reste de la série demeure à faire, sauf s'il n'y a plus rien.
+    pub fn skip_exercise(&mut self, id: u64, exercise_id: &str, now: i64) -> Result<(), String> {
+        let jokers = self.jokers;
+        let (draw, pos) = self.pending_item(id, exercise_id)?;
+        if jokers < draw.items[pos].skip_cost {
+            return Err(NOT_ENOUGH_JOKERS.into());
+        }
+        let item = draw.items.remove(pos);
+        let cost = item.skip_cost;
+        let skipped = draw.forfeit(vec![item], cost, false, now);
+        if draw.items.is_empty() {
+            self.take_pending(id)?;
+        }
+        self.spend(skipped);
+        Ok(())
+    }
+
+    /// Saute toute une série : le déclenchement reste compté.
+    pub fn skip_set(&mut self, id: u64, now: i64) -> Result<(), String> {
+        let draw = self.pending_draw(id)?;
+        let cost = skip_set_cost(draw);
+        if self.jokers < cost {
+            return Err(NOT_ENOUGH_JOKERS.into());
+        }
+        let mut draw = self.take_pending(id)?;
+        let items = std::mem::take(&mut draw.items);
+        let skipped = draw.forfeit(items, cost, false, now);
+        self.spend(skipped);
+        Ok(())
+    }
+
+    fn spend(&mut self, skipped: Skipped) {
+        self.jokers -= skipped.jokers;
+        self.skipped.push(skipped);
     }
 
     /// Retire les tirages en attente (utile quand la configuration change).
@@ -238,13 +326,32 @@ impl Session {
             .is_some_and(|id| config.games.iter().all(|g| &g.id != id))
     }
 
-    fn take_pending(&mut self, id: u64) -> Result<Draw, String> {
-        let pos = self
-            .pending
+    fn pending_pos(&self, id: u64) -> Result<usize, String> {
+        self.pending
             .iter()
             .position(|d| d.id == id)
-            .ok_or("Cette série n'est plus en attente.")?;
+            .ok_or_else(|| "Cette série n'est plus en attente.".into())
+    }
+
+    fn pending_draw(&self, id: u64) -> Result<&Draw, String> {
+        Ok(&self.pending[self.pending_pos(id)?])
+    }
+
+    fn take_pending(&mut self, id: u64) -> Result<Draw, String> {
+        let pos = self.pending_pos(id)?;
         Ok(self.pending.remove(pos))
+    }
+
+    /// Série en attente et position de l'exercice dans celle-ci.
+    fn pending_item(&mut self, id: u64, exercise_id: &str) -> Result<(&mut Draw, usize), String> {
+        let pos = self.pending_pos(id)?;
+        let draw = &mut self.pending[pos];
+        let item = draw
+            .items
+            .iter()
+            .position(|it| it.exercise_id == exercise_id)
+            .ok_or("Cet exercice n'est plus dans la série.")?;
+        Ok((draw, item))
     }
 
     pub fn view(&self) -> SessionView {
@@ -272,6 +379,13 @@ impl Session {
             skipped: self.skipped.iter().rev().cloned().collect(),
         }
     }
+}
+
+const NOT_ENOUGH_JOKERS: &str = "Pas assez de jokers.";
+
+/// Jokers pour sauter tout ce qui reste d'une série.
+pub fn skip_set_cost(draw: &Draw) -> u32 {
+    draw.items.iter().map(|it| it.skip_cost).sum()
 }
 
 /// Cumule les séries par exercice, dans l'ordre de première apparition.

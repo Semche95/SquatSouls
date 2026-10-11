@@ -35,4 +35,24 @@ describe('bilan', () => {
     expect(days[1].text()).toContain('Elden Ring');
     expect(days[1].text()).toContain('1 h 05');
   });
+
+  it('compte les jokers dépensés et distingue moitiés et sauts', async () => {
+    const squats = { exerciseId: 'squat', name: 'Squats', amount: 5, unit: 'reps' };
+    setup({
+      get_session: emptySession({
+        jokersEarned: 3,
+        skipped: [
+          { at: 0, event: 'Mort', items: [squats], jokers: 1, halved: true },
+          { at: 0, event: 'Boss', items: [squats], jokers: 2, halved: false },
+        ],
+      }),
+    });
+    const w = await mountApp();
+    await w.findAll('.tabs button')[1].trigger('click');
+    await flushPromises();
+    expect(w.text()).toContain('3 gagnés · 3 utilisés');
+    const rows = w.findAll('.log li').map((li) => li.text());
+    expect(rows.some((r) => r.includes('Mort (moitié)'))).toBe(true);
+    expect(rows.some((r) => r.includes('Boss (sauté)'))).toBe(true);
+  });
 });

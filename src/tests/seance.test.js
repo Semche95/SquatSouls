@@ -28,15 +28,55 @@ describe('séance', () => {
       get_session: emptySession({ pending: [draw], jokers: 1 }),
       complete: emptySession(),
       dismiss: emptySession(),
-      use_joker: emptySession(),
     });
     const w = await mountApp();
     const buttons = w.findAll('.card-actions button').map((b) => b.text());
-    expect(buttons).toEqual(['Fait Entrée', 'Joker J', 'Annuler Retour arr.']);
+    expect(buttons).toEqual(['Fait Entrée', 'Annuler Retour arr.']);
     await w.find('.card-actions .primary').trigger('click');
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('complete', { drawId: 7 });
     expect(w.find('.card').exists()).toBe(false);
+  });
+
+  describe('jokers', () => {
+    const second = { exerciseId: 'pompes', name: 'Pompes', amount: 8, unit: 'reps', halved: false, halveCost: 1, skipCost: 2 };
+    const both = { ...draw, items: [...draw.items, second] };
+    const jokerButtons = (w) => w.findAll('.item-jokers button');
+
+    it('sont cachés sans joker', async () => {
+      setup({ get_session: emptySession({ pending: [both] }) });
+      const w = await mountApp();
+      expect(jokerButtons(w)).toHaveLength(0);
+      expect(w.text()).not.toContain('Sauter la série');
+    });
+
+    it('réduisent ou sautent un exercice selon les jokers disponibles', async () => {
+      setup({ get_session: emptySession({ pending: [both], jokers: 1 }), halve: emptySession() });
+      const w = await mountApp();
+      const [half, skip] = jokerButtons(w);
+      expect([half.text(), skip.text()]).toEqual(['Moitié H', 'Sauter J']);
+      expect(half.attributes('disabled')).toBeUndefined();
+      expect(skip.attributes('disabled')).toBeDefined();
+      expect(w.find('.card-actions .ghost').text()).toBe('Sauter la série (4 jokers)');
+      expect(w.find('.card-actions .ghost').attributes('disabled')).toBeDefined();
+      await half.trigger('click');
+      expect(invoke).toHaveBeenCalledWith('halve', { drawId: 7, exerciseId: 'squat' });
+    });
+
+    it('sautent toute la série avec assez de jokers', async () => {
+      setup({ get_session: emptySession({ pending: [both], jokers: 4 }), skip_set: emptySession() });
+      const w = await mountApp();
+      await w.find('.card-actions .ghost').trigger('click');
+      expect(invoke).toHaveBeenCalledWith('skip_set', { drawId: 7 });
+    });
+
+    it('ne proposent plus la moitié d\'un exercice déjà réduit', async () => {
+      const halved = { ...draw, items: [{ ...draw.items[0], amount: 5, halved: true, halveCost: null, skipCost: 1 }] };
+      setup({ get_session: emptySession({ pending: [halved], jokers: 1 }) });
+      const w = await mountApp();
+      expect(jokerButtons(w).map((b) => b.text())).toEqual(['Sauter J']);
+      expect(w.find('.card .what').text()).toContain('moitié');
+    });
   });
 
   describe('pause après une série validée', () => {

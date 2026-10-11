@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { formatDay, formatDuration, formatTime, plural } from '../format.js';
 import { useApi } from '../composables/useApi.js';
 import { useSession } from '../composables/useSession.js';
@@ -11,6 +11,7 @@ const { session } = useSession();
 const history = ref([]);
 // Historique complet, affiché en grand par-dessus le Bilan (null quand il est fermé).
 const fullHistory = ref(null);
+const jokersSpent = computed(() => session.value.skipped.reduce((sum, k) => sum + k.jokers, 0));
 
 async function openFullHistory() {
   try {
@@ -67,13 +68,13 @@ onMounted(async () => {
         <h2>Jokers</h2>
         <p class="muted">
           {{ session.jokersEarned }} gagné{{ session.jokersEarned > 1 ? 's' : '' }} ·
-          {{ session.skipped.length }} utilisé{{ session.skipped.length > 1 ? 's' : '' }}
+          {{ jokersSpent }} utilisé{{ jokersSpent > 1 ? 's' : '' }}
         </p>
         <ul v-if="session.skipped.length" class="log">
           <li v-for="(k, i) in session.skipped" :key="i">
             <span class="muted">{{ formatTime(k.at) }}</span>
             <span>{{ k.items.map((it) => `${it.amount} ${it.unit} · ${it.name}`).join(', ') }}</span>
-            <span class="muted">{{ k.event }} (sautée)</span>
+            <span class="muted">{{ k.event }} ({{ k.halved ? 'moitié' : 'sauté' }})</span>
           </li>
         </ul>
       </div>

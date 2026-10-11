@@ -44,9 +44,31 @@ pub(crate) fn dismiss(state: Shared, draw_id: u64) -> Result<SessionView, String
 }
 
 #[tauri::command]
-pub(crate) fn use_joker(state: Shared, draw_id: u64) -> Result<SessionView, String> {
+pub(crate) fn halve(
+    state: Shared,
+    draw_id: u64,
+    exercise_id: String,
+) -> Result<SessionView, String> {
     let mut s = lock(&state)?;
-    s.session.use_joker(draw_id, now())?;
+    s.session.halve(draw_id, &exercise_id, now())?;
+    Ok(s.session.view())
+}
+
+#[tauri::command]
+pub(crate) fn skip_exercise(
+    state: Shared,
+    draw_id: u64,
+    exercise_id: String,
+) -> Result<SessionView, String> {
+    let mut s = lock(&state)?;
+    s.session.skip_exercise(draw_id, &exercise_id, now())?;
+    Ok(s.session.view())
+}
+
+#[tauri::command]
+pub(crate) fn skip_set(state: Shared, draw_id: u64) -> Result<SessionView, String> {
+    let mut s = lock(&state)?;
+    s.session.skip_set(draw_id, now())?;
     Ok(s.session.view())
 }
 

@@ -116,13 +116,13 @@ fn complete_dismiss_and_totals() {
     assert_eq!(sum, 3);
 }
 
-#[test]
-fn jokers_are_earned_then_skip_a_set() {
+/// Séance où un « boss no hit » validé a rapporté 2 jokers, avec une série de boss à deux exercices en attente.
+fn session_with_jokers() -> (Session, Draw) {
     let cfg = default_config();
     let mut s = Session::new(0);
     let mut r = rng();
-    let death = s.draw(&cfg, "ds3", "mort", &mut r).unwrap();
-    assert!(s.use_joker(death.id, 5).is_err(), "pas de joker au départ");
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    assert!(s.skip_set(boss.id, 5).is_err(), "pas de joker au départ");
 
     let nohit = s.draw(&cfg, "ds3", "boss-nohit", &mut r).unwrap();
     assert_eq!(
@@ -134,16 +134,33 @@ fn jokers_are_earned_then_skip_a_set() {
     assert_eq!(s.view().jokers, 0, "rien n'est gagné avant validation");
     assert_eq!(s.complete(nohit.id, 10).unwrap().len(), 2);
     assert_eq!(s.view().jokers, 2);
+    (s, boss)
+}
 
-    s.use_joker(death.id, 20).unwrap();
+#[test]
+fn skipping_a_set_costs_its_exercises() {
+    let (mut s, boss) = session_with_jokers();
+    assert_eq!(skip_set_cost(&boss), 2 * SKIP_COST);
+    assert!(
+        s.skip_set(boss.id, 20).is_err(),
+        "deux exercices coûtent 4 jokers"
+    );
+
+    let cfg = default_config();
+    let death = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
+    s.skip_set(death.id, 20).unwrap();
     let v = s.view();
-    assert_eq!(v.jokers, 1);
+    assert_eq!(v.jokers, 0);
     assert_eq!(v.jokers_earned, 2);
     assert_eq!(v.skipped.len(), 1);
-    assert_eq!((v.skipped[0].at, v.skipped[0].event.as_str()), (20, "Mort"));
-    assert_eq!(v.skipped[0].items, death.items);
-    assert!(v.pending.is_empty());
-    assert_eq!(v.sets, 2, "seule la série du boss est faite");
+    let k = &v.skipped[0];
+    assert_eq!(
+        (k.at, k.event.as_str(), k.jokers, k.halved),
+        (20, "Mort", SKIP_COST, false)
+    );
+    assert_eq!(k.items, death.items);
+    assert_eq!(v.pending.len(), 1, "seule la série du boss reste");
+    assert_eq!(v.sets, 2, "seule la série du no hit est faite");
     let count = v
         .triggers
         .iter()
@@ -151,10 +168,110 @@ fn jokers_are_earned_then_skip_a_set() {
         .unwrap()
         .count;
     assert_eq!(count, 1, "une mort sautée reste comptée dans la limite");
+}
 
-    let first = s.draw(&cfg, "ds3", "boss-premier", &mut r).unwrap();
-    s.use_joker(first.id, 30).unwrap();
+#[test]
+fn skipping_an_exercise_keeps_the_rest_of_the_set() {
+    let (mut s, boss) = session_with_jokers();
+    let (first, second) = (&boss.items[0], &boss.items[1]);
+    s.skip_exercise(boss.id, &first.exercise_id, 20).unwrap();
     let v = s.view();
-    assert_eq!(v.jokers, 0, "une série sautée ne rapporte pas ses jokers");
-    assert_eq!(v.jokers_earned, 2);
+    assert_eq!(v.jokers, 0);
+    assert_eq!(v.pending[0].items, vec![second.clone()]);
+    assert_eq!(v.skipped[0].items, vec![first.clone()]);
+    assert_eq!(v.skipped[0].jokers, SKIP_COST);
+    assert!(
+        s.skip_exercise(boss.id, &second.exercise_id, 30).is_err(),
+        "plus de joker"
+    );
+    assert!(
+        s.skip_exercise(boss.id, &first.exercise_id, 30).is_err(),
+        "déjà sauté"
+    );
+
+    let entries = s.complete(boss.id, 40).unwrap();
+    assert_eq!(entries.len(), 1, "seul l'exercice restant est fait");
+    assert_eq!(entries[0].amount, second.amount);
+}
+
+#[test]
+fn halving_then_skipping_costs_a_full_skip() {
+    let (mut s, boss) = session_with_jokers();
+    let item = &boss.items[0];
+    assert!(item.amount >= 2);
+    assert_eq!(item.halve_cost, Some(HALVE_COST));
+    s.halve(boss.id, &item.exercise_id, 20).unwrap();
+    let v = s.view();
+    let halved = &v.pending[0].items[0];
+    assert_eq!(
+        halved.amount,
+        item.amount.div_ceil(2),
+        "arrondi au supérieur"
+    );
+    assert!(halved.halved);
+    assert_eq!(halved.halve_cost, None, "une seule moitié par exercice");
+    assert_eq!(halved.skip_cost, SKIP_COST - HALVE_COST);
+    assert_eq!(v.jokers, 2 - HALVE_COST);
+    let k = &v.skipped[0];
+    assert!(k.halved);
+    assert_eq!(k.jokers, HALVE_COST);
+    assert_eq!(k.items[0].amount, item.amount / 2, "la moitié retirée");
+    assert!(s.halve(boss.id, &item.exercise_id, 30).is_err());
+
+    s.skip_exercise(boss.id, &item.exercise_id, 30).unwrap();
+    assert_eq!(
+        s.view().jokers,
+        0,
+        "le reste d'un exercice réduit coûte la différence"
+    );
+
+    let other = &boss.items[1];
+    assert!(
+        s.halve(boss.id, &other.exercise_id, 40).is_err(),
+        "plus de joker"
+    );
+}
+
+#[test]
+fn spending_jokers_on_a_rewarding_set_forfeits_its_reward() {
+    let cfg = default_config();
+    for spend in [Session::halve, Session::skip_exercise] {
+        let (mut s, _) = session_with_jokers();
+        let nohit = s.draw(&cfg, "ds3", "boss-nohit", &mut rng()).unwrap();
+        let first = nohit
+            .items
+            .iter()
+            .find(|it| it.halve_cost.is_some())
+            .unwrap();
+        spend(&mut s, nohit.id, &first.exercise_id, 20).unwrap();
+        assert_eq!(s.view().pending[1].jokers, 0, "la récompense est perdue");
+        let left = s.view().jokers;
+        s.complete(nohit.id, 30).unwrap();
+        let v = s.view();
+        assert_eq!(v.jokers, left, "rien n'est gagné à la validation");
+        assert_eq!(v.jokers_earned, 2);
+    }
+}
+
+#[test]
+fn skipping_every_exercise_removes_the_set() {
+    let (mut s, _) = session_with_jokers();
+    let cfg = default_config();
+    let death = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
+    s.skip_exercise(death.id, &death.items[0].exercise_id, 20)
+        .unwrap();
+    assert!(s.view().pending.iter().all(|d| d.id != death.id));
+}
+
+#[test]
+fn a_single_unit_cannot_be_halved() {
+    let mut cfg = default_config();
+    for ex in &mut cfg.exercises {
+        ex.min = 1;
+        ex.max = 1;
+    }
+    let d = Session::new(0)
+        .draw(&cfg, "ds3", "mort", &mut rng())
+        .unwrap();
+    assert_eq!(d.items[0].halve_cost, None);
 }

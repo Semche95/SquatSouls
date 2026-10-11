@@ -67,15 +67,31 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, ga
   }
 
   // Fait, joker ou annulation d'une série : en cas d'échec, on resynchronise la file.
-  async function act(command, draw) {
+  async function act(command, draw, args = {}) {
     const complete = command === 'complete';
     if (complete && pauseLeft.value) return;
     try {
-      session.value = await call(command, { drawId: draw.id });
+      session.value = await call(command, { drawId: draw.id, ...args });
       if (complete) startPause(pauseAfter(draw));
     } catch {
       await reload();
     }
+  }
+
+  // Coût en jokers absent quand l'action n'est plus possible.
+  const canAfford = (cost) => cost != null && session.value.jokers >= cost;
+  const setSkipCost = (draw) => draw.items.reduce((sum, it) => sum + it.skipCost, 0);
+
+  function halve(draw, item) {
+    if (canAfford(item.halveCost)) act('halve', draw, { exerciseId: item.exerciseId });
+  }
+
+  function skipExercise(draw, item) {
+    if (canAfford(item.skipCost)) act('skip_exercise', draw, { exerciseId: item.exerciseId });
+  }
+
+  function skipSet(draw) {
+    if (canAfford(setSkipCost(draw))) act('skip_set', draw);
   }
 
   async function newSession() {
@@ -94,5 +110,8 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, ga
     }
   }
 
-  return { session, notice, pauseLeft, skipPause, reload, saveNow, trigger, act, newSession, cancelSession };
+  return {
+    session, notice, pauseLeft, skipPause, reload, saveNow, trigger, act,
+    canAfford, setSkipCost, halve, skipExercise, skipSet, newSession, cancelSession,
+  };
 });
