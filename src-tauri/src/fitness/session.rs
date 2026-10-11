@@ -231,6 +231,13 @@ impl Session {
         self.pending.clear();
     }
 
+    /// Vrai si la séance a commencé sur un jeu absent de `config`.
+    pub fn game_removed(&self, config: &Config) -> bool {
+        self.game_id
+            .as_ref()
+            .is_some_and(|id| config.games.iter().all(|g| &g.id != id))
+    }
+
     fn take_pending(&mut self, id: u64) -> Result<Draw, String> {
         let pos = self
             .pending

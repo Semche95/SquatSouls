@@ -4,7 +4,15 @@ import { invoke } from "@tauri-apps/api/core";
 import { config, setup, mountApp } from "./app.js";
 
 describe("chargement", () => {
-  it("affiche les événements du premier jeu", async () => {
+  it("demande le jeu au premier lancement", async () => {
+    setup({ get_last_game: "" });
+    const w = await mountApp();
+    expect(w.find("select").element.value).toBe("");
+    expect(w.find(".events").exists()).toBe(false);
+    expect(invoke).not.toHaveBeenCalledWith("set_last_game", expect.anything());
+  });
+
+  it("affiche les événements du dernier jeu choisi", async () => {
     setup();
     const w = await mountApp();
     expect(invoke).toHaveBeenCalledWith("get_config", undefined);
@@ -20,10 +28,11 @@ describe("chargement", () => {
     expect(w.findAll(".event-name").map((e) => e.text())).toEqual(["Feu de camp"]);
   });
 
-  it("revient au premier jeu si le jeu mémorisé n'existe plus", async () => {
+  it("redemande le jeu si le jeu mémorisé n'existe plus", async () => {
     setup({ get_last_game: "inconnu" });
-    await mountApp();
-    expect(invoke).toHaveBeenLastCalledWith("set_last_game", { gameId: "er" });
+    const w = await mountApp();
+    expect(w.find("select").element.value).toBe("");
+    expect(w.find(".events").exists()).toBe(false);
   });
 
   it("enregistre le jeu choisi", async () => {

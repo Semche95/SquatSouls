@@ -72,10 +72,10 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 ### Séance
 
 - Une séance commence à l'ouverture de l'appli et après chaque fin ou annulation de séance.
-- Le jeu est fixé au premier événement déclenché : il ne peut plus changer avant la séance suivante. Le dernier jeu choisi est retenu d'un lancement à l'autre.
+- Le jeu est fixé au premier événement déclenché : il ne peut plus changer avant la séance suivante. Le dernier jeu choisi est retenu d'un lancement à l'autre. Au tout premier lancement, ou si ce jeu n'existe plus, aucun jeu n'est sélectionné : il faut le choisir avant de déclencher un événement.
 - **Terminer la séance** n'est possible qu'avec au moins une série faite et aucune série à faire. L'heure de fin est enregistrée dans l'historique et une nouvelle séance commence aussitôt.
 - **Annuler la séance** remet tout à zéro (compteurs, jokers, séries à faire et faites) et retire de l'historique les séries de cette séance. Le bouton reste désactivé tant qu'aucun événement n'a été déclenché.
-- Une configuration enregistrée s'applique immédiatement, sans redémarrer. Elle retire les séries à faire de la séance en cours, sans toucher aux séries faites ni aux compteurs (renommer un jeu ou un événement garde ses compteurs).
+- Une configuration enregistrée s'applique immédiatement, sans redémarrer. Elle retire les séries à faire de la séance en cours, sans toucher aux séries faites ni aux compteurs (renommer un jeu ou un événement garde ses compteurs). Si elle supprime le jeu de la séance en cours, la séance est annulée (comme avec **Annuler la séance**) et le jeu est à choisir de nouveau.
 
 ### Historique et bilan
 

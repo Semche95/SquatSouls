@@ -22,7 +22,7 @@ const { session } = provideSession(api, cfg);
 
 onMounted(async () => {
   try {
-    // Lu avant la config : sinon le premier jeu le remplacerait.
+    // Lu avant la config : un jeu inconnu y est ensuite remis à vide.
     gameId.value = await invoke("get_last_game").catch(() => "");
     applyConfigView(await call("get_config"));
     session.value = await call("get_session");

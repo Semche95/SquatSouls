@@ -16,15 +16,16 @@ export const [provideConfig, useConfig] = defineShared(() => {
   const editedGameId = ref("");
   // Création d'un jeu : formulaire à droite, rien n'est ajouté avant validation.
   const newGame = ref(null);
-  // Dernier jeu choisi, gardé par le backend d'un lancement à l'autre.
+  // Dernier jeu choisi, gardé par le backend d'un lancement à l'autre (vide tant qu'aucun n'est choisi).
   const gameId = ref("");
 
-  const game = computed(() => findOr(config.value?.games ?? [], gameId.value));
+  const game = computed(() => config.value?.games.find((g) => g.id === gameId.value) ?? null);
   const editedGame = computed(() => findOr(draft.value?.games ?? [], editedGameId.value));
   const dirty = computed(() => !!draft.value && JSON.stringify(draft.value) !== JSON.stringify(config.value));
 
+  // Jeu mémorisé ou en cours supprimé : on redemande le jeu.
   watch(game, (g) => {
-    if (g && g.id !== gameId.value) gameId.value = g.id;
+    if (config.value && !g) gameId.value = "";
   });
   watch(gameId, (id) => {
     if (id) invoke("set_last_game", { gameId: id }).catch(() => {});

@@ -74,6 +74,19 @@ fn death_cap_applies_per_game_and_session() {
 }
 
 #[test]
+fn removed_game_is_detected() {
+    let mut cfg = default_config();
+    let mut s = Session::new(0);
+    assert!(!s.game_removed(&cfg), "séance pas encore commencée");
+    s.draw(&cfg, "ds1", "mort", &mut rng()).unwrap();
+    assert!(!s.game_removed(&cfg));
+    cfg.games.retain(|g| g.id != "ds2");
+    assert!(!s.game_removed(&cfg), "un autre jeu supprimé ne compte pas");
+    cfg.games.retain(|g| g.id != "ds1");
+    assert!(s.game_removed(&cfg));
+}
+
+#[test]
 fn complete_dismiss_and_totals() {
     let cfg = default_config();
     let mut s = Session::new(0);

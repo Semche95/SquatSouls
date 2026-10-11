@@ -52,6 +52,7 @@ useKeydown((e) => {
     <label class="field">
       <span>Jeu</span>
       <select v-model="gameId" :disabled="gameLocked" :title="gameLocked ? 'Le jeu ne peut plus changer pendant la séance' : ''">
+        <option value="" disabled>Choisir un jeu</option>
         <option v-for="g in config?.games ?? []" :key="g.id" :value="g.id">{{ g.name }}</option>
       </select>
     </label>

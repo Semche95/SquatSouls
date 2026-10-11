@@ -53,6 +53,10 @@ impl AppState {
         self.store
             .save_config(&config)
             .map_err(|e| format!("Configuration non enregistrée : {e}"))?;
+        // Le jeu de la séance a été supprimé : la séance est annulée.
+        if self.session.game_removed(&config) {
+            self.cancel_session()?;
+        }
         self.config = config;
         self.config_error = None;
         // Les tirages en attente peuvent viser des exercices qui n'existent plus.

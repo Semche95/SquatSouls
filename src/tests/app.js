@@ -34,7 +34,7 @@ export function setup(over = {}) {
     get_config: { config },
     get_session: emptySession(),
     get_history: [],
-    get_last_game: "",
+    get_last_game: "er",
     set_last_game: undefined,
     ...over,
   };
