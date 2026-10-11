@@ -94,6 +94,17 @@ describe('détection du jeu Steam', () => {
     expect(banner(w).exists()).toBe(false);
   });
 
+  it('propose aussi les variantes sans AppId d\'un jeu qui le porte, et leur donne l\'AppId', async () => {
+    const variant = { ...config.games[0], id: 'er-2', name: 'elden ring 2' };
+    setupSteam({ cfg: steamConfig({ games: [...steamConfig().games, variant] }) });
+    const w = await mountApp();
+    expect(banner(w).findAll('button').map((b) => b.text())).toEqual(['Elden Ring', 'elden ring 2']);
+    await banner(w).findAll('button')[1].trigger('click');
+    await flushPromises();
+    expect(w.find('.play select').element.value).toBe('er-2');
+    expect(lastSaved().games.find((g) => g.id === 'er-2').steamAppId).toBe(1245620);
+  });
+
   it('reconnaît à son nom un jeu sans AppId et lui donne celui détecté', async () => {
     setupSteam({ cfg: { ...config, steamDetection: true }, steam_game_name: 'ELDEN RING' });
     const w = await mountApp();

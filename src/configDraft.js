@@ -16,6 +16,13 @@ export function sameName(a, b) {
   return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
 
+// Un nom qui commence par celui d'un jeu, sans le prolonger d'une lettre (« Megabonk 2 », « Elden Ring sans coup »),
+// désigne une variante de ce jeu, à la casse et aux espaces autour près.
+export function extendsName(name, base) {
+  const [n, b] = [name, base].map((s) => s.trim().toLowerCase());
+  return n.startsWith(b) && !/\p{L}/u.test(n[b.length] ?? '');
+}
+
 // Les jeux s'affichent par nom, quel que soit l'ordre enregistré.
 export function byName(games) {
   return [...games].sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));

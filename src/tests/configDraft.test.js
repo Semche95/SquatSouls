@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { byName, countError, newId, normalized, numberError, parseCount } from '../configDraft.js';
+import { byName, countError, extendsName, newId, normalized, numberError, parseCount } from '../configDraft.js';
 
 describe('newId', () => {
   it('dérive l\'id du nom sans accents et évite les doublons', () => {
@@ -14,6 +14,16 @@ describe('byName', () => {
     const games = [{ name: 'sekiro' }, { name: 'Élden Ring' }, { name: 'Bloodborne' }];
     expect(byName(games).map((g) => g.name)).toEqual(['Bloodborne', 'Élden Ring', 'sekiro']);
     expect(games[0].name).toBe('sekiro');
+  });
+});
+
+describe('extendsName', () => {
+  it('reconnaît le même nom ou un nom qui le prolonge sans coller de lettre', () => {
+    expect(extendsName(' megabonk ', 'Megabonk')).toBe(true);
+    expect(extendsName('megabonk 2', 'Megabonk')).toBe(true);
+    expect(extendsName('Megabonk: sans coup', 'Megabonk')).toBe(true);
+    expect(extendsName('Megabonkers', 'Megabonk')).toBe(false);
+    expect(extendsName('Mega', 'Megabonk')).toBe(false);
   });
 });
 

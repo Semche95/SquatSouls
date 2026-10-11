@@ -1,6 +1,6 @@
 import { onScopeDispose, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import { byName, sameName } from '../configDraft.js';
+import { byName, extendsName } from '../configDraft.js';
 import { defineShared } from './shared.js';
 
 // Intervalle de lecture des processus quand la détection est activée.
@@ -16,13 +16,14 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
   const storeBlocked = ref(false);
   let timer;
 
-  // Plusieurs jeux peuvent porter le même AppId (un même jeu, pour des défis différents).
-  // Sans aucun, un jeu ignoré garde le nom noté en l'ignorant ; sinon le nom vient du Steam Store,
-  // et un jeu configuré sans AppId se reconnaît à ce nom.
+  // Plusieurs jeux peuvent porter le même AppId (un même jeu, pour des défis différents), et un jeu sans AppId
+  // dont le nom reprend le leur en est une variante. Sans aucun, un jeu ignoré garde le nom noté en l'ignorant ;
+  // sinon le nom vient du Steam Store, et un jeu configuré sans AppId se reconnaît à ce nom.
   async function identify(appId) {
     const { games, ignoredGames } = config.value;
+    const variants = (names) => games.filter((g) => g.steamAppId === undefined && names.some((n) => extendsName(g.name, n)));
     const tagged = byName(games.filter((g) => g.steamAppId === appId));
-    if (tagged.length) return { appId, name: tagged[0].name, games: tagged };
+    if (tagged.length) return { appId, name: tagged[0].name, games: byName([...tagged, ...variants(tagged.map((g) => g.name))]) };
     const ignored = ignoredGames.find((g) => g.appId === appId);
     if (ignored) return { appId, name: ignored.name, games: [], ignored: true };
     let name;
@@ -31,7 +32,7 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
     } catch (e) {
       if (e === BLOCKED) storeBlocked.value = true;
     }
-    const named = name === undefined ? [] : games.filter((g) => g.steamAppId === undefined && sameName(g.name, name));
+    const named = name === undefined ? [] : byName(variants([name]));
     return { appId, name: named[0]?.name ?? name, games: named, ignored: false };
   }
 
