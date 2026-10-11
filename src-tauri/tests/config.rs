@@ -11,22 +11,13 @@ fn default_config_is_valid_and_roundtrips() {
 }
 
 #[test]
-fn legacy_event_exercises_are_ignored() {
-    let ev: GameEvent = serde_json::from_str(
-        r#"{"id":"mort","name":"Mort","exercises":[{"exercise":"squats","min":1,"max":2}]}"#,
-    )
-    .unwrap();
-    assert_eq!(ev, event("mort", "Mort", 1, None));
-}
-
-#[test]
 fn validation_catches_mistakes() {
     let mut cfg = default_config();
     cfg.exercises[0].min = 20;
     assert!(cfg.validate().unwrap_err().contains("Intervalle"));
 
     let mut cfg = default_config();
-    cfg.games[0].events[0].draws = cfg.exercises.len() + 1;
+    cfg.games[0].events[0].draws = cfg.exercises.len() as u32 + 1;
     assert!(cfg.validate().is_err());
 
     let mut cfg = default_config();

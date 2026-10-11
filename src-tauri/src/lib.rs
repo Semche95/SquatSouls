@@ -2,6 +2,7 @@ mod commands;
 pub mod fitness;
 mod state;
 
+use fitness::Store;
 use state::AppState;
 use std::fs;
 use std::sync::Mutex;
@@ -11,11 +12,10 @@ use tauri::Manager;
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            let config_dir = app.path().app_config_dir()?;
-            let data_dir = app.path().app_data_dir()?;
-            fs::create_dir_all(&config_dir)?;
-            fs::create_dir_all(&data_dir)?;
-            app.manage(Mutex::new(AppState::new(&config_dir, &data_dir)));
+            let dir = app.path().app_config_dir()?;
+            fs::create_dir_all(&dir)?;
+            let store = Store::open(&dir.join("squatsouls.db"))?;
+            app.manage(Mutex::new(AppState::new(store)));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

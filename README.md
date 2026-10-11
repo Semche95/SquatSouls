@@ -79,20 +79,18 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 
 ### Historique et bilan
 
-- Chaque série validée est écrite dans l'historique (une ligne par exercice), avec l'heure, la séance, le jeu, l'événement, l'exercice et la quantité. Il est conservé d'un lancement à l'autre.
+- Chaque série validée est écrite dans l'historique (une entrée par exercice), avec l'heure, la séance, le jeu, l'événement, l'exercice et la quantité. Il est conservé d'un lancement à l'autre.
 - Le bilan regroupe les séries par jour local, puis par séance et par jeu, avec les totaux par exercice (quantité cumulée et nombre de séries).
 - La durée d'une séance va de son début à son heure de fin si elle a été terminée, sinon à sa dernière série.
-- Une ligne illisible de l'historique est ignorée sans bloquer la lecture du reste.
 
 ### Configuration
 
 - La configuration est validée avant d'être enregistrée. Elle est refusée si : il n'y a aucun exercice ou aucun jeu, un id ou un nom est vide, un id est en double, un jeu n'a aucun événement, `draws` vaut 0 ou dépasse le nombre d'exercices définis, `maxPerSession` vaut 0, ou un exercice a `max` à 0 ou `min` supérieur à `max`.
-- Une liste `exercises` laissée dans un événement par une ancienne configuration est ignorée.
-- Si `config.json` est absent, la configuration par défaut est créée. S'il est illisible ou invalide, la configuration par défaut est utilisée et l'erreur est affichée.
+- Une base neuve reçoit la configuration par défaut. Si la configuration enregistrée est illisible ou invalide, la configuration par défaut est utilisée et l'erreur est affichée.
 
 ## Configuration
 
-L'onglet **Configuration** se règle avec des champs, sans toucher au fichier :
+L'onglet **Configuration** se règle avec des champs :
 
 - **Exercices** : nom, unité, minimum et maximum de chaque exercice. Le dernier exercice ne peut pas être supprimé.
 - **Jeux** : choisir le jeu à modifier dans la liste, le renommer, le supprimer ou en ajouter un. Un nouveau jeu demande un nom et reprend soit les événements d'un autre jeu, soit un seul événement à remplir.
@@ -100,10 +98,7 @@ L'onglet **Configuration** se règle avec des champs, sans toucher au fichier :
 
 Dès qu'une modification est en cours, deux boutons apparaissent : **Enregistrer** valide la configuration et l'applique aussitôt à l'onglet Jouer, **Réinitialiser les modifications** revient à la dernière version enregistrée.
 
-Fichiers utilisés :
-
-- `~/.config/com.semche.squatsouls/config.json` : configuration enregistrée
-- `~/.local/share/com.semche.squatsouls/history.jsonl` : une ligne par série faite
+Tout est enregistré dans une base SQLite, `~/.config/com.semche.squatsouls/squatsouls.db` : configuration, historique et dernier jeu choisi. À l'enregistrement, seuls les exercices, jeux et événements modifiés sont réécrits.
 
 ## Tests
 

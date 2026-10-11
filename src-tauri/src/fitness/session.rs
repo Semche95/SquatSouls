@@ -35,8 +35,7 @@ pub struct Draw {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct LogEntry {
     pub at: i64,
-    /// Début de la séance (0 pour les entrées d'avant ce champ).
-    #[serde(default)]
+    /// Début de la séance.
     pub session: i64,
     pub game: String,
     pub event: String,
@@ -146,7 +145,7 @@ impl Session {
         let items = if capped {
             Vec::new()
         } else {
-            let picks = rand::seq::index::sample(rng, config.exercises.len(), ev.draws);
+            let picks = rand::seq::index::sample(rng, config.exercises.len(), ev.draws as usize);
             picks
                 .iter()
                 .map(|i| {

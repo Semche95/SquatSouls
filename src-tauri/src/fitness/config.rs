@@ -20,18 +20,13 @@ pub struct GameEvent {
     pub id: String,
     pub name: String,
     /// Nombre d'exercices différents tirés à chaque déclenchement.
-    #[serde(default = "one")]
-    pub draws: usize,
+    pub draws: u32,
     /// Au-delà de ce nombre de déclenchements dans la séance, plus aucune série.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub max_per_session: Option<u32>,
     /// Récompense : jokers gagnés en validant la série de chaque déclenchement.
     #[serde(default)]
     pub jokers: u32,
-}
-
-fn one() -> usize {
-    1
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -97,7 +92,7 @@ impl Config {
                 if ev.draws == 0 {
                     return Err(format!("{at} : il faut tirer au moins 1 exercice."));
                 }
-                if ev.draws > self.exercises.len() {
+                if ev.draws as usize > self.exercises.len() {
                     return Err(format!(
                         "{at} : {} exercices à tirer mais seulement {} définis.",
                         ev.draws,
@@ -115,7 +110,7 @@ impl Config {
     }
 }
 
-pub fn event(id: &str, name: &str, draws: usize, max: Option<u32>) -> GameEvent {
+pub fn event(id: &str, name: &str, draws: u32, max: Option<u32>) -> GameEvent {
     GameEvent {
         id: id.into(),
         name: name.into(),
