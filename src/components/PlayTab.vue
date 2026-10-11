@@ -10,7 +10,7 @@ import SessionActions from './SessionActions.vue';
 import DisabledTip from './DisabledTip.vue';
 
 const { config, gameId, game } = useConfig();
-const { session, notice, pauseLeft, skipPause, trigger, act, halve, skipExercise } = useSession();
+const { session, notice, pauseLeft, skipPause, trigger, confirmDismiss, dismiss, remaining, complete, halve, skipExercise } = useSession();
 
 // Le jeu est figé dès le premier événement de la séance, jusqu'à la suivante.
 const gameLocked = computed(() => !!session.value.gameId);
@@ -38,6 +38,7 @@ useKeydown((e) => {
   // Toujours bloquées : sinon elles activeraient le bouton qui a le focus (ex. « Annuler la séance »).
   if (e.code === 'Escape') {
     skipPause();
+    confirmDismiss.value = 0;
     return;
   }
   const validate = e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space';
@@ -47,11 +48,12 @@ useKeydown((e) => {
   e.preventDefault();
   const first = session.value.pending[0];
   if (!first) return;
-  // Les jokers portent sur le premier exercice de la série.
-  if (validate) act('complete', first);
-  else if (skip) skipExercise(first, first.items[0]);
-  else if (half) halve(first, first.items[0]);
-  else act('dismiss', first);
+  // Fait et jokers portent sur le premier exercice restant de la série.
+  const [item] = remaining(first);
+  if (validate) complete(first, item);
+  else if (skip) skipExercise(first, item);
+  else if (half) halve(first, item);
+  else dismiss(first);
 });
 </script>
 

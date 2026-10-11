@@ -27,10 +27,14 @@ pub(crate) fn draw(state: Shared, game_id: String, event_id: String) -> Result<D
 }
 
 #[tauri::command]
-pub(crate) fn complete(state: Shared, draw_id: u64) -> Result<SessionView, String> {
+pub(crate) fn complete_exercise(
+    state: Shared,
+    draw_id: u64,
+    exercise_id: String,
+) -> Result<SessionView, String> {
     let mut s = lock(&state)?;
-    let entries = s.session.complete(draw_id, now())?;
-    if let Err(e) = s.store.append_history(&entries) {
+    let entry = s.session.complete_exercise(draw_id, &exercise_id, now())?;
+    if let Err(e) = s.store.append_history(&[entry]) {
         eprintln!("Historique non enregistré : {e}");
     }
     Ok(s.session.view())
@@ -39,7 +43,10 @@ pub(crate) fn complete(state: Shared, draw_id: u64) -> Result<SessionView, Strin
 #[tauri::command]
 pub(crate) fn dismiss(state: Shared, draw_id: u64) -> Result<SessionView, String> {
     let mut s = lock(&state)?;
-    s.session.dismiss(draw_id)?;
+    let entries = s.session.dismiss(draw_id)?;
+    if let Err(e) = s.store.remove_history(&entries) {
+        eprintln!("Historique non modifié : {e}");
+    }
     Ok(s.session.view())
 }
 

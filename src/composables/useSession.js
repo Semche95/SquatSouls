@@ -8,16 +8,16 @@ const PAUSE_TICK_MS = 250;
 export const [provideSession, useSession] = defineShared(({ call }, { config, game, gameId, store }) => {
   const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], jokers: 0, jokersEarned: 0, skipped: [] });
   const notice = ref('');
-  // Pause après une série validée : la suivante ne peut pas être validée avant sa fin.
+  // Pause après un exercice fait : aucun autre ne peut être noté fait avant sa fin.
   const pauseEnd = ref(0);
   const now = ref(0);
   let ticker;
   const pauseLeft = computed(() => Math.max(0, Math.ceil((pauseEnd.value - now.value) / 1000)));
 
-  // La plus longue des pauses des exercices de la série, la pause globale à défaut de pause propre.
-  function pauseAfter(draw) {
+  // Pause propre de l'exercice, la pause globale à défaut.
+  function pauseAfter(item) {
     const { exercises, pause } = config.value;
-    return Math.max(...draw.items.map((it) => exercises.find((ex) => ex.id === it.exerciseId)?.pause ?? pause));
+    return exercises.find((ex) => ex.id === item.exerciseId)?.pause ?? pause;
   }
 
   function startPause(seconds) {
@@ -68,19 +68,38 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, ga
 
   // Fait, joker ou annulation d'une série : en cas d'échec, on resynchronise la file.
   async function act(command, draw, args = {}) {
-    const complete = command === 'complete';
-    if (complete && pauseLeft.value) return;
     try {
       session.value = await call(command, { drawId: draw.id, ...args });
-      if (complete) startPause(pauseAfter(draw));
+      return true;
     } catch {
       await reload();
+      return false;
     }
   }
 
+  // Série commencée dont l'annulation attend confirmation : ses exercices faits ne compteront pas.
+  const confirmDismiss = ref(0);
+
+  function dismiss(draw) {
+    if (draw.items.some((it) => it.done)) confirmDismiss.value = draw.id;
+    else dismissNow(draw);
+  }
+
+  function dismissNow(draw) {
+    confirmDismiss.value = 0;
+    act('dismiss', draw);
+  }
+
+  // Exercices de la série encore à faire.
+  const remaining = (draw) => draw.items.filter((it) => !it.done);
   // Coût en jokers absent quand l'action n'est plus possible.
   const canAfford = (cost) => cost != null && session.value.jokers >= cost;
-  const setSkipCost = (draw) => draw.items.reduce((sum, it) => sum + it.skipCost, 0);
+  const setSkipCost = (draw) => remaining(draw).reduce((sum, it) => sum + it.skipCost, 0);
+
+  async function complete(draw, item) {
+    if (pauseLeft.value) return;
+    if (await act('complete_exercise', draw, { exerciseId: item.exerciseId })) startPause(pauseAfter(item));
+  }
 
   function halve(draw, item) {
     if (canAfford(item.halveCost)) act('halve', draw, { exerciseId: item.exerciseId });
@@ -111,7 +130,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, ga
   }
 
   return {
-    session, notice, pauseLeft, skipPause, reload, saveNow, trigger, act,
-    canAfford, setSkipCost, halve, skipExercise, skipSet, newSession, cancelSession,
+    session, notice, pauseLeft, skipPause, reload, saveNow, trigger, act, confirmDismiss, dismiss,
+    dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet, newSession, cancelSession,
   };
 });

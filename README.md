@@ -26,8 +26,8 @@ WEBKIT_DISABLE_DMABUF_RENDERER=1 pnpm tauri dev
 ## Utilisation
 
 - Choisis le jeu, puis clique sur l'événement qui vient d'arriver, ou tape son numéro (1 à 9, rangée du haut ou pavé numérique, sans Maj sur AZERTY).
-- La série tirée apparaît dans « À faire ». **Entrée** (ou Espace) valide la plus ancienne, **Retour arrière** l'annule. Avec des jokers, **H** réduit de moitié son premier exercice et **J** le saute.
-- Après chaque série faite, une pause s'affiche avec son compte à rebours : la série suivante ne se valide qu'à sa fin. **Passer** (ou Échap) l'écourte.
+- La série tirée apparaît dans « À faire ». Chaque exercice se note fait avec son bouton **Fait**. Au clavier, sur la plus ancienne série, **Entrée** (ou Espace) note fait son premier exercice restant, **Retour arrière** annule la série (après confirmation si elle est commencée). Avec des jokers, **H** réduit de moitié ce même exercice et **J** le saute.
+- Après chaque exercice fait, une pause s'affiche avec son compte à rebours : l'exercice suivant ne se note fait qu'à sa fin. **Passer** (ou Échap) l'écourte.
 - « Terminer la séance » et « Annuler la séance », en bas de l'onglet Jouer, demandent une confirmation.
 - L'onglet **Bilan** montre la séance actuelle et les 7 derniers jours. **Tout voir** affiche tout l'historique en grand (Échap pour fermer).
 
@@ -53,22 +53,23 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 
 ### Traitement d'une série à faire
 
-- **Valider** : la série passe dans les séries faites, est ajoutée aux totaux et écrite dans l'historique. Les jokers de l'événement sont gagnés à ce moment.
-- **Annuler** (clic raté) : la série disparaît et le déclenchement est décompté, comme s'il n'avait jamais eu lieu.
+- **Fait** se note exercice par exercice : l'exercice est ajouté aux totaux et écrit dans l'historique, et reste affiché barré jusqu'à la fin de la série. La série passe dans les séries faites quand son dernier exercice est fait ou sauté, et les jokers de l'événement sont gagnés à ce moment.
+- **Annuler** (clic raté) : la série disparaît et le déclenchement est décompté, comme s'il n'avait jamais eu lieu. Rien n'en est compté : ses exercices déjà faits sont retirés des totaux et de l'historique, pour qu'annuler ne serve pas à écourter une série. Une série commencée ne s'annule donc qu'après confirmation.
 - **Jokers** : réduire de moitié ou sauter un exercice, ou sauter toute la série (voir Jokers). Le déclenchement reste compté, y compris pour la limite par séance.
 
-### Pause entre les séries
+### Pause entre les exercices
 
-- Chaque série validée (**Fait**) lance une pause : la plus longue des pauses de ses exercices. Un exercice a sa pause propre, ou à défaut la pause globale (60 s dans la configuration par défaut). Une pause de 0 s n'en lance pas.
-- Pendant la pause, aucune série ne peut être validée, y compris une série tirée pendant la pause. Les jokers et **Annuler** restent possibles et ne lancent pas de pause.
+- Chaque exercice fait (**Fait**) lance une pause : sa pause propre, ou à défaut la pause globale (60 s dans la configuration par défaut). Une pause de 0 s n'en lance pas.
+- Pendant la pause, aucun exercice ne peut être noté fait, ni dans la même série ni dans une autre, y compris une série tirée pendant la pause. Les jokers et **Annuler** restent possibles et ne lancent pas de pause.
 - **Passer** (ou Échap) termine la pause tout de suite. Elle s'arrête aussi à la fin ou à l'annulation de la séance.
 
 ### Jokers
 
-- Seuls les événements avec `jokers` en rapportent, une fois leur série validée en entier : dépenser un joker sur une série (moitié ou saut) lui fait perdre ceux qu'elle devait rapporter.
+- Seuls les événements avec `jokers` en rapportent, une fois tous les exercices de leur série faits : dépenser un joker sur une série (moitié ou saut) lui fait perdre ceux qu'elle devait rapporter.
 - **Moitié** (1 joker) : divise le nombre d'un exercice par deux, arrondi au supérieur. Une seule fois par exercice, et pas pour un nombre de 1.
 - **Sauter** un exercice (2 jokers, 1 seul s'il a déjà été réduit de moitié) : il est retiré de la série, le reste demeure à faire. Sauter le dernier exercice retire la série.
-- **Sauter la série** (série à plusieurs exercices) : coûte la somme des sauts de ses exercices restants.
+- **Sauter la série** (série à plusieurs exercices restants) : coûte la somme des sauts de ses exercices restants ; ceux déjà faits restent faits.
+- Un exercice fait ne peut plus être réduit ni sauté.
 - Une action n'est possible qu'avec assez de jokers. Ce qui est retiré n'est pas fait (ni totaux, ni historique) et apparaît dans les jokers du Bilan, marqué « moitié » ou « sauté ».
 - Les jokers non dépensés sont perdus à la fin de la séance.
 
@@ -82,7 +83,7 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 
 ### Historique et bilan
 
-- Chaque série validée est écrite dans l'historique (une entrée par exercice), avec l'heure, la séance, le jeu, l'événement, l'exercice et la quantité. Il est conservé d'un lancement à l'autre.
+- Chaque exercice fait est écrit dans l'historique (une entrée par exercice), avec l'heure, la séance, le jeu, l'événement, l'exercice et la quantité. Il est conservé d'un lancement à l'autre.
 - Le bilan regroupe les séries par jour local, puis par séance et par jeu, avec les totaux par exercice (quantité cumulée et nombre de séries).
 - La durée d'une séance va de son début à son heure de fin si elle a été terminée, sinon à sa dernière série.
 

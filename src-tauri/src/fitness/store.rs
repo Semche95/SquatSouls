@@ -226,6 +226,24 @@ impl Store {
         tx.commit()
     }
 
+    /// Retire de l'historique une entrée par élément de `entries`.
+    pub fn remove_history(&mut self, entries: &[LogEntry]) -> Result<()> {
+        let tx = self.conn.transaction()?;
+        {
+            let mut stmt = tx.prepare(
+                "DELETE FROM sets WHERE id = (SELECT id FROM sets
+                 WHERE at = ?1 AND session = ?2 AND game = ?3 AND event = ?4
+                 AND exercise = ?5 AND unit = ?6 AND amount = ?7 LIMIT 1)",
+            )?;
+            for e in entries {
+                stmt.execute(params![
+                    e.at, e.session, e.game, e.event, e.exercise, e.unit, e.amount
+                ])?;
+            }
+        }
+        tx.commit()
+    }
+
     pub fn end_session(&self, session: i64, ended: i64) -> Result<()> {
         self.conn.execute(
             "INSERT OR REPLACE INTO session_ends (session, ended) VALUES (?1, ?2)",

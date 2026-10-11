@@ -19,6 +19,8 @@ pub struct DrawItem {
     pub amount: u32,
     /// Vrai une fois réduit de moitié avec un joker.
     pub halved: bool,
+    /// Vrai une fois noté fait : il reste affiché jusqu'à la fin de la série.
+    pub done: bool,
     /// Jokers pour le réduire de moitié, absent si ce n'est plus possible.
     pub halve_cost: Option<u32>,
     /// Jokers pour sauter ce qu'il en reste.
@@ -33,6 +35,7 @@ impl DrawItem {
             unit,
             amount,
             halved: false,
+            done: false,
             halve_cost: (amount >= 2).then_some(HALVE_COST),
             skip_cost: SKIP_COST,
         }
@@ -54,6 +57,9 @@ pub struct Draw {
     pub capped: bool,
     pub trigger_count: u32,
     pub max_per_session: Option<u32>,
+    /// Exercices déjà faits de la série, retirés si elle est annulée.
+    #[serde(skip)]
+    pub logged: Vec<LogEntry>,
 }
 
 impl Draw {
@@ -215,6 +221,7 @@ impl Session {
             capped,
             trigger_count,
             max_per_session: ev.max_per_session,
+            logged: Vec::new(),
         };
         if !capped {
             self.pending.push(draw.clone());
@@ -222,35 +229,54 @@ impl Session {
         Ok(draw)
     }
 
-    /// Valide une série tirée : elle passe dans les séries faites.
-    pub fn complete(&mut self, id: u64, now: i64) -> Result<Vec<LogEntry>, String> {
-        let draw = self.take_pending(id)?;
-        self.jokers += draw.jokers;
-        self.jokers_earned += draw.jokers;
-        let entries: Vec<LogEntry> = draw
-            .items
-            .into_iter()
-            .map(|it| LogEntry {
-                at: now,
-                session: self.started_at,
-                game: draw.game_name.clone(),
-                event: draw.event_name.clone(),
-                exercise: it.name,
-                unit: it.unit,
-                amount: it.amount,
-            })
-            .collect();
-        self.done.extend(entries.iter().cloned());
-        Ok(entries)
+    /// Note un exercice fait : il passe dans les séries faites. La série finie rapporte ses jokers.
+    pub fn complete_exercise(
+        &mut self,
+        id: u64,
+        exercise_id: &str,
+        now: i64,
+    ) -> Result<LogEntry, String> {
+        let session = self.started_at;
+        let (draw, pos) = self.pending_item(id, exercise_id)?;
+        let item = &mut draw.items[pos];
+        item.done = true;
+        let entry = LogEntry {
+            at: now,
+            session,
+            game: draw.game_name.clone(),
+            event: draw.event_name.clone(),
+            exercise: item.name.clone(),
+            unit: item.unit.clone(),
+            amount: item.amount,
+        };
+        draw.logged.push(entry.clone());
+        self.done.push(entry.clone());
+        self.finish_if_done(id)?;
+        Ok(entry)
     }
 
-    /// Annule un déclenchement fait par erreur : rien n'est compté.
-    pub fn dismiss(&mut self, id: u64) -> Result<(), String> {
+    /// Retire la série quand il ne lui reste rien à faire, avec les jokers qu'elle rapporte encore.
+    fn finish_if_done(&mut self, id: u64) -> Result<(), String> {
+        if self.pending_draw(id)?.items.iter().all(|it| it.done) {
+            let draw = self.take_pending(id)?;
+            self.jokers += draw.jokers;
+            self.jokers_earned += draw.jokers;
+        }
+        Ok(())
+    }
+
+    /// Annule un déclenchement : il n'est plus compté, ni les exercices déjà faits de la série, renvoyés pour les retirer de l'historique.
+    pub fn dismiss(&mut self, id: u64) -> Result<Vec<LogEntry>, String> {
         let draw = self.take_pending(id)?;
         if let Some(count) = self.triggers.get_mut(&(draw.game_id, draw.event_id)) {
             *count = count.saturating_sub(1);
         }
-        Ok(())
+        for entry in &draw.logged {
+            if let Some(pos) = self.done.iter().position(|e| e == entry) {
+                self.done.remove(pos);
+            }
+        }
+        Ok(draw.logged)
     }
 
     /// Réduit un exercice de moitié (arrondi au supérieur) : l'autre moitié compte comme sautée.
@@ -288,14 +314,12 @@ impl Session {
         let item = draw.items.remove(pos);
         let cost = item.skip_cost;
         let skipped = draw.forfeit(vec![item], cost, false, now);
-        if draw.items.is_empty() {
-            self.take_pending(id)?;
-        }
         self.spend(skipped);
+        self.finish_if_done(id)?;
         Ok(())
     }
 
-    /// Saute toute une série : le déclenchement reste compté.
+    /// Saute ce qui reste d'une série : le déclenchement reste compté.
     pub fn skip_set(&mut self, id: u64, now: i64) -> Result<(), String> {
         let draw = self.pending_draw(id)?;
         let cost = skip_set_cost(draw);
@@ -303,7 +327,10 @@ impl Session {
             return Err(NOT_ENOUGH_JOKERS.into());
         }
         let mut draw = self.take_pending(id)?;
-        let items = std::mem::take(&mut draw.items);
+        let items = std::mem::take(&mut draw.items)
+            .into_iter()
+            .filter(|it| !it.done)
+            .collect();
         let skipped = draw.forfeit(items, cost, false, now);
         self.spend(skipped);
         Ok(())
@@ -342,7 +369,7 @@ impl Session {
         Ok(self.pending.remove(pos))
     }
 
-    /// Série en attente et position de l'exercice dans celle-ci.
+    /// Série en attente et position de l'exercice, encore à faire, dans celle-ci.
     fn pending_item(&mut self, id: u64, exercise_id: &str) -> Result<(&mut Draw, usize), String> {
         let pos = self.pending_pos(id)?;
         let draw = &mut self.pending[pos];
@@ -351,6 +378,9 @@ impl Session {
             .iter()
             .position(|it| it.exercise_id == exercise_id)
             .ok_or("Cet exercice n'est plus dans la série.")?;
+        if draw.items[item].done {
+            return Err("Cet exercice est déjà fait.".into());
+        }
         Ok((draw, item))
     }
 
@@ -385,7 +415,11 @@ const NOT_ENOUGH_JOKERS: &str = "Pas assez de jokers.";
 
 /// Jokers pour sauter tout ce qui reste d'une série.
 pub fn skip_set_cost(draw: &Draw) -> u32 {
-    draw.items.iter().map(|it| it.skip_cost).sum()
+    draw.items
+        .iter()
+        .filter(|it| !it.done)
+        .map(|it| it.skip_cost)
+        .sum()
 }
 
 /// Cumule les séries par exercice, dans l'ordre de première apparition.

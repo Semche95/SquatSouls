@@ -7,6 +7,21 @@ fn rng() -> StdRng {
     StdRng::seed_from_u64(42)
 }
 
+/// Note faits, un à un, les exercices restants d'une série.
+fn complete(s: &mut Session, id: u64, now: i64) -> Result<Vec<LogEntry>, String> {
+    let draw = s
+        .view()
+        .pending
+        .into_iter()
+        .find(|d| d.id == id)
+        .ok_or("Cette série n'est plus en attente.")?;
+    draw.items
+        .iter()
+        .filter(|it| !it.done)
+        .map(|it| s.complete_exercise(id, &it.exercise_id, now))
+        .collect()
+}
+
 #[test]
 fn draws_stay_in_range_and_are_distinct() {
     let cfg = default_config();
@@ -95,11 +110,11 @@ fn complete_dismiss_and_totals() {
     let b = s.draw(&cfg, "ds3", "mort", &mut r).unwrap();
     let c = s.draw(&cfg, "ds3", "mort", &mut r).unwrap();
 
-    let logged = s.complete(a.id, 100).unwrap();
+    let logged = complete(&mut s, a.id, 100).unwrap();
     assert_eq!(logged.len(), 2);
-    s.complete(b.id, 101).unwrap();
+    complete(&mut s, b.id, 101).unwrap();
     s.dismiss(c.id).unwrap();
-    assert!(s.complete(c.id, 102).is_err());
+    assert!(complete(&mut s, c.id, 102).is_err());
 
     let v = s.view();
     assert!(v.pending.is_empty());
@@ -132,7 +147,7 @@ fn session_with_jokers() -> (Session, Draw) {
     );
     assert_eq!(nohit.jokers, 2);
     assert_eq!(s.view().jokers, 0, "rien n'est gagné avant validation");
-    assert_eq!(s.complete(nohit.id, 10).unwrap().len(), 2);
+    assert_eq!(complete(&mut s, nohit.id, 10).unwrap().len(), 2);
     assert_eq!(s.view().jokers, 2);
     (s, boss)
 }
@@ -189,7 +204,7 @@ fn skipping_an_exercise_keeps_the_rest_of_the_set() {
         "déjà sauté"
     );
 
-    let entries = s.complete(boss.id, 40).unwrap();
+    let entries = complete(&mut s, boss.id, 40).unwrap();
     assert_eq!(entries.len(), 1, "seul l'exercice restant est fait");
     assert_eq!(entries[0].amount, second.amount);
 }
@@ -246,7 +261,7 @@ fn spending_jokers_on_a_rewarding_set_forfeits_its_reward() {
         spend(&mut s, nohit.id, &first.exercise_id, 20).unwrap();
         assert_eq!(s.view().pending[1].jokers, 0, "la récompense est perdue");
         let left = s.view().jokers;
-        s.complete(nohit.id, 30).unwrap();
+        complete(&mut s, nohit.id, 30).unwrap();
         let v = s.view();
         assert_eq!(v.jokers, left, "rien n'est gagné à la validation");
         assert_eq!(v.jokers_earned, 2);
@@ -274,4 +289,77 @@ fn a_single_unit_cannot_be_halved() {
         .draw(&cfg, "ds3", "mort", &mut rng())
         .unwrap();
     assert_eq!(d.items[0].halve_cost, None);
+}
+
+#[test]
+fn exercises_are_done_one_by_one() {
+    let (mut s, boss) = session_with_jokers();
+    let cfg = default_config();
+    let nohit = s.draw(&cfg, "ds3", "boss-nohit", &mut rng()).unwrap();
+    let (first, second) = (&nohit.items[0], &nohit.items[1]);
+    let entry = s
+        .complete_exercise(nohit.id, &first.exercise_id, 20)
+        .unwrap();
+    assert_eq!((entry.at, entry.amount), (20, first.amount));
+    let v = s.view();
+    let left = v.pending.iter().find(|d| d.id == nohit.id).unwrap();
+    assert!(left.items[0].done && !left.items[1].done);
+    assert_eq!(
+        skip_set_cost(left),
+        SKIP_COST,
+        "seul l'exercice restant compte"
+    );
+    assert_eq!(v.jokers, 2, "la récompense attend la fin de la série");
+    for again in [
+        s.complete_exercise(nohit.id, &first.exercise_id, 21)
+            .map(|_| ()),
+        s.halve(nohit.id, &first.exercise_id, 21),
+        s.skip_exercise(nohit.id, &first.exercise_id, 21),
+    ] {
+        assert!(again.is_err(), "déjà fait");
+    }
+
+    s.complete_exercise(nohit.id, &second.exercise_id, 30)
+        .unwrap();
+    let v = s.view();
+    assert_eq!(v.jokers, 4, "série finie : la récompense est gagnée");
+    assert_eq!(v.pending.len(), 1, "seule la série du boss reste");
+    assert_eq!(v.log[0].at, 30);
+
+    s.complete_exercise(boss.id, &boss.items[0].exercise_id, 40)
+        .unwrap();
+    s.skip_set(boss.id, 50).unwrap();
+    let v = s.view();
+    assert_eq!(
+        v.jokers,
+        4 - SKIP_COST,
+        "sauter le reste ne coûte que l'exercice restant"
+    );
+    assert_eq!(v.skipped[0].items, vec![boss.items[1].clone()]);
+    assert_eq!(v.sets, 5);
+}
+
+#[test]
+fn dismissing_a_started_set_drops_its_done_exercises() {
+    let cfg = default_config();
+    let mut s = Session::new(0);
+    let mort = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
+    let kept = complete(&mut s, mort.id, 5).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut rng()).unwrap();
+    let entry = s
+        .complete_exercise(boss.id, &boss.items[0].exercise_id, 10)
+        .unwrap();
+    assert_eq!(
+        s.dismiss(boss.id).unwrap(),
+        vec![entry],
+        "à retirer de l'historique"
+    );
+    let v = s.view();
+    assert!(v.pending.is_empty());
+    assert_eq!(
+        v.log,
+        kept.into_iter().rev().collect::<Vec<_>>(),
+        "rien n'est compté de la série annulée"
+    );
+    assert_eq!(v.triggers.len(), 1, "le déclenchement est décompté");
 }

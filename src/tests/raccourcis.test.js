@@ -23,16 +23,24 @@ describe('raccourcis clavier', () => {
 
   it('agit sur la plus ancienne série', async () => {
     const other = { ...draw, id: 8 };
-    setup({ get_session: emptySession({ pending: [draw, other], jokers: 3 }), complete: () => responses.get_session, dismiss: () => responses.get_session, halve: () => responses.get_session, skip_exercise: () => responses.get_session });
+    setup({ get_session: emptySession({ pending: [draw, other], jokers: 3 }), complete_exercise: () => responses.get_session, dismiss: () => responses.get_session, halve: () => responses.get_session, skip_exercise: () => responses.get_session });
     await mountApp();
     await press('Enter');
-    expect(invoke).toHaveBeenCalledWith('complete', { drawId: 7 });
+    expect(invoke).toHaveBeenCalledWith('complete_exercise', { drawId: 7, exerciseId: 'squat' });
     await press('Backspace');
     expect(invoke).toHaveBeenCalledWith('dismiss', { drawId: 7 });
     await press('KeyH');
     expect(invoke).toHaveBeenCalledWith('halve', { drawId: 7, exerciseId: 'squat' });
     await press('KeyJ');
     expect(invoke).toHaveBeenCalledWith('skip_exercise', { drawId: 7, exerciseId: 'squat' });
+  });
+
+  it('vise le premier exercice restant de la série', async () => {
+    const started = { ...draw, items: [{ ...draw.items[0], done: true }, { ...draw.items[0], exerciseId: 'pompes', name: 'Pompes' }] };
+    setup({ get_session: emptySession({ pending: [started] }), complete_exercise: () => responses.get_session });
+    await mountApp();
+    await press('Enter');
+    expect(invoke).toHaveBeenCalledWith('complete_exercise', { drawId: 7, exerciseId: 'pompes' });
   });
 
   it('n\'utilise pas de joker sans assez de jokers', async () => {

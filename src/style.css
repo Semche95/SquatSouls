@@ -427,12 +427,18 @@ kbd.dark {
   font-size: 1.1rem;
   font-weight: 600;
 }
-.item-jokers {
+.items li.done {
+  opacity: 0.45;
+}
+.items li.done strong {
+  text-decoration: line-through;
+}
+.item-actions {
   display: flex;
   gap: 6px;
   margin-left: auto;
 }
-.item-jokers button {
+.item-actions button {
   padding: 4px 10px;
   font-size: 0.85rem;
 }

@@ -22,7 +22,7 @@ pub fn run() {
             commands::get_config,
             commands::save_config,
             commands::draw,
-            commands::complete,
+            commands::complete_exercise,
             commands::dismiss,
             commands::halve,
             commands::skip_exercise,
