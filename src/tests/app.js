@@ -10,11 +10,11 @@ export const config = {
       id: "er",
       name: "Elden Ring",
       events: [
-        { id: "mort", name: "Mort", draws: 1, maxPerSession: 15 },
+        { id: "mort", name: "Mort", draws: 1, jokers: 0, maxPerSession: 15 },
         { id: "boss", name: "Boss vaincu", draws: 1, jokers: 2 },
       ],
     },
-    { id: "ds", name: "Dark Souls", events: [{ id: "feu", name: "Feu de camp", draws: 1 }] },
+    { id: "ds", name: "Dark Souls", events: [{ id: "feu", name: "Feu de camp", draws: 1, jokers: 0 }] },
   ],
 };
 

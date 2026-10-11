@@ -1,6 +1,6 @@
 import { computed, ref, watch } from "vue";
 import { invoke } from "@tauri-apps/api/core";
-import { clone } from "../configDraft.js";
+import { clone, normalized } from "../configDraft.js";
 import { defineShared } from "./shared.js";
 
 function findOr(games, id) {
@@ -41,5 +41,17 @@ export const [provideConfig, useConfig] = defineShared(() => {
     configError.value = view.error ?? "";
   }
 
-  return { config, draft, configError, cfgTab, editedGameId, newGame, gameId, game, editedGame, dirty, applyConfigView };
+  // Enregistre `cfg` sans toucher au brouillon ; renvoie false si le backend refuse.
+  async function store(cfg) {
+    try {
+      config.value = (await invoke("save_config", { config: normalized(cfg) })).config;
+      configError.value = "";
+      return true;
+    } catch (e) {
+      configError.value = String(e);
+      return false;
+    }
+  }
+
+  return { config, draft, configError, cfgTab, editedGameId, newGame, gameId, game, editedGame, dirty, applyConfigView, store };
 });

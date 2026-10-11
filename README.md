@@ -34,6 +34,11 @@ WEBKIT_DISABLE_DMABUF_RENDERER=1 pnpm tauri dev
 
 Cette section fait référence : toute évolution du comportement de l'appli doit y être reportée.
 
+### Validation des actions
+
+- Une action ne se valide qu'une fois : le bouton qui la valide (**Créer**, confirmation d'une suppression, **Terminer**, etc.) l'applique et l'enregistre aussitôt. Aucune action déjà validée ne doit attendre une seconde validation, comme le bouton **Enregistrer** de la configuration.
+- **Enregistrer** ne sert qu'aux modifications faites directement dans les champs, qui n'ont pas de bouton de validation propre.
+
 ### Tirage
 
 - Chaque jeu propose une liste d'événements. Déclencher un événement tire `draws` exercices distincts parmi tous les exercices définis, chacun avec un nombre entier pris au hasard entre son `min` et son `max` (inclus).
@@ -93,7 +98,7 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 L'onglet **Configuration** se règle avec des champs :
 
 - **Exercices** : nom, unité, minimum et maximum de chaque exercice. Le dernier exercice ne peut pas être supprimé.
-- **Jeux** : choisir le jeu à modifier dans la liste, le renommer, le supprimer ou en ajouter un. Un nouveau jeu demande un nom qu'aucun autre jeu ne porte et reprend soit les événements d'un autre jeu, soit un seul événement à remplir.
+- **Jeux** : choisir le jeu à modifier dans la liste (qui affiche les noms enregistrés), le renommer, le supprimer (après confirmation) ou en ajouter un. Un nouveau jeu demande un nom qu'aucun autre jeu ne porte et reprend soit les événements d'un autre jeu, soit un seul événement à remplir. Le bouton **Créer** et la confirmation de suppression enregistrent aussitôt, sans passer par **Enregistrer** ; les autres modifications en cours restent à enregistrer.
 - **Événements** du jeu : repliés sur une ligne qui résume le nombre tiré, la limite et les jokers, ils se déplient d'un clic pour régler le nom, le nombre d'exercices tirés, la limite par séance (vide pour aucune) et les jokers gagnés.
 
 Dès qu'une modification est en cours, deux boutons apparaissent : **Enregistrer** valide la configuration et l'applique aussitôt à l'onglet Jouer, **Réinitialiser les modifications** revient à la dernière version enregistrée.

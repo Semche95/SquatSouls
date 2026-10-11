@@ -1,13 +1,12 @@
 <script setup>
 import { onBeforeUnmount, ref } from "vue";
-import { invoke } from "@tauri-apps/api/core";
-import { clone, normalized } from "../configDraft.js";
+import { clone } from "../configDraft.js";
 import { useConfig } from "../composables/useConfig.js";
 import { useSession } from "../composables/useSession.js";
 import ConfigExercises from "./ConfigExercises.vue";
 import ConfigGames from "./ConfigGames.vue";
 
-const { config, draft, configError, cfgTab, newGame, dirty, applyConfigView } = useConfig();
+const { config, draft, configError, cfgTab, newGame, dirty, store } = useConfig();
 const { reload } = useSession();
 
 const configMsg = ref("");
@@ -18,15 +17,12 @@ onBeforeUnmount(() => clearTimeout(configMsgTimer));
 
 async function saveConfig() {
   configMsg.value = "";
-  try {
-    applyConfigView(await invoke("save_config", { config: normalized(draft.value) }));
-    configMsg.value = "Configuration enregistrée.";
-    clearTimeout(configMsgTimer);
-    configMsgTimer = setTimeout(() => (configMsg.value = ""), CONFIG_MSG_MS);
-    await reload();
-  } catch (e) {
-    configError.value = String(e);
-  }
+  if (!(await store(draft.value))) return;
+  draft.value = clone(config.value);
+  configMsg.value = "Configuration enregistrée.";
+  clearTimeout(configMsgTimer);
+  configMsgTimer = setTimeout(() => (configMsg.value = ""), CONFIG_MSG_MS);
+  await reload();
 }
 
 function discardChanges() {

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { invoke } from "@tauri-apps/api/core";
-import { config, responses, setup, mountApp } from "./app.js";
+import { config, emptySession, responses, setup, mountApp } from "./app.js";
 
 describe("configuration", () => {
   async function openConfig() {
@@ -35,6 +35,16 @@ describe("configuration", () => {
     expect(w.find(".event").text()).toContain("Mort brutale");
   });
 
+  it("ne renomme le jeu dans la liste qu'à l'enregistrement", async () => {
+    setup({ save_config: (args) => ({ config: args.config }) });
+    const w = await openConfig();
+    await w.find("input[aria-label='Nom du jeu']").setValue("Elden Ring DLC");
+    expect(w.find(".cfg-game-list .active").text()).toBe("Elden Ring");
+    await w.find(".cfg-actions .primary").trigger("click");
+    await flushPromises();
+    expect(w.find(".cfg-game-list .active").text()).toBe("Elden Ring DLC");
+  });
+
   it("ajoute un exercice avec un id dérivé du nom", async () => {
     setup();
     const w = await openConfig();
@@ -50,25 +60,27 @@ describe("configuration", () => {
     expect(sent.exercises.map((e) => e.id)).toEqual(["squat", "nouvel-exercice", "nouvel-exercice-2"]);
   });
 
-  it("crée un jeu vide ou avec les événements copiés d'un autre jeu", async () => {
-    setup();
+  it("crée un jeu vide ou avec les événements copiés d'un autre jeu et l'enregistre aussitôt", async () => {
+    setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
+    const savedGames = () => invoke.mock.calls.filter(([cmd]) => cmd === "save_config").at(-1)[1].config.games;
     async function create(name, source) {
       await w.find(".group-head button").trigger("click");
+      await flushPromises();
       expect(w.find("form.cfg-game .primary").element.disabled).toBe(true);
-      await w.find("input[aria-label='Nom du nouveau jeu']").setValue(name);
+      const nameInput = w.find("input[aria-label='Nom du nouveau jeu']");
+      expect(document.activeElement).toBe(nameInput.element);
+      await nameInput.setValue(name);
       await w.find("select[aria-label='Événements du nouveau jeu']").setValue(source);
       await w.find("form.cfg-game").trigger("submit");
+      await flushPromises();
+      expect(w.find(".cfg-game-list .active").text()).toBe(name);
+      expect(w.find(".cfg-actions").exists()).toBe(false);
+      return savedGames().at(-1);
     }
-    await create("Sekiro", "ds");
-    expect(w.find(".cfg-game-list .active").text()).toBe("Sekiro");
-    await create("Lies of P", "");
-    responses.save_config = (args) => ({ config: args.config });
-    await w.find(".cfg-actions .primary").trigger("click");
-    await flushPromises();
-    const [, , sekiro, lies] = invoke.mock.calls.find(([cmd]) => cmd === "save_config")[1].config.games;
-    expect(sekiro).toMatchObject({ id: "sekiro", events: config.games[1].events });
-    expect(lies).toMatchObject({ id: "lies-of-p", events: [{ name: "Nouvel événement", draws: 1 }] });
+    expect(await create("Sekiro", "ds")).toMatchObject({ id: "sekiro", events: config.games[1].events });
+    expect(await create("Lies of P", "")).toMatchObject({ id: "lies-of-p", events: [{ name: "Nouvel événement", draws: 1 }] });
+    expect(savedGames().map((g) => g.id)).toEqual(["er", "ds", "sekiro", "lies-of-p"]);
   });
 
   it("refuse de créer un jeu au nom déjà pris", async () => {
@@ -79,6 +91,38 @@ describe("configuration", () => {
     await w.find("input[aria-label='Nom du nouveau jeu']").setValue(" dark souls ");
     expect(w.find("form.cfg-game").text()).toContain("Un jeu porte déjà ce nom.");
     expect(w.find("form.cfg-game .primary").element.disabled).toBe(true);
+  });
+
+  it("demande confirmation avant de supprimer un jeu, puis l'enregistre aussitôt", async () => {
+    setup({ save_config: (args) => ({ config: args.config }) });
+    const w = await openConfig();
+    const remove = () => w.find(".cfg-game .field .danger");
+    await remove().trigger("click");
+    await w.find(".cfg-game .confirm .ghost").trigger("click");
+    expect(w.find(".cfg-game .confirm").exists()).toBe(false);
+    expect(w.findAll(".cfg-game-list button")).toHaveLength(2);
+    await remove().trigger("click");
+    await w.find(".cfg-game .confirm .danger").trigger("click");
+    await flushPromises();
+    expect(w.findAll(".cfg-game-list button").map((b) => b.text())).toEqual(["Dark Souls"]);
+    expect(invoke.mock.calls.find(([cmd]) => cmd === "save_config")[1].config.games.map((g) => g.id)).toEqual(["ds"]);
+    expect(w.find(".cfg-actions").exists()).toBe(false);
+    expect(w.find(".cfg-game .confirm").exists()).toBe(false);
+  });
+
+  it("redemande le jeu quand celui de la séance est supprimé", async () => {
+    setup({ get_session: emptySession({ gameId: "er", sets: 1 }), save_config: (args) => ({ config: args.config }) });
+    const w = await openConfig();
+    // Le backend annule la séance du jeu supprimé.
+    responses.get_session = emptySession();
+    await w.find(".cfg-game .field .danger").trigger("click");
+    await w.find(".cfg-game .confirm .danger").trigger("click");
+    await flushPromises();
+    await w.findAll(".tabs button")[0].trigger("click");
+    const select = w.find("select");
+    expect(select.element.value).toBe("");
+    expect(select.element.disabled).toBe(false);
+    expect(w.find(".events").exists()).toBe(false);
   });
 
   it("règle l'intervalle d'un exercice et garde au moins un exercice", async () => {
