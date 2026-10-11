@@ -19,11 +19,7 @@ Le binaire seul est dans `src-tauri/target/release/squat-souls` après le build.
 
 Le workflow GitHub Actions **Build** (`.github/workflows/build.yml`) compile les paquets Linux (`.deb`, `.rpm`, `.AppImage`) et Windows (`.msi`, `.exe`). Il se lance à la main depuis l'onglet Actions (**Run workflow**), et les paquets s'y téléchargent dans les artefacts de l'exécution.
 
-Si la fenêtre reste blanche sous Wayland (cas fréquent avec un GPU NVIDIA) :
-
-```bash
-WEBKIT_DISABLE_DMABUF_RENDERER=1 pnpm tauri dev
-```
+Sous Linux, l'appli force `GDK_BACKEND=x11` et `WEBKIT_DISABLE_DMABUF_RENDERER=1` au lancement : WebKitGTK plante ou reste blanc sous Wayland (presse-papiers, GPU NVIDIA), elle passe donc par XWayland sans rendu DMABUF.
 
 ## Utilisation
 

@@ -10,6 +10,12 @@ use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // WebKitGTK plante sous Wayland (presse-papiers, rendu DMABUF) : passer par XWayland
+    // sans rendu DMABUF. Fixé avant tout fil, set_var n'étant pas sûr en multi-fil.
+    #[cfg(target_os = "linux")]
+    for (key, value) in [("GDK_BACKEND", "x11"), ("WEBKIT_DISABLE_DMABUF_RENDERER", "1")] {
+        std::env::set_var(key, value);
+    }
     tauri::Builder::default()
         .setup(|app| {
             let dir = app.path().app_config_dir()?;
