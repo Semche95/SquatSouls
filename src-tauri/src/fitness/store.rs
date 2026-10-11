@@ -2,7 +2,7 @@
 
 use super::{
     active_days, default_config, last_days, window_start, Config, DayTotals, Exercise, Game,
-    GameEvent, IgnoredGame, LogEntry, DEFAULT_PAUSE,
+    GameEvent, IgnoredGame, LogEntry, SteamName, SteamNames, DEFAULT_PAUSE,
 };
 use chrono::NaiveDate;
 use rusqlite::{params, Connection, Result, Transaction};
@@ -68,11 +68,20 @@ CREATE TABLE ignored_games (
     name TEXT NOT NULL
 );
 ",
+    "
+CREATE TABLE steam_names (
+    app_id INTEGER PRIMARY KEY,
+    name TEXT,
+    retry_at INTEGER
+);
+",
 ];
 
 const LAST_GAME: &str = "last_game";
 const PAUSE: &str = "pause";
 const STEAM_DETECTION: &str = "steam_detection";
+const STEAM_LAST_CALL: &str = "steam_last_call";
+const STEAM_BLOCKED_UNTIL: &str = "steam_blocked_until";
 
 pub struct Store {
     conn: Connection,
@@ -342,6 +351,45 @@ impl Store {
 
     pub fn set_last_game(&self, game_id: &str) -> Result<()> {
         set_setting(&self.conn, LAST_GAME, game_id)
+    }
+
+    /// Réponses du Steam Store et garde-fous de ses appels.
+    pub fn steam_names(&self) -> Result<SteamNames> {
+        let names = self
+            .conn
+            .prepare("SELECT app_id, name, retry_at FROM steam_names")?
+            .query_map([], |r| {
+                let name = match r.get(1)? {
+                    Some(name) => SteamName::Known(name),
+                    None => SteamName::RetryAt(r.get::<_, Option<i64>>(2)?.unwrap_or(0)),
+                };
+                Ok((r.get(0)?, name))
+            })?
+            .collect::<Result<_>>()?;
+        Ok(SteamNames {
+            names,
+            last_call: self.parsed_setting(STEAM_LAST_CALL, 0)?,
+            blocked_until: self.parsed_setting(STEAM_BLOCKED_UNTIL, 0)?,
+        })
+    }
+
+    /// Liste courte, réécrite en entier après chaque appel au Steam Store.
+    pub fn save_steam_names(&mut self, steam: &SteamNames) -> Result<()> {
+        let tx = self.conn.transaction()?;
+        set_setting(&tx, STEAM_LAST_CALL, &steam.last_call.to_string())?;
+        set_setting(&tx, STEAM_BLOCKED_UNTIL, &steam.blocked_until.to_string())?;
+        tx.execute("DELETE FROM steam_names", [])?;
+        {
+            let mut stmt =
+                tx.prepare("INSERT INTO steam_names (app_id, name, retry_at) VALUES (?1, ?2, ?3)")?;
+            for (app_id, name) in &steam.names {
+                match name {
+                    SteamName::Known(name) => stmt.execute(params![app_id, name, None::<i64>])?,
+                    SteamName::RetryAt(at) => stmt.execute(params![app_id, None::<String>, at])?,
+                };
+            }
+        }
+        tx.commit()
     }
 
     /// Réglage converti en `T`, `default` s'il est absent ou illisible.

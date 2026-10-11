@@ -3,7 +3,6 @@
 use serde::Serialize;
 use serde_json::Value;
 use std::collections::HashMap;
-use std::time::{Duration, Instant};
 
 /// AppId du jeu lancé par Steam, lu dans la ligne de commande d'un processus
 /// (`SteamLaunch AppId=…`, sous Linux) ou dans son environnement (`SteamAppId=…`).
@@ -42,63 +41,85 @@ fn steam_app_name(app_id: u32, json: &str) -> Option<String> {
     (!name.is_empty()).then(|| name.to_string())
 }
 
-/// Délai minimal entre deux appels au Steam Store, pour ne jamais approcher de sa limite.
-pub const STEAM_STORE_INTERVAL: Duration = Duration::from_secs(60);
+/// Délai minimal entre deux appels au Steam Store, en secondes, pour ne jamais approcher de sa limite.
+pub const STEAM_STORE_INTERVAL: i64 = 60;
+/// Délai avant de redemander un jeu que le Steam Store n'a pas nommé, ou pas répondu.
+pub const STEAM_RETRY_DELAY: i64 = 3600;
+/// Délai sans aucun appel après un refus du Steam Store pour excès de requêtes.
+pub const STEAM_BLOCK_DELAY: i64 = 24 * 3600;
 
 /// Pourquoi le nom d'un jeu n'est pas connu.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum SteamNameError {
-    /// Le Steam Store ne connaît pas ce jeu, ou n'a pas répondu à la seule demande faite pour lui.
+    /// Le Steam Store ne connaît pas ce jeu, ou n'a pas répondu : il sera redemandé après `STEAM_RETRY_DELAY`.
     Unknown,
     /// Un autre appel vient d'être fait : on réessaiera plus tard.
     Wait,
-    /// Le Steam Store a limité les requêtes : plus aucun appel jusqu'au prochain lancement.
+    /// Le Steam Store a limité les requêtes : plus aucun appel pendant `STEAM_BLOCK_DELAY`.
     Blocked,
 }
 
 /// Réponse d'un appel au Steam Store : code HTTP et contenu, ou `None` sans réponse.
 pub type SteamResponse = Option<(u16, String)>;
 
-/// Noms des jeux demandés au Steam Store, avec les garde-fous qui évitent d'en être bloqué :
-/// un seul appel par jeu, réussi ou non, au plus un appel par `STEAM_STORE_INTERVAL`,
-/// et plus aucun après un refus pour excès de requêtes (429 ou 403).
-#[derive(Default)]
+/// Réponse gardée pour un jeu : son nom, ou l'heure à partir de laquelle le redemander.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SteamName {
+    Known(String),
+    RetryAt(i64),
+}
+
+/// Noms des jeux demandés au Steam Store, avec les garde-fous qui évitent d'en être bloqué,
+/// gardés d'un lancement à l'autre : un nom obtenu n'est plus redemandé, un échec l'est après
+/// `STEAM_RETRY_DELAY`, au plus un appel par `STEAM_STORE_INTERVAL`, et plus aucun pendant
+/// `STEAM_BLOCK_DELAY` après un refus pour excès de requêtes (429 ou 403). Heures en secondes Unix.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct SteamNames {
-    names: HashMap<u32, Option<String>>,
-    last_call: Option<Instant>,
-    blocked: bool,
+    pub(super) names: HashMap<u32, SteamName>,
+    pub(super) last_call: i64,
+    pub(super) blocked_until: i64,
 }
 
 impl SteamNames {
+    /// `remember` reçoit l'état après chaque appel, pour le garder d'un lancement à l'autre.
     pub fn name(
         &mut self,
         app_id: u32,
-        now: Instant,
+        now: i64,
         fetch: impl FnOnce(&str) -> SteamResponse,
+        remember: impl FnOnce(&SteamNames),
     ) -> Result<String, SteamNameError> {
-        if let Some(known) = self.names.get(&app_id) {
-            return known.clone().ok_or(SteamNameError::Unknown);
-        }
-        if self.blocked {
+        let retry_at = match self.names.get(&app_id) {
+            Some(SteamName::Known(name)) => return Ok(name.clone()),
+            Some(&SteamName::RetryAt(at)) => at,
+            None => now,
+        };
+        if now < self.blocked_until {
             return Err(SteamNameError::Blocked);
         }
-        if self
-            .last_call
-            .is_some_and(|last| now.duration_since(last) < STEAM_STORE_INTERVAL)
-        {
+        if now < retry_at {
+            return Err(SteamNameError::Unknown);
+        }
+        if now - self.last_call < STEAM_STORE_INTERVAL {
             return Err(SteamNameError::Wait);
         }
-        self.last_call = Some(now);
+        self.last_call = now;
         let name = match fetch(&steam_app_url(app_id)) {
             Some((429 | 403, _)) => {
-                self.blocked = true;
+                self.blocked_until = now + STEAM_BLOCK_DELAY;
+                remember(self);
                 return Err(SteamNameError::Blocked);
             }
             Some((200, json)) => steam_app_name(app_id, &json),
             _ => None,
         };
-        self.names.insert(app_id, name.clone());
+        let entry = name.clone().map_or(
+            SteamName::RetryAt(now + STEAM_RETRY_DELAY),
+            SteamName::Known,
+        );
+        self.names.insert(app_id, entry);
+        remember(self);
         name.ok_or(SteamNameError::Unknown)
     }
 }

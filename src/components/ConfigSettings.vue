@@ -13,7 +13,7 @@ const status = computed(() => {
   if (!d) return 'Aucun jeu Steam détecté.';
   if (d.name) return `Jeu détecté : ${d.name}${d.ignored ? ' (ignoré)' : ''}.`;
   return storeBlocked.value
-    ? 'Jeu Steam détecté, mais le Steam Store limite les requêtes : les jeux inconnus ne seront plus proposés avant le prochain lancement.'
+    ? 'Jeu Steam détecté, mais le Steam Store limite les requêtes : les jeux inconnus ne seront plus proposés pendant 24 h au plus.'
     : 'Jeu Steam détecté, nom pas encore connu.';
 });
 </script>

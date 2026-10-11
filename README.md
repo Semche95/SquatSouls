@@ -102,7 +102,7 @@ Cette section fait référence : toute évolution du comportement de l'appli doi
 - Jeu configuré : l'onglet Jouer propose un bouton par jeu reconnu pour le sélectionner, sauf si l'un d'eux l'est déjà ou si le jeu de la séance est fixé. Reconnu à son nom, il reçoit alors l'AppId détecté, enregistré aussitôt.
 - Jeu inconnu : son nom est demandé à l'API du Steam Store (sans les marques ™ et ®), puis l'onglet Jouer propose de l'**Ajouter** ou de l'**Ignorer**. **Ajouter** ouvre la création d'un jeu, préremplie avec ce nom et l'AppId, qui s'enregistre avec **Créer**. **Ignorer** l'ajoute aussitôt aux jeux ignorés, qui ne sont plus jamais proposés.
 - Les Réglages listent les jeux ignorés : **Ajouter** ouvre la même création, et le jeu créé quitte la liste ; **Retirer** l'enlève aussitôt de la liste, et il sera de nouveau proposé.
-- Pour ne jamais être bloqué par Steam, le Steam Store n'est appelé que pour un jeu inconnu et non ignoré : une seule fois par jeu tant que l'appli reste ouverte (réponse ou échec gardés), au plus une fois par minute, avec 10 s maximum d'attente. S'il refuse pour excès de requêtes (code 429 ou 403), il n'est plus appelé avant le prochain lancement : les jeux inconnus ne sont plus proposés, les jeux configurés restent détectés.
+- Pour ne jamais être bloqué par Steam, le Steam Store n'est appelé que pour un jeu inconnu et non ignoré : un nom obtenu n'est plus jamais redemandé ; un jeu qu'il n'a pas nommé, ou une demande restée sans réponse, est redemandé une heure plus tard au plus tôt ; au plus un appel par minute, avec 10 s maximum d'attente. S'il refuse pour excès de requêtes (code 429 ou 403), il n'est plus appelé pendant 24 h : les jeux inconnus ne sont plus proposés, les jeux configurés restent détectés. Ces délais et les noms obtenus sont gardés dans la base, d'un lancement à l'autre.
 - Sous la case, les Réglages montrent l'état de la détection enregistrée : le jeu détecté (même déjà sélectionné ou ignoré), aucun jeu, ou un Steam Store qui limite les requêtes. Si les processus sont illisibles, rien n'est détecté ; le passage suivant réessaie.
 
 ### Partage
@@ -124,7 +124,7 @@ L'onglet **Configuration** se règle avec des champs :
 
 Dès qu'une modification est en cours, deux boutons apparaissent : **Enregistrer** valide la configuration et l'applique aussitôt à l'onglet Jouer, **Réinitialiser les modifications** revient à la dernière version enregistrée.
 
-Tout est enregistré dans une base SQLite, `~/.config/com.semche.squatsouls/squatsouls.db` : configuration (dont la pause globale, la détection Steam et les jeux ignorés), historique et dernier jeu choisi. À l'enregistrement, seuls les exercices, jeux et événements modifiés sont réécrits. Au lancement, la base reçoit les migrations de schéma qui lui manquent ; une base créée par une version plus récente de l'appli est refusée.
+Tout est enregistré dans une base SQLite, `~/.config/com.semche.squatsouls/squatsouls.db` : configuration (dont la pause globale, la détection Steam et les jeux ignorés), historique, dernier jeu choisi et noms donnés par le Steam Store. À l'enregistrement, seuls les exercices, jeux et événements modifiés sont réécrits. Au lancement, la base reçoit les migrations de schéma qui lui manquent ; une base créée par une version plus récente de l'appli est refusée.
 
 ## Tests
 

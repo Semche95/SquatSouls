@@ -7,7 +7,7 @@ use crate::fitness::{
 use crate::state::{lock, now, AppState, ConfigView, Shared};
 use chrono::Local;
 use std::sync::Mutex;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 use sysinfo::{ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind};
 use tauri::async_runtime::spawn_blocking;
 use tauri::{AppHandle, Manager};
@@ -193,7 +193,13 @@ pub(crate) async fn steam_game_name(app: AppHandle, app_id: u32) -> Result<Strin
     spawn_blocking(move || {
         let names = app.state::<Mutex<SteamNames>>();
         let mut names = names.lock().map_err(|_| SteamNameError::Unknown)?;
-        names.name(app_id, Instant::now(), fetch)
+        // Faute d'enregistrement, l'état reste gardé jusqu'à la fermeture de l'appli.
+        let remember = |steam: &SteamNames| {
+            if let Ok(mut state) = lock(&app.state::<Mutex<AppState>>()) {
+                let _ = state.store.save_steam_names(steam);
+            }
+        };
+        names.name(app_id, now(), fetch, remember)
     })
     .await
     .map_err(|_| SteamNameError::Unknown)?

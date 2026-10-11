@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { config, emptySession, setup, mountApp } from './app.js';
@@ -86,6 +86,24 @@ describe('détection du jeu Steam', () => {
     expect(banner(w).exists()).toBe(false);
     await openSettings(w);
     expect(status(w)).toContain('le Steam Store limite les requêtes');
+  });
+
+  it('ne signale plus la limite une fois le Steam Store de nouveau joignable', async () => {
+    vi.useFakeTimers();
+    let blocked = true;
+    setupSteam({
+      running_steam_app: 367520,
+      steam_game_name: () => {
+        throw blocked ? 'blocked' : 'wait';
+      },
+    });
+    const w = await mountApp();
+    await openSettings(w);
+    expect(status(w)).toContain('le Steam Store limite les requêtes');
+    blocked = false;
+    await vi.advanceTimersByTimeAsync(10000);
+    vi.useRealTimers();
+    expect(status(w)).toBe('Jeu Steam détecté, nom pas encore connu.');
   });
 
   it('ne propose rien quand le jeu de la séance est déjà fixé', async () => {

@@ -5,7 +5,7 @@ import { defineShared } from './shared.js';
 
 // Intervalle de lecture des processus quand la détection est activée.
 const SCAN_MS = 10000;
-// Refus du backend quand le Steam Store a limité les requêtes : plus aucun appel jusqu'au prochain lancement.
+// Refus du backend quand le Steam Store a limité les requêtes : plus aucun appel pendant un temps.
 const BLOCKED = 'blocked';
 
 export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfgTab, newGame }, { saveChange }) => {
@@ -29,8 +29,9 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
     let name;
     try {
       name = await invoke('steam_game_name', { appId });
+      storeBlocked.value = false;
     } catch (e) {
-      if (e === BLOCKED) storeBlocked.value = true;
+      storeBlocked.value = e === BLOCKED;
     }
     const named = name === undefined ? [] : byName(variants([name]));
     return { appId, name: named[0]?.name ?? name, games: named, ignored: false };
