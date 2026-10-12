@@ -13,13 +13,13 @@ function findOr(games, id) {
 
 export const [provideConfig, useConfig] = defineShared(() => {
   const config = ref(null);
-  // Working copy edited in the Configuration tab, sent as is when saving.
+  // Working copy edited in the Program and Settings tabs, each tab saving only its own fields.
   const draft = ref(null);
   const configError = ref('');
   // Transient confirmation (save, copy, import).
   const configMsg = ref('');
   let configMsgTimer;
-  // Displayed tab, and configuration sub-tab.
+  // Displayed tab, and Program sub-tab.
   const tab = ref('play');
   const cfgTab = ref('games');
   const editedGameId = ref('');
@@ -33,9 +33,6 @@ export const [provideConfig, useConfig] = defineShared(() => {
 
   const game = computed(() => config.value?.games.find((g) => g.id === gameId.value) ?? null);
   const editedGame = computed(() => findOr(draft.value?.games ?? [], editedGameId.value));
-  const dirty = computed(() => !!draft.value && JSON.stringify(draft.value) !== JSON.stringify(config.value));
-  // First badly filled field of the draft, which blocks "Save" (empty if everything is valid).
-  const draftError = computed(() => (draft.value ? numberError(normalized(draft.value)) : ''));
 
   // Remembered or current game removed: ask for the game again. The config is watched too, because an
   // unknown remembered game leaves `game` null both before and after it loads.
@@ -91,5 +88,5 @@ export const [provideConfig, useConfig] = defineShared(() => {
     }
   }
 
-  return { config, draft, configError, configMsg, notify, copy, tab, cfgTab, editedGameId, newGame, gameId, intensity, game, editedGame, dirty, draftError, applyConfigView, store };
+  return { config, draft, configError, configMsg, notify, copy, tab, cfgTab, editedGameId, newGame, gameId, intensity, game, editedGame, applyConfigView, store };
 });

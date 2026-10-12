@@ -72,6 +72,11 @@ export async function mountApp() {
   return wrapper;
 }
 
+// Settings tab, last of the main tabs.
+export async function openSettings(w) {
+  await w.findAll('.tabs button')[3].trigger('click');
+}
+
 export function press(code, init = {}) {
   window.dispatchEvent(new KeyboardEvent('keydown', { code, bubbles: true, cancelable: true, ...init }));
   return flushPromises();

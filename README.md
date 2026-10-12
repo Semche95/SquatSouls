@@ -10,9 +10,9 @@ Turn what happens in your games into bodyweight exercises.
 
 ![Play tab with a set to do](docs/screenshots/play-set-to-do.png)
 
-| Pause | Summary | Configuration |
+| Pause | History | Program |
 | --- | --- | --- |
-| ![Pause between two exercises](docs/screenshots/pause.png) | ![Summary tab](docs/screenshots/summary.png) | ![Configuration tab](docs/screenshots/configuration.png) |
+| ![Pause between two exercises](docs/screenshots/pause.png) | ![History tab](docs/screenshots/summary.png) | ![Program tab](docs/screenshots/configuration.png) |
 
 ## What is it
 
@@ -64,7 +64,7 @@ pnpm tauri build   # packages in src-tauri/target/release/bundle/
 1. In **Play**, choose your game, then click **Start the session** when you start playing.
 2. You die in game: click **Death**, or press 1. A set appears in **To do**, for example 14 squats.
 3. Do them, then click **Done** or press Enter. A pause starts.
-4. When you stop playing, click **End the session**. It shows up in **Summary**.
+4. When you stop playing, click **End the session**. It shows up in **History**.
 
 | Key | Action |
 | --- | --- |
@@ -75,7 +75,7 @@ pnpm tauri build   # packages in src-tauri/target/release/bundle/
 | Backspace | Cancel the set |
 | Escape | Skip the pause |
 
-Games, events, exercises and settings are edited in **Configuration**. The full rules are in [docs/BEHAVIOR.md](docs/BEHAVIOR.md). Where the database and logs are stored: [docs/DATA-AND-LOGS.md](docs/DATA-AND-LOGS.md).
+Games, events and exercises are edited in **Program**, the options in **Settings**. The full rules are in [docs/BEHAVIOR.md](docs/BEHAVIOR.md). Where the database and logs are stored: [docs/DATA-AND-LOGS.md](docs/DATA-AND-LOGS.md).
 
 ## Linux notes
 

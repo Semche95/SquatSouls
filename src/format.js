@@ -28,8 +28,8 @@ export function formatDuration(seconds) {
 export function sessionSummary({ game, duration, events, totals, jokers }) {
   return [
     `${game} · ${formatDuration(duration)}`,
-    events.map(({ event, count }) => t('summary.eventCount', { event, count })).join(' · '),
+    events.map(({ event, count }) => t('history.eventCount', { event, count })).join(' · '),
     totals.map((total) => `${total.exercise} ${total.amount} ${total.unit}`).join(' · '),
-    jokers && t('summary.jokersLine', { earned: t('summary.earned', jokers.earned), spent: t('summary.spent', jokers.spent) }),
+    jokers && t('history.jokersLine', { earned: t('history.earned', jokers.earned), spent: t('history.spent', jokers.spent) }),
   ].filter(Boolean).join('\n');
 }

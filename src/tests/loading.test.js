@@ -50,7 +50,7 @@ describe('loading', () => {
     expect(w.find('.banner.error').text()).toBe('Erreur interne, le détail est dans les journaux de l\'application.');
   });
 
-  it('reports an invalid config outside the Configuration tab', async () => {
+  it('reports an invalid config outside the Program and Settings tabs', async () => {
     setup({ get_config: { config, error: { code: 'config_ignored', params: { cause: { code: 'no_game', params: {} } } } } });
     const w = await mountApp();
     expect(w.find('.banner.error').text()).toContain('Configuration enregistrée ignorée, configuration par défaut utilisée. Aucun jeu défini.');

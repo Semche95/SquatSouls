@@ -23,11 +23,12 @@
   "app": {
     "tabs": {
       "play": "Jouer",
-      "summary": "Bilan",
-      "config": "Configuration"
+      "history": "Historique",
+      "program": "Programme",
+      "settings": "Réglages"
     },
     "sessionSince": "Séance depuis",
-    "viewConfig": "Voir la configuration"
+    "viewConfig": "Voir le programme"
   },
   "play": {
     "game": "Jeu",
@@ -81,7 +82,7 @@
       "Souffle un peu. Le prochain boss peut attendre."
     ]
   },
-  "summary": {
+  "history": {
     "current": "Séance actuelle",
     "since": "en cours depuis {time}",
     "notStarted": "pas encore démarrée",
@@ -91,10 +92,10 @@
     "sets": "{n} série | {n} séries",
     "earned": "{n} gagné | {n} gagnés",
     "spent": "{n} utilisé | {n} utilisés",
-    "history": "Historique",
     "fullHistory": "Historique complet",
     "activeDays": "{n} jour d'activité | {n} jours d'activité",
-    "lastDays": "7 derniers jours, par séance",
+    "lastDays": "7 derniers jours",
+    "bySession": "par séance",
     "close": "Fermer",
     "seeAll": "Tout voir",
     "noHistory": "Aucune série enregistrée pour l'instant.",
@@ -112,8 +113,7 @@
   "config": {
     "tabs": {
       "games": "Jeux",
-      "exercises": "Exercices",
-      "settings": "Réglages"
+      "exercises": "Exercices"
     },
     "save": "Enregistrer",
     "discard": "Réinitialiser les modifications",

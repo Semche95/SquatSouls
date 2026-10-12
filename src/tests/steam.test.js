@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, setup, mountApp } from './app.js';
+import { config, emptySession, setup, mountApp, openSettings } from './app.js';
 
 // Configuration with detection enabled, Elden Ring carrying its Steam AppId.
 const steamConfig = (extra = {}) => ({
@@ -23,10 +23,6 @@ function setupSteam({ cfg = steamConfig(), ...over } = {}) {
 
 const banner = (w) => w.find('.banner.steam');
 
-async function openSettings(w) {
-  await w.findAll('.tabs button')[2].trigger('click');
-  await w.findAll('.subtabs button')[2].trigger('click');
-}
 const status = (w) => w.find('.status').text();
 // Settings checkbox, by its label.
 const check = (w, label) => w.findAll('.check').find((c) => c.text() === label).find('input');

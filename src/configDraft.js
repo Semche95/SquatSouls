@@ -4,6 +4,16 @@ export function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+// Configuration fields edited in the Settings tab; the Program tab edits all the others.
+export const SETTINGS_FIELDS = ['rememberIntensity', 'tray', 'closeToTray', 'startHidden', 'steamDetection', 'steamNotify'];
+
+// Saved configuration with the fields of one tab taken from the draft: each tab saves and resets only its own.
+export function withTabDraft(config, draft, settings) {
+  const cfg = clone(settings ? config : draft);
+  for (const f of SETTINGS_FIELDS) cfg[f] = (settings ? draft : config)[f];
+  return cfg;
+}
+
 // Ids stay internal: derived from the name on creation, then fixed even when renamed.
 export function newId(name, items) {
   const base = name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'id';

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, rejection, responses, setup, mountApp, shownTip, expectTip } from './app.js';
+import { config, emptySession, rejection, responses, setup, mountApp, shownTip, expectTip, openSettings } from './app.js';
 import { shareExercises, shareGame } from '../share.js';
 
 describe('configuration', () => {
@@ -337,18 +337,64 @@ describe('configuration', () => {
   });
 });
 
-describe('language', () => {
-  async function openSettings() {
+describe('program and settings', () => {
+  const remember = (w) => w.findAll('.check').find((c) => c.text() === 'Garder l\'intensité d\'un lancement à l\'autre').find('input');
+  const name = (w) => w.find('input[aria-label="Nom du jeu"]');
+  const sent = () => invoke.mock.calls.find(([cmd]) => cmd === 'save_config')[1].config;
+
+  async function editBoth() {
+    setup({ save_config: (args) => ({ config: args.config }) });
     const w = await mountApp();
     await w.findAll('.tabs button')[2].trigger('click');
-    await w.findAll('.subtabs button')[2].trigger('click');
+    await name(w).setValue('Elden Ring DLC');
+    await openSettings(w);
+    await remember(w).setValue(true);
+    return w;
+  }
+
+  it('saves only the changes of the Settings tab, the Program ones stay pending', async () => {
+    const w = await editBoth();
+    await w.find('.cfg-actions .primary').trigger('click');
+    await flushPromises();
+    expect(sent().rememberIntensity).toBe(true);
+    expect(sent().games[0].name).toBe('Elden Ring');
+    await w.findAll('.tabs button')[2].trigger('click');
+    expect(name(w).element.value).toBe('Elden Ring DLC');
+    expect(w.find('.cfg-actions .primary').element.disabled).toBe(false);
+  });
+
+  it('saves only the changes of the Program tab, the Settings ones stay pending', async () => {
+    const w = await editBoth();
+    await w.findAll('.tabs button')[2].trigger('click');
+    await w.find('.cfg-actions .primary').trigger('click');
+    await flushPromises();
+    expect(sent().games[0].name).toBe('Elden Ring DLC');
+    expect(sent().rememberIntensity).toBeFalsy();
+    await openSettings(w);
+    expect(remember(w).element.checked).toBe(true);
+  });
+
+  it('resets only the changes of its own tab', async () => {
+    const w = await editBoth();
+    await w.find('.cfg-actions .ghost').trigger('click');
+    expect(remember(w).element.checked).toBe(false);
+    expect(w.find('.cfg-actions .primary').element.disabled).toBe(true);
+    await w.findAll('.tabs button')[2].trigger('click');
+    expect(name(w).element.value).toBe('Elden Ring DLC');
+  });
+});
+
+describe('language', () => {
+  async function mountSettings() {
+    const w = await mountApp();
+    await openSettings(w);
     return w;
   }
   const select = (w) => w.find('.cfg-settings select');
 
   it('offers the system language, then English and French written in their own language', async () => {
     setup();
-    const w = await openSettings();
+    const w = await mountSettings();
     expect(w.find('.cfg-settings .setting').text()).toContain('Langue');
     expect(select(w).findAll('option').map((o) => [o.element.value, o.text()])).toEqual([
       ['system', 'Langue du système'],
@@ -360,26 +406,26 @@ describe('language', () => {
 
   it('switches right away without saving nor touching the pending changes', async () => {
     setup();
-    const w = await openSettings();
-    await w.findAll('.subtabs button')[0].trigger('click');
+    const w = await mountSettings();
+    await w.findAll('.tabs button')[2].trigger('click');
     await w.find('input[aria-label="Nom du jeu"]').setValue('Elden Ring DLC');
-    await w.findAll('.subtabs button')[2].trigger('click');
+    await openSettings(w);
     await select(w).setValue('en');
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('set_language', { setting: 'en' });
     expect(invoke.mock.calls.some(([cmd]) => cmd === 'save_config')).toBe(false);
-    expect(w.findAll('.tabs button').map((b) => b.text())).toEqual(['Play', 'Summary', 'Configuration']);
+    expect(w.findAll('.tabs button').map((b) => b.text())).toEqual(['Play', 'History', 'Program', 'Settings']);
     expect(w.find('.cfg-settings .setting').text()).toContain('Language');
     expect(select(w).find('option').text()).toBe('System language');
     expect(document.documentElement.lang).toBe('en');
-    await w.findAll('.subtabs button')[0].trigger('click');
+    await w.findAll('.tabs button')[2].trigger('click');
     expect(w.find('input[aria-label="Name of the game"]').element.value).toBe('Elden Ring DLC');
     expect(w.find('.cfg-actions .primary').text()).toBe('Save');
   });
 
   it('shows the error and goes back to the saved setting when the backend refuses', async () => {
     setup({ set_language: rejection('invalid_language', { value: 'en' }) });
-    const w = await openSettings();
+    const w = await mountSettings();
     await select(w).setValue('en');
     await flushPromises();
     expect(w.find('.banner.error').text()).toBe('Langue inconnue : en.');

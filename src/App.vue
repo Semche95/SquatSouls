@@ -9,8 +9,10 @@ import { provideConfig } from './composables/useConfig.js';
 import { provideSession } from './composables/useSession.js';
 import { provideSteam } from './composables/useSteam.js';
 import PlayTab from './components/PlayTab.vue';
-import SummaryTab from './components/SummaryTab.vue';
-import ConfigTab from './components/ConfigTab.vue';
+import HistoryTab from './components/HistoryTab.vue';
+import ProgramTab from './components/ProgramTab.vue';
+import ConfigFrame from './components/ConfigFrame.vue';
+import ConfigSettings from './components/ConfigSettings.vue';
 
 // Picked once at launch, shown under the title.
 const slogan = pickSlogan();
@@ -44,10 +46,11 @@ onMounted(async () => {
       </div>
       <nav class="tabs">
         <button :class="{ active: tab === 'play' }" @click="tab = 'play'">{{ t('app.tabs.play') }}</button>
-        <button :class="{ active: tab === 'summary' }" @click="tab = 'summary'">
-          {{ t('app.tabs.summary') }} <span v-if="session.sets" class="badge">{{ session.sets }}</span>
+        <button :class="{ active: tab === 'history' }" @click="tab = 'history'">
+          {{ t('app.tabs.history') }} <span v-if="session.sets" class="badge">{{ session.sets }}</span>
         </button>
-        <button :class="{ active: tab === 'config' }" @click="tab = 'config'">{{ t('app.tabs.config') }}</button>
+        <button :class="{ active: tab === 'program' }" @click="tab = 'program'">{{ t('app.tabs.program') }}</button>
+        <button :class="{ active: tab === 'settings' }" @click="tab = 'settings'">{{ t('app.tabs.settings') }}</button>
       </nav>
       <dl class="hud">
         <div>
@@ -66,13 +69,14 @@ onMounted(async () => {
     </header>
 
     <p v-if="error" class="banner error">{{ error }}</p>
-    <p v-if="configError && tab !== 'config'" class="banner error">
+    <p v-if="configError && !['program', 'settings'].includes(tab)" class="banner error">
       {{ configError }}
-      <button class="link" @click="tab = 'config'">{{ t('app.viewConfig') }}</button>
+      <button class="link" @click="tab = 'program'">{{ t('app.viewConfig') }}</button>
     </p>
 
     <PlayTab v-if="tab === 'play'" />
-    <SummaryTab v-else-if="tab === 'summary'" />
-    <ConfigTab v-else />
+    <HistoryTab v-else-if="tab === 'history'" />
+    <ProgramTab v-else-if="tab === 'program'" />
+    <ConfigFrame v-else settings><ConfigSettings /></ConfigFrame>
   </div>
 </template>

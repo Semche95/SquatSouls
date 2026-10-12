@@ -15,7 +15,7 @@ const { config } = useConfig();
 const { session } = useSession();
 
 const history = ref([]);
-// Full history, shown large over the Summary tab (null when closed).
+// Full history, shown large over the History tab (null when closed).
 const fullHistory = ref(null);
 // Days with at least one set, ever: a count that only goes up.
 const activeDays = ref(0);
@@ -77,21 +77,21 @@ onMounted(async () => {
   <main class="panel summary">
     <section class="group current">
       <header class="group-head">
-        <h2 class="group-title">{{ t('summary.current') }}</h2>
-        <span class="muted"><template v-if="gameName">{{ gameName }} · </template>{{ session.startedAt ? t('summary.since', { time: formatTime(session.startedAt) }) : t('summary.notStarted') }}</span>
+        <h2 class="group-title">{{ t('history.current') }}</h2>
+        <span class="muted"><template v-if="gameName">{{ gameName }} · </template>{{ session.startedAt ? t('history.since', { time: formatTime(session.startedAt) }) : t('history.notStarted') }}</span>
         <button v-if="session.sets" class="ghost" @click="copySummary('current', currentSummary())">
-          {{ t(copied === 'current' ? 'summary.copiedSummary' : 'summary.copy') }}
+          {{ t(copied === 'current' ? 'history.copiedSummary' : 'history.copy') }}
         </button>
       </header>
-      <p v-if="!session.sets" class="empty">{{ t(session.startedAt ? 'summary.underway' : 'summary.waiting') }}</p>
+      <p v-if="!session.sets" class="empty">{{ t(session.startedAt ? 'history.underway' : 'history.waiting') }}</p>
       <div v-else class="session-detail">
         <div class="session-totals">
-          <h2>{{ t('summary.totals') }}</h2>
+          <h2>{{ t('history.totals') }}</h2>
           <ul class="totals">
             <li v-for="total in session.totals" :key="total.exercise + total.unit">
               <span class="total-amount">{{ total.amount }} <small>{{ total.unit }}</small></span>
               <strong>{{ total.exercise }}</strong>
-              <span class="muted">{{ t('summary.sets', total.sets) }}</span>
+              <span class="muted">{{ t('history.sets', total.sets) }}</span>
             </li>
           </ul>
         </div>
@@ -108,28 +108,28 @@ onMounted(async () => {
       </div>
       <div v-if="session.jokersEarned || session.jokersSpent">
         <h2>{{ t('common.jokers') }}</h2>
-        <p class="muted">{{ t('summary.earned', session.jokersEarned) }} · {{ t('summary.spent', session.jokersSpent) }}</p>
+        <p class="muted">{{ t('history.earned', session.jokersEarned) }} · {{ t('history.spent', session.jokersSpent) }}</p>
       </div>
     </section>
 
     <section class="group" :class="{ full: fullHistory }">
       <header class="group-head">
-        <h2 class="group-title">{{ t(fullHistory ? 'summary.fullHistory' : 'summary.history') }}</h2>
-        <span class="muted"><template v-if="!fullHistory">{{ t('summary.lastDays') }} · </template>{{ t('summary.activeDays', activeDays) }}</span>
-        <button v-if="fullHistory" class="ghost" @click="fullHistory = null">{{ t('summary.close') }}</button>
-        <button v-else class="ghost" @click="openFullHistory">{{ t('summary.seeAll') }}</button>
+        <h2 class="group-title">{{ t(fullHistory ? 'history.fullHistory' : 'history.lastDays') }}</h2>
+        <span class="muted"><template v-if="!fullHistory">{{ t('history.bySession') }} · </template>{{ t('history.activeDays', activeDays) }}</span>
+        <button v-if="fullHistory" class="ghost" @click="fullHistory = null">{{ t('history.close') }}</button>
+        <button v-else class="ghost" @click="openFullHistory">{{ t('history.seeAll') }}</button>
       </header>
-      <p v-if="fullHistory && !fullHistory.length" class="muted">{{ t('summary.noHistory') }}</p>
+      <p v-if="fullHistory && !fullHistory.length" class="muted">{{ t('history.noHistory') }}</p>
       <ul class="days">
         <li v-for="d in fullHistory ?? history" :key="d.date" :class="{ off: !d.sets }">
           <span class="day">{{ formatDay(d.date) }}</span>
-          <span v-if="!d.sets" class="muted">{{ t('summary.rest') }}</span>
+          <span v-if="!d.sets" class="muted">{{ t('history.rest') }}</span>
           <span v-else class="day-body">
             <span v-for="se in d.sessions" :key="se.start + se.game" class="day-session">
               <span class="day-games">
                 {{ formatTime(se.start) }} · {{ se.game }} · {{ formatDuration(se.duration) }}
                 <button class="link" @click="copySummary(se.start + se.game, sessionSummary(se))">
-                  {{ t(copied === se.start + se.game ? 'summary.copiedSummary' : 'summary.copy') }}
+                  {{ t(copied === se.start + se.game ? 'history.copiedSummary' : 'history.copy') }}
                 </button>
               </span>
               <span class="day-totals">

@@ -52,7 +52,7 @@ Button and setting names are quoted as they appear in the English interface.
 - **Skip** an exercise (2 jokers, only 1 if it was already halved or cannot be, its number being 1): it is removed from the set, the rest remains to do. Skipping the last exercise removes the set.
 - **Skip the set** (set with several remaining exercises): costs the sum of the skips of its remaining exercises; those already done stay done.
 - An exercise done can no longer be halved or skipped.
-- An action is only possible with enough jokers. What is removed is not done (neither totals nor history). The Summary tab only shows the jokers earned and used: the sets done list what was done, at its real number, without mentioning any joker.
+- An action is only possible with enough jokers. What is removed is not done (neither totals nor history). The History tab only shows the jokers earned and used: the sets done list what was done, at its real number, without mentioning any joker.
 - Unspent jokers are lost at the end of the session.
 
 ## Session
@@ -81,9 +81,10 @@ Button and setting names are quoted as they appear in the English interface.
 
 ## Configuration
 
+- **Program** (games, events, exercises) and **Settings** are separate: each tab's **Save** and **Reset the changes** only apply to its own changes.
 - The configuration is validated before being saved. It is refused if: there is no exercise, no enabled exercise or no game, an id or a name is empty, an id is duplicated, two games have the same name (ignoring case and surrounding spaces), a game has no event, `draws` is 0 or exceeds the number of enabled exercises, `maxPerSession` is 0, or an exercise has `max` at 0 or `min` greater than `max`.
 - Each number field (pauses, minimum, maximum, required exercises, limit, jokers) must be a whole number, 0 or more, and not too large. This format is checked while typing: a badly filled field (text, negative or decimal number) gets a red border and the problem shows right away in a tooltip while typing; once the field is left, the tooltip closes and reopens on hover. Other errors and confirmations only appear on save. While a field is badly filled, **Save** is disabled and its tooltip names the first faulty field (for example "Squats › minimum: a whole number is needed, 0 or more."). A cleared required field is 0, a cleared optional field (own pause, limit) is removed.
-- Games are always listed by name, ignoring case and accents, in the Play tab as in the configuration. Without a chosen game, the configuration opens on the first one in the list.
+- Games are always listed by name, ignoring case and accents, in the Play tab as in the Program tab. Without a chosen game, the configuration opens on the first one in the list.
 - A new database (first launch, no saved game) receives the default configuration, described in `src-tauri/src/app/seed.en.json` and `seed.fr.json` (same ids, numbers and AppIds, only the names and units differ), in the effective language at that launch (see Language). If the saved configuration is unreadable or invalid, the default configuration in the effective language is used and the error is shown.
 
 ## Language

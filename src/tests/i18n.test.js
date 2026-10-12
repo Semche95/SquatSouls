@@ -33,7 +33,7 @@ describe('locale files', () => {
     await setLanguage('en');
     expect([0, 1, 2].map((n) => t('common.joker', n))).toEqual(['0 jokers', '1 joker', '2 jokers']);
     expect([0, 1, 2].map((n) => t('play.jokers', n))).toEqual(['no jokers', '1 joker', '2 jokers']);
-    expect(t('summary.sets', 1)).toBe('1 set');
+    expect(t('history.sets', 1)).toBe('1 set');
   });
 });
 

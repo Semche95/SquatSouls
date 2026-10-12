@@ -23,11 +23,12 @@
   "app": {
     "tabs": {
       "play": "Play",
-      "summary": "Summary",
-      "config": "Configuration"
+      "history": "History",
+      "program": "Program",
+      "settings": "Settings"
     },
     "sessionSince": "Session since",
-    "viewConfig": "View the configuration"
+    "viewConfig": "View the program"
   },
   "play": {
     "game": "Game",
@@ -81,7 +82,7 @@
       "Catch your breath. The next boss can wait."
     ]
   },
-  "summary": {
+  "history": {
     "current": "Current session",
     "since": "running since {time}",
     "notStarted": "not started",
@@ -91,10 +92,10 @@
     "sets": "{n} set | {n} sets",
     "earned": "{n} earned | {n} earned",
     "spent": "{n} used | {n} used",
-    "history": "History",
     "fullHistory": "Full history",
     "activeDays": "{n} day of activity | {n} days of activity",
-    "lastDays": "Last 7 days, by session",
+    "lastDays": "Last 7 days",
+    "bySession": "by session",
     "close": "Close",
     "seeAll": "See all",
     "noHistory": "No set recorded yet.",
@@ -112,8 +113,7 @@
   "config": {
     "tabs": {
       "games": "Games",
-      "exercises": "Exercises",
-      "settings": "Settings"
+      "exercises": "Exercises"
     },
     "save": "Save",
     "discard": "Reset the changes",

@@ -3,7 +3,7 @@ import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { emptySession, setup, mountApp } from './app.js';
 
-describe('summary', () => {
+describe('history', () => {
   it.each([
     [null, 'Rien pour l\'instant.'],
     [1, 'Séance lancée. Le premier combat t\'attend.'],
@@ -42,7 +42,8 @@ describe('summary', () => {
     expect(invoke).toHaveBeenCalledWith('get_history', { days: 7 });
     expect(w.find('.current .group-head').text()).toContain('Elden Ring · en cours depuis');
     expect(w.find('.totals').text()).toContain('10 reps');
-    expect(w.find('.group:not(.current) .group-head').text()).toContain('7 derniers jours, par séance · 12 jours d\'activité');
+    expect(w.find('.group:not(.current) .group-title').text()).toBe('7 derniers jours');
+    expect(w.find('.group:not(.current) .group-head').text()).toContain('par séance · 12 jours d\'activité');
     const days = w.findAll('.days li');
     expect(days[0].text()).toContain('repos');
     expect(days[1].text()).toContain('Squats 10 reps');

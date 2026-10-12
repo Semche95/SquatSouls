@@ -88,7 +88,7 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
 
   // Opens game creation, prefilled with the Steam game's name and AppId.
   function addGame({ appId, name }) {
-    tab.value = 'config';
+    tab.value = 'program';
     cfgTab.value = 'games';
     newGame.value = { name, source: '', steamAppId: appId };
   }
