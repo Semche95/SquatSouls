@@ -63,7 +63,15 @@
     "confirmEnd": "End the session? The next one starts with counters (including the death limit) and jokers at zero. The history is kept.",
     "endConfirmed": "End",
     "confirmCancel": "Cancel the session? The counters (including the death limit), the sets to do and the sets done will be cleared, and its sets removed from the history.",
-    "keep": "Keep the session"
+    "keep": "Keep the session",
+    "farewells": [
+      "Bonfire lit. Rest now, your legs have earned it.",
+      "Victory achieved. Every set counted.",
+      "Another session survived. Praise the sun!",
+      "Humanity restored, and your quads with it.",
+      "The fog wall has lifted. Well fought.",
+      "Catch your breath. The next boss can wait."
+    ]
   },
   "summary": {
     "current": "Current session",

@@ -19,7 +19,7 @@ export const i18n = createI18n({
   pluralRules: { fr: frenchPlural },
 });
 
-export const { t, te } = i18n.global;
+export const { t, te, tm, rt } = i18n.global;
 // Effective language, 'en' or 'fr'.
 export const language = i18n.global.locale;
 // Saved setting: 'system', 'en' or 'fr'.

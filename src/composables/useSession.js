@@ -1,7 +1,7 @@
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { clone } from '../configDraft.js';
-import { t } from '../i18n.js';
+import { t, tm } from '../i18n.js';
 import { defineShared } from './shared.js';
 
 // Refresh rate of the pause countdown.
@@ -10,6 +10,11 @@ const PAUSE_TICK_MS = 250;
 export const [provideSession, useSession] = defineShared(({ call }, { config, draft, game, gameId, store }) => {
   const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], jokers: 0, jokersEarned: 0, skipped: [] });
   const notice = ref('');
+  // Encouragement shown once the session ends, until the next one starts: index in `session.farewells`.
+  const farewell = ref(-1);
+  watch(() => session.value.startedAt, (started) => {
+    if (started) farewell.value = -1;
+  });
   // Pause after an exercise is done: no other can be marked done before it ends.
   const pauseEnd = ref(0);
   const now = ref(0);
@@ -137,6 +142,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     notice.value = '';
     skipPause();
     session.value = await call('end_session');
+    farewell.value = Math.floor(Math.random() * tm('session.farewells').length);
   }
 
   async function cancelSession() {
@@ -150,7 +156,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   }
 
   return {
-    session, notice, pauseLeft, skipPause, reload, saveNow, saveChange, trigger, act, confirmDismiss, dismiss,
+    session, notice, farewell, pauseLeft, skipPause, reload, saveNow, saveChange, trigger, act, confirmDismiss, dismiss,
     dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet, startSession, endSession, cancelSession,
   };
 });

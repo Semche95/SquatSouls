@@ -63,7 +63,15 @@
     "confirmEnd": "Terminer la séance ? La suivante repart avec compteurs (dont la limite de morts) et jokers à zéro. L'historique est conservé.",
     "endConfirmed": "Terminer",
     "confirmCancel": "Annuler la séance ? Les compteurs (dont la limite de morts), les séries à faire et les séries faites seront effacés, et ses séries retirées de l'historique.",
-    "keep": "Garder la séance"
+    "keep": "Garder la séance",
+    "farewells": [
+      "Feu allumé. Repose-toi, tes jambes l'ont bien mérité.",
+      "Victoire. Chaque série a compté.",
+      "Encore une séance survécue. Loué soit le soleil !",
+      "Humanité restaurée, quadriceps compris.",
+      "Le mur de brume est levé. Beau combat.",
+      "Souffle un peu. Le prochain boss peut attendre."
+    ]
   },
   "summary": {
     "current": "Séance actuelle",

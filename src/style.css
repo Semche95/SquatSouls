@@ -287,11 +287,20 @@ kbd.dark {
 .session-actions {
   margin-top: auto;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 .session-actions > *,
 .session-actions .tip > button {
   flex: 1;
+}
+/* Encouragement after the session ends, on its own line above the buttons. */
+.session-actions > .farewell {
+  flex-basis: 100%;
+  margin: 0;
+  text-align: center;
+  font-style: italic;
+  color: var(--gold);
 }
 .banner.error {
   border-color: var(--red);

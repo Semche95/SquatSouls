@@ -1,10 +1,10 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { t } from '../i18n.js';
+import { rt, t, tm } from '../i18n.js';
 import { useSession } from '../composables/useSession.js';
 import DisabledTip from './DisabledTip.vue';
 
-const { session, startSession, endSession, cancelSession } = useSession();
+const { session, farewell, startSession, endSession, cancelSession } = useSession();
 
 // "" or the session action awaiting confirmation: "end" or "cancel".
 const confirmSession = ref('');
@@ -12,6 +12,7 @@ const confirmSession = ref('');
 const canEnd = computed(() => session.value.sets > 0 && !session.value.pending.length);
 // Nothing to cancel until the session has started.
 const started = computed(() => !!session.value.startedAt);
+const farewellText = computed(() => (farewell.value < 0 ? '' : rt(tm('session.farewells')[farewell.value])));
 
 function confirmed(action) {
   confirmSession.value = '';
@@ -21,6 +22,7 @@ function confirmed(action) {
 
 <template>
   <div v-if="!confirmSession" class="session-actions">
+    <p v-if="farewellText" class="farewell">{{ farewellText }}</p>
     <button v-if="!started" class="primary" @click="startSession">{{ t('session.start') }}</button>
     <DisabledTip v-else :tip="canEnd ? '' : t(session.pending.length ? 'session.pendingSets' : 'session.noSets')">
       <button class="primary" :disabled="!canEnd" @click="confirmSession = 'end'">{{ t('session.end') }}</button>

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { config, emptySession, draw, rejection, responses, setup, mountApp, press, expectTip } from './app.js';
+import { rt, tm } from '../i18n.js';
 
 describe('session', () => {
   it('draws a set on clicking an event', async () => {
@@ -277,5 +278,18 @@ describe('session', () => {
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('cancel_session', undefined);
     expect(invoke).not.toHaveBeenCalledWith('end_session', undefined);
+  });
+
+  it('encourages next to the session actions once it ends, until the next one starts', async () => {
+    setup({ get_session: emptySession({ sets: 1 }), end_session: emptySession({ startedAt: null }), start_session: emptySession() });
+    const w = await mountApp();
+    expect(w.find('.farewell').exists()).toBe(false);
+    await w.find('.session-actions .primary').trigger('click');
+    await w.find('.confirm .primary').trigger('click');
+    await flushPromises();
+    expect(tm('session.farewells').map((m) => rt(m))).toContain(w.find('.session-actions .farewell').text());
+    await w.find('.session-actions .primary').trigger('click');
+    await flushPromises();
+    expect(w.find('.farewell').exists()).toBe(false);
   });
 });
