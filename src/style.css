@@ -128,7 +128,7 @@ select:disabled {
 }
 
 .tabs,
-.subtabs {
+.cfg-game-list {
   display: flex;
   gap: 4px;
   background: var(--panel);
@@ -137,19 +137,19 @@ select:disabled {
   padding: 3px;
 }
 .tabs button,
-.subtabs button {
+.cfg-game-list button {
   border: none;
   background: transparent;
   padding: 6px 12px;
   color: var(--muted);
 }
 .tabs button:hover:not(.active),
-.subtabs button:hover:not(.active) {
+.cfg-game-list button:hover:not(.active) {
   background: var(--gold-soft);
   color: var(--text);
 }
 .tabs button.active,
-.subtabs button.active {
+.cfg-game-list button.active {
   background: var(--panel-2);
   color: var(--text);
 }
@@ -748,9 +748,27 @@ kbd.dark {
 .cfg-off input:not([type='checkbox']) {
   opacity: 0.5;
 }
-/* Configuration: games and exercises on separate sub-tabs. */
+/* Configuration: games and exercises on separate sub-tabs, underlined so as not to look like a segmented control. */
 .subtabs {
-  align-self: flex-start;
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+}
+.subtabs button {
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  margin-bottom: -1px;
+  background: transparent;
+  padding: 6px 12px;
+  color: var(--muted);
+}
+.subtabs button:hover:not(.active) {
+  color: var(--text);
+}
+.subtabs button.active {
+  border-bottom-color: var(--gold);
+  color: var(--text);
 }
 /* Settings: one card per topic, each option is a label followed by a switch on the right,
    its secondary options indented under a line. */
@@ -940,6 +958,7 @@ label.check {
 }
 .cfg-game-list {
   flex-direction: column;
+  align-self: flex-start;
 }
 .cfg-game-list button {
   text-align: left;

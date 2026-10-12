@@ -104,7 +104,7 @@ function addEvent(game) {
       </DisabledTip>
     </header>
     <div class="cfg-games">
-      <nav class="subtabs cfg-game-list" :aria-label="t('config.games.list')">
+      <nav class="cfg-game-list" :aria-label="t('config.games.list')">
         <button
           v-for="g in byName(config.games)"
           :key="g.id"
