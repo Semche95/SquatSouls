@@ -56,9 +56,10 @@
     "pendingSets": "Sets are still to do",
     "noSets": "No set done",
     "nothingToCancel": "Nothing to cancel",
+    "start": "Start the session",
     "end": "End the session",
     "cancel": "Cancel the session",
-    "confirmEnd": "End the session? A new one starts right away: counters (including the death limit) and jokers start from zero. The history is kept.",
+    "confirmEnd": "End the session? The next one starts with counters (including the death limit) and jokers at zero. The history is kept.",
     "endConfirmed": "End",
     "confirmCancel": "Cancel the session? The counters (including the death limit), the sets to do and the sets done will be cleared, and its sets removed from the history.",
     "keep": "Keep the session"
@@ -66,6 +67,7 @@
   "summary": {
     "current": "Current session",
     "since": "running since {time}",
+    "notStarted": "not started",
     "noSets": "No set done during this session.",
     "totals": "Totals",
     "sets": "{n} set | {n} sets",

@@ -8,7 +8,6 @@ describe('summary', () => {
     setup({
       get_session: emptySession({
         gameId: 'er',
-        startedAt: 0,
         sets: 1,
         totals: [{ exercise: 'Squats', unit: 'reps', sets: 1, amount: 10 }],
         log: [{ at: 0, amount: 10, unit: 'reps', exercise: 'Squats', event: 'Death' }],

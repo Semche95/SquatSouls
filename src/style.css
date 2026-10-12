@@ -289,7 +289,7 @@ kbd.dark {
   display: flex;
   gap: 8px;
 }
-.session-actions > .tip,
+.session-actions > *,
 .session-actions .tip > button {
   flex: 1;
 }

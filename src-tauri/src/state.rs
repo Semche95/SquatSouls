@@ -69,7 +69,7 @@ impl AppState {
             config,
             config_error,
             store,
-            session: Session::new(now()),
+            session: Session::default(),
             system_locale,
             language,
             native_texts: None,
@@ -115,12 +115,14 @@ impl AppState {
         Ok(self.config_view())
     }
 
-    /// Removes the current session's sets from the history and starts a new one.
+    /// Removes the current session's sets from the history; the next one waits to be started.
     pub(crate) fn cancel_session(&mut self) -> Result<(), AppError> {
-        self.store
-            .remove_session(self.session.started_at)
-            .map_err(|e| AppError::internal("History not modified", e))?;
-        self.session = Session::new(now());
+        if let Some(started_at) = self.session.started_at {
+            self.store
+                .remove_session(started_at)
+                .map_err(|e| AppError::internal("History not modified", e))?;
+        }
+        self.session = Session::default();
         Ok(())
     }
 }

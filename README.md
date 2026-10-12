@@ -60,7 +60,7 @@ pnpm tauri build   # packages in src-tauri/target/release/bundle/
 
 ## Usage
 
-1. In **Play**, choose your game.
+1. In **Play**, choose your game, then click **Start the session** when you start playing.
 2. You die in game: click **Death**, or press 1. A set appears in **To do**, for example 14 squats.
 3. Do them, then click **Done** or press Enter. A pause starts.
 4. When you stop playing, click **End the session**. It shows up in **Summary**.

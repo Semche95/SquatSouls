@@ -148,7 +148,8 @@ pub struct TriggerCount {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionView {
-    pub started_at: i64,
+    /// Absent until the session is started.
+    pub started_at: Option<i64>,
     /// Game of the session, set on the first event.
     pub game_id: Option<String>,
     pub pending: Vec<Draw>,
@@ -165,7 +166,8 @@ pub struct SessionView {
 
 #[derive(Debug, Default)]
 pub struct Session {
-    pub started_at: i64,
+    /// Absent until the session is started, by its button or its first event.
+    pub started_at: Option<i64>,
     game_id: Option<String>,
     triggers: HashMap<(String, String), u32>,
     pending: Vec<Draw>,
@@ -185,9 +187,14 @@ pub struct Session {
 impl Session {
     pub fn new(now: i64) -> Self {
         Session {
-            started_at: now,
+            started_at: Some(now),
             ..Default::default()
         }
+    }
+
+    /// Starts the session at `now`, unless it already is; returns its start.
+    pub fn start(&mut self, now: i64) -> i64 {
+        *self.started_at.get_or_insert(now)
     }
 
     pub fn draw<R: Rng + ?Sized>(
@@ -304,7 +311,7 @@ impl Session {
         exercise_id: &str,
         now: i64,
     ) -> Result<LogEntry, AppError> {
-        let session = self.started_at;
+        let session = self.start(now);
         let (draw, pos) = self.pending_item(id, exercise_id)?;
         if draw.items[..pos].iter().any(|it| !it.done) {
             return Err(AppError::new("exercise_not_next"));

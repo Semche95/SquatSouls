@@ -44,7 +44,7 @@ onMounted(async () => {
     <section class="group current">
       <header class="group-head">
         <h2 class="group-title">{{ t('summary.current') }}</h2>
-        <span class="muted"><template v-if="gameName">{{ gameName }} · </template>{{ t('summary.since', { time: formatTime(session.startedAt) }) }}</span>
+        <span class="muted"><template v-if="gameName">{{ gameName }} · </template>{{ session.startedAt ? t('summary.since', { time: formatTime(session.startedAt) }) : t('summary.notStarted') }}</span>
       </header>
       <p v-if="!session.sets" class="empty">{{ t('summary.noSets') }}</p>
       <div v-else class="session-detail">

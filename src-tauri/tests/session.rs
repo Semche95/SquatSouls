@@ -149,6 +149,22 @@ fn death_cap_applies_per_game_and_session() {
 }
 
 #[test]
+fn session_waits_to_be_started() {
+    let cfg = default_config(Language::Fr);
+    let mut s = Session::default();
+    assert_eq!(s.view().started_at, None);
+    let id = s.draw(&cfg, "ds1", "mort", &mut rng()).unwrap().id;
+    let entries = complete(&mut s, id, 5).unwrap();
+    assert_eq!(
+        s.view().started_at,
+        Some(5),
+        "started by its first set done"
+    );
+    assert!(entries.iter().all(|e| e.session == 5));
+    assert_eq!(s.start(9), 5, "a started session keeps its start");
+}
+
+#[test]
 fn removed_game_is_detected() {
     let mut cfg = default_config(Language::Fr);
     let mut s = Session::new(0);

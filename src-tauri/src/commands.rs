@@ -73,7 +73,9 @@ pub(crate) fn draw(state: Shared, game_id: String, event_id: String) -> Result<D
     let AppState {
         config, session, ..
     } = &mut *guard;
-    session.draw(config, &game_id, &event_id, &mut rand::rng())
+    let draw = session.draw(config, &game_id, &event_id, &mut rand::rng())?;
+    session.start(now());
+    Ok(draw)
 }
 
 #[tauri::command]
@@ -135,14 +137,22 @@ pub(crate) fn get_session(state: Shared) -> Result<SessionView, AppError> {
 }
 
 #[tauri::command]
-pub(crate) fn new_session(state: Shared) -> Result<SessionView, AppError> {
+pub(crate) fn start_session(state: Shared) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
-    if s.session.view().sets > 0 {
-        if let Err(e) = s.store.end_session(s.session.started_at, now()) {
+    s.session.start(now());
+    Ok(s.session.view())
+}
+
+/// Ends the session; the next one waits to be started.
+#[tauri::command]
+pub(crate) fn end_session(state: Shared) -> Result<SessionView, AppError> {
+    let mut s = lock(&state)?;
+    if let Some(started_at) = s.session.started_at.filter(|_| s.session.view().sets > 0) {
+        if let Err(e) = s.store.end_session(started_at, now()) {
             log::error!("Session end not saved: {e}");
         }
     }
-    s.session = Session::new(now());
+    s.session = Session::default();
     Ok(s.session.view())
 }
 

@@ -56,9 +56,10 @@
     "pendingSets": "Des séries sont encore à faire",
     "noSets": "Aucune série faite",
     "nothingToCancel": "Rien à annuler",
+    "start": "Démarrer la séance",
     "end": "Terminer la séance",
     "cancel": "Annuler la séance",
-    "confirmEnd": "Terminer la séance ? Une nouvelle commence aussitôt : compteurs (dont la limite de morts) et jokers repartent de zéro. L'historique est conservé.",
+    "confirmEnd": "Terminer la séance ? La suivante repart avec compteurs (dont la limite de morts) et jokers à zéro. L'historique est conservé.",
     "endConfirmed": "Terminer",
     "confirmCancel": "Annuler la séance ? Les compteurs (dont la limite de morts), les séries à faire et les séries faites seront effacés, et ses séries retirées de l'historique.",
     "keep": "Garder la séance"
@@ -66,6 +67,7 @@
   "summary": {
     "current": "Séance actuelle",
     "since": "en cours depuis {time}",
+    "notStarted": "pas encore démarrée",
     "noSets": "Aucune série faite pendant cette séance.",
     "totals": "Totaux",
     "sets": "{n} série | {n} séries",

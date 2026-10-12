@@ -129,10 +129,14 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     if (canAfford(setSkipCost(draw))) act('skip_set', draw);
   }
 
-  async function newSession() {
+  async function startSession() {
+    session.value = await call('start_session');
+  }
+
+  async function endSession() {
     notice.value = '';
     skipPause();
-    session.value = await call('new_session');
+    session.value = await call('end_session');
   }
 
   async function cancelSession() {
@@ -147,6 +151,6 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   return {
     session, notice, pauseLeft, skipPause, reload, saveNow, saveChange, trigger, act, confirmDismiss, dismiss,
-    dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet, newSession, cancelSession,
+    dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet, startSession, endSession, cancelSession,
   };
 });

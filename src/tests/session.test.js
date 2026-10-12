@@ -228,24 +228,38 @@ describe('session', () => {
     await expectTip(w.find('.session-actions .primary'), 'Des séries sont encore à faire');
   });
 
-  it('asks for confirmation before ending the session, then starts a new one', async () => {
-    setup({ get_session: emptySession({ sets: 1 }), new_session: emptySession() });
+  it('waits for the start button before starting the session', async () => {
+    setup({ get_session: emptySession({ startedAt: null }), start_session: emptySession() });
+    const w = await mountApp();
+    expect(w.find('.session-actions .danger').element.disabled).toBe(true);
+    const start = w.find('.session-actions .primary');
+    expect(start.text()).toBe('Démarrer la séance');
+    await start.trigger('click');
+    await flushPromises();
+    expect(invoke).toHaveBeenCalledWith('start_session', undefined);
+    expect(w.find('.session-actions .primary').text()).toBe('Terminer la séance');
+    expect(w.find('.session-actions .danger').element.disabled).toBe(false);
+  });
+
+  it('asks for confirmation before ending the session, then waits for the next one', async () => {
+    setup({ get_session: emptySession({ sets: 1 }), end_session: emptySession({ startedAt: null }) });
     const w = await mountApp();
     await w.find('.session-actions .primary').trigger('click');
-    expect(invoke).not.toHaveBeenCalledWith('new_session', undefined);
+    expect(invoke).not.toHaveBeenCalledWith('end_session', undefined);
     expect(w.text()).toContain('Terminer la séance ?');
     await w.find('.confirm .ghost').trigger('click');
     expect(w.find('.confirm').exists()).toBe(false);
     await w.find('.session-actions .primary').trigger('click');
     await w.find('.confirm .primary').trigger('click');
     await flushPromises();
-    expect(invoke).toHaveBeenCalledWith('new_session', undefined);
+    expect(invoke).toHaveBeenCalledWith('end_session', undefined);
     expect(w.find('.confirm').exists()).toBe(false);
+    expect(w.find('.session-actions .primary').text()).toBe('Démarrer la séance');
     expect(w.find('.event').element.disabled).toBe(false);
   });
 
-  it('disables cancelling while the session is empty', async () => {
-    setup();
+  it('disables cancelling while the session is not started', async () => {
+    setup({ get_session: emptySession({ startedAt: null }) });
     const w = await mountApp();
     expect(w.find('.session-actions .danger').element.disabled).toBe(true);
   });
@@ -262,6 +276,6 @@ describe('session', () => {
     await w.find('.confirm .danger').trigger('click');
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('cancel_session', undefined);
-    expect(invoke).not.toHaveBeenCalledWith('new_session', undefined);
+    expect(invoke).not.toHaveBeenCalledWith('end_session', undefined);
   });
 });
