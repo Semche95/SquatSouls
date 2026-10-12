@@ -4,6 +4,7 @@ Turn what happens in your games into bodyweight exercises.
 
 ![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux-informational)
 ![Tauri 2](https://img.shields.io/badge/Tauri-2-informational)
+![Vue 3](https://img.shields.io/badge/Vue-3-informational)
 [![License: MIT](https://img.shields.io/badge/license-MIT-informational)](LICENSE)
 [![Build](https://github.com/Semche95/SquatSouls/actions/workflows/build.yml/badge.svg)](https://github.com/Semche95/SquatSouls/actions/workflows/build.yml)
 
