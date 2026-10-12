@@ -1,5 +1,5 @@
 <script setup>
-import { vTooltip } from 'floating-vue';
+import { vTooltip } from '../tooltip.js';
 
 // Tooltip of a control (often the reason it is disabled), carried by a container:
 // a disabled control does not receive hover. error gives it a red border.

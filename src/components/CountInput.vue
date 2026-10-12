@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { vTooltip } from 'floating-vue';
+import { vTooltip } from '../tooltip.js';
 import { countError, parseCount } from '../configDraft.js';
 
 // Integer field whose format is checked while typing (error in a tooltip).
