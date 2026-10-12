@@ -733,7 +733,8 @@ kbd.dark {
   gap: 16px;
   cursor: pointer;
 }
-.config .check input {
+/* Every configuration checkbox is a switch, in Settings as in the exercise list. */
+.config input[type='checkbox'] {
   appearance: none;
   flex: none;
   position: relative;
@@ -746,8 +747,9 @@ kbd.dark {
   background: var(--panel-2);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
+  vertical-align: middle;
 }
-.config .check input::before {
+.config input[type='checkbox']::before {
   content: '';
   position: absolute;
   top: 2px;
@@ -758,15 +760,15 @@ kbd.dark {
   background: var(--muted);
   transition: transform 0.15s, background 0.15s;
 }
-.config .check input:checked {
+.config input[type='checkbox']:checked {
   background: var(--gold);
   border-color: var(--gold);
 }
-.config .check input:checked::before {
+.config input[type='checkbox']:checked::before {
   transform: translateX(16px);
   background: var(--bg);
 }
-.config .check :is(input, select):focus-visible {
+.config :is(input[type='checkbox'], .check select):focus-visible {
   outline: 2px solid var(--gold-soft);
   outline-offset: 2px;
 }
