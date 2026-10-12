@@ -40,7 +40,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - run: pnpm test
+
       - run: pnpm tauri build
+
+      # After the build: the backend compiles against the interface built in dist/.
+      - run: cargo test
+        working-directory: src-tauri
 
       - uses: actions/upload-artifact@v4
         with:
