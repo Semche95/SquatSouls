@@ -1,10 +1,10 @@
 # AGENTS.md
 
-Tauri 2 (Rust) + Vue 3 (Vite) desktop app. See `README.md` for usage.
+Tauri 2 (Rust) + Vue 3 (Vite) desktop app. See `README.md` for usage, `docs/BEHAVIOR.md` for behavior and `docs/DATA-AND-LOGS.md` for storage and logs.
 
 ## Business rules
 
-The business rules are described in the "Business rules" section of `README.md`, which is the reference.
+The business rules are described in `docs/BEHAVIOR.md`, which is the reference.
 
 - Read it before changing the app's behavior.
 - Update it in the same change as soon as a rule changes or is added (draw, limits, jokers, session, history, configuration validation).
@@ -15,6 +15,7 @@ The business rules are described in the "Business rules" section of `README.md`,
 - `src-tauri/src/`: Rust backend (`lib.rs` startup and log files, `commands.rs` Tauri commands, `state.rs` shared state and configuration loading, `tray.rs` notification area icon and hidden window, `app/` business logic: `config.rs` configuration, `seed.en.json` and `seed.fr.json` default configuration by language, `language.rs` language setting and its resolution, `error.rs` errors sent as codes, `session.rs` draw and session, `history.rs` history summary, `steam.rs` detection of the running Steam game, `store.rs` SQLite storage)
 - `src-tauri/migrations/`: SQL schema migrations, one per `V<n>__<name>.sql` file, dated in the database when applied. A migration is never modified once created, a new one is always added
 - `src/tests/`: interface tests (Vitest), one file per tab or module; `app.js` shared data and mounting, `setup.js` Tauri backend mock
+- `docs/`: `BEHAVIOR.md` business rules, `DATA-AND-LOGS.md` database, migrations and logs
 - `src-tauri/tests/`: backend tests (Cargo integration tests on the public API of `app`), one file per module
 
 ## Commands
