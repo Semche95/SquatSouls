@@ -21,7 +21,6 @@ const fullHistory = ref(null);
 const activeDays = ref(0);
 // Game set on the session's first event, absent before.
 const gameName = computed(() => config.value?.games.find((g) => g.id === session.value.gameId)?.name);
-const jokersSpent = computed(() => session.value.skipped.reduce((sum, k) => sum + k.jokers, 0));
 // Copy button that last copied its summary, '' after a while.
 const copied = ref('');
 let copiedTimer;
@@ -38,7 +37,7 @@ function currentSummary() {
       return count ? [{ event: ev.name, count }] : [];
     }),
     totals: s.totals,
-    jokers: { earned: s.jokersEarned, spent: jokersSpent.value },
+    jokers: { earned: s.jokersEarned, spent: s.jokersSpent },
   });
 }
 
@@ -107,9 +106,9 @@ onMounted(async () => {
           </ul>
         </div>
       </div>
-      <div v-if="session.jokersEarned || session.skipped.length">
+      <div v-if="session.jokersEarned || session.jokersSpent">
         <h2>{{ t('common.jokers') }}</h2>
-        <p class="muted">{{ t('summary.earned', session.jokersEarned) }} · {{ t('summary.spent', jokersSpent) }}</p>
+        <p class="muted">{{ t('summary.earned', session.jokersEarned) }} · {{ t('summary.spent', session.jokersSpent) }}</p>
       </div>
     </section>
 

@@ -112,7 +112,7 @@ pub(crate) fn halve(
     exercise_id: String,
 ) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
-    s.session.halve(draw_id, &exercise_id, now())?;
+    s.session.halve(draw_id, &exercise_id)?;
     s.save_session_summary();
     Ok(s.session.view())
 }
@@ -124,7 +124,7 @@ pub(crate) fn skip_exercise(
     exercise_id: String,
 ) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
-    s.session.skip_exercise(draw_id, &exercise_id, now())?;
+    s.session.skip_exercise(draw_id, &exercise_id)?;
     s.save_session_summary();
     Ok(s.session.view())
 }
@@ -132,7 +132,7 @@ pub(crate) fn skip_exercise(
 #[tauri::command]
 pub(crate) fn skip_set(state: Shared, draw_id: u64) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
-    s.session.skip_set(draw_id, now())?;
+    s.session.skip_set(draw_id)?;
     s.save_session_summary();
     Ok(s.session.view())
 }

@@ -219,7 +219,7 @@ fn session_with_jokers() -> (Session, Draw) {
     assert_eq!(nohit.items.len(), 2, "the reward comes with a set");
     assert_eq!(nohit.jokers, 2);
     assert_eq!(
-        s.skip_set(nohit.id, 5).unwrap_err(),
+        s.skip_set(nohit.id).unwrap_err(),
         AppError::new("not_enough_jokers"),
         "no joker at first"
     );
@@ -246,9 +246,9 @@ fn sets_are_done_in_the_order_they_were_drawn() {
     let id = &death.items[0].exercise_id;
     for refused in [
         s.complete_exercise(death.id, id, 20).map(|_| ()),
-        s.halve(death.id, id, 20),
-        s.skip_exercise(death.id, id, 20),
-        s.skip_set(death.id, 20),
+        s.halve(death.id, id),
+        s.skip_exercise(death.id, id),
+        s.skip_set(death.id),
     ] {
         assert_eq!(refused.unwrap_err().code, "set_not_current");
     }
@@ -261,25 +261,16 @@ fn sets_are_done_in_the_order_they_were_drawn() {
 fn skipping_a_set_costs_its_exercises() {
     let (mut s, boss) = session_with_jokers();
     assert_eq!(skip_set_cost(&boss), 2 * SKIP_COST);
-    assert!(
-        s.skip_set(boss.id, 20).is_err(),
-        "two exercises cost 4 jokers"
-    );
+    assert!(s.skip_set(boss.id).is_err(), "two exercises cost 4 jokers");
 
     s.dismiss(boss.id).unwrap();
     let cfg = default_config(Language::Fr);
     let death = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
-    s.skip_set(death.id, 20).unwrap();
+    s.skip_set(death.id).unwrap();
     let v = s.view();
     assert_eq!(v.jokers, 0);
     assert_eq!(v.jokers_earned, 2);
-    assert_eq!(v.skipped.len(), 1);
-    let k = &v.skipped[0];
-    assert_eq!(
-        (k.at, k.event.as_str(), k.jokers, k.halved),
-        (20, "Mort", SKIP_COST, false)
-    );
-    assert_eq!(k.items, death.items);
+    assert_eq!(v.jokers_spent, SKIP_COST);
     assert!(v.pending.is_empty());
     assert_eq!(v.sets, 2, "only the no hit set is done");
     let count = v
@@ -297,7 +288,7 @@ fn summary_counts_events_in_game_order_and_jokers() {
     s.dismiss(boss.id).unwrap();
     let cfg = default_config(Language::Fr);
     let death = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
-    s.skip_set(death.id, 20).unwrap();
+    s.skip_set(death.id).unwrap();
     let names: Vec<_> = s
         .event_counts(&cfg)
         .into_iter()
@@ -325,18 +316,17 @@ fn summary_counts_events_in_game_order_and_jokers() {
 fn skipping_an_exercise_keeps_the_rest_of_the_set() {
     let (mut s, boss) = session_with_jokers();
     let (first, second) = (&boss.items[0], &boss.items[1]);
-    s.skip_exercise(boss.id, &first.exercise_id, 20).unwrap();
+    s.skip_exercise(boss.id, &first.exercise_id).unwrap();
     let v = s.view();
     assert_eq!(v.jokers, 0);
     assert_eq!(v.pending[0].items, vec![second.clone()]);
-    assert_eq!(v.skipped[0].items, vec![first.clone()]);
-    assert_eq!(v.skipped[0].jokers, SKIP_COST);
+    assert_eq!(v.jokers_spent, SKIP_COST);
     assert!(
-        s.skip_exercise(boss.id, &second.exercise_id, 30).is_err(),
+        s.skip_exercise(boss.id, &second.exercise_id).is_err(),
         "plus de joker"
     );
     assert!(
-        s.skip_exercise(boss.id, &first.exercise_id, 30).is_err(),
+        s.skip_exercise(boss.id, &first.exercise_id).is_err(),
         "already skipped"
     );
 
@@ -351,7 +341,7 @@ fn halving_then_skipping_costs_a_full_skip() {
     let item = &boss.items[0];
     assert!(item.amount >= 2);
     assert_eq!(item.halve_cost, Some(HALVE_COST));
-    s.halve(boss.id, &item.exercise_id, 20).unwrap();
+    s.halve(boss.id, &item.exercise_id).unwrap();
     let v = s.view();
     let halved = &v.pending[0].items[0];
     assert_eq!(halved.amount, item.amount.div_ceil(2), "rounded up");
@@ -359,16 +349,13 @@ fn halving_then_skipping_costs_a_full_skip() {
     assert_eq!(halved.halve_cost, None, "a single half per exercise");
     assert_eq!(halved.skip_cost, SKIP_COST - HALVE_COST);
     assert_eq!(v.jokers, 2 - HALVE_COST);
-    let k = &v.skipped[0];
-    assert!(k.halved);
-    assert_eq!(k.jokers, HALVE_COST);
-    assert_eq!(k.items[0].amount, item.amount / 2, "the removed half");
+    assert_eq!(v.jokers_spent, HALVE_COST);
     assert_eq!(
-        s.halve(boss.id, &item.exercise_id, 30).unwrap_err().code,
+        s.halve(boss.id, &item.exercise_id).unwrap_err().code,
         "exercise_not_reducible"
     );
 
-    s.skip_exercise(boss.id, &item.exercise_id, 30).unwrap();
+    s.skip_exercise(boss.id, &item.exercise_id).unwrap();
     assert_eq!(
         s.view().jokers,
         0,
@@ -377,7 +364,7 @@ fn halving_then_skipping_costs_a_full_skip() {
 
     let other = &boss.items[1];
     assert!(
-        s.halve(boss.id, &other.exercise_id, 40).is_err(),
+        s.halve(boss.id, &other.exercise_id).is_err(),
         "plus de joker"
     );
 }
@@ -391,7 +378,7 @@ fn spending_jokers_on_a_rewarding_set_forfeits_its_reward() {
             .iter()
             .find(|it| it.halve_cost.is_some())
             .unwrap();
-        spend(&mut s, nohit.id, &first.exercise_id, 20).unwrap();
+        spend(&mut s, nohit.id, &first.exercise_id).unwrap();
         assert_eq!(s.view().pending[0].jokers, 0, "the reward is lost");
         let left = s.view().jokers;
         complete(&mut s, nohit.id, 30).unwrap();
@@ -404,7 +391,7 @@ fn spending_jokers_on_a_rewarding_set_forfeits_its_reward() {
 #[test]
 fn skipping_every_exercise_removes_the_set() {
     let (mut s, death) = session_with_jokers_on("mort");
-    s.skip_exercise(death.id, &death.items[0].exercise_id, 20)
+    s.skip_exercise(death.id, &death.items[0].exercise_id)
         .unwrap();
     assert!(s.view().pending.iter().all(|d| d.id != death.id));
 }
@@ -454,8 +441,8 @@ fn exercises_are_done_one_by_one() {
     for again in [
         s.complete_exercise(nohit.id, &first.exercise_id, 21)
             .map(|_| ()),
-        s.halve(nohit.id, &first.exercise_id, 21),
-        s.skip_exercise(nohit.id, &first.exercise_id, 21),
+        s.halve(nohit.id, &first.exercise_id),
+        s.skip_exercise(nohit.id, &first.exercise_id),
     ] {
         assert_eq!(again.unwrap_err().code, "exercise_already_done");
     }
@@ -471,14 +458,14 @@ fn exercises_are_done_one_by_one() {
     let boss = s.draw(&cfg, "ds3", "boss", &mut rng()).unwrap();
     s.complete_exercise(boss.id, &boss.items[0].exercise_id, 40)
         .unwrap();
-    s.skip_set(boss.id, 50).unwrap();
+    s.skip_set(boss.id).unwrap();
     let v = s.view();
     assert_eq!(
         v.jokers,
         4 - SKIP_COST,
         "skipping the rest only costs the remaining exercise"
     );
-    assert_eq!(v.skipped[0].items, vec![boss.items[1].clone()]);
+    assert_eq!(v.jokers_spent, SKIP_COST);
     assert_eq!(v.sets, 5);
 }
 
@@ -691,7 +678,7 @@ fn removed_events_and_new_jokers_apply_to_the_sets_to_do() {
 fn a_set_with_spent_jokers_still_earns_nothing() {
     let (mut s, boss) = session_with_jokers();
     let mut cfg = default_config(Language::Fr);
-    s.halve(boss.id, &boss.items[0].exercise_id, 20).unwrap();
+    s.halve(boss.id, &boss.items[0].exercise_id).unwrap();
     event_mut(&mut cfg, "ds3", "boss").jokers = 2;
     s.apply_config(&cfg, &mut rng());
     assert_eq!(pending(&s, boss.id).unwrap().jokers, 0);

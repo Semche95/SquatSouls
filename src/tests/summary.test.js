@@ -51,15 +51,8 @@ describe('summary', () => {
   });
 
   it('counts jokers without listing what they removed', async () => {
-    const squats = { exerciseId: 'squat', name: 'Squats', amount: 5, unit: 'reps' };
     setup({
-      get_session: emptySession({
-        jokersEarned: 3,
-        skipped: [
-          { at: 0, event: 'Death', items: [squats], jokers: 1, halved: true },
-          { at: 0, event: 'Boss', items: [squats], jokers: 2, halved: false },
-        ],
-      }),
+      get_session: emptySession({ jokersEarned: 3, jokersSpent: 3 }),
     });
     const w = await mountApp();
     await w.findAll('.tabs button')[1].trigger('click');

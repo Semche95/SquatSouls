@@ -89,17 +89,9 @@ pub struct Draw {
 
 impl Draw {
     /// Spends jokers on the set: it no longer earns its own.
-    fn forfeit(&mut self, items: Vec<DrawItem>, jokers: u32, halved: bool, now: i64) -> Skipped {
+    fn forfeit(&mut self) {
         self.jokers = 0;
         self.forfeited = true;
-        Skipped {
-            at: now,
-            game: self.game_name.clone(),
-            event: self.event_name.clone(),
-            items,
-            jokers,
-            halved,
-        }
     }
 }
 
@@ -123,18 +115,6 @@ pub struct Total {
     pub unit: String,
     pub amount: u32,
     pub sets: u32,
-}
-
-/// What a joker removed from a set: one or more skipped exercises, or half of an exercise.
-#[derive(Debug, Clone, Serialize, PartialEq)]
-pub struct Skipped {
-    pub at: i64,
-    pub game: String,
-    pub event: String,
-    /// Exercises with the removed amount.
-    pub items: Vec<DrawItem>,
-    pub jokers: u32,
-    pub halved: bool,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
@@ -173,8 +153,7 @@ pub struct SessionView {
     pub triggers: Vec<TriggerCount>,
     pub jokers: u32,
     pub jokers_earned: u32,
-    /// Skipped sets, most recent first.
-    pub skipped: Vec<Skipped>,
+    pub jokers_spent: u32,
 }
 
 #[derive(Debug, Default)]
@@ -187,7 +166,7 @@ pub struct Session {
     done: Vec<LogEntry>,
     jokers: u32,
     jokers_earned: u32,
-    skipped: Vec<Skipped>,
+    jokers_spent: u32,
     /// Exercises not drawn yet in the current round: each comes out once before another comes back.
     bag: Vec<String>,
     /// Exercises of the last drawn set, which the next round does not pick again right away.
@@ -366,8 +345,8 @@ impl Session {
         Ok(draw.logged)
     }
 
-    /// Halves an exercise (rounded up): the other half counts as skipped.
-    pub fn halve(&mut self, id: u64, exercise_id: &str, now: i64) -> Result<(), AppError> {
+    /// Halves an exercise (rounded up): the other half is not done.
+    pub fn halve(&mut self, id: u64, exercise_id: &str) -> Result<(), AppError> {
         let jokers = self.jokers;
         let (draw, pos) = self.pending_item(id, exercise_id)?;
         let item = &mut draw.items[pos];
@@ -377,55 +356,44 @@ impl Session {
         if jokers < cost {
             return Err(AppError::new(NOT_ENOUGH_JOKERS));
         }
-        let removed = item.amount / 2;
-        item.amount -= removed;
+        item.amount -= item.amount / 2;
         item.halved = true;
         item.halve_cost = None;
         item.skip_cost -= cost;
-        let removed = DrawItem {
-            amount: removed,
-            ..item.clone()
-        };
-        let skipped = draw.forfeit(vec![removed], cost, true, now);
-        self.spend(skipped);
+        draw.forfeit();
+        self.spend(cost);
         Ok(())
     }
 
     /// Skips an exercise: the rest of the set remains to do, unless nothing is left.
-    pub fn skip_exercise(&mut self, id: u64, exercise_id: &str, now: i64) -> Result<(), AppError> {
+    pub fn skip_exercise(&mut self, id: u64, exercise_id: &str) -> Result<(), AppError> {
         let jokers = self.jokers;
         let (draw, pos) = self.pending_item(id, exercise_id)?;
         if jokers < draw.items[pos].skip_cost {
             return Err(AppError::new(NOT_ENOUGH_JOKERS));
         }
-        let item = draw.items.remove(pos);
-        let cost = item.skip_cost;
-        let skipped = draw.forfeit(vec![item], cost, false, now);
-        self.spend(skipped);
+        let cost = draw.items.remove(pos).skip_cost;
+        draw.forfeit();
+        self.spend(cost);
         self.finish_if_done(id)?;
         Ok(())
     }
 
     /// Skips what is left of a set: the trigger stays counted.
-    pub fn skip_set(&mut self, id: u64, now: i64) -> Result<(), AppError> {
+    pub fn skip_set(&mut self, id: u64) -> Result<(), AppError> {
         let draw = &self.pending[self.current_pos(id)?];
         let cost = skip_set_cost(draw);
         if self.jokers < cost {
             return Err(AppError::new(NOT_ENOUGH_JOKERS));
         }
-        let mut draw = self.take_pending(id)?;
-        let items = std::mem::take(&mut draw.items)
-            .into_iter()
-            .filter(|it| !it.done)
-            .collect();
-        let skipped = draw.forfeit(items, cost, false, now);
-        self.spend(skipped);
+        self.take_pending(id)?;
+        self.spend(cost);
         Ok(())
     }
 
-    fn spend(&mut self, skipped: Skipped) {
-        self.jokers -= skipped.jokers;
-        self.skipped.push(skipped);
+    fn spend(&mut self, jokers: u32) {
+        self.jokers -= jokers;
+        self.jokers_spent += jokers;
     }
 
     /// Adapts the sets to do and the reserved sets to a new configuration, and restarts the round.
@@ -625,7 +593,7 @@ impl Session {
     pub fn jokers(&self) -> Jokers {
         Jokers {
             earned: self.jokers_earned,
-            spent: self.skipped.iter().map(|k| k.jokers).sum(),
+            spent: self.jokers_spent,
         }
     }
 
@@ -651,7 +619,7 @@ impl Session {
             triggers,
             jokers: self.jokers,
             jokers_earned: self.jokers_earned,
-            skipped: self.skipped.iter().rev().cloned().collect(),
+            jokers_spent: self.jokers_spent,
         }
     }
 }

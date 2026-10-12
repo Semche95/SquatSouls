@@ -28,7 +28,7 @@ export const config = {
 
 // Session started, without any set.
 export function emptySession(extra = {}) {
-  return { startedAt: 1, pending: [], sets: 0, totals: [], log: [], triggers: [], jokers: 0, jokersEarned: 0, skipped: [], ...extra };
+  return { startedAt: 1, pending: [], sets: 0, totals: [], log: [], triggers: [], jokers: 0, jokersEarned: 0, jokersSpent: 0, ...extra };
 }
 
 export const draw = { id: 7, eventName: 'Death', gameName: 'Elden Ring', jokers: 0, items: [{ exerciseId: 'squat', name: 'Squats', amount: 10, unit: 'reps', halved: false, halveCost: 1, skipCost: 2 }] };
