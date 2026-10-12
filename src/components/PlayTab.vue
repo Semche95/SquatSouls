@@ -46,7 +46,7 @@ useKeydown((e) => {
     }
     return;
   }
-  // Always blocked: otherwise they would activate the focused button (e.g. "Annuler la séance").
+  // Always blocked: otherwise they would activate the focused button (e.g. "Cancel the session").
   if (e.code === 'Escape') {
     skipPause();
     confirmDismiss.value = 0;
@@ -122,9 +122,9 @@ useKeydown((e) => {
     <section class="pending">
       <h2>
         {{ t('play.todo') }}
-        <span class="jokers" :class="{ none: !session.jokers }" :title="t('play.jokersTip')">
-          {{ t('play.jokers', session.jokers) }}
-        </span>
+        <DisabledTip :tip="t('play.jokersTip')">
+          <span class="jokers" :class="{ none: !session.jokers }">{{ t('play.jokers', session.jokers) }}</span>
+        </DisabledTip>
       </h2>
       <p v-if="!session.pending.length" class="empty">
         {{ t('play.empty') }}

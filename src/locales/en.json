@@ -36,7 +36,7 @@
     "pause": "Pause",
     "skipPause": "Skip",
     "todo": "To do",
-    "jokersTip": "J: skip the oldest set",
+    "jokersTip": "H: Halve, J: Skip, on the first remaining exercise",
     "jokers": "no jokers | {n} joker | {n} jokers",
     "empty": "Nothing pending. Click an event (or type its number) when it happens in game.",
     "capped": "{event}: limit of {max} reached for the session, no set."

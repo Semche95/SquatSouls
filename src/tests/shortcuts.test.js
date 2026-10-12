@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { emptySession, draw, responses, setup, mountApp, press } from './app.js';
+import { emptySession, draw, responses, setup, mountApp, press, expectTip } from './app.js';
 
 describe('keyboard shortcuts', () => {
   it('triggers the event matching the digit', async () => {
@@ -41,6 +41,12 @@ describe('keyboard shortcuts', () => {
     await mountApp();
     await press('Enter');
     expect(invoke).toHaveBeenCalledWith('complete_exercise', { drawId: 7, exerciseId: 'push-ups' });
+  });
+
+  it('explains the joker shortcuts on the joker counter', async () => {
+    setup({ get_session: emptySession({ pending: [draw], jokers: 3 }) });
+    const wrapper = await mountApp();
+    await expectTip(wrapper.find('.jokers'), 'H : Moitié, J : Sauter, sur le premier exercice restant');
   });
 
   it('does not use a joker without enough jokers', async () => {

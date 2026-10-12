@@ -36,7 +36,7 @@
     "pause": "Pause",
     "skipPause": "Passer",
     "todo": "À faire",
-    "jokersTip": "J : sauter la plus ancienne série",
+    "jokersTip": "H : Moitié, J : Sauter, sur le premier exercice restant",
     "jokers": "aucun joker | {n} joker | {n} jokers",
     "empty": "Rien en attente. Clique sur un événement (ou tape son numéro) quand il arrive en jeu.",
     "capped": "{event} : limite de {max} atteinte pour la séance, pas de série."
