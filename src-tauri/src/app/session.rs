@@ -295,7 +295,7 @@ impl Session {
         picks
     }
 
-    /// Marks an exercise done: it moves to the sets done. The finished set earns its jokers.
+    /// Marks an exercise done, in the order of the set: it moves to the sets done. The finished set earns its jokers.
     pub fn complete_exercise(
         &mut self,
         id: u64,
@@ -304,6 +304,9 @@ impl Session {
     ) -> Result<LogEntry, AppError> {
         let session = self.started_at;
         let (draw, pos) = self.pending_item(id, exercise_id)?;
+        if draw.items[..pos].iter().any(|it| !it.done) {
+            return Err(AppError::new("exercise_not_next"));
+        }
         let item = &mut draw.items[pos];
         item.done = true;
         let entry = LogEntry {

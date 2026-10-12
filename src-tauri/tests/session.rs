@@ -359,6 +359,13 @@ fn exercises_are_done_one_by_one() {
     let cfg = default_config(Language::Fr);
     let nohit = s.draw(&cfg, "ds3", "boss-nohit", &mut rng()).unwrap();
     let (first, second) = (&nohit.items[0], &nohit.items[1]);
+    assert_eq!(
+        s.complete_exercise(nohit.id, &second.exercise_id, 20)
+            .unwrap_err()
+            .code,
+        "exercise_not_next",
+        "in the order of the set"
+    );
     let entry = s
         .complete_exercise(nohit.id, &first.exercise_id, 20)
         .unwrap();
@@ -432,7 +439,7 @@ fn a_dismissed_set_comes_back_on_the_next_trigger_of_its_event() {
     let mut s = Session::new(0);
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
-    s.complete_exercise(boss.id, &boss.items[1].exercise_id, 2)
+    s.complete_exercise(boss.id, &boss.items[0].exercise_id, 2)
         .unwrap();
     s.dismiss(boss.id).unwrap();
     let other = s.draw(&cfg, "ds3", "boss-premier", &mut r).unwrap();
@@ -499,7 +506,7 @@ fn changing_the_draws_adjusts_the_sets_to_do() {
     let ids: HashSet<_> = more.items.iter().map(|it| &it.exercise_id).collect();
     assert_eq!(ids.len(), 4, "the added exercises are distinct");
 
-    s.complete_exercise(boss.id, &more.items[3].exercise_id, 1)
+    s.complete_exercise(boss.id, &more.items[0].exercise_id, 1)
         .unwrap();
     event_mut(&mut cfg, "ds3", "boss").draws = 2;
     s.apply_config(&cfg, &mut r);

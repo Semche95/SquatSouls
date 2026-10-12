@@ -8,7 +8,7 @@ import DisabledTip from './DisabledTip.vue';
 const props = defineProps({ draw: Object, current: Boolean });
 
 const { session, pauseLeft, confirmDismiss, dismiss, dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet } = useSession();
-// Exercise targeted by shortcuts: the first remaining one of the current set.
+// First remaining exercise of the current set: the only one to mark done, also targeted by shortcuts.
 const keyed = computed(() => remaining(props.draw)[0]);
 </script>
 
@@ -27,9 +27,9 @@ const keyed = computed(() => remaining(props.draw)[0]);
           <span class="muted">{{ it.unit }}<template v-if="it.halved"> · {{ t('common.halved') }}</template><template v-if="it.done"> · {{ t('draw.done') }}</template></span>
         </span>
         <span v-if="current && !it.done" class="item-actions">
-          <DisabledTip :tip="pauseLeft ? t('draw.paused') : ''">
+          <DisabledTip v-if="it === keyed" :tip="pauseLeft ? t('draw.paused') : ''">
             <button class="primary" :disabled="!!pauseLeft" @click="complete(draw, it)">
-              {{ t('draw.complete') }} <kbd v-if="it === keyed" class="dark">{{ t('keys.enter') }}</kbd>
+              {{ t('draw.complete') }} <kbd class="dark">{{ t('keys.enter') }}</kbd>
             </button>
           </DisabledTip>
           <template v-if="session.jokers">

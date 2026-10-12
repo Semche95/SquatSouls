@@ -224,6 +224,7 @@
     "exercise_not_reducible": "Cet exercice ne peut plus être réduit.",
     "set_not_pending": "Cette série n'est plus en attente.",
     "exercise_not_in_set": "Cet exercice n'est plus dans la série.",
-    "exercise_already_done": "Cet exercice est déjà fait."
+    "exercise_already_done": "Cet exercice est déjà fait.",
+    "exercise_not_next": "Cet exercice vient après ceux pas encore faits de la série."
   }
 }

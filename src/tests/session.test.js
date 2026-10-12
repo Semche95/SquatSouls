@@ -58,6 +58,15 @@ describe('session', () => {
     expect(w.text()).not.toContain('Sauter la série');
   });
 
+  it('only offers Fait on the first remaining exercise', async () => {
+    const pushUps = { exerciseId: 'push-ups', name: 'Push-ups', amount: 8, unit: 'reps', halved: false, done: false, halveCost: 1, skipCost: 2 };
+    setup({ get_session: emptySession({ pending: [{ ...draw, items: [...draw.items, pushUps] }], jokers: 4 }) });
+    const w = await mountApp();
+    const [first, second] = w.findAll('.items li');
+    expect(first.findAll('button').map((b) => b.text())).toEqual(['Fait Entrée', 'Moitié H', 'Sauter J']);
+    expect(second.findAll('button').map((b) => b.text())).toEqual(['Moitié', 'Sauter']);
+  });
+
   it('dismisses a set not started in one click', async () => {
     setup({ get_session: emptySession({ pending: [draw] }), dismiss: emptySession() });
     const w = await mountApp();
@@ -124,20 +133,21 @@ describe('session', () => {
   });
 
   describe('pause after an exercise is done', () => {
-    const both = { ...draw, items: [...draw.items, { exerciseId: 'push-ups', name: 'Push-ups', amount: 8, unit: 'reps' }] };
+    const pushUps = { exerciseId: 'push-ups', name: 'Push-ups', amount: 8, unit: 'reps' };
     const next = { ...draw, id: 8 };
     const doneButtons = (w) => w.findAll('.item-actions .primary');
 
-    // Squats (first) follow the global pause, Push-ups (second) have their own pause.
-    async function completeOne(index = 1, pause = config.pause, own = 90) {
+    // Squats follow the global pause, Push-ups have their own pause; the first one of the set is marked done.
+    async function completeOne(first = pushUps, pause = config.pause, own = 90) {
       vi.useFakeTimers();
+      const both = { ...draw, items: first === pushUps ? [pushUps, draw.items[0]] : [...draw.items, pushUps] };
       setup({
         get_config: { config: { ...config, pause, exercises: [...config.exercises, { id: 'push-ups', name: 'Push-ups', unit: 'reps', min: 8, max: 12, pause: own }] } },
         get_session: emptySession({ pending: [both, next] }),
         complete_exercise: emptySession({ pending: [both, next] }),
       });
       const w = await mountApp();
-      await doneButtons(w)[index].trigger('click');
+      await doneButtons(w)[0].trigger('click');
       await flushPromises();
       return w;
     }
@@ -156,7 +166,7 @@ describe('session', () => {
     });
 
     it('takes the global pause without an own pause', async () => {
-      const w = await completeOne(0);
+      const w = await completeOne(draw.items[0]);
       expect(w.find('.pause-left').text()).toBe('1:00');
     });
 
@@ -164,7 +174,7 @@ describe('session', () => {
       const w = await completeOne();
       await w.find('.banner.pause button').trigger('click');
       expect(w.find('.banner.pause').exists()).toBe(false);
-      await doneButtons(w)[1].trigger('click');
+      await doneButtons(w)[0].trigger('click');
       await flushPromises();
       expect(w.find('.banner.pause').exists()).toBe(true);
       await press('Escape');
@@ -173,7 +183,7 @@ describe('session', () => {
 
     it('stops when the set that started it is dismissed, not another one', async () => {
       const w = await completeOne();
-      responses.dismiss = emptySession({ pending: [both] });
+      responses.dismiss = emptySession({ pending: [responses.get_session.pending[0]] });
       await w.findAll('.card')[1].find('.card-actions button').trigger('click');
       await flushPromises();
       expect(w.find('.banner.pause').exists()).toBe(true);
@@ -184,7 +194,7 @@ describe('session', () => {
     });
 
     it('does not pause when every pause is 0', async () => {
-      const w = await completeOne(1, 0, 0);
+      const w = await completeOne(pushUps, 0, 0);
       expect(w.find('.banner.pause').exists()).toBe(false);
     });
   });

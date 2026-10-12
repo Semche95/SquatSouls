@@ -224,6 +224,7 @@
     "exercise_not_reducible": "This exercise can no longer be reduced.",
     "set_not_pending": "This set is no longer pending.",
     "exercise_not_in_set": "This exercise is no longer in the set.",
-    "exercise_already_done": "This exercise is already done."
+    "exercise_already_done": "This exercise is already done.",
+    "exercise_not_next": "This exercise comes after those not done yet in the set."
   }
 }

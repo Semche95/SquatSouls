@@ -60,7 +60,7 @@ This section is the reference: any change in the app's behavior must be reflecte
 ### Handling a set to do
 
 - Sets are done in the order they were drawn: only the oldest offers **Fait** and the jokers; the next ones, queued, can only be dismissed.
-- **Fait** is marked exercise by exercise: the exercise is added to the totals and written to the history, and stays displayed struck through until the end of the set. The set moves to the sets done when its last exercise is done or skipped, and the event's jokers are earned at that moment.
+- **Fait** is marked exercise by exercise, in the order of the set: only its first remaining exercise offers it (the backend refuses the others), while the jokers stay offered on every remaining exercise. The exercise is added to the totals and written to the history, and stays displayed struck through until the end of the set. The set moves to the sets done when its last exercise is done or skipped, and the event's jokers are earned at that moment.
 - **Annuler** (misclick): the set disappears and the trigger is uncounted, as if it never happened. Nothing of it is counted: its exercises already done are removed from the totals and the history, so that dismissing cannot be used to cut a set short. A started set is therefore only dismissed after confirmation. The dismissed set is reserved: the next trigger of the same event gives back the same exercises with the same numbers, as drawn, so that dismissing cannot be used to change the draw. The reserve disappears with the session (end or cancellation); a saved configuration adjusts it like the sets to do.
 - **Jokers**: halve or skip an exercise, or skip the whole set (see Jokers). The trigger stays counted, including for the per-session limit.
 
