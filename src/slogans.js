@@ -15,7 +15,7 @@ export const slogans = [
   'Lose your souls, keep your gains.',
   'Your bloodstain can wait until the set is done.',
   'Wait for the green bar to refill before the next set.',
-  'Every cheesed boss comes with a free bonus set.',
+  'A cheesed boss still drops its Great Soul, and an easy set still builds muscle.',
   'Even Otzdarva got hit while learning.',
   'Visions of leg day…',
   'Humanity restored. Hydration recommended.',
@@ -45,6 +45,9 @@ export const slogans = [
   'Git gud at being proud of yourself.',
   'The Mimic Tear is the best spirit ash because it\'s you. Just saying.',
   'Summoning isn\'t cheating, and neither are knee push-ups.',
+  'Playing a mage isn\'t cheating, and neither is training with light weights.',
+  'Leave messages like a spotter: there to help, not to snicker.',
+  'Amazing effort ahead. Therefore, try rest.',
 ];
 
 // Slogans already shown since the list was last cleared, kept from one launch to the next.
