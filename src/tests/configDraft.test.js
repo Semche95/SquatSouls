@@ -62,7 +62,7 @@ describe('numberError', () => {
   });
 
   it('names the first negative, decimal or too large field', () => {
-    expect(numberError({ ...cfg(), pause: -1 })).toBe('Pause après chaque série : il faut un nombre entier, 0 ou plus.');
+    expect(numberError({ ...cfg(), pause: -1 })).toBe('Pause après chaque exercice : il faut un nombre entier, 0 ou plus.');
     expect(numberError(cfg({ ex: { min: 1.5 } }))).toBe('Squats › minimum : il faut un nombre entier, 0 ou plus.');
     expect(numberError(cfg({ ex: { pause: -3 } }))).toBe('Squats › pause : il faut un nombre entier, 0 ou plus.');
     expect(numberError(cfg({ ev: { maxPerSession: 2.5 } }))).toBe('Elden Ring › Death › limite par séance : il faut un nombre entier, 0 ou plus.');

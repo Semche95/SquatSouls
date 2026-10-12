@@ -59,7 +59,7 @@ pub struct IgnoredGame {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Config {
-    /// Pause after each completed set, in seconds, for exercises without their own pause.
+    /// Pause after each exercise done, in seconds, for exercises without their own pause.
     #[serde(default = "default_pause")]
     pub pause: u32,
     /// Detection of the running Steam game, disabled by default.
