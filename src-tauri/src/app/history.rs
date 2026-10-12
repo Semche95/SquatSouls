@@ -3,7 +3,7 @@
 use super::{totals, EventCount, Jokers, LogEntry, Total};
 use chrono::{DateTime, Duration, Local, NaiveDate, NaiveTime};
 use serde::Serialize;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -75,17 +75,29 @@ pub fn sessions(entries: &[LogEntry], records: &SessionRecords) -> Vec<SessionTo
 
 type ByDay = BTreeMap<NaiveDate, Vec<LogEntry>>;
 
+/// Local day of a timestamp.
+fn local_day(at: i64) -> Option<NaiveDate> {
+    DateTime::from_timestamp(at, 0).map(|d| d.with_timezone(&Local).date_naive())
+}
+
 /// Sets grouped by local day.
 fn by_day(entries: &[LogEntry]) -> ByDay {
     let mut days = ByDay::new();
     for e in entries {
-        if let Some(d) = DateTime::from_timestamp(e.at, 0) {
-            days.entry(d.with_timezone(&Local).date_naive())
-                .or_default()
-                .push(e.clone());
+        if let Some(d) = local_day(e.at) {
+            days.entry(d).or_default().push(e.clone());
         }
     }
     days
+}
+
+/// Number of local days among the timestamps of sets done.
+pub fn count_days(times: &[i64]) -> usize {
+    times
+        .iter()
+        .filter_map(|&at| local_day(at))
+        .collect::<BTreeSet<_>>()
+        .len()
 }
 
 fn day_totals(date: NaiveDate, entries: &[LogEntry], records: &SessionRecords) -> DayTotals {

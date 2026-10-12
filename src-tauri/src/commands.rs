@@ -201,6 +201,14 @@ pub(crate) fn get_full_history(state: Shared) -> Result<Vec<DayTotals>, AppError
         .map_err(|e| AppError::internal(HISTORY_UNREADABLE, e))
 }
 
+#[tauri::command]
+pub(crate) fn count_active_days(state: Shared) -> Result<usize, AppError> {
+    lock(&state)?
+        .store
+        .active_day_count()
+        .map_err(|e| AppError::internal(HISTORY_UNREADABLE, e))
+}
+
 /// AppId of the running Steam game, if any. Read off the main thread, like the name.
 #[tauri::command]
 pub(crate) async fn running_steam_app() -> Result<Option<u32>, AppError> {

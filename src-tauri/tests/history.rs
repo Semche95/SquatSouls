@@ -89,6 +89,11 @@ fn days_window_and_active_days() {
         full.iter().map(|d| d.sets).collect::<Vec<_>>(),
         vec![2, 1, 1]
     );
+    assert_eq!(
+        count_days(&entries.map(|e| e.at)),
+        3,
+        "one per day, however many sets"
+    );
 }
 
 #[test]

@@ -43,6 +43,7 @@ export function setup(over = {}) {
     get_config: { config },
     get_session: emptySession(),
     get_history: [],
+    count_active_days: 0,
     get_last_game: 'er',
     set_last_game: undefined,
     get_language: { setting: 'system', language: 'fr' },

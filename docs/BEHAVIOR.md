@@ -44,7 +44,7 @@ Button and setting names are quoted as they appear in the English interface.
 - **Skip** an exercise (2 jokers, only 1 if it was already halved or cannot be, its number being 1): it is removed from the set, the rest remains to do. Skipping the last exercise removes the set.
 - **Skip the set** (set with several remaining exercises): costs the sum of the skips of its remaining exercises; those already done stay done.
 - An exercise done can no longer be halved or skipped.
-- An action is only possible with enough jokers. What is removed is not done (neither totals nor history) and appears in the jokers of the Summary tab, marked "halved" or "skipped".
+- An action is only possible with enough jokers. What is removed is not done (neither totals nor history). The Summary tab only shows the jokers earned and used: the sets done list what was done, at its real number, without mentioning any joker.
 - Unspent jokers are lost at the end of the session.
 
 ## Session
@@ -67,6 +67,7 @@ Button and setting names are quoted as they appear in the English interface.
 - Each exercise done is written to the history (one entry per exercise), with the time, the session, the game, the event, the exercise and the amount. It is kept from one launch to the next.
 - The summary groups sets by local day, then by session and by game, with totals per exercise (cumulated amount and number of sets).
 - A session's duration goes from its start to its end time if it was ended, otherwise to its last set.
+- The summary stays positive: it shows what was done, never what was skipped. The history counts the days of activity since the beginning, a number that only goes up: no streak of consecutive days that could be lost, and a day without a set reads "rest".
 - **Copy the summary** copies to the clipboard a text to paste in a messaging app, for the current session (once a set is done) and for each session of the history. One line per item: the game and the duration, the events triggered with their number (in the order of the game's events), the total per exercise, then the jokers earned and used. The current session lasts until the copy. The events and jokers of each session are saved in the history as the session goes; sessions saved before this was recorded leave out those two lines.
 
 ## Configuration

@@ -4,6 +4,17 @@ import { invoke } from '@tauri-apps/api/core';
 import { emptySession, setup, mountApp } from './app.js';
 
 describe('summary', () => {
+  it.each([
+    [null, 'Rien pour l\'instant.'],
+    [1, 'Séance lancée. Le premier combat t\'attend.'],
+  ])('encourages a session without sets, started at %s', async (startedAt, text) => {
+    setup({ get_session: emptySession({ startedAt }) });
+    const w = await mountApp();
+    await w.findAll('.tabs button')[1].trigger('click');
+    await flushPromises();
+    expect(w.find('.current .empty').text()).toBe(text);
+  });
+
   it('loads the history of the last 7 days', async () => {
     setup({
       get_session: emptySession({
@@ -22,6 +33,7 @@ describe('summary', () => {
           ],
         },
       ],
+      count_active_days: 12,
     });
     const w = await mountApp();
     expect(w.find('.tabs .badge').text()).toBe('1');
@@ -30,6 +42,7 @@ describe('summary', () => {
     expect(invoke).toHaveBeenCalledWith('get_history', { days: 7 });
     expect(w.find('.current .group-head').text()).toContain('Elden Ring · en cours depuis');
     expect(w.find('.totals').text()).toContain('10 reps');
+    expect(w.find('.group:not(.current) .group-head').text()).toContain('7 derniers jours, par séance · 12 jours d\'activité');
     const days = w.findAll('.days li');
     expect(days[0].text()).toContain('repos');
     expect(days[1].text()).toContain('Squats 10 reps');
@@ -37,7 +50,7 @@ describe('summary', () => {
     expect(days[1].text()).toContain('1 h 05');
   });
 
-  it('counts spent jokers and tells halves from skips', async () => {
+  it('counts jokers without listing what they removed', async () => {
     const squats = { exerciseId: 'squat', name: 'Squats', amount: 5, unit: 'reps' };
     setup({
       get_session: emptySession({
@@ -52,9 +65,7 @@ describe('summary', () => {
     await w.findAll('.tabs button')[1].trigger('click');
     await flushPromises();
     expect(w.text()).toContain('3 gagnés · 3 utilisés');
-    const rows = w.findAll('.log li').map((li) => li.text());
-    expect(rows.some((r) => r.includes('Death (moitié)'))).toBe(true);
-    expect(rows.some((r) => r.includes('Boss (sauté)'))).toBe(true);
+    expect(w.find('.log').exists()).toBe(false);
   });
 
   it('copies the summary of the current session and of a past one', async () => {

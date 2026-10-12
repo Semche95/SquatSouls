@@ -414,6 +414,7 @@ fn history_and_sessions_are_stored() {
     );
     s.remove_session(t - 60).unwrap();
     assert_eq!(s.full_history().unwrap().len(), 1);
+    assert_eq!(s.active_day_count().unwrap(), 1);
     s.append_history(&[entry(t, t - 60, "Squats", 12)]).unwrap();
     let again = s.history(1, today).unwrap()[0].sessions[0].clone();
     assert!(

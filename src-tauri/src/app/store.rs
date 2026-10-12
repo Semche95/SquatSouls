@@ -1,9 +1,9 @@
 //! SQLite storage: configuration, history and settings, written row by row.
 
 use super::{
-    active_days, default_config, last_days, window_start, Config, DayTotals, EventCount, Exercise,
-    Game, GameEvent, IgnoredGame, Jokers, LanguageSetting, LogEntry, SessionRecords, SteamName,
-    SteamNames, DEFAULT_PAUSE, DEFAULT_STEAM_NOTIFY,
+    active_days, count_days, default_config, last_days, window_start, Config, DayTotals,
+    EventCount, Exercise, Game, GameEvent, IgnoredGame, Jokers, LanguageSetting, LogEntry,
+    SessionRecords, SteamName, SteamNames, DEFAULT_PAUSE, DEFAULT_STEAM_NOTIFY,
 };
 use chrono::NaiveDate;
 use refinery::Target;
@@ -316,6 +316,16 @@ impl Store {
     pub fn full_history(&self) -> Result<Vec<DayTotals>> {
         let (entries, records) = self.sets_since(i64::MIN)?;
         Ok(active_days(&entries, &records))
+    }
+
+    /// Number of days on which sets were done.
+    pub fn active_day_count(&self) -> Result<usize> {
+        let times: Vec<i64> = self
+            .conn
+            .prepare("SELECT at FROM sets")?
+            .query_map([], |r| r.get(0))?
+            .collect::<Result<_>>()?;
+        Ok(count_days(&times))
     }
 
     /// Sets done since `from`, and what is kept of their sessions.

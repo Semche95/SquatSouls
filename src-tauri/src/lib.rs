@@ -102,6 +102,7 @@ pub fn run() {
             commands::set_last_game,
             commands::get_history,
             commands::get_full_history,
+            commands::count_active_days,
             commands::running_steam_app,
             commands::steam_game_name,
             commands::notify

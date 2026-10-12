@@ -17,6 +17,8 @@ const { session } = useSession();
 const history = ref([]);
 // Full history, shown large over the Summary tab (null when closed).
 const fullHistory = ref(null);
+// Days with at least one set, ever: a count that only goes up.
+const activeDays = ref(0);
 // Game set on the session's first event, absent before.
 const gameName = computed(() => config.value?.games.find((g) => g.id === session.value.gameId)?.name);
 const jokersSpent = computed(() => session.value.skipped.reduce((sum, k) => sum + k.jokers, 0));
@@ -65,7 +67,7 @@ useKeydown((e) => {
 
 onMounted(async () => {
   try {
-    history.value = await call('get_history', { days: 7 });
+    [history.value, activeDays.value] = await Promise.all([call('get_history', { days: 7 }), call('count_active_days')]);
   } catch {
     history.value = [];
   }
@@ -82,7 +84,7 @@ onMounted(async () => {
           {{ t(copied === 'current' ? 'summary.copiedSummary' : 'summary.copy') }}
         </button>
       </header>
-      <p v-if="!session.sets" class="empty">{{ t('summary.noSets') }}</p>
+      <p v-if="!session.sets" class="empty">{{ t(session.startedAt ? 'summary.underway' : 'summary.waiting') }}</p>
       <div v-else class="session-detail">
         <div class="session-totals">
           <h2>{{ t('summary.totals') }}</h2>
@@ -108,21 +110,13 @@ onMounted(async () => {
       <div v-if="session.jokersEarned || session.skipped.length">
         <h2>{{ t('common.jokers') }}</h2>
         <p class="muted">{{ t('summary.earned', session.jokersEarned) }} · {{ t('summary.spent', jokersSpent) }}</p>
-        <ul v-if="session.skipped.length" class="log">
-          <li v-for="(k, i) in session.skipped" :key="i">
-            <span class="muted">{{ formatTime(k.at) }}</span>
-            <span>{{ k.items.map((it) => `${it.amount} ${it.unit} · ${it.name}`).join(', ') }}</span>
-            <span class="muted">{{ k.event }} ({{ t(k.halved ? 'common.halved' : 'summary.skipped') }})</span>
-          </li>
-        </ul>
       </div>
     </section>
 
     <section class="group" :class="{ full: fullHistory }">
       <header class="group-head">
         <h2 class="group-title">{{ t(fullHistory ? 'summary.fullHistory' : 'summary.history') }}</h2>
-        <span v-if="fullHistory" class="muted">{{ t('summary.activeDays', fullHistory.length) }}</span>
-        <span v-else class="muted">{{ t('summary.lastDays') }}</span>
+        <span class="muted"><template v-if="!fullHistory">{{ t('summary.lastDays') }} · </template>{{ t('summary.activeDays', activeDays) }}</span>
         <button v-if="fullHistory" class="ghost" @click="fullHistory = null">{{ t('summary.close') }}</button>
         <button v-else class="ghost" @click="openFullHistory">{{ t('summary.seeAll') }}</button>
       </header>
