@@ -46,7 +46,6 @@ useKeydown((e) => {
     }
     return;
   }
-  // Always blocked: otherwise they would activate the focused button (e.g. "Cancel the session").
   if (e.code === 'Escape') {
     skipPause();
     confirmDismiss.value = 0;
@@ -56,6 +55,7 @@ useKeydown((e) => {
   const skip = e.code === 'KeyJ';
   const half = e.code === 'KeyH';
   if (!validate && !skip && !half && e.code !== 'Backspace') return;
+  // Always blocked: otherwise they would activate the focused button (e.g. "Cancel the session").
   e.preventDefault();
   const first = session.value.pending[0];
   if (!first) return;
