@@ -50,6 +50,29 @@ button:hover {
 button:active {
   transform: translateY(1px);
 }
+/* Selects are drawn in CSS rather than by the WebKitGTK theme, whose hover and pressed state follows the
+   neighboring controls; the arrow is two gradient triangles. */
+select {
+  appearance: none;
+  cursor: pointer;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: right 16px center, right 11px center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 32px;
+  transition: border-color 0.12s;
+}
+select:hover:not(:disabled),
+select:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+select:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
 
 .app {
   max-width: 1280px;
@@ -172,7 +195,8 @@ h2 {
   align-items: center;
   gap: 10px;
 }
-.field span {
+.field span,
+.field > label {
   color: var(--muted);
 }
 /* Tooltip container of a control (DisabledTip): it does not change the layout. */
@@ -188,10 +212,11 @@ h2 {
 }
 .field select {
   flex: 1;
-  background: var(--panel);
+  background-color: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding-block: 8px;
+  padding-left: 10px;
 }
 
 .events {
@@ -669,13 +694,16 @@ kbd.dark {
   font: inherit;
   color: inherit;
   width: 100%;
-  background: var(--panel-2);
+  background-color: var(--panel-2);
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 6px 8px;
+  padding-block: 6px;
+  padding-left: 8px;
+}
+.config :is(input, textarea) {
+  padding-right: 8px;
 }
 .config input:focus,
-.config select:focus,
 .config textarea:focus {
   outline: none;
   border-color: var(--gold);
@@ -743,6 +771,8 @@ kbd.dark {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+}
+label.check {
   cursor: pointer;
 }
 /* Every configuration checkbox is a switch, in Settings as in the exercise list. */

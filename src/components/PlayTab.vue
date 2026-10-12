@@ -70,15 +70,15 @@ useKeydown((e) => {
 
 <template>
   <main class="panel play">
-    <label class="field">
-      <span>{{ t('play.game') }}</span>
+    <div class="field">
+      <label for="play-game">{{ t('play.game') }}</label>
       <DisabledTip class="grow" :tip="gameLocked ? t('play.gameLocked') : ''">
-        <select v-model="gameId" :disabled="gameLocked">
+        <select id="play-game" v-model="gameId" :disabled="gameLocked">
           <option value="" disabled>{{ t('play.chooseGame') }}</option>
           <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id">{{ g.name }}</option>
         </select>
       </DisabledTip>
-    </label>
+    </div>
 
     <p v-if="steamOffer" class="banner steam">
       <i18n-t keypath="play.detected" tag="span">

@@ -34,14 +34,14 @@ const status = computed(() => {
 <template>
   <div class="cfg-settings">
     <section class="group setting">
-      <label class="check">
-        {{ t('config.settings.language') }}
-        <select :value="languageSetting" @change="changeLanguage">
+      <div class="check">
+        <label for="language">{{ t('config.settings.language') }}</label>
+        <select id="language" :value="languageSetting" @change="changeLanguage">
           <option value="system">{{ t('config.settings.systemLanguage') }}</option>
           <option value="en">English</option>
           <option value="fr">Français</option>
         </select>
-      </label>
+      </div>
     </section>
     <section class="group setting">
       <h2 class="group-title">{{ t('config.settings.tray') }}</h2>

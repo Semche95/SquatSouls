@@ -119,13 +119,13 @@ function addEvent(game) {
           <input ref="newGameName" v-model="newGame.name" :aria-label="t('config.games.newName')" />
         </label>
         <p v-if="nameTaken" class="muted">{{ t('config.games.nameTaken') }}</p>
-        <label class="field">
+        <div class="field">
           <span>{{ t('config.games.events') }}</span>
           <select v-model="newGame.source" :aria-label="t('config.games.newEvents')">
             <option value="">{{ t('config.games.noEvents') }}</option>
             <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">{{ t('config.games.copyFrom', { name: g.name || t('common.unnamed') }) }}</option>
           </select>
-        </label>
+        </div>
         <div class="row">
           <DisabledTip :tip="createBlocked">
             <button class="primary" :disabled="!!createBlocked">{{ t('config.games.create') }}</button>
