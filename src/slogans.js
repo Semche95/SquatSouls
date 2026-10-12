@@ -48,6 +48,7 @@ export const slogans = [
   'Playing a mage isn\'t cheating, and neither is training with light weights.',
   'Leave messages like a spotter: there to help, not to snicker.',
   'Amazing effort ahead. Therefore, try rest.',
+  'Here, there\'s an easy mode.',
 ];
 
 // Slogans already shown since the list was last cleared, kept from one launch to the next.
