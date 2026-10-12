@@ -1,13 +1,18 @@
+pub mod app;
 mod commands;
-pub mod fitness;
 mod state;
 mod tray;
 
-use fitness::Store;
+use app::Store;
 use state::AppState;
 use std::fs;
 use std::sync::Mutex;
 use tauri::Manager;
+use tauri_plugin_log::{RotationStrategy, Target, TargetKind, TimezoneStrategy};
+
+/// Size beyond which the log file is archived, and number of archives kept.
+const LOG_MAX_BYTES: u128 = 1_000_000;
+const LOG_ARCHIVES: usize = 3;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -23,17 +28,53 @@ pub fn run() {
             std::env::set_var(key, value);
         }
     }
+    // A panic is logged too, before the usual report.
+    let report = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        log::error!("{info}");
+        report(info);
+    }));
     tauri::Builder::default()
+        // Warnings and errors, on the terminal and in the app's log folder. The development build has
+        // its own file, like its database.
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .clear_targets()
+                .targets([
+                    Target::new(TargetKind::Stdout),
+                    Target::new(TargetKind::LogDir {
+                        file_name: Some(
+                            if cfg!(debug_assertions) {
+                                "squatsouls-dev"
+                            } else {
+                                "squatsouls"
+                            }
+                            .into(),
+                        ),
+                    }),
+                ])
+                .level(log::LevelFilter::Warn)
+                .timezone_strategy(TimezoneStrategy::UseLocal)
+                .max_file_size(LOG_MAX_BYTES)
+                .rotation_strategy(RotationStrategy::KeepSome(LOG_ARCHIVES))
+                .build(),
+        )
         .plugin(tauri_plugin_notification::init())
         .setup(|app| {
             let dir = app.path().app_config_dir()?;
             fs::create_dir_all(&dir)?;
             // The development build has its own database so it never touches real data
-            let db = if cfg!(debug_assertions) { "squatsouls-dev.db" } else { "squatsouls.db" };
-            let store = Store::open(&dir.join(db))?;
+            let db = if cfg!(debug_assertions) {
+                "squatsouls-dev.db"
+            } else {
+                "squatsouls.db"
+            };
+            let system_locale = sys_locale::get_locale();
+            let store = Store::open(&dir.join(db), system_locale.as_deref())
+                .inspect_err(|e| log::error!("Database unusable: {e}"))?;
             app.manage(Mutex::new(store.steam_names()?));
-            let state = AppState::new(store);
-            tray::apply(app.handle(), &state.config)?;
+            // The tray icon waits for the interface's texts (`set_native_texts`).
+            let state = AppState::new(store, system_locale);
             if !(state.config.tray && state.config.start_hidden) {
                 tray::show_main(app.handle());
             }
@@ -44,6 +85,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::get_config,
             commands::save_config,
+            commands::get_language,
+            commands::set_language,
+            commands::set_native_texts,
             commands::draw,
             commands::complete_exercise,
             commands::dismiss,

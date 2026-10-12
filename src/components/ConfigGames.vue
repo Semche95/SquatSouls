@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, ref } from 'vue';
 import { byName, clone, newId, sameName } from '../configDraft.js';
-import { plural } from '../format.js';
+import { t } from '../i18n.js';
 import { importGame, parseGame, shareGame } from '../share.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
@@ -77,23 +77,24 @@ async function importShared(game) {
   draft.value.games = importGame(draft.value.games, clone(game));
   selectGame(config.value.games.find((g) => sameName(g.name, game.name)).id);
   const count = activeCount();
-  notify(game.clamped ? `${game.name} importé, tirages limités à ${plural(count, 'exercice')}.` : `${game.name} importé.`);
+  notify(game.clamped ? t('config.games.importedClamped', { name: game.name }, count) : t('config.games.imported', { name: game.name }));
 }
 
 function addEvent(game) {
-  game.events.push({ id: newId('Nouvel événement', game.events), name: 'Nouvel événement', draws: 1, jokers: 0 });
+  const name = t('config.games.newEvent');
+  game.events.push({ id: newId(name, game.events), name, draws: 1, jokers: 0 });
 }
 </script>
 
 <template>
   <section class="group">
     <header class="group-head">
-      <h2 class="group-title">Jeux</h2>
-      <button class="primary" :disabled="!!newGame" @click="openNewGame">+ Ajouter un jeu</button>
-      <button class="ghost" :disabled="importing" @click="openImport">Importer un jeu</button>
+      <h2 class="group-title">{{ t('config.tabs.games') }}</h2>
+      <button class="primary" :disabled="!!newGame" @click="openNewGame">{{ t('config.games.add') }}</button>
+      <button class="ghost" :disabled="importing" @click="openImport">{{ t('config.games.import') }}</button>
     </header>
     <div class="cfg-games">
-      <nav class="subtabs cfg-game-list" aria-label="Jeu à modifier">
+      <nav class="subtabs cfg-game-list" :aria-label="t('config.games.list')">
         <button
           v-for="g in byName(config.games)"
           :key="g.id"
@@ -102,49 +103,49 @@ function addEvent(game) {
         >{{ g.name }}</button>
       </nav>
       <form v-if="newGame" class="cfg-game" @submit.prevent="createGame">
-        <h3 class="group-title">Nouveau jeu</h3>
+        <h3 class="group-title">{{ t('config.games.new') }}</h3>
         <label class="field">
-          <span>Nom</span>
-          <input ref="newGameName" v-model="newGame.name" aria-label="Nom du nouveau jeu" />
+          <span>{{ t('common.name') }}</span>
+          <input ref="newGameName" v-model="newGame.name" :aria-label="t('config.games.newName')" />
         </label>
-        <p v-if="nameTaken" class="muted">Un jeu porte déjà ce nom.</p>
+        <p v-if="nameTaken" class="muted">{{ t('config.games.nameTaken') }}</p>
         <label class="field">
-          <span>Événements</span>
-          <select v-model="newGame.source" aria-label="Événements du nouveau jeu">
-            <option value="">Aucun (un événement à remplir)</option>
-            <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">Copier depuis {{ g.name || '(sans nom)' }}</option>
+          <span>{{ t('config.games.events') }}</span>
+          <select v-model="newGame.source" :aria-label="t('config.games.newEvents')">
+            <option value="">{{ t('config.games.noEvents') }}</option>
+            <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">{{ t('config.games.copyFrom', { name: g.name || t('common.unnamed') }) }}</option>
           </select>
         </label>
         <div class="row">
-          <button class="primary" :disabled="!newGame.name.trim() || nameTaken">Créer</button>
-          <button type="button" class="ghost" @click="newGame = null">Annuler</button>
+          <button class="primary" :disabled="!newGame.name.trim() || nameTaken">{{ t('config.games.create') }}</button>
+          <button type="button" class="ghost" @click="newGame = null">{{ t('common.cancel') }}</button>
         </div>
       </form>
       <div v-else-if="importing" class="cfg-game">
-        <h3 class="group-title">Importer un jeu</h3>
+        <h3 class="group-title">{{ t('config.games.import') }}</h3>
         <ShareImport v-slot="{ result }" :parse="parseShared" @import="importShared" @cancel="importing = false">
-          <p v-if="takenName(result.name)" class="banner warn">{{ result.name }} existe déjà : il sera remplacé.</p>
+          <p v-if="takenName(result.name)" class="banner warn">{{ t('config.games.willReplace', { name: result.name }) }}</p>
         </ShareImport>
       </div>
       <div v-else-if="editedGame" class="cfg-game">
         <div class="field">
-          <span>Nom</span>
-          <input v-model="editedGame.name" aria-label="Nom du jeu" />
-          <button class="ghost" @click="shareEdited">Partager</button>
-          <button class="ghost danger" :disabled="draft.games.length < 2" @click="confirmRemove = editedGame">Supprimer ce jeu</button>
+          <span>{{ t('common.name') }}</span>
+          <input v-model="editedGame.name" :aria-label="t('config.games.gameName')" />
+          <button class="ghost" @click="shareEdited">{{ t('common.share') }}</button>
+          <button class="ghost danger" :disabled="draft.games.length < 2" @click="confirmRemove = editedGame">{{ t('config.games.removeGame') }}</button>
         </div>
         <div v-if="confirmRemove === editedGame" class="banner confirm">
-          <p>Supprimer {{ editedGame.name || 'ce jeu' }} et tous ses événements ?</p>
+          <p>{{ t('config.games.confirmRemove', { name: editedGame.name || t('config.games.thisGame') }) }}</p>
           <div class="card-actions">
-            <button class="danger" @click="removeGame(editedGame)">Supprimer</button>
-            <button class="ghost" @click="confirmRemove = null">Garder le jeu</button>
+            <button class="danger" @click="removeGame(editedGame)">{{ t('common.remove') }}</button>
+            <button class="ghost" @click="confirmRemove = null">{{ t('config.games.keepGame') }}</button>
           </div>
         </div>
 
         <div class="cfg-events">
           <ConfigEvent v-for="(ev, i) in editedGame.events" :key="ev.id" :ev="ev" @remove="editedGame.events.splice(i, 1)" />
         </div>
-        <button class="ghost" @click="addEvent(editedGame)">Ajouter un événement</button>
+        <button class="ghost" @click="addEvent(editedGame)">{{ t('config.games.addEvent') }}</button>
       </div>
     </div>
   </section>

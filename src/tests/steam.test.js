@@ -203,7 +203,7 @@ describe('launched Steam game notification', () => {
     setupSteam({ running_steam_app: () => running });
     await mountApp();
     await vi.advanceTimersByTimeAsync(10000);
-    expect(notifications()).toEqual([{ title: 'Elden Ring lancé', body: 'À sélectionner dans Jouer pour commencer la séance.' }]);
+    expect(notifications()).toEqual([{ name: 'Elden Ring', configured: true }]);
     running = null;
     await vi.advanceTimersByTimeAsync(10000);
     running = 1245620;
@@ -214,9 +214,7 @@ describe('launched Steam game notification', () => {
   it('notifies an unknown game once its name is known', async () => {
     setupSteam({ running_steam_app: 367520, steam_game_name: 'Hollow Knight' });
     await mountApp();
-    expect(notifications()).toEqual([
-      { title: 'Hollow Knight lancé', body: 'Jeu pas encore configuré : l\'ajouter depuis Jouer.' },
-    ]);
+    expect(notifications()).toEqual([{ name: 'Hollow Knight', configured: false }]);
   });
 
   it('notifies neither an ignored game, nor a game with an unknown name, nor when notification is unchecked', async () => {

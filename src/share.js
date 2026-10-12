@@ -1,5 +1,6 @@
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
 import { isCount, newId, sameName } from './configDraft.js';
+import { t } from './i18n.js';
 
 // Text shared between users: a game (name and events) or the exercise list, without ids,
 // as compressed JSON (deflate) then base64-encoded. The format version and content type are in the
@@ -38,19 +39,11 @@ export function unpack(text) {
   return { version, kind, data: READERS[version]?.(data) };
 }
 
-// Import messages by type: invalid text, or text of this type pasted into the other type's import.
+// Keys of the import messages by type: invalid text, or text of this type pasted into the other type's import.
 const ERRORS = {
-  [GAME]: {
-    invalid: 'Ce texte n\'est pas un jeu partagé valide.',
-    misplaced: 'Ce texte partage un jeu : l\'importer depuis l\'onglet Jeux, avec Importer un jeu.',
-  },
-  [EXERCISES]: {
-    invalid: 'Ce texte n\'est pas une liste d\'exercices partagée valide.',
-    misplaced: 'Ce texte partage des exercices : l\'importer depuis l\'onglet Exercices, avec Importer.',
-  },
+  [GAME]: { invalid: 'share.gameInvalid', misplaced: 'share.gameMisplaced' },
+  [EXERCISES]: { invalid: 'share.exercisesInvalid', misplaced: 'share.exercisesMisplaced' },
 };
-
-const NEWER = 'Ce texte vient d\'une version plus récente de SquatSouls : la mettre à jour pour l\'importer.';
 
 // Returns the content of the pasted text if it has the expected type and `valid` accepts it, otherwise throws an error.
 function parse(text, kind, valid) {
@@ -60,9 +53,9 @@ function parse(text, kind, valid) {
   } catch {
     // Unreadable content: refused below.
   }
-  if (read.kind !== kind && Object.hasOwn(ERRORS, read.kind)) throw new Error(ERRORS[read.kind].misplaced);
-  if (read.kind === kind && !Object.hasOwn(READERS, read.version)) throw new Error(NEWER);
-  if (read.kind !== kind || !read.data || !valid(read.data)) throw new Error(ERRORS[kind].invalid);
+  if (read.kind !== kind && Object.hasOwn(ERRORS, read.kind)) throw new Error(t(ERRORS[read.kind].misplaced));
+  if (read.kind === kind && !Object.hasOwn(READERS, read.version)) throw new Error(t('share.newer'));
+  if (read.kind !== kind || !read.data || !valid(read.data)) throw new Error(t(ERRORS[kind].invalid));
   return read.data;
 }
 

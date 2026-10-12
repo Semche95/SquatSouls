@@ -1,6 +1,7 @@
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { clone } from '../configDraft.js';
+import { t } from '../i18n.js';
 import { defineShared } from './shared.js';
 
 // Refresh rate of the pause countdown.
@@ -73,7 +74,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     try {
       const draw = await call('draw', { gameId: game.value.id, eventId: ev.id });
       if (draw.capped) {
-        notice.value = `${draw.eventName} : limite de ${draw.maxPerSession} atteinte pour la séance, pas de série.`;
+        notice.value = t('play.capped', { event: draw.eventName, max: draw.maxPerSession });
       }
       session.value = await call('get_session');
     } catch {

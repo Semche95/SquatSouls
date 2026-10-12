@@ -766,9 +766,17 @@ kbd.dark {
   transform: translateX(16px);
   background: var(--bg);
 }
-.config .check input:focus-visible {
+.config .check :is(input, select):focus-visible {
   outline: 2px solid var(--gold-soft);
   outline-offset: 2px;
+}
+/* Language list: field look, focus of the switches. */
+.config .check select {
+  flex: none;
+  width: auto;
+}
+.config .check select:focus {
+  border-color: var(--line);
 }
 .setting .hint {
   margin: 2px 0 0;
@@ -833,7 +841,8 @@ kbd.dark {
 .cfg-name {
   width: 100%;
 }
-.cfg-unit {
+.cfg-unit,
+.config .check select {
   min-width: 11em;
 }
 .cfg-pause {

@@ -1,8 +1,11 @@
 use chrono::Local;
-use squat_souls_lib::fitness::*;
+use squat_souls_lib::app::*;
+
+/// System locale of the tests: new databases receive the French default configuration.
+const LOCALE: Option<&str> = Some("fr_FR.UTF-8");
 
 fn store() -> Store {
-    Store::open_in_memory().unwrap()
+    Store::open_in_memory(LOCALE).unwrap()
 }
 
 /// Steam Store language of the names asked in the tests.
@@ -10,13 +13,53 @@ const LANGUAGE: &str = "english";
 
 #[test]
 fn new_store_holds_default_config() {
-    assert_eq!(store().config().unwrap(), default_config());
+    assert_eq!(store().config().unwrap(), default_config(Language::Fr));
+}
+
+#[test]
+fn new_store_default_config_follows_the_system_language() {
+    let english = Store::open_in_memory(Some("de-DE")).unwrap();
+    assert_eq!(english.config().unwrap(), default_config(Language::En));
+    let english = Store::open_in_memory(None).unwrap();
+    assert_eq!(english.config().unwrap(), default_config(Language::En));
+}
+
+#[test]
+fn existing_store_keeps_its_config_whatever_the_language() {
+    let path = temp_db("language");
+    Store::open(&path, LOCALE).unwrap();
+    let reopened = Store::open(&path, Some("en-US")).unwrap();
+    assert_eq!(reopened.config().unwrap(), default_config(Language::Fr));
+}
+
+#[test]
+fn language_setting_is_saved() {
+    let s = store();
+    assert_eq!(s.language().unwrap(), LanguageSetting::System, "missing");
+    s.set_language(LanguageSetting::En).unwrap();
+    assert_eq!(s.language().unwrap(), LanguageSetting::En);
+    s.set_language(LanguageSetting::Fr).unwrap();
+    assert_eq!(s.language().unwrap(), LanguageSetting::Fr);
+}
+
+#[test]
+fn unknown_language_setting_falls_back_to_the_system() {
+    let path = temp_db("unknown-language");
+    Store::open(&path, LOCALE).unwrap();
+    connect(&path)
+        .execute(
+            "INSERT INTO settings (key, value) VALUES ('language', 'klingon')",
+            [],
+        )
+        .unwrap();
+    let s = Store::open(&path, LOCALE).unwrap();
+    assert_eq!(s.language().unwrap(), LanguageSetting::System);
 }
 
 #[test]
 fn config_changes_are_saved() {
     let mut s = store();
-    let mut cfg = default_config();
+    let mut cfg = default_config(Language::Fr);
     cfg.exercises.swap(0, 1);
     cfg.exercises[0].max = 30;
     cfg.exercises[1].enabled = false;
@@ -38,7 +81,7 @@ fn config_changes_are_saved() {
 #[test]
 fn pauses_are_saved() {
     let mut s = store();
-    let mut cfg = default_config();
+    let mut cfg = default_config(Language::Fr);
     assert_eq!(cfg.pause, DEFAULT_PAUSE);
     cfg.pause = 90;
     cfg.exercises[0].pause = Some(120);
@@ -75,8 +118,8 @@ fn applied(path: &std::path::Path) -> Vec<(i64, String)> {
 #[test]
 fn applied_migrations_are_dated() {
     let path = temp_db("dated");
-    Store::open(&path).unwrap();
-    Store::open(&path).unwrap();
+    Store::open(&path, LOCALE).unwrap();
+    Store::open(&path, LOCALE).unwrap();
     let applied = applied(&path);
     std::fs::remove_file(&path).unwrap();
     assert_eq!(
@@ -119,8 +162,8 @@ fn legacy_db(name: &str, version: usize) -> std::path::PathBuf {
 fn database_migrated_before_refinery_keeps_its_data() {
     for (name, version) in [("legacy-current", 3), ("legacy-behind", 2)] {
         let path = legacy_db(name, version);
-        let history = Store::open(&path).unwrap().full_history().unwrap();
-        Store::open(&path).unwrap().steam_names().unwrap();
+        let history = Store::open(&path, LOCALE).unwrap().full_history().unwrap();
+        Store::open(&path, LOCALE).unwrap().steam_names().unwrap();
         let applied = applied(&path);
         std::fs::remove_file(&path).unwrap();
         assert_eq!(history.len(), 1, "{name}");
@@ -146,7 +189,7 @@ fn steam_names_receive_retry_at_even_from_draft_schema() {
             "INSERT INTO steam_names (app_id, name, retry_at) VALUES (814380, 'Sekiro', NULL), (1, NULL, 5000)"
         })
         .unwrap();
-        let mut names = Store::open(&path).unwrap().steam_names().unwrap();
+        let mut names = Store::open(&path, LOCALE).unwrap().steam_names().unwrap();
         std::fs::remove_file(&path).unwrap();
         assert_eq!(
             names
@@ -174,7 +217,7 @@ fn steam_names_receive_retry_at_even_from_draft_schema() {
 #[test]
 fn steam_and_tray_settings_are_saved() {
     let mut s = store();
-    let mut cfg = default_config();
+    let mut cfg = default_config(Language::Fr);
     assert!(!cfg.steam_detection && cfg.steam_notify);
     assert!(!cfg.tray && !cfg.close_to_tray && !cfg.start_hidden);
     cfg.steam_detection = true;
@@ -220,7 +263,7 @@ fn steam_names_are_kept() {
 #[test]
 fn database_migrated_before_comment_translation_still_opens() {
     let path = temp_db("translated");
-    Store::open(&path).unwrap();
+    Store::open(&path, LOCALE).unwrap();
     let current = applied_checksums(&path);
     for (version, old) in PRE_TRANSLATION_CHECKSUMS {
         connect(&path)
@@ -230,7 +273,7 @@ fn database_migrated_before_comment_translation_still_opens() {
             )
             .unwrap();
     }
-    let opened = Store::open(&path).map(drop);
+    let opened = Store::open(&path, LOCALE).map(drop);
     let updated = applied_checksums(&path);
     std::fs::remove_file(&path).unwrap();
     opened.unwrap();
@@ -251,7 +294,7 @@ fn applied_checksums(path: &std::path::Path) -> Vec<String> {
 #[test]
 fn newer_database_is_refused() {
     let path = temp_db("newer");
-    Store::open(&path).unwrap();
+    Store::open(&path, LOCALE).unwrap();
     connect(&path)
         .execute(
             "INSERT INTO refinery_schema_history (version, name, applied_on, checksum)
@@ -259,7 +302,7 @@ fn newer_database_is_refused() {
             [],
         )
         .unwrap();
-    let opened = Store::open(&path);
+    let opened = Store::open(&path, LOCALE);
     std::fs::remove_file(&path).unwrap();
     assert!(opened.is_err());
 }
@@ -267,7 +310,7 @@ fn newer_database_is_refused() {
 #[test]
 fn removed_game_takes_its_events_along() {
     let mut s = store();
-    let mut cfg = default_config();
+    let mut cfg = default_config(Language::Fr);
     let removed = cfg.games.remove(0);
     s.save_config(&cfg).unwrap();
     // Recreating a game with the same id starts from an empty event list.

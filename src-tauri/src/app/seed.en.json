@@ -1,0 +1,542 @@
+{
+  "pause": 60,
+  "exercises": [
+    {
+      "id": "pompes",
+      "name": "Push-ups",
+      "unit": "reps",
+      "min": 8,
+      "max": 12
+    },
+    {
+      "id": "pompes-mur",
+      "name": "Wall push-ups",
+      "unit": "reps",
+      "min": 10,
+      "max": 15
+    },
+    {
+      "id": "tractions",
+      "name": "Pull-ups",
+      "unit": "reps",
+      "min": 2,
+      "max": 4
+    },
+    {
+      "id": "squats",
+      "name": "Squats",
+      "unit": "reps",
+      "min": 12,
+      "max": 18
+    },
+    {
+      "id": "assis-debout",
+      "name": "Sit-to-stands",
+      "unit": "reps",
+      "min": 8,
+      "max": 12
+    },
+    {
+      "id": "fentes",
+      "name": "Lunges",
+      "unit": "reps per leg",
+      "min": 5,
+      "max": 8
+    },
+    {
+      "id": "extensions-jambes",
+      "name": "Seated leg extensions",
+      "unit": "reps per leg",
+      "min": 10,
+      "max": 15
+    },
+    {
+      "id": "montees-genoux",
+      "name": "Seated knee raises",
+      "unit": "reps per leg",
+      "min": 10,
+      "max": 15
+    },
+    {
+      "id": "mollets",
+      "name": "Calf raises (holding a chair)",
+      "unit": "reps",
+      "min": 12,
+      "max": 20
+    },
+    {
+      "id": "gainage",
+      "name": "Plank",
+      "unit": "s",
+      "min": 20,
+      "max": 45
+    },
+    {
+      "id": "gainage-genoux",
+      "name": "Knee plank",
+      "unit": "s",
+      "min": 15,
+      "max": 30
+    },
+    {
+      "id": "superman",
+      "name": "Superman",
+      "unit": "reps",
+      "min": 10,
+      "max": 15
+    },
+    {
+      "id": "cercles-bras",
+      "name": "Arm circles",
+      "unit": "s",
+      "min": 20,
+      "max": 40
+    }
+  ],
+  "games": [
+    {
+      "id": "elden-ring",
+      "name": "Elden Ring",
+      "steamAppId": 1245620,
+      "events": [
+        {
+          "id": "mort",
+          "name": "Death",
+          "draws": 1,
+          "maxPerSession": 15,
+          "jokers": 0
+        },
+        {
+          "id": "repos",
+          "name": "Rest at a known Site of Grace",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "decouverte",
+          "name": "Site of Grace discovered",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "niveau",
+          "name": "Level up",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "perte",
+          "name": "Runes lost",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "boss",
+          "name": "Boss defeated",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "boss-premier",
+          "name": "Boss defeated on the first try",
+          "draws": 2,
+          "jokers": 1
+        },
+        {
+          "id": "boss-nohit",
+          "name": "Boss defeated without getting hit",
+          "draws": 2,
+          "jokers": 2
+        }
+      ]
+    },
+    {
+      "id": "ds1",
+      "name": "Dark Souls",
+      "steamAppId": 570940,
+      "events": [
+        {
+          "id": "mort",
+          "name": "Death",
+          "draws": 1,
+          "maxPerSession": 15,
+          "jokers": 0
+        },
+        {
+          "id": "repos",
+          "name": "Rest at a known bonfire",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "decouverte",
+          "name": "New bonfire lit",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "niveau",
+          "name": "Level up",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "perte",
+          "name": "Souls lost",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "boss",
+          "name": "Boss defeated",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "boss-premier",
+          "name": "Boss defeated on the first try",
+          "draws": 2,
+          "jokers": 1
+        },
+        {
+          "id": "boss-nohit",
+          "name": "Boss defeated without getting hit",
+          "draws": 2,
+          "jokers": 2
+        }
+      ]
+    },
+    {
+      "id": "ds2",
+      "name": "Dark Souls II",
+      "steamAppId": 335300,
+      "events": [
+        {
+          "id": "mort",
+          "name": "Death",
+          "draws": 1,
+          "maxPerSession": 15,
+          "jokers": 0
+        },
+        {
+          "id": "repos",
+          "name": "Rest at a known bonfire",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "decouverte",
+          "name": "New bonfire lit",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "niveau",
+          "name": "Level up",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "perte",
+          "name": "Souls lost",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "boss",
+          "name": "Boss defeated",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "boss-premier",
+          "name": "Boss defeated on the first try",
+          "draws": 2,
+          "jokers": 1
+        },
+        {
+          "id": "boss-nohit",
+          "name": "Boss defeated without getting hit",
+          "draws": 2,
+          "jokers": 2
+        }
+      ]
+    },
+    {
+      "id": "ds3",
+      "name": "Dark Souls III",
+      "steamAppId": 374320,
+      "events": [
+        {
+          "id": "mort",
+          "name": "Death",
+          "draws": 1,
+          "maxPerSession": 15,
+          "jokers": 0
+        },
+        {
+          "id": "repos",
+          "name": "Rest at a known bonfire",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "decouverte",
+          "name": "New bonfire lit",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "niveau",
+          "name": "Level up",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "perte",
+          "name": "Souls lost",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "boss",
+          "name": "Boss defeated",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "boss-premier",
+          "name": "Boss defeated on the first try",
+          "draws": 2,
+          "jokers": 1
+        },
+        {
+          "id": "boss-nohit",
+          "name": "Boss defeated without getting hit",
+          "draws": 2,
+          "jokers": 2
+        }
+      ]
+    },
+    {
+      "id": "bloodborne",
+      "name": "Bloodborne",
+      "events": [
+        {
+          "id": "mort",
+          "name": "Death",
+          "draws": 1,
+          "maxPerSession": 15,
+          "jokers": 0
+        },
+        {
+          "id": "repos",
+          "name": "Rest at a known lantern",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "decouverte",
+          "name": "Lantern lit",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "niveau",
+          "name": "Level up",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "perte",
+          "name": "Blood Echoes lost",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "boss",
+          "name": "Boss defeated",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "boss-premier",
+          "name": "Boss defeated on the first try",
+          "draws": 2,
+          "jokers": 1
+        },
+        {
+          "id": "boss-nohit",
+          "name": "Boss defeated without getting hit",
+          "draws": 2,
+          "jokers": 2
+        }
+      ]
+    },
+    {
+      "id": "sekiro",
+      "name": "Sekiro",
+      "steamAppId": 814380,
+      "events": [
+        {
+          "id": "mort",
+          "name": "Death",
+          "draws": 1,
+          "maxPerSession": 15,
+          "jokers": 0
+        },
+        {
+          "id": "repos",
+          "name": "Rest at a Sculptor's Idol",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "decouverte",
+          "name": "Sculptor's Idol discovered",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "niveau",
+          "name": "Skill point earned",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "perte",
+          "name": "Sen and experience lost",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "boss",
+          "name": "Boss defeated",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "boss-premier",
+          "name": "Boss defeated on the first try",
+          "draws": 2,
+          "jokers": 1
+        },
+        {
+          "id": "boss-nohit",
+          "name": "Boss defeated without getting hit",
+          "draws": 2,
+          "jokers": 2
+        }
+      ]
+    },
+    {
+      "id": "megabonk",
+      "name": "Megabonk",
+      "steamAppId": 3405340,
+      "events": [
+        {
+          "id": "mort",
+          "name": "Death",
+          "draws": 1,
+          "jokers": 0
+        },
+        {
+          "id": "boss-portail",
+          "name": "Portal boss defeated",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "boss-final",
+          "name": "Final boss defeated (Tier 3)",
+          "draws": 2,
+          "jokers": 1
+        },
+        {
+          "id": "mini-boss",
+          "name": "Mini-boss defeated",
+          "draws": 1,
+          "maxPerSession": 10,
+          "jokers": 0
+        },
+        {
+          "id": "legendaire",
+          "name": "Legendary obtained (item or upgrade)",
+          "draws": 1,
+          "maxPerSession": 10,
+          "jokers": 0
+        },
+        {
+          "id": "vague-finale",
+          "name": "Final swarm triggered before the boss",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "defi",
+          "name": "Challenge completed",
+          "draws": 2,
+          "jokers": 1
+        }
+      ]
+    },
+    {
+      "id": "deep-rock-galactic",
+      "name": "Deep Rock Galactic",
+      "steamAppId": 548430,
+      "events": [
+        {
+          "id": "a-terre",
+          "name": "Dwarf down",
+          "draws": 1,
+          "maxPerSession": 15,
+          "jokers": 0
+        },
+        {
+          "id": "niveau",
+          "name": "Class level up",
+          "draws": 1,
+          "maxPerSession": 10,
+          "jokers": 0
+        },
+        {
+          "id": "mission",
+          "name": "Mission complete",
+          "draws": 1,
+          "maxPerSession": 10,
+          "jokers": 0
+        },
+        {
+          "id": "laisse",
+          "name": "Left behind at extraction",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "echec",
+          "name": "Mission failed",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "dreadnought",
+          "name": "Dreadnought killed",
+          "draws": 2,
+          "jokers": 0
+        },
+        {
+          "id": "deep-dive",
+          "name": "Deep Dive completed",
+          "draws": 3,
+          "jokers": 1
+        },
+        {
+          "id": "elite-deep-dive",
+          "name": "Elite Deep Dive completed",
+          "draws": 3,
+          "jokers": 2
+        }
+      ]
+    }
+  ]
+}

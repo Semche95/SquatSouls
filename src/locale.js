@@ -1,8 +1,7 @@
-// Interface language, until the interface is translatable: language of the page and of the game
-// names asked from the Steam Store.
-export const LOCALE = 'fr';
+import { language } from './i18n.js';
 
 // Steam Store API language names, by interface language.
-const STEAM_LANGUAGES = { fr: 'french' };
+const STEAM_LANGUAGES = { en: 'english', fr: 'french' };
 
-export const STEAM_LANGUAGE = STEAM_LANGUAGES[LOCALE];
+// Language of the game names asked from the Steam Store: the interface's.
+export const steamLanguage = () => STEAM_LANGUAGES[language.value];

@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
-import { formatCountdown, plural } from '../format.js';
+import { formatCountdown } from '../format.js';
+import { t } from '../i18n.js';
 import { byName } from '../configDraft.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
@@ -70,24 +71,26 @@ useKeydown((e) => {
 <template>
   <main class="panel play">
     <label class="field">
-      <span>Jeu</span>
-      <DisabledTip :tip="gameLocked ? 'Le jeu ne peut plus changer pendant la séance' : ''">
+      <span>{{ t('play.game') }}</span>
+      <DisabledTip :tip="gameLocked ? t('play.gameLocked') : ''">
         <select v-model="gameId" :disabled="gameLocked">
-          <option value="" disabled>Choisir un jeu</option>
+          <option value="" disabled>{{ t('play.chooseGame') }}</option>
           <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id">{{ g.name }}</option>
         </select>
       </DisabledTip>
     </label>
 
     <p v-if="steamOffer" class="banner steam">
-      <span><strong>{{ detected.name }}</strong> détecté.</span>
+      <i18n-t keypath="play.detected" tag="span">
+        <template #name><strong>{{ detected.name }}</strong></template>
+      </i18n-t>
       <span class="row">
         <template v-if="detected.games.length">
           <button v-for="g in detected.games" :key="g.id" class="primary" @click="selectDetected(g)">{{ g.name }}</button>
         </template>
         <template v-else>
-          <button class="primary" @click="addGame(detected)">Ajouter</button>
-          <button class="ghost" @click="ignoreDetected">Ignorer</button>
+          <button class="primary" @click="addGame(detected)">{{ t('common.add') }}</button>
+          <button class="ghost" @click="ignoreDetected">{{ t('play.ignore') }}</button>
         </template>
       </span>
     </p>
@@ -97,7 +100,7 @@ useKeydown((e) => {
         <kbd v-if="i < 9">{{ i + 1 }}</kbd>
         <span class="event-name">
           {{ ev.name }}
-          <span v-if="ev.jokers" class="reward-tag">+{{ plural(ev.jokers, 'joker') }}</span>
+          <span v-if="ev.jokers" class="reward-tag">{{ t('common.reward', ev.jokers) }}</span>
         </span>
         <span v-if="triggerCount(ev.id)" class="count">
           <template v-if="ev.maxPerSession">{{ Math.min(triggerCount(ev.id), ev.maxPerSession) }} / {{ ev.maxPerSession }}</template>
@@ -112,19 +115,19 @@ useKeydown((e) => {
     <p v-if="notice" class="banner info">{{ notice }}</p>
 
     <p v-if="pauseLeft" class="banner pause">
-      Pause <strong class="pause-left">{{ formatCountdown(pauseLeft) }}</strong>
-      <button class="ghost" @click="skipPause">Passer <kbd>Échap</kbd></button>
+      {{ t('play.pause') }} <strong class="pause-left">{{ formatCountdown(pauseLeft) }}</strong>
+      <button class="ghost" @click="skipPause">{{ t('play.skipPause') }} <kbd>{{ t('keys.escape') }}</kbd></button>
     </p>
 
     <section class="pending">
       <h2>
-        À faire
-        <span class="jokers" :class="{ none: !session.jokers }" title="J : sauter la plus ancienne série">
-          {{ session.jokers ? plural(session.jokers, 'joker') : 'aucun joker' }}
+        {{ t('play.todo') }}
+        <span class="jokers" :class="{ none: !session.jokers }" :title="t('play.jokersTip')">
+          {{ t('play.jokers', session.jokers) }}
         </span>
       </h2>
       <p v-if="!session.pending.length" class="empty">
-        Rien en attente. Clique sur un événement (ou tape son numéro) quand il arrive en jeu.
+        {{ t('play.empty') }}
       </p>
       <div v-if="session.pending.length" class="stage">
         <div v-for="(col, c) in stage" v-show="col.length" :key="c" :class="c === 0 ? 'stage-current' : 'queue'">

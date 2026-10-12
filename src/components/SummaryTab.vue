@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { formatDay, formatDuration, formatTime, plural } from '../format.js';
+import { formatDay, formatDuration, formatTime } from '../format.js';
+import { t } from '../i18n.js';
 import { useApi } from '../composables/useApi.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
@@ -42,23 +43,23 @@ onMounted(async () => {
   <main class="panel summary">
     <section class="group current">
       <header class="group-head">
-        <h2 class="group-title">Séance actuelle</h2>
-        <span class="muted"><template v-if="gameName">{{ gameName }} · </template>en cours depuis {{ formatTime(session.startedAt) }}</span>
+        <h2 class="group-title">{{ t('summary.current') }}</h2>
+        <span class="muted"><template v-if="gameName">{{ gameName }} · </template>{{ t('summary.since', { time: formatTime(session.startedAt) }) }}</span>
       </header>
-      <p v-if="!session.sets" class="empty">Aucune série faite pendant cette séance.</p>
+      <p v-if="!session.sets" class="empty">{{ t('summary.noSets') }}</p>
       <div v-else class="session-detail">
         <div class="session-totals">
-          <h2>Totaux</h2>
+          <h2>{{ t('summary.totals') }}</h2>
           <ul class="totals">
-            <li v-for="t in session.totals" :key="t.exercise + t.unit">
-              <span class="total-amount">{{ t.amount }} <small>{{ t.unit }}</small></span>
-              <strong>{{ t.exercise }}</strong>
-              <span class="muted">{{ plural(t.sets, 'série') }}</span>
+            <li v-for="total in session.totals" :key="total.exercise + total.unit">
+              <span class="total-amount">{{ total.amount }} <small>{{ total.unit }}</small></span>
+              <strong>{{ total.exercise }}</strong>
+              <span class="muted">{{ t('summary.sets', total.sets) }}</span>
             </li>
           </ul>
         </div>
         <div>
-          <h2>Séries faites</h2>
+          <h2>{{ t('common.setsDone') }}</h2>
           <ul class="log">
             <li v-for="(e, i) in session.log" :key="i">
               <span class="muted">{{ formatTime(e.at) }}</span>
@@ -69,16 +70,13 @@ onMounted(async () => {
         </div>
       </div>
       <div v-if="session.jokersEarned || session.skipped.length">
-        <h2>Jokers</h2>
-        <p class="muted">
-          {{ session.jokersEarned }} gagné{{ session.jokersEarned > 1 ? 's' : '' }} ·
-          {{ jokersSpent }} utilisé{{ jokersSpent > 1 ? 's' : '' }}
-        </p>
+        <h2>{{ t('common.jokers') }}</h2>
+        <p class="muted">{{ t('summary.earned', session.jokersEarned) }} · {{ t('summary.spent', jokersSpent) }}</p>
         <ul v-if="session.skipped.length" class="log">
           <li v-for="(k, i) in session.skipped" :key="i">
             <span class="muted">{{ formatTime(k.at) }}</span>
             <span>{{ k.items.map((it) => `${it.amount} ${it.unit} · ${it.name}`).join(', ') }}</span>
-            <span class="muted">{{ k.event }} ({{ k.halved ? 'moitié' : 'sauté' }})</span>
+            <span class="muted">{{ k.event }} ({{ t(k.halved ? 'common.halved' : 'summary.skipped') }})</span>
           </li>
         </ul>
       </div>
@@ -86,23 +84,23 @@ onMounted(async () => {
 
     <section class="group" :class="{ full: fullHistory }">
       <header class="group-head">
-        <h2 class="group-title">{{ fullHistory ? 'Historique complet' : 'Historique' }}</h2>
-        <span v-if="fullHistory" class="muted">{{ plural(fullHistory.length, 'jour') }} d'activité</span>
-        <span v-else class="muted">7 derniers jours, par séance</span>
-        <button v-if="fullHistory" class="ghost" @click="fullHistory = null">Fermer</button>
-        <button v-else class="ghost" @click="openFullHistory">Tout voir</button>
+        <h2 class="group-title">{{ t(fullHistory ? 'summary.fullHistory' : 'summary.history') }}</h2>
+        <span v-if="fullHistory" class="muted">{{ t('summary.activeDays', fullHistory.length) }}</span>
+        <span v-else class="muted">{{ t('summary.lastDays') }}</span>
+        <button v-if="fullHistory" class="ghost" @click="fullHistory = null">{{ t('summary.close') }}</button>
+        <button v-else class="ghost" @click="openFullHistory">{{ t('summary.seeAll') }}</button>
       </header>
-      <p v-if="fullHistory && !fullHistory.length" class="muted">Aucune série enregistrée pour l'instant.</p>
+      <p v-if="fullHistory && !fullHistory.length" class="muted">{{ t('summary.noHistory') }}</p>
       <ul class="days">
         <li v-for="d in fullHistory ?? history" :key="d.date" :class="{ off: !d.sets }">
           <span class="day">{{ formatDay(d.date) }}</span>
-          <span v-if="!d.sets" class="muted">repos</span>
+          <span v-if="!d.sets" class="muted">{{ t('summary.rest') }}</span>
           <span v-else class="day-body">
             <span v-for="se in d.sessions" :key="se.start + se.game" class="day-session">
               <span class="day-games">{{ formatTime(se.start) }} · {{ se.game }} · {{ formatDuration(se.duration) }}</span>
               <span class="day-totals">
-                <span v-for="t in se.totals" :key="t.exercise + t.unit" class="chip">
-                  {{ t.exercise }} {{ t.amount }} {{ t.unit }}
+                <span v-for="total in se.totals" :key="total.exercise + total.unit" class="chip">
+                  {{ total.exercise }} {{ total.amount }} {{ total.unit }}
                 </span>
               </span>
             </span>

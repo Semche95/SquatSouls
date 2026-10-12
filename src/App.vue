@@ -2,6 +2,7 @@
 import { onMounted } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { pickSlogan } from './slogans.js';
+import { t } from './i18n.js';
 import { formatTime } from './format.js';
 import { provideApi } from './composables/useApi.js';
 import { provideConfig } from './composables/useConfig.js';
@@ -41,23 +42,23 @@ onMounted(async () => {
         <p v-if="slogan" class="splash">{{ slogan }}</p>
       </div>
       <nav class="tabs">
-        <button :class="{ active: tab === 'play' }" @click="tab = 'play'">Jouer</button>
+        <button :class="{ active: tab === 'play' }" @click="tab = 'play'">{{ t('app.tabs.play') }}</button>
         <button :class="{ active: tab === 'summary' }" @click="tab = 'summary'">
-          Bilan <span v-if="session.sets" class="badge">{{ session.sets }}</span>
+          {{ t('app.tabs.summary') }} <span v-if="session.sets" class="badge">{{ session.sets }}</span>
         </button>
-        <button :class="{ active: tab === 'config' }" @click="tab = 'config'">Configuration</button>
+        <button :class="{ active: tab === 'config' }" @click="tab = 'config'">{{ t('app.tabs.config') }}</button>
       </nav>
       <dl class="hud">
         <div>
-          <dt>Séries faites</dt>
+          <dt>{{ t('common.setsDone') }}</dt>
           <dd>{{ session.sets }}</dd>
         </div>
         <div>
-          <dt>Jokers</dt>
+          <dt>{{ t('common.jokers') }}</dt>
           <dd>{{ session.jokers }}</dd>
         </div>
         <div>
-          <dt>Séance depuis</dt>
+          <dt>{{ t('app.sessionSince') }}</dt>
           <dd>{{ session.startedAt ? formatTime(session.startedAt) : '–' }}</dd>
         </div>
       </dl>
@@ -66,7 +67,7 @@ onMounted(async () => {
     <p v-if="error" class="banner error">{{ error }}</p>
     <p v-if="configError && tab !== 'config'" class="banner error">
       {{ configError }}
-      <button class="link" @click="tab = 'config'">Voir la configuration</button>
+      <button class="link" @click="tab = 'config'">{{ t('app.viewConfig') }}</button>
     </p>
 
     <PlayTab v-if="tab === 'play'" />

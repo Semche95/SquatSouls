@@ -1,5 +1,5 @@
 use chrono::{Duration, Local, NaiveDate};
-use squat_souls_lib::fitness::*;
+use squat_souls_lib::app::*;
 use std::collections::HashMap;
 
 fn entry(at: i64, session: i64, game: &str, amount: u32) -> LogEntry {

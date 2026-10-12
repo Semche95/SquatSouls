@@ -2,6 +2,7 @@ import { afterEach, beforeEach, expect, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import App from '../App.vue';
+import { i18n } from '../i18n.js';
 
 export const config = {
   pause: 60,
@@ -43,6 +44,9 @@ export function setup(over = {}) {
     get_history: [],
     get_last_game: 'er',
     set_last_game: undefined,
+    get_language: { setting: 'system', language: 'fr' },
+    set_language: ({ setting }) => ({ setting, language: setting === 'en' ? 'en' : 'fr' }),
+    set_native_texts: undefined,
     ...over,
   };
   invoke.mockImplementation(async (cmd, args) => {
@@ -52,8 +56,15 @@ export function setup(over = {}) {
   });
 }
 
+// Backend refusal: error with its code and parameters.
+export const rejection =
+  (code, params = {}) =>
+  () => {
+    throw { code, params };
+  };
+
 export async function mountApp() {
-  const wrapper = mount(App, { attachTo: document.body });
+  const wrapper = mount(App, { attachTo: document.body, global: { plugins: [i18n] } });
   mounted.push(wrapper);
   await flushPromises();
   return wrapper;

@@ -22,6 +22,9 @@ sysinfo = { version = "0.38.4", default-features = false, features = ["system"] 
 ureq = "3.4.2"
 tauri-plugin-notification = "2"
 refinery = { version = "0.9", features = ["rusqlite"] }
+sys-locale = "0.3"
+log = "0.4"
+tauri-plugin-log = "2"
 
 [target."cfg(target_os = \"linux\")".dependencies]
 notify-rust = "4.18"

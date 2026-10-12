@@ -1,6 +1,7 @@
 import { computed, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { byName, clone, normalized, numberError } from '../configDraft.js';
+import { errorText, t } from '../i18n.js';
 import { defineShared } from './shared.js';
 
 // Display duration of a confirmation.
@@ -50,7 +51,7 @@ export const [provideConfig, useConfig] = defineShared(() => {
   function applyConfigView(view) {
     config.value = view.config;
     draft.value = clone(view.config);
-    configError.value = view.error ?? '';
+    configError.value = view.error ? errorText(view.error) : '';
   }
 
   // Saves `cfg` without touching the draft; returns false if the backend refuses.
@@ -63,7 +64,7 @@ export const [provideConfig, useConfig] = defineShared(() => {
       configError.value = '';
       return true;
     } catch (e) {
-      configError.value = String(e);
+      configError.value = errorText(e);
       return false;
     }
   }
@@ -78,9 +79,9 @@ export const [provideConfig, useConfig] = defineShared(() => {
   async function copy(text) {
     try {
       await navigator.clipboard.writeText(text);
-      notify('Copié dans le presse-papiers, prêt à partager.');
+      notify(t('config.copied'));
     } catch (e) {
-      configError.value = `Copie impossible : ${e}`;
+      configError.value = t('config.copyFailed', { error: String(e) });
     }
   }
 

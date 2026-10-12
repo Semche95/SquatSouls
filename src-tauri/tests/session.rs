@@ -1,6 +1,6 @@
 use rand::rngs::StdRng;
 use rand::SeedableRng;
-use squat_souls_lib::fitness::*;
+use squat_souls_lib::app::*;
 use std::collections::HashSet;
 
 fn rng() -> StdRng {
@@ -8,13 +8,13 @@ fn rng() -> StdRng {
 }
 
 /// Marks done, one by one, the remaining exercises of a set.
-fn complete(s: &mut Session, id: u64, now: i64) -> Result<Vec<LogEntry>, String> {
+fn complete(s: &mut Session, id: u64, now: i64) -> Result<Vec<LogEntry>, AppError> {
     let draw = s
         .view()
         .pending
         .into_iter()
         .find(|d| d.id == id)
-        .ok_or("This set is no longer pending.")?;
+        .ok_or(AppError::new("set_not_pending"))?;
     draw.items
         .iter()
         .filter(|it| !it.done)
@@ -24,7 +24,7 @@ fn complete(s: &mut Session, id: u64, now: i64) -> Result<Vec<LogEntry>, String>
 
 #[test]
 fn draws_stay_in_range_and_are_distinct() {
-    let cfg = default_config();
+    let cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     let mut r = rng();
     for _ in 0..200 {
@@ -49,7 +49,7 @@ fn draws_stay_in_range_and_are_distinct() {
 
 #[test]
 fn every_option_can_be_drawn() {
-    let cfg = default_config();
+    let cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     let mut r = rng();
     let mut seen = HashSet::new();
@@ -62,7 +62,7 @@ fn every_option_can_be_drawn() {
 
 #[test]
 fn each_exercise_comes_out_once_per_round() {
-    let cfg = default_config();
+    let cfg = default_config(Language::Fr);
     let n = cfg.exercises.len();
     let mut s = Session::new(0);
     let mut r = rng();
@@ -84,7 +84,7 @@ fn each_exercise_comes_out_once_per_round() {
 
 #[test]
 fn a_new_round_does_not_start_with_the_last_set() {
-    let cfg = default_config();
+    let cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     let mut r = rng();
     let mut last: Vec<String> = Vec::new();
@@ -102,7 +102,7 @@ fn a_new_round_does_not_start_with_the_last_set() {
 
 #[test]
 fn a_draw_across_two_rounds_stays_distinct() {
-    let mut cfg = default_config();
+    let mut cfg = default_config(Language::Fr);
     // A single drawn exercise shifts the round: with an even number of exercises, draws of 2 then straddle two rounds.
     cfg.exercises.truncate(cfg.exercises.len() / 2 * 2);
     let n = cfg.exercises.len();
@@ -123,7 +123,7 @@ fn a_draw_across_two_rounds_stays_distinct() {
 
 #[test]
 fn death_cap_applies_per_game_and_session() {
-    let cfg = default_config();
+    let cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     let mut r = rng();
     for n in 1..=15 {
@@ -138,7 +138,10 @@ fn death_cap_applies_per_game_and_session() {
     }
     assert_eq!(s.view().pending.len(), 15, "a capped draw is not queued");
     // The session stays on its game.
-    assert!(s.draw(&cfg, "ds2", "mort", &mut r).is_err());
+    assert_eq!(
+        s.draw(&cfg, "ds2", "mort", &mut r).unwrap_err().code,
+        "session_other_game"
+    );
     assert_eq!(s.view().game_id.as_deref(), Some("ds1"));
     // A new session resets everything.
     let mut s2 = Session::new(1);
@@ -147,7 +150,7 @@ fn death_cap_applies_per_game_and_session() {
 
 #[test]
 fn removed_game_is_detected() {
-    let mut cfg = default_config();
+    let mut cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     assert!(!s.game_removed(&cfg), "session not started yet");
     s.draw(&cfg, "ds1", "mort", &mut rng()).unwrap();
@@ -160,7 +163,7 @@ fn removed_game_is_detected() {
 
 #[test]
 fn complete_dismiss_and_totals() {
-    let cfg = default_config();
+    let cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     let mut r = rng();
     let a = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
@@ -171,7 +174,10 @@ fn complete_dismiss_and_totals() {
     assert_eq!(logged.len(), 2);
     complete(&mut s, b.id, 101).unwrap();
     s.dismiss(c.id).unwrap();
-    assert!(complete(&mut s, c.id, 102).is_err());
+    assert_eq!(
+        complete(&mut s, c.id, 102).unwrap_err().code,
+        "set_not_pending"
+    );
 
     let v = s.view();
     assert!(v.pending.is_empty());
@@ -190,11 +196,15 @@ fn complete_dismiss_and_totals() {
 
 /// Session where a completed "boss no hit" earned 2 jokers, with a two-exercise boss set pending.
 fn session_with_jokers() -> (Session, Draw) {
-    let cfg = default_config();
+    let cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
-    assert!(s.skip_set(boss.id, 5).is_err(), "no joker at first");
+    assert_eq!(
+        s.skip_set(boss.id, 5).unwrap_err(),
+        AppError::new("not_enough_jokers"),
+        "no joker at first"
+    );
 
     let nohit = s.draw(&cfg, "ds3", "boss-nohit", &mut r).unwrap();
     assert_eq!(nohit.items.len(), 2, "the reward comes with a set");
@@ -214,7 +224,7 @@ fn skipping_a_set_costs_its_exercises() {
         "two exercises cost 4 jokers"
     );
 
-    let cfg = default_config();
+    let cfg = default_config(Language::Fr);
     let death = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
     s.skip_set(death.id, 20).unwrap();
     let v = s.view();
@@ -280,7 +290,10 @@ fn halving_then_skipping_costs_a_full_skip() {
     assert!(k.halved);
     assert_eq!(k.jokers, HALVE_COST);
     assert_eq!(k.items[0].amount, item.amount / 2, "the removed half");
-    assert!(s.halve(boss.id, &item.exercise_id, 30).is_err());
+    assert_eq!(
+        s.halve(boss.id, &item.exercise_id, 30).unwrap_err().code,
+        "exercise_not_reducible"
+    );
 
     s.skip_exercise(boss.id, &item.exercise_id, 30).unwrap();
     assert_eq!(
@@ -298,7 +311,7 @@ fn halving_then_skipping_costs_a_full_skip() {
 
 #[test]
 fn spending_jokers_on_a_rewarding_set_forfeits_its_reward() {
-    let cfg = default_config();
+    let cfg = default_config(Language::Fr);
     for spend in [Session::halve, Session::skip_exercise] {
         let (mut s, _) = session_with_jokers();
         let nohit = s.draw(&cfg, "ds3", "boss-nohit", &mut rng()).unwrap();
@@ -320,7 +333,7 @@ fn spending_jokers_on_a_rewarding_set_forfeits_its_reward() {
 #[test]
 fn skipping_every_exercise_removes_the_set() {
     let (mut s, _) = session_with_jokers();
-    let cfg = default_config();
+    let cfg = default_config(Language::Fr);
     let death = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
     s.skip_exercise(death.id, &death.items[0].exercise_id, 20)
         .unwrap();
@@ -329,7 +342,7 @@ fn skipping_every_exercise_removes_the_set() {
 
 #[test]
 fn a_single_unit_cannot_be_halved() {
-    let mut cfg = default_config();
+    let mut cfg = default_config(Language::Fr);
     for ex in &mut cfg.exercises {
         ex.min = 1;
         ex.max = 1;
@@ -343,7 +356,7 @@ fn a_single_unit_cannot_be_halved() {
 #[test]
 fn exercises_are_done_one_by_one() {
     let (mut s, boss) = session_with_jokers();
-    let cfg = default_config();
+    let cfg = default_config(Language::Fr);
     let nohit = s.draw(&cfg, "ds3", "boss-nohit", &mut rng()).unwrap();
     let (first, second) = (&nohit.items[0], &nohit.items[1]);
     let entry = s
@@ -365,7 +378,7 @@ fn exercises_are_done_one_by_one() {
         s.halve(nohit.id, &first.exercise_id, 21),
         s.skip_exercise(nohit.id, &first.exercise_id, 21),
     ] {
-        assert!(again.is_err(), "already done");
+        assert_eq!(again.unwrap_err().code, "exercise_already_done");
     }
 
     s.complete_exercise(nohit.id, &second.exercise_id, 30)
@@ -390,7 +403,7 @@ fn exercises_are_done_one_by_one() {
 
 #[test]
 fn dismissing_a_started_set_drops_its_done_exercises() {
-    let cfg = default_config();
+    let cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     let mort = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
     let kept = complete(&mut s, mort.id, 5).unwrap();
@@ -415,7 +428,7 @@ fn dismissing_a_started_set_drops_its_done_exercises() {
 
 #[test]
 fn a_dismissed_set_comes_back_on_the_next_trigger_of_its_event() {
-    let cfg = default_config();
+    let cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
@@ -456,7 +469,7 @@ fn pending(s: &Session, id: u64) -> Option<Draw> {
 
 #[test]
 fn a_saved_configuration_keeps_the_sets_to_do() {
-    let mut cfg = default_config();
+    let mut cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
@@ -470,7 +483,7 @@ fn a_saved_configuration_keeps_the_sets_to_do() {
 
 #[test]
 fn changing_the_draws_adjusts_the_sets_to_do() {
-    let mut cfg = default_config();
+    let mut cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
@@ -507,7 +520,7 @@ fn changing_the_draws_adjusts_the_sets_to_do() {
 
 #[test]
 fn new_bounds_clamp_the_amounts_to_do() {
-    let mut cfg = default_config();
+    let mut cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
@@ -528,7 +541,7 @@ fn new_bounds_clamp_the_amounts_to_do() {
 
 #[test]
 fn a_removed_exercise_is_replaced_in_the_sets_to_do() {
-    let mut cfg = default_config();
+    let mut cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
@@ -544,7 +557,7 @@ fn a_removed_exercise_is_replaced_in_the_sets_to_do() {
 
 #[test]
 fn an_unchecked_exercise_is_never_drawn() {
-    let mut cfg = default_config();
+    let mut cfg = default_config(Language::Fr);
     let unchecked = cfg.exercises[0].id.clone();
     cfg.exercises[0].enabled = false;
     let mut s = Session::new(0);
@@ -557,7 +570,7 @@ fn an_unchecked_exercise_is_never_drawn() {
 
 #[test]
 fn an_unchecked_exercise_is_replaced_in_the_sets_to_do() {
-    let mut cfg = default_config();
+    let mut cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
@@ -576,7 +589,7 @@ fn an_unchecked_exercise_is_replaced_in_the_sets_to_do() {
 
 #[test]
 fn removed_events_and_new_jokers_apply_to_the_sets_to_do() {
-    let mut cfg = default_config();
+    let mut cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
@@ -595,7 +608,7 @@ fn removed_events_and_new_jokers_apply_to_the_sets_to_do() {
 #[test]
 fn a_set_with_spent_jokers_still_earns_nothing() {
     let (mut s, boss) = session_with_jokers();
-    let mut cfg = default_config();
+    let mut cfg = default_config(Language::Fr);
     s.halve(boss.id, &boss.items[0].exercise_id, 20).unwrap();
     event_mut(&mut cfg, "ds3", "boss").jokers = 2;
     s.apply_config(&cfg, &mut rng());

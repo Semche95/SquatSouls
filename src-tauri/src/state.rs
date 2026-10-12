@@ -1,17 +1,22 @@
 //! Shared application state and configuration loading.
 
-use crate::fitness::{default_config, Config, Session, Store};
+use crate::app::{default_config, AppError, Config, Language, LanguageSetting, Session, Store};
 use chrono::Local;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::sync::{Mutex, MutexGuard};
 use tauri::State;
 
 pub(crate) struct AppState {
     pub(crate) config: Config,
     /// Error met while loading the configuration (the default config is then used).
-    pub(crate) config_error: Option<String>,
+    pub(crate) config_error: Option<AppError>,
     pub(crate) store: Store,
     pub(crate) session: Session,
+    /// System locale, read at launch to resolve the `System` language setting.
+    pub(crate) system_locale: Option<String>,
+    pub(crate) language: Language,
+    /// Texts of the tray menu and notifications, translated by the interface: none until it sends them.
+    pub(crate) native_texts: Option<NativeTexts>,
 }
 
 pub(crate) type Shared<'a> = State<'a, Mutex<AppState>>;
@@ -20,25 +25,54 @@ pub(crate) type Shared<'a> = State<'a, Mutex<AppState>>;
 #[serde(rename_all = "camelCase")]
 pub(crate) struct ConfigView {
     config: Config,
-    error: Option<String>,
+    error: Option<AppError>,
+}
+
+#[derive(Serialize)]
+pub(crate) struct LanguageView {
+    setting: LanguageSetting,
+    language: Language,
+}
+
+/// Translated texts of the tray menu and of the launched Steam game notification.
+/// Notification texts are templates where `{name}` stands for the game's name.
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct NativeTexts {
+    pub(crate) show: String,
+    pub(crate) quit: String,
+    pub(crate) launched_title: String,
+    pub(crate) launched_configured: String,
+    pub(crate) launched_unknown: String,
 }
 
 impl AppState {
-    pub(crate) fn new(store: Store) -> Self {
+    pub(crate) fn new(store: Store, system_locale: Option<String>) -> Self {
+        let language = store
+            .language()
+            .unwrap_or_else(|e| {
+                log::error!("Language setting unreadable: {e}");
+                LanguageSetting::System
+            })
+            .resolve(system_locale.as_deref());
         let (config, config_error) = match load_config(&store) {
             Ok(config) => (config, None),
-            Err(e) => (
-                default_config(),
-                Some(format!(
-                    "Saved configuration ignored, default configuration used. {e}"
-                )),
-            ),
+            Err(e) => {
+                log::warn!("Saved configuration ignored, default configuration used: {e:?}");
+                (
+                    default_config(language),
+                    Some(AppError::new("config_ignored").with("cause", e)),
+                )
+            }
         };
         AppState {
             config,
             config_error,
             store,
             session: Session::new(now()),
+            system_locale,
+            language,
+            native_texts: None,
         }
     }
 
@@ -49,10 +83,28 @@ impl AppState {
         }
     }
 
-    pub(crate) fn store_config(&mut self, config: Config) -> Result<ConfigView, String> {
+    pub(crate) fn language_view(&self) -> Result<LanguageView, AppError> {
+        Ok(LanguageView {
+            setting: self
+                .store
+                .language()
+                .map_err(|e| AppError::internal("Language setting unreadable", e))?,
+            language: self.language,
+        })
+    }
+
+    pub(crate) fn store_language(&mut self, setting: LanguageSetting) -> Result<(), AppError> {
+        self.store
+            .set_language(setting)
+            .map_err(|e| AppError::internal("Language not saved", e))?;
+        self.language = setting.resolve(self.system_locale.as_deref());
+        Ok(())
+    }
+
+    pub(crate) fn store_config(&mut self, config: Config) -> Result<ConfigView, AppError> {
         self.store
             .save_config(&config)
-            .map_err(|e| format!("Configuration not saved: {e}"))?;
+            .map_err(|e| AppError::internal("Configuration not saved", e))?;
         // The session's game was removed: the session is cancelled.
         if self.session.game_removed(&config) {
             self.cancel_session()?;
@@ -64,17 +116,19 @@ impl AppState {
     }
 
     /// Removes the current session's sets from the history and starts a new one.
-    pub(crate) fn cancel_session(&mut self) -> Result<(), String> {
+    pub(crate) fn cancel_session(&mut self) -> Result<(), AppError> {
         self.store
             .remove_session(self.session.started_at)
-            .map_err(|e| format!("History not modified: {e}"))?;
+            .map_err(|e| AppError::internal("History not modified", e))?;
         self.session = Session::new(now());
         Ok(())
     }
 }
 
-fn load_config(store: &Store) -> Result<Config, String> {
-    let config = store.config().map_err(|e| format!("Unreadable: {e}"))?;
+fn load_config(store: &Store) -> Result<Config, AppError> {
+    let config = store
+        .config()
+        .map_err(|e| AppError::internal("Saved configuration unreadable", e))?;
     config.validate()?;
     Ok(config)
 }
@@ -83,8 +137,8 @@ pub(crate) fn now() -> i64 {
     Local::now().timestamp()
 }
 
-pub(crate) fn lock<'a>(state: &'a Shared) -> Result<MutexGuard<'a, AppState>, String> {
+pub(crate) fn lock<'a>(state: &'a Shared) -> Result<MutexGuard<'a, AppState>, AppError> {
     state
         .lock()
-        .map_err(|_| "Application state unavailable.".to_string())
+        .map_err(|_| AppError::internal("Application state unavailable", "poisoned lock"))
 }

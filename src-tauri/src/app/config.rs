@@ -1,5 +1,7 @@
-//! Configuration: exercises, games and events, validation and default configuration (`seed.json`).
+//! Configuration: exercises, games and events, validation and default configuration
+//! (`seed.en.json`, `seed.fr.json`).
 
+use super::{AppError, Language};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
@@ -7,7 +9,7 @@ use std::collections::HashSet;
 pub struct Exercise {
     pub id: String,
     pub name: String,
-    /// Unit shown after the drawn number: "rép.", "s", "rép. par jambe"...
+    /// Unit shown after the drawn number: "reps", "s", "reps per leg"...
     pub unit: String,
     /// Range of the drawn number, bounds included.
     pub min: u32,
@@ -82,74 +84,69 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn validate(&self) -> Result<(), String> {
+    pub fn validate(&self) -> Result<(), AppError> {
         if self.exercises.is_empty() {
-            return Err("No exercise defined.".into());
+            return Err(AppError::new("no_exercise"));
         }
         let mut exercise_ids = HashSet::new();
         for ex in &self.exercises {
             if ex.id.trim().is_empty() || ex.name.trim().is_empty() {
-                return Err("An exercise has an empty id or name.".into());
+                return Err(AppError::new("exercise_empty"));
             }
             if !exercise_ids.insert(ex.id.as_str()) {
-                return Err(format!("Exercise \"{}\" is defined twice.", ex.id));
+                return Err(AppError::new("exercise_duplicate").with("id", ex.id.as_str()));
             }
             if ex.max == 0 || ex.min > ex.max {
-                return Err(format!(
-                    "Invalid range for \"{}\" ({} to {}).",
-                    ex.name, ex.min, ex.max
-                ));
+                return Err(AppError::new("exercise_range")
+                    .with("name", ex.name.as_str())
+                    .with("min", ex.min)
+                    .with("max", ex.max));
             }
         }
 
         let active = self.active_exercises().count();
         if active == 0 {
-            return Err("No exercise checked for the draw.".into());
+            return Err(AppError::new("no_active_exercise"));
         }
 
         if self.games.is_empty() {
-            return Err("No game defined.".into());
+            return Err(AppError::new("no_game"));
         }
         let mut game_ids = HashSet::new();
         let mut game_names = HashSet::new();
         for game in &self.games {
             if game.id.trim().is_empty() || game.name.trim().is_empty() {
-                return Err("A game has an empty id or name.".into());
+                return Err(AppError::new("game_empty"));
             }
             if !game_ids.insert(game.id.as_str()) {
-                return Err(format!("Game \"{}\" is defined twice.", game.id));
+                return Err(AppError::new("game_duplicate").with("id", game.id.as_str()));
             }
             if !game_names.insert(game.name.trim().to_lowercase()) {
-                return Err(format!("Two games are named \"{}\".", game.name.trim()));
+                return Err(AppError::new("game_name_duplicate").with("name", game.name.trim()));
             }
+            let in_game = |code| AppError::new(code).with("game", game.name.as_str());
             if game.events.is_empty() {
-                return Err(format!("Game \"{}\" has no event.", game.name));
+                return Err(in_game("game_no_event"));
             }
             let mut event_ids = HashSet::new();
             for ev in &game.events {
-                let at = format!("{} › {}", game.name, ev.name);
                 if ev.id.trim().is_empty() || ev.name.trim().is_empty() {
-                    return Err(format!("{}: empty event id or name.", game.name));
+                    return Err(in_game("event_empty"));
                 }
                 if !event_ids.insert(ev.id.as_str()) {
-                    return Err(format!(
-                        "{}: event \"{}\" is defined twice.",
-                        game.name, ev.id
-                    ));
+                    return Err(in_game("event_duplicate").with("id", ev.id.as_str()));
                 }
+                let at = |code| in_game(code).with("event", ev.name.as_str());
                 if ev.draws == 0 {
-                    return Err(format!("{at}: at least 1 exercise must be drawn."));
+                    return Err(at("event_no_draw"));
                 }
                 if ev.draws as usize > active {
-                    return Err(format!(
-                        "{at}: {} exercises to draw but only {active} checked.",
-                        ev.draws
-                    ));
+                    return Err(at("event_too_many_draws")
+                        .with("draws", ev.draws)
+                        .with("active", active));
                 }
                 if ev.max_per_session == Some(0) {
-                    return Err(format!(
-                        "{at}: the per-session limit must be at least 1 (or empty)."
-                    ));
+                    return Err(at("event_zero_limit"));
                 }
             }
         }
@@ -188,7 +185,12 @@ fn default_steam_notify() -> bool {
     DEFAULT_STEAM_NOTIFY
 }
 
-/// Default configuration, written to a new database and used if the saved configuration is invalid.
-pub fn default_config() -> Config {
-    serde_json::from_str(include_str!("seed.json")).expect("invalid seed.json")
+/// Default configuration in `language`, written to a new database and used if the saved
+/// configuration is invalid. Both seeds have the same ids, numbers and AppIds: only names and units differ.
+pub fn default_config(language: Language) -> Config {
+    let seed = match language {
+        Language::En => include_str!("seed.en.json"),
+        Language::Fr => include_str!("seed.fr.json"),
+    };
+    serde_json::from_str(seed).expect("invalid seed")
 }

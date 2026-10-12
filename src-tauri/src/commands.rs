@@ -1,10 +1,10 @@
 //! Tauri commands called by the interface.
 
-use crate::fitness::{
-    steam_app_id, Config, DayTotals, Draw, Session, SessionView, SteamNameError, SteamNames,
-    SteamResponse,
+use crate::app::{
+    steam_app_id, AppError, Config, DayTotals, Draw, LanguageSetting, Session, SessionView,
+    SteamNameError, SteamNames, SteamResponse,
 };
-use crate::state::{lock, now, AppState, ConfigView, Shared};
+use crate::state::{lock, now, AppState, ConfigView, LanguageView, NativeTexts, Shared};
 use crate::tray;
 use chrono::Local;
 use std::sync::Mutex;
@@ -16,7 +16,7 @@ use tauri::{AppHandle, Manager};
 const HISTORY_UNREADABLE: &str = "History unreadable";
 
 #[tauri::command]
-pub(crate) fn get_config(state: Shared) -> Result<ConfigView, String> {
+pub(crate) fn get_config(state: Shared) -> Result<ConfigView, AppError> {
     Ok(lock(&state)?.config_view())
 }
 
@@ -25,17 +25,50 @@ pub(crate) fn save_config(
     app: AppHandle,
     state: Shared,
     config: Config,
-) -> Result<ConfigView, String> {
+) -> Result<ConfigView, AppError> {
     config.validate()?;
     let mut s = lock(&state)?;
     let view = s.store_config(config)?;
-    tray::apply(&app, &s.config)
-        .map_err(|e| format!("Configuration saved, notification area unavailable: {e}"))?;
+    tray::apply(&app, &s).map_err(|e| {
+        AppError::logged(
+            "tray_unavailable",
+            "Configuration saved, notification area unavailable",
+            e,
+        )
+    })?;
     Ok(view)
 }
 
 #[tauri::command]
-pub(crate) fn draw(state: Shared, game_id: String, event_id: String) -> Result<Draw, String> {
+pub(crate) fn get_language(state: Shared) -> Result<LanguageView, AppError> {
+    lock(&state)?.language_view()
+}
+
+#[tauri::command]
+pub(crate) fn set_language(state: Shared, setting: String) -> Result<LanguageView, AppError> {
+    let setting = setting
+        .parse::<LanguageSetting>()
+        .map_err(|_| AppError::new("invalid_language").with("value", setting.as_str()))?;
+    let mut s = lock(&state)?;
+    s.store_language(setting)?;
+    s.language_view()
+}
+
+/// Texts of the tray menu and notifications, sent by the interface at launch and on each language change.
+#[tauri::command]
+pub(crate) fn set_native_texts(
+    app: AppHandle,
+    state: Shared,
+    texts: NativeTexts,
+) -> Result<(), AppError> {
+    let mut s = lock(&state)?;
+    s.native_texts = Some(texts);
+    tray::update_texts(&app, &s)
+        .map_err(|e| AppError::logged("tray_unavailable", "Notification area unavailable", e))
+}
+
+#[tauri::command]
+pub(crate) fn draw(state: Shared, game_id: String, event_id: String) -> Result<Draw, AppError> {
     let mut guard = lock(&state)?;
     let AppState {
         config, session, ..
@@ -48,21 +81,21 @@ pub(crate) fn complete_exercise(
     state: Shared,
     draw_id: u64,
     exercise_id: String,
-) -> Result<SessionView, String> {
+) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
     let entry = s.session.complete_exercise(draw_id, &exercise_id, now())?;
     if let Err(e) = s.store.append_history(&[entry]) {
-        eprintln!("History not saved: {e}");
+        log::error!("History not saved: {e}");
     }
     Ok(s.session.view())
 }
 
 #[tauri::command]
-pub(crate) fn dismiss(state: Shared, draw_id: u64) -> Result<SessionView, String> {
+pub(crate) fn dismiss(state: Shared, draw_id: u64) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
     let entries = s.session.dismiss(draw_id)?;
     if let Err(e) = s.store.remove_history(&entries) {
-        eprintln!("History not modified: {e}");
+        log::error!("History not modified: {e}");
     }
     Ok(s.session.view())
 }
@@ -72,7 +105,7 @@ pub(crate) fn halve(
     state: Shared,
     draw_id: u64,
     exercise_id: String,
-) -> Result<SessionView, String> {
+) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
     s.session.halve(draw_id, &exercise_id, now())?;
     Ok(s.session.view())
@@ -83,30 +116,30 @@ pub(crate) fn skip_exercise(
     state: Shared,
     draw_id: u64,
     exercise_id: String,
-) -> Result<SessionView, String> {
+) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
     s.session.skip_exercise(draw_id, &exercise_id, now())?;
     Ok(s.session.view())
 }
 
 #[tauri::command]
-pub(crate) fn skip_set(state: Shared, draw_id: u64) -> Result<SessionView, String> {
+pub(crate) fn skip_set(state: Shared, draw_id: u64) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
     s.session.skip_set(draw_id, now())?;
     Ok(s.session.view())
 }
 
 #[tauri::command]
-pub(crate) fn get_session(state: Shared) -> Result<SessionView, String> {
+pub(crate) fn get_session(state: Shared) -> Result<SessionView, AppError> {
     Ok(lock(&state)?.session.view())
 }
 
 #[tauri::command]
-pub(crate) fn new_session(state: Shared) -> Result<SessionView, String> {
+pub(crate) fn new_session(state: Shared) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
     if s.session.view().sets > 0 {
         if let Err(e) = s.store.end_session(s.session.started_at, now()) {
-            eprintln!("Session end not saved: {e}");
+            log::error!("Session end not saved: {e}");
         }
     }
     s.session = Session::new(now());
@@ -114,47 +147,47 @@ pub(crate) fn new_session(state: Shared) -> Result<SessionView, String> {
 }
 
 #[tauri::command]
-pub(crate) fn cancel_session(state: Shared) -> Result<SessionView, String> {
+pub(crate) fn cancel_session(state: Shared) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
     s.cancel_session()?;
     Ok(s.session.view())
 }
 
 #[tauri::command]
-pub(crate) fn get_last_game(state: Shared) -> Result<String, String> {
+pub(crate) fn get_last_game(state: Shared) -> Result<String, AppError> {
     lock(&state)?
         .store
         .last_game()
-        .map_err(|e| format!("Last game unreadable: {e}"))
+        .map_err(|e| AppError::internal("Last game unreadable", e))
 }
 
 #[tauri::command]
-pub(crate) fn set_last_game(state: Shared, game_id: String) -> Result<(), String> {
+pub(crate) fn set_last_game(state: Shared, game_id: String) -> Result<(), AppError> {
     lock(&state)?
         .store
         .set_last_game(&game_id)
-        .map_err(|e| format!("Last game not saved: {e}"))
+        .map_err(|e| AppError::internal("Last game not saved", e))
 }
 
 #[tauri::command]
-pub(crate) fn get_history(state: Shared, days: u32) -> Result<Vec<DayTotals>, String> {
+pub(crate) fn get_history(state: Shared, days: u32) -> Result<Vec<DayTotals>, AppError> {
     lock(&state)?
         .store
         .history(days, Local::now().date_naive())
-        .map_err(|e| format!("{HISTORY_UNREADABLE}: {e}"))
+        .map_err(|e| AppError::internal(HISTORY_UNREADABLE, e))
 }
 
 #[tauri::command]
-pub(crate) fn get_full_history(state: Shared) -> Result<Vec<DayTotals>, String> {
+pub(crate) fn get_full_history(state: Shared) -> Result<Vec<DayTotals>, AppError> {
     lock(&state)?
         .store
         .full_history()
-        .map_err(|e| format!("{HISTORY_UNREADABLE}: {e}"))
+        .map_err(|e| AppError::internal(HISTORY_UNREADABLE, e))
 }
 
 /// AppId of the running Steam game, if any. Read off the main thread, like the name.
 #[tauri::command]
-pub(crate) async fn running_steam_app() -> Result<Option<u32>, String> {
+pub(crate) async fn running_steam_app() -> Result<Option<u32>, AppError> {
     spawn_blocking(|| {
         let mut system = System::new();
         system.refresh_processes_specifics(
@@ -185,7 +218,7 @@ pub(crate) async fn running_steam_app() -> Result<Option<u32>, String> {
             .or_else(|| steam_running().then(noted_steam_app).flatten())
     })
     .await
-    .map_err(|e| format!("Processes unreadable: {e}"))
+    .map_err(|e| AppError::internal("Processes unreadable", e))
 }
 
 /// AppId of the running game recorded by Steam, for processes whose environment is unreadable
@@ -210,7 +243,7 @@ fn noted_steam_app() -> Option<u32> {
     } else {
         home.join(".steam/registry.vdf")
     };
-    crate::fitness::running_app_id_in_vdf(&std::fs::read_to_string(vdf).ok()?)
+    crate::app::running_app_id_in_vdf(&std::fs::read_to_string(vdf).ok()?)
 }
 
 /// Maximum duration of a Steam Store call.
@@ -253,10 +286,32 @@ pub(crate) async fn steam_game_name(
     .map_err(|_| SteamNameError::Unknown)?
 }
 
+/// Notification of a launched Steam game, with the texts sent by the interface (none before them):
+/// `{name}` is replaced by the game's name, its body tells whether the game is already configured.
+#[tauri::command]
+pub(crate) async fn notify(
+    app: AppHandle,
+    state: Shared<'_>,
+    name: String,
+    configured: bool,
+) -> Result<(), AppError> {
+    let Some(texts) = lock(&state)?.native_texts.clone() else {
+        return Ok(());
+    };
+    let body = if configured {
+        texts.launched_configured
+    } else {
+        texts.launched_unknown
+    };
+    let fill = |template: &str| template.replace("{name}", &name);
+    show_notification(app, fill(&texts.launched_title), fill(&body))
+        .await
+        .map_err(|e| AppError::internal("Notification not sent", e))
+}
+
 /// System notification. On Linux, the plugin would sign it with the executable name and a system
 /// icon missing outside an installation: here it carries the app name and its icon.
-#[tauri::command]
-pub(crate) async fn notify(app: AppHandle, title: String, body: String) -> Result<(), String> {
+async fn show_notification(app: AppHandle, title: String, body: String) -> Result<(), String> {
     #[cfg(target_os = "linux")]
     {
         let icon = app
@@ -278,7 +333,7 @@ pub(crate) async fn notify(app: AppHandle, title: String, body: String) -> Resul
         })
         .await
         .map_err(|e| e.to_string())?
-        .map_err(|e| format!("Notification not sent: {e}"))
+        .map_err(|e| e.to_string())
     }
     #[cfg(not(target_os = "linux"))]
     {
@@ -288,6 +343,6 @@ pub(crate) async fn notify(app: AppHandle, title: String, body: String) -> Resul
             .title(title)
             .body(body)
             .show()
-            .map_err(|e| format!("Notification not sent: {e}"))
+            .map_err(|e| e.to_string())
     }
 }

@@ -1,7 +1,7 @@
 import { onScopeDispose, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { byName, extendsName } from '../configDraft.js';
-import { STEAM_LANGUAGE } from '../locale.js';
+import { steamLanguage } from '../locale.js';
 import { defineShared } from './shared.js';
 
 // Interval between process scans when detection is enabled.
@@ -31,7 +31,7 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
     if (ignored) return { appId, name: ignored.name, games: [], ignored: true };
     let name;
     try {
-      name = await invoke('steam_game_name', { appId, language: STEAM_LANGUAGE });
+      name = await invoke('steam_game_name', { appId, language: steamLanguage() });
       storeBlocked.value = false;
     } catch (e) {
       storeBlocked.value = e === BLOCKED;
@@ -40,15 +40,13 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
     return { appId, name: named[0]?.name ?? name, games: named, ignored: false };
   }
 
-  // One notification per launch, once the name is known, except for an ignored game.
+  // One notification per launch, once the name is known, except for an ignored game. Its texts are
+  // those sent to the backend for the current language.
   async function notify(found) {
     if (found?.appId !== notified) notified = null;
     if (!found?.name || found.ignored || notified !== null || !config.value.steamNotify) return;
     notified = found.appId;
-    await invoke('notify', {
-      title: `${found.name} lancé`,
-      body: found.games.length ? 'À sélectionner dans Jouer pour commencer la séance.' : 'Jeu pas encore configuré : l\'ajouter depuis Jouer.',
-    });
+    await invoke('notify', { name: found.name, configured: found.games.length > 0 });
   }
 
   // Unreadable processes: nothing is detected, the next scan tries again.

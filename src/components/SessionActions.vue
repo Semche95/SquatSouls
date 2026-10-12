@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
+import { t } from '../i18n.js';
 import { useSession } from '../composables/useSession.js';
 import DisabledTip from './DisabledTip.vue';
 
@@ -20,32 +21,25 @@ function confirmed(action) {
 
 <template>
   <div v-if="!confirmSession" class="session-actions">
-    <DisabledTip :tip="canEnd ? '' : session.pending.length ? 'Des séries sont encore à faire' : 'Aucune série faite'">
-      <button class="primary" :disabled="!canEnd" @click="confirmSession = 'end'">Terminer la séance</button>
+    <DisabledTip :tip="canEnd ? '' : t(session.pending.length ? 'session.pendingSets' : 'session.noSets')">
+      <button class="primary" :disabled="!canEnd" @click="confirmSession = 'end'">{{ t('session.end') }}</button>
     </DisabledTip>
-    <DisabledTip :tip="canCancel ? '' : 'Rien à annuler'">
-      <button class="ghost danger" :disabled="!canCancel" @click="confirmSession = 'cancel'">Annuler la séance</button>
+    <DisabledTip :tip="canCancel ? '' : t('session.nothingToCancel')">
+      <button class="ghost danger" :disabled="!canCancel" @click="confirmSession = 'cancel'">{{ t('session.cancel') }}</button>
     </DisabledTip>
   </div>
   <div v-else-if="confirmSession === 'end'" class="banner confirm validate session-actions">
-    <p>
-      Terminer la séance ? Une nouvelle commence aussitôt : compteurs (dont la limite de morts) et
-      jokers repartent de zéro.
-      L'historique est conservé.
-    </p>
+    <p>{{ t('session.confirmEnd') }}</p>
     <div class="card-actions">
-      <button class="primary" @click="confirmed(newSession)">Terminer</button>
-      <button class="ghost" @click="confirmSession = ''">Annuler</button>
+      <button class="primary" @click="confirmed(newSession)">{{ t('session.endConfirmed') }}</button>
+      <button class="ghost" @click="confirmSession = ''">{{ t('common.cancel') }}</button>
     </div>
   </div>
   <div v-else class="banner confirm session-actions">
-    <p>
-      Annuler la séance ? Les compteurs (dont la limite de morts), les séries à faire et les
-      séries faites seront effacés, et ses séries retirées de l'historique.
-    </p>
+    <p>{{ t('session.confirmCancel') }}</p>
     <div class="card-actions">
-      <button class="danger" @click="confirmed(cancelSession)">Annuler la séance</button>
-      <button class="ghost" @click="confirmSession = ''">Garder la séance</button>
+      <button class="danger" @click="confirmed(cancelSession)">{{ t('session.cancel') }}</button>
+      <button class="ghost" @click="confirmSession = ''">{{ t('session.keep') }}</button>
     </div>
   </div>
 </template>

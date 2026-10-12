@@ -1,6 +1,6 @@
 //! Draw and session.
 
-use super::{Config, Exercise, Game, GameEvent};
+use super::{AppError, Config, Exercise, Game, GameEvent};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -194,23 +194,20 @@ impl Session {
         game_id: &str,
         event_id: &str,
         rng: &mut R,
-    ) -> Result<Draw, String> {
+    ) -> Result<Draw, AppError> {
         let game = config
             .games
             .iter()
             .find(|g| g.id == game_id)
-            .ok_or_else(|| format!("Unknown game: {game_id}"))?;
+            .ok_or_else(|| AppError::new("unknown_game").with("id", game_id))?;
         if self.game_id.as_ref().is_some_and(|id| id != &game.id) {
-            return Err(
-                "The session already started on another game: start a new session to switch."
-                    .into(),
-            );
+            return Err(AppError::new("session_other_game"));
         }
         let ev = game
             .events
             .iter()
             .find(|e| e.id == event_id)
-            .ok_or_else(|| format!("Unknown event: {event_id}"))?;
+            .ok_or_else(|| AppError::new("unknown_event").with("id", event_id))?;
 
         self.game_id = Some(game.id.clone());
         let key = (game.id.clone(), ev.id.clone());
@@ -304,7 +301,7 @@ impl Session {
         id: u64,
         exercise_id: &str,
         now: i64,
-    ) -> Result<LogEntry, String> {
+    ) -> Result<LogEntry, AppError> {
         let session = self.started_at;
         let (draw, pos) = self.pending_item(id, exercise_id)?;
         let item = &mut draw.items[pos];
@@ -325,7 +322,7 @@ impl Session {
     }
 
     /// Removes the set when nothing is left to do, with the jokers it still earns.
-    fn finish_if_done(&mut self, id: u64) -> Result<(), String> {
+    fn finish_if_done(&mut self, id: u64) -> Result<(), AppError> {
         if self.pending_draw(id)?.items.iter().all(|it| it.done) {
             let draw = self.take_pending(id)?;
             self.jokers += draw.jokers;
@@ -336,7 +333,7 @@ impl Session {
 
     /// Dismisses a trigger: it is no longer counted, nor are the set's exercises already done, returned to remove them from the history.
     /// Its exercises as drawn are reserved for the next trigger of the same event.
-    pub fn dismiss(&mut self, id: u64) -> Result<Vec<LogEntry>, String> {
+    pub fn dismiss(&mut self, id: u64) -> Result<Vec<LogEntry>, AppError> {
         let draw = self.take_pending(id)?;
         let key = (draw.game_id, draw.event_id);
         if let Some(count) = self.triggers.get_mut(&key) {
@@ -352,15 +349,15 @@ impl Session {
     }
 
     /// Halves an exercise (rounded up): the other half counts as skipped.
-    pub fn halve(&mut self, id: u64, exercise_id: &str, now: i64) -> Result<(), String> {
+    pub fn halve(&mut self, id: u64, exercise_id: &str, now: i64) -> Result<(), AppError> {
         let jokers = self.jokers;
         let (draw, pos) = self.pending_item(id, exercise_id)?;
         let item = &mut draw.items[pos];
         let cost = item
             .halve_cost
-            .ok_or("This exercise can no longer be reduced.")?;
+            .ok_or(AppError::new("exercise_not_reducible"))?;
         if jokers < cost {
-            return Err(NOT_ENOUGH_JOKERS.into());
+            return Err(AppError::new(NOT_ENOUGH_JOKERS));
         }
         let removed = item.amount / 2;
         item.amount -= removed;
@@ -377,11 +374,11 @@ impl Session {
     }
 
     /// Skips an exercise: the rest of the set remains to do, unless nothing is left.
-    pub fn skip_exercise(&mut self, id: u64, exercise_id: &str, now: i64) -> Result<(), String> {
+    pub fn skip_exercise(&mut self, id: u64, exercise_id: &str, now: i64) -> Result<(), AppError> {
         let jokers = self.jokers;
         let (draw, pos) = self.pending_item(id, exercise_id)?;
         if jokers < draw.items[pos].skip_cost {
-            return Err(NOT_ENOUGH_JOKERS.into());
+            return Err(AppError::new(NOT_ENOUGH_JOKERS));
         }
         let item = draw.items.remove(pos);
         let cost = item.skip_cost;
@@ -392,11 +389,11 @@ impl Session {
     }
 
     /// Skips what is left of a set: the trigger stays counted.
-    pub fn skip_set(&mut self, id: u64, now: i64) -> Result<(), String> {
+    pub fn skip_set(&mut self, id: u64, now: i64) -> Result<(), AppError> {
         let draw = self.pending_draw(id)?;
         let cost = skip_set_cost(draw);
         if self.jokers < cost {
-            return Err(NOT_ENOUGH_JOKERS.into());
+            return Err(AppError::new(NOT_ENOUGH_JOKERS));
         }
         let mut draw = self.take_pending(id)?;
         let items = std::mem::take(&mut draw.items)
@@ -547,33 +544,33 @@ impl Session {
             .is_some_and(|id| config.games.iter().all(|g| &g.id != id))
     }
 
-    fn pending_pos(&self, id: u64) -> Result<usize, String> {
+    fn pending_pos(&self, id: u64) -> Result<usize, AppError> {
         self.pending
             .iter()
             .position(|d| d.id == id)
-            .ok_or_else(|| "This set is no longer pending.".into())
+            .ok_or(AppError::new("set_not_pending"))
     }
 
-    fn pending_draw(&self, id: u64) -> Result<&Draw, String> {
+    fn pending_draw(&self, id: u64) -> Result<&Draw, AppError> {
         Ok(&self.pending[self.pending_pos(id)?])
     }
 
-    fn take_pending(&mut self, id: u64) -> Result<Draw, String> {
+    fn take_pending(&mut self, id: u64) -> Result<Draw, AppError> {
         let pos = self.pending_pos(id)?;
         Ok(self.pending.remove(pos))
     }
 
     /// Pending set and position in it of the exercise, still to do.
-    fn pending_item(&mut self, id: u64, exercise_id: &str) -> Result<(&mut Draw, usize), String> {
+    fn pending_item(&mut self, id: u64, exercise_id: &str) -> Result<(&mut Draw, usize), AppError> {
         let pos = self.pending_pos(id)?;
         let draw = &mut self.pending[pos];
         let item = draw
             .items
             .iter()
             .position(|it| it.exercise_id == exercise_id)
-            .ok_or("This exercise is no longer in the set.")?;
+            .ok_or(AppError::new("exercise_not_in_set"))?;
         if draw.items[item].done {
-            return Err("This exercise is already done.".into());
+            return Err(AppError::new("exercise_already_done"));
         }
         Ok((draw, item))
     }
@@ -605,7 +602,7 @@ impl Session {
     }
 }
 
-const NOT_ENOUGH_JOKERS: &str = "Not enough jokers.";
+const NOT_ENOUGH_JOKERS: &str = "not_enough_jokers";
 
 fn find_event<'a>(
     config: &'a Config,

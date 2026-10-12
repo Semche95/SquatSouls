@@ -2,7 +2,8 @@
 
 use super::{
     active_days, default_config, last_days, window_start, Config, DayTotals, Exercise, Game,
-    GameEvent, IgnoredGame, LogEntry, SteamName, SteamNames, DEFAULT_PAUSE, DEFAULT_STEAM_NOTIFY,
+    GameEvent, IgnoredGame, LanguageSetting, LogEntry, SteamName, SteamNames, DEFAULT_PAUSE,
+    DEFAULT_STEAM_NOTIFY,
 };
 use chrono::NaiveDate;
 use refinery::Target;
@@ -17,6 +18,7 @@ use std::str::FromStr;
 refinery::embed_migrations!("migrations");
 
 const LAST_GAME: &str = "last_game";
+const LANGUAGE: &str = "language";
 const PAUSE: &str = "pause";
 const STEAM_DETECTION: &str = "steam_detection";
 const STEAM_NOTIFY: &str = "steam_notify";
@@ -31,16 +33,17 @@ pub struct Store {
 }
 
 impl Store {
-    pub fn open(path: &Path) -> Result<Self> {
-        Self::init(Connection::open(path)?)
+    /// `system_locale` chooses the language of the default configuration written to a new database.
+    pub fn open(path: &Path, system_locale: Option<&str>) -> Result<Self> {
+        Self::init(Connection::open(path)?, system_locale)
     }
 
-    pub fn open_in_memory() -> Result<Self> {
-        Self::init(Connection::open_in_memory()?)
+    pub fn open_in_memory(system_locale: Option<&str>) -> Result<Self> {
+        Self::init(Connection::open_in_memory()?, system_locale)
     }
 
-    /// Updates the schema and fills a new database with the default configuration.
-    fn init(mut conn: Connection) -> Result<Self> {
+    /// Updates the schema and fills a new database with the default configuration, in the effective language.
+    fn init(mut conn: Connection, system_locale: Option<&str>) -> Result<Self> {
         conn.execute_batch("PRAGMA foreign_keys = ON")?;
         migrate(&mut conn)?;
         let mut store = Store { conn };
@@ -49,7 +52,8 @@ impl Store {
                 .conn
                 .query_row("SELECT NOT EXISTS (SELECT 1 FROM games)", [], |r| r.get(0))?;
         if empty {
-            store.save_config(&default_config())?;
+            let language = store.language()?.resolve(system_locale);
+            store.save_config(&default_config(language))?;
         }
         Ok(store)
     }
@@ -324,6 +328,15 @@ impl Store {
 
     pub fn set_last_game(&self, game_id: &str) -> Result<()> {
         set_setting(&self.conn, LAST_GAME, game_id)
+    }
+
+    /// Language setting, `System` if missing or unknown.
+    pub fn language(&self) -> Result<LanguageSetting> {
+        self.parsed_setting(LANGUAGE, LanguageSetting::System)
+    }
+
+    pub fn set_language(&self, language: LanguageSetting) -> Result<()> {
+        set_setting(&self.conn, LANGUAGE, language.as_str())
     }
 
     /// Steam Store answers and the safeguards on its calls.

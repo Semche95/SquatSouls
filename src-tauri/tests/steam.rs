@@ -1,4 +1,4 @@
-use squat_souls_lib::fitness::*;
+use squat_souls_lib::app::*;
 
 const NONE: [&str; 0] = [];
 

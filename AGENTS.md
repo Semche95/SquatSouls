@@ -11,11 +11,11 @@ The business rules are described in the "Business rules" section of `README.md`,
 
 ## Structure
 
-- `src/`: Vue interface (`App.vue` header and tabs, `components/` one component per tab and its blocks, `composables/` shared state via provide/inject, `format.js`, `configDraft.js` and `share.js` (game and exercise sharing) pure functions, `locale.js` interface language, `style.css`)
-- `src-tauri/src/`: Rust backend (`lib.rs` startup, `commands.rs` Tauri commands, `state.rs` shared state and configuration loading, `tray.rs` notification area icon and hidden window, `fitness/` business logic: `config.rs` configuration, `seed.json` default configuration, `session.rs` draw and session, `history.rs` history summary, `steam.rs` detection of the running Steam game, `store.rs` SQLite storage)
+- `src/`: Vue interface (`App.vue` header and tabs, `components/` one component per tab and its blocks, `composables/` shared state via provide/inject, `format.js`, `configDraft.js` and `share.js` (game and exercise sharing) pure functions, `i18n.js` vue-i18n instance (`t`, current language, `setLanguage`, backend error messages), `locales/` translated texts (`en.json` source and fallback, `fr.json`), `locale.js` Steam Store language of the interface language, `log.js` interface errors sent to the log file, `style.css`)
+- `src-tauri/src/`: Rust backend (`lib.rs` startup and log files, `commands.rs` Tauri commands, `state.rs` shared state and configuration loading, `tray.rs` notification area icon and hidden window, `app/` business logic: `config.rs` configuration, `seed.en.json` and `seed.fr.json` default configuration by language, `language.rs` language setting and its resolution, `error.rs` errors sent as codes, `session.rs` draw and session, `history.rs` history summary, `steam.rs` detection of the running Steam game, `store.rs` SQLite storage)
 - `src-tauri/migrations/`: SQL schema migrations, one per `V<n>__<name>.sql` file, dated in the database when applied. A migration is never modified once created, a new one is always added
 - `src/tests/`: interface tests (Vitest), one file per tab or module; `app.js` shared data and mounting, `setup.js` Tauri backend mock
-- `src-tauri/tests/`: backend tests (Cargo integration tests on the public API of `fitness`), one file per module
+- `src-tauri/tests/`: backend tests (Cargo integration tests on the public API of `app`), one file per module
 
 ## Commands
 
@@ -28,7 +28,7 @@ pnpm test                   # interface tests (Vitest)
 
 ## Conventions
 
-- Interface texts in French; code (identifiers, comments, developer logs, test names) and documentation in English.
+- No visible text hardcoded in the interface: every text goes through `t`, and every key is added to both `src/locales/en.json` (source language) and `src/locales/fr.json`, with named placeholders and plurals rather than concatenated pieces. Rust holds no translated text: it returns error codes with their parameters (`AppError`), and the tray and notification texts come from the interface. Code (identifiers, comments, developer logs, test names) and documentation in English.
 - Never modify, rename, merge or delete a migration in `src-tauri/migrations/` once created, even uncommitted, even to fix a mistake, not even its comments (refinery checksums their content): every schema change goes through a new `V<n+1>__<name>.sql` file. Migration comments are written in English from the start, so they never need translating.
 - In JavaScript, strings in single quotes, never double, escaping the apostrophe (`'moins d\'une minute'`).
 - A disabled button must look disabled: check that `style.css` gives it a `:disabled` style (reduced opacity, no pointer cursor nor hover effect), rather than relying on the `disabled` attribute alone. The reason it is disabled is shown in a tooltip by wrapping it in `DisabledTip` (`components/DisabledTip.vue`), never with a `title`.

@@ -67,6 +67,6 @@ describe('numberError', () => {
     expect(numberError(cfg({ ex: { pause: -3 } }))).toBe('Squats › pause : il faut un nombre entier, 0 ou plus.');
     expect(numberError(cfg({ ev: { maxPerSession: 2.5 } }))).toBe('Elden Ring › Death › limite par séance : il faut un nombre entier, 0 ou plus.');
     expect(numberError(cfg({ ev: { jokers: 1e10 } }))).toBe('Elden Ring › Death › jokers gagnés : nombre trop grand.');
-    expect(numberError(cfg({ ev: { draws: 'deux' } }))).toBe('Elden Ring › Death › exercices tirés : il faut un nombre entier, 0 ou plus.');
+    expect(numberError(cfg({ ev: { draws: 'deux' } }))).toBe('Elden Ring › Death › exercices demandés : il faut un nombre entier, 0 ou plus.');
   });
 });

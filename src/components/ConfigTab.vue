@@ -1,6 +1,7 @@
 <script setup>
 import { onBeforeUnmount } from 'vue';
 import { clone } from '../configDraft.js';
+import { t } from '../i18n.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import ConfigExercises from './ConfigExercises.vue';
@@ -16,7 +17,7 @@ async function saveConfig() {
   notify('');
   if (!(await saveNow(draft.value))) return;
   draft.value = clone(config.value);
-  notify('Configuration enregistrée.');
+  notify(t('config.saved'));
 }
 
 function discardChanges() {
@@ -33,9 +34,9 @@ function discardChanges() {
 
     <template v-if="draft">
       <nav class="subtabs">
-        <button :class="{ active: cfgTab === 'games' }" @click="cfgTab = 'games'">Jeux</button>
-        <button :class="{ active: cfgTab === 'exercises' }" @click="cfgTab = 'exercises'">Exercices</button>
-        <button :class="{ active: cfgTab === 'settings' }" @click="cfgTab = 'settings'">Réglages</button>
+        <button :class="{ active: cfgTab === 'games' }" @click="cfgTab = 'games'">{{ t('config.tabs.games') }}</button>
+        <button :class="{ active: cfgTab === 'exercises' }" @click="cfgTab = 'exercises'">{{ t('config.tabs.exercises') }}</button>
+        <button :class="{ active: cfgTab === 'settings' }" @click="cfgTab = 'settings'">{{ t('config.tabs.settings') }}</button>
       </nav>
       <ConfigExercises v-if="cfgTab === 'exercises'" />
       <ConfigSettings v-else-if="cfgTab === 'settings'" />
@@ -44,9 +45,9 @@ function discardChanges() {
 
     <div v-if="dirty" class="row cfg-actions">
       <DisabledTip :tip="draftError" error>
-        <button class="primary" :disabled="!!draftError" @click="saveConfig">Enregistrer</button>
+        <button class="primary" :disabled="!!draftError" @click="saveConfig">{{ t('config.save') }}</button>
       </DisabledTip>
-      <button class="ghost" @click="discardChanges">Réinitialiser les modifications</button>
+      <button class="ghost" @click="discardChanges">{{ t('config.discard') }}</button>
     </div>
   </main>
 </template>

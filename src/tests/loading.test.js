@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, setup, mountApp } from './app.js';
+import { config, rejection, setup, mountApp } from './app.js';
 
 describe('loading', () => {
   it('asks for the game on first launch', async () => {
@@ -45,15 +45,15 @@ describe('loading', () => {
   });
 
   it('shows the backend error', async () => {
-    setup({ get_config: new Error('config unreadable') });
+    setup({ get_config: rejection('internal') });
     const w = await mountApp();
-    expect(w.find('.banner.error').text()).toContain('config unreadable');
+    expect(w.find('.banner.error').text()).toBe('Erreur interne, le détail est dans les journaux de l\'application.');
   });
 
   it('reports an invalid config outside the Configuration tab', async () => {
-    setup({ get_config: { config, error: 'invalid JSON' } });
+    setup({ get_config: { config, error: { code: 'config_ignored', params: { cause: { code: 'no_game', params: {} } } } } });
     const w = await mountApp();
-    expect(w.find('.banner.error').text()).toContain('invalid JSON');
+    expect(w.find('.banner.error').text()).toContain('Configuration enregistrée ignorée, configuration par défaut utilisée. Aucun jeu défini.');
     await w.find('.banner.error button').trigger('click');
     expect(w.find('.cfg-events').exists()).toBe(true);
   });

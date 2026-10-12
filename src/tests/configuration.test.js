@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, responses, setup, mountApp, shownTip, expectTip } from './app.js';
+import { config, emptySession, rejection, responses, setup, mountApp, shownTip, expectTip } from './app.js';
 import { shareExercises, shareGame } from '../share.js';
 
 describe('configuration', () => {
@@ -146,7 +146,7 @@ describe('configuration', () => {
     await w.findAll('.subtabs button')[1].trigger('click');
     const row = w.find('.cfg-table tbody tr');
     expect(row.classes()).not.toContain('cfg-off');
-    await w.find('input[aria-label="Tirer cet exercice"]').setValue(false);
+    await w.find('input[aria-label="Proposer cet exercice"]').setValue(false);
     expect(row.classes()).toContain('cfg-off');
     responses.save_config = (args) => ({ config: args.config });
     await w.find('.cfg-actions .primary').trigger('click');
@@ -195,12 +195,12 @@ describe('configuration', () => {
   });
 
   it('shows the save error', async () => {
-    setup({ save_config: new Error('missing field') });
+    setup({ save_config: rejection('exercise_range', { name: 'Squats', min: 20, max: 15 }) });
     const w = await openConfig();
     await w.find('input[aria-label="Nom du jeu"]').setValue('Other');
     await w.find('.cfg-actions .primary').trigger('click');
     await flushPromises();
-    expect(w.find('.banner.error').text()).toContain('missing field');
+    expect(w.find('.banner.error').text()).toBe('Plage invalide pour « Squats » (20 à 15).');
   });
 
   it('reports an invalid format while typing', async () => {
@@ -286,7 +286,7 @@ describe('configuration', () => {
       await flushPromises();
       expect(savedConfig().games.map((g) => g.id)).toEqual(['er', 'sekiro']);
       expect(savedConfig().games[1]).toEqual({ id: 'sekiro', name: 'sekiro', events: [{ id: 'death', name: 'Death', draws: 1, jokers: 1 }] });
-      expect(w.find('.banner.ok').text()).toBe('sekiro importé, tirages limités à 1 exercice.');
+      expect(w.find('.banner.ok').text()).toBe('sekiro importé, limité à 1 exercice par événement.');
       expect(w.find('.cfg-game-list .active').text()).toBe('sekiro');
       expect(w.find('.cfg-actions').exists()).toBe(false);
       await open().trigger('click');
@@ -324,5 +324,56 @@ describe('configuration', () => {
       expect(savedConfig().games[0].name).toBe('Elden Ring DLC');
       expect(savedConfig().exercises).toHaveLength(2);
     });
+  });
+});
+
+describe('language', () => {
+  async function openSettings() {
+    const w = await mountApp();
+    await w.findAll('.tabs button')[2].trigger('click');
+    await w.findAll('.subtabs button')[2].trigger('click');
+    return w;
+  }
+  const select = (w) => w.find('.cfg-settings select');
+
+  it('offers the system language, then English and French written in their own language', async () => {
+    setup();
+    const w = await openSettings();
+    expect(w.find('.cfg-settings .setting').text()).toContain('Langue');
+    expect(select(w).findAll('option').map((o) => [o.element.value, o.text()])).toEqual([
+      ['system', 'Langue du système'],
+      ['en', 'English'],
+      ['fr', 'Français'],
+    ]);
+    expect(select(w).element.value).toBe('system');
+  });
+
+  it('switches right away without saving nor touching the pending changes', async () => {
+    setup();
+    const w = await openSettings();
+    await w.findAll('.subtabs button')[0].trigger('click');
+    await w.find('input[aria-label="Nom du jeu"]').setValue('Elden Ring DLC');
+    await w.findAll('.subtabs button')[2].trigger('click');
+    await select(w).setValue('en');
+    await flushPromises();
+    expect(invoke).toHaveBeenCalledWith('set_language', { setting: 'en' });
+    expect(invoke.mock.calls.some(([cmd]) => cmd === 'save_config')).toBe(false);
+    expect(w.findAll('.tabs button').map((b) => b.text())).toEqual(['Play', 'Summary', 'Configuration']);
+    expect(w.find('.cfg-settings .setting').text()).toContain('Language');
+    expect(select(w).find('option').text()).toBe('System language');
+    expect(document.documentElement.lang).toBe('en');
+    await w.findAll('.subtabs button')[0].trigger('click');
+    expect(w.find('input[aria-label="Name of the game"]').element.value).toBe('Elden Ring DLC');
+    expect(w.find('.cfg-actions .primary').text()).toBe('Save');
+  });
+
+  it('shows the error and goes back to the saved setting when the backend refuses', async () => {
+    setup({ set_language: rejection('invalid_language', { value: 'en' }) });
+    const w = await openSettings();
+    await select(w).setValue('en');
+    await flushPromises();
+    expect(w.find('.banner.error').text()).toBe('Langue inconnue : en.');
+    expect(select(w).element.value).toBe('system');
+    expect(w.findAll('.tabs button')[0].text()).toBe('Jouer');
   });
 });

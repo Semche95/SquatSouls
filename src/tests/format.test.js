@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { formatCountdown, formatDuration, plural } from '../format.js';
-
-describe('plural', () => {
-  it('pluralizes above one', () => {
-    expect(plural(1, 'joker')).toBe('1 joker');
-    expect(plural(2, 'joker')).toBe('2 jokers');
-  });
-});
+import { formatCountdown, formatDuration } from '../format.js';
+import { setLanguage } from '../i18n.js';
 
 describe('formatCountdown', () => {
   it('shows minutes and seconds', () => {
@@ -20,5 +14,11 @@ describe('formatDuration', () => {
     expect(formatDuration(20)).toBe('moins d\'une minute');
     expect(formatDuration(25 * 60)).toBe('25 min');
     expect(formatDuration(65 * 60)).toBe('1 h 05');
+  });
+
+  it('follows the language', async () => {
+    await setLanguage('en');
+    expect(formatDuration(20)).toBe('less than a minute');
+    expect(formatDuration(65 * 60)).toBe('1 h 05 min');
   });
 });

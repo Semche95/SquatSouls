@@ -1,5 +1,5 @@
 <script setup>
-import { plural } from '../format.js';
+import { t } from '../i18n.js';
 import CountInput from './CountInput.vue';
 
 // ev belongs to the draft: it is edited in place.
@@ -11,29 +11,29 @@ defineEmits(['remove']);
   <details class="cfg-event">
     <summary>
       <span class="cfg-event-head">
-        <strong>{{ ev.name || '(sans nom)' }}</strong>
+        <strong>{{ ev.name || t('common.unnamed') }}</strong>
         <span class="muted">
-          {{ plural(ev.draws, 'exercice') }} par série<template v-if="ev.maxPerSession"> · {{ ev.maxPerSession }} fois max par séance</template>
+          {{ t('config.event.perSet', ev.draws) }}<template v-if="ev.maxPerSession"> · {{ t('config.event.maxPerSession', ev.maxPerSession) }}</template>
         </span>
-        <span v-if="ev.jokers" class="reward-tag">+{{ plural(ev.jokers, 'joker') }}</span>
+        <span v-if="ev.jokers" class="reward-tag">{{ t('common.reward', ev.jokers) }}</span>
       </span>
     </summary>
     <div class="field">
-      <span>Nom</span>
-      <input v-model="ev.name" aria-label="Nom de l'événement" />
-      <button class="ghost danger" @click="$emit('remove')">Supprimer</button>
+      <span>{{ t('common.name') }}</span>
+      <input v-model="ev.name" :aria-label="t('config.event.name')" />
+      <button class="ghost danger" @click="$emit('remove')">{{ t('common.remove') }}</button>
     </div>
     <div class="cfg-params">
       <label>
-        <span>Exercices tirés</span>
+        <span>{{ t('config.event.draws') }}</span>
         <CountInput v-model="ev.draws" />
       </label>
       <label>
-        <span>Limite par séance</span>
-        <CountInput v-model="ev.maxPerSession" optional placeholder="aucune" />
+        <span>{{ t('config.event.limit') }}</span>
+        <CountInput v-model="ev.maxPerSession" optional :placeholder="t('config.event.noLimit')" />
       </label>
       <label>
-        <span>Jokers gagnés</span>
+        <span>{{ t('config.event.jokers') }}</span>
         <CountInput v-model="ev.jokers" />
       </label>
     </div>

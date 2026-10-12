@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
+import { errorText } from '../i18n.js';
 import { defineShared } from './shared.js';
 
 export const [provideApi, useApi] = defineShared(() => {
@@ -10,7 +11,7 @@ export const [provideApi, useApi] = defineShared(() => {
     try {
       return await invoke(command, args);
     } catch (e) {
-      error.value = String(e);
+      error.value = errorText(e);
       throw e;
     }
   }

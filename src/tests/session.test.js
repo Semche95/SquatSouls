@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, draw, responses, setup, mountApp, press, expectTip } from './app.js';
+import { config, emptySession, draw, rejection, responses, setup, mountApp, press, expectTip } from './app.js';
 
 describe('session', () => {
   it('draws a set on clicking an event', async () => {
@@ -190,12 +190,12 @@ describe('session', () => {
   });
 
   it('reloads the session if an action fails', async () => {
-    setup({ get_session: emptySession({ pending: [draw] }), complete_exercise: new Error('unknown set') });
+    setup({ get_session: emptySession({ pending: [draw] }), complete_exercise: rejection('set_not_pending') });
     const w = await mountApp();
     responses.get_session = emptySession();
     await w.find('.item-actions .primary').trigger('click');
     await flushPromises();
-    expect(w.find('.banner.error').text()).toContain('unknown set');
+    expect(w.find('.banner.error').text()).toBe('Cette série n\'est plus en attente.');
     expect(w.find('.card').exists()).toBe(false);
   });
 

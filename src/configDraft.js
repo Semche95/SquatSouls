@@ -1,3 +1,5 @@
+import { language, t } from './i18n.js';
+
 export function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
@@ -25,7 +27,7 @@ export function extendsName(name, base) {
 
 // Games are displayed by name, whatever the saved order.
 export function byName(games) {
-  return [...games].sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
+  return [...games].sort((a, b) => a.name.localeCompare(b.name, language.value, { sensitivity: 'base' }));
 }
 
 // Largest number accepted by the backend (u32).
@@ -43,24 +45,25 @@ export function parseCount(text) {
 // The backend refuses a negative, decimal or too large number without explanation: report it while typing.
 export function countError(value) {
   if (value === undefined || value === '' || isCount(value, 0)) return '';
-  return Number.isInteger(value) && value > MAX_COUNT ? 'nombre trop grand' : 'il faut un nombre entier, 0 ou plus';
+  return t(Number.isInteger(value) && value > MAX_COUNT ? 'fields.tooLarge' : 'fields.notCount');
 }
 
 // First invalid number field of the configuration, '' if there is none.
 export function numberError(cfg) {
-  const fields = [[cfg.pause, 'Pause après chaque série']];
+  // Field path: names from the data, then the translated field name.
+  const at = (...path) => path.slice(0, -1).concat(t(`fields.${path.at(-1)}`)).join(' › ');
+  const fields = [[cfg.pause, at('globalPause')]];
   for (const ex of cfg.exercises) {
-    fields.push([ex.min, `${ex.name} › minimum`], [ex.max, `${ex.name} › maximum`], [ex.pause, `${ex.name} › pause`]);
+    fields.push([ex.min, at(ex.name, 'minimum')], [ex.max, at(ex.name, 'maximum')], [ex.pause, at(ex.name, 'pause')]);
   }
   for (const g of cfg.games) {
     for (const ev of g.events) {
-      const at = `${g.name} › ${ev.name}`;
-      fields.push([ev.draws, `${at} › exercices tirés`], [ev.maxPerSession, `${at} › limite par séance`], [ev.jokers, `${at} › jokers gagnés`]);
+      fields.push([ev.draws, at(g.name, ev.name, 'draws')], [ev.maxPerSession, at(g.name, ev.name, 'limit')], [ev.jokers, at(g.name, ev.name, 'jokers')]);
     }
   }
-  for (const [value, label] of fields) {
+  for (const [value, field] of fields) {
     const error = countError(value);
-    if (error) return `${label} : ${error}.`;
+    if (error) return t('fields.error', { field, error });
   }
   return '';
 }

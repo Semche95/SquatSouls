@@ -1,70 +1,92 @@
 <script setup>
 import { computed } from 'vue';
 import { byName } from '../configDraft.js';
+import { languageSetting, setLanguage, t } from '../i18n.js';
+import { useApi } from '../composables/useApi.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSteam } from '../composables/useSteam.js';
 
+const { call } = useApi();
 const { config, draft } = useConfig();
 const { detected, storeBlocked, addGame, unignore } = useSteam();
+
+// Saved and applied right away, outside the draft. Refused, the list goes back to the saved setting.
+async function changeLanguage({ target }) {
+  try {
+    const { setting, language } = await call('set_language', { setting: target.value });
+    languageSetting.value = setting;
+    await setLanguage(language);
+  } catch {
+    target.value = languageSetting.value;
+  }
+}
 
 // Status of the saved detection, to see it works even without a banner in Jouer:
 // text and color of its badge.
 const status = computed(() => {
   const d = detected.value;
-  if (!d) return { text: 'Aucun jeu Steam détecté.', kind: 'idle' };
-  if (d.name) return { text: `Jeu détecté : ${d.name}${d.ignored ? ' (ignoré)' : ''}.`, kind: 'found' };
-  return storeBlocked.value
-    ? { text: 'Jeu Steam détecté, mais le Steam Store limite les requêtes : les jeux inconnus ne seront plus proposés pendant 24 h au plus.', kind: 'blocked' }
-    : { text: 'Jeu Steam détecté, nom pas encore connu.', kind: 'idle' };
+  if (!d) return { text: t('config.settings.noGame'), kind: 'idle' };
+  if (d.name) return { text: t(d.ignored ? 'config.settings.foundIgnored' : 'config.settings.found', { name: d.name }), kind: 'found' };
+  return storeBlocked.value ? { text: t('config.settings.blocked'), kind: 'blocked' } : { text: t('config.settings.unnamed'), kind: 'idle' };
 });
 </script>
 
 <template>
   <div class="cfg-settings">
     <section class="group setting">
-      <h2 class="group-title">Zone de notification</h2>
+      <label class="check">
+        {{ t('config.settings.language') }}
+        <select :value="languageSetting" @change="changeLanguage">
+          <option value="system">{{ t('config.settings.systemLanguage') }}</option>
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+        </select>
+      </label>
+    </section>
+    <section class="group setting">
+      <h2 class="group-title">{{ t('config.settings.tray') }}</h2>
       <div>
         <label class="check">
-          Afficher l'icône dans la zone de notification
+          {{ t('config.settings.showIcon') }}
           <input v-model="draft.tray" type="checkbox" />
         </label>
-        <p class="hint">Garde l'appli accessible depuis la barre système.</p>
+        <p class="hint">{{ t('config.settings.trayHint') }}</p>
       </div>
       <div v-if="draft.tray" class="nested">
         <label class="check">
-          Fermer la fenêtre la masque au lieu de quitter
+          {{ t('config.settings.closeToTray') }}
           <input v-model="draft.closeToTray" type="checkbox" />
         </label>
         <label class="check">
-          Démarrer masqué
+          {{ t('config.settings.startHidden') }}
           <input v-model="draft.startHidden" type="checkbox" />
         </label>
       </div>
     </section>
     <section class="group setting">
-      <h2 class="group-title">Steam</h2>
+      <h2 class="group-title">{{ t('config.settings.steam') }}</h2>
       <div>
         <label class="check">
-          Détecter le jeu Steam en cours
+          {{ t('config.settings.detect') }}
           <input v-model="draft.steamDetection" type="checkbox" />
         </label>
-        <p class="hint">Propose le jeu lancé dans l'onglet Jouer.</p>
+        <p class="hint">{{ t('config.settings.detectHint') }}</p>
       </div>
       <div v-if="draft.steamDetection" class="nested">
         <label class="check">
-          Notifier quand un jeu est lancé
+          {{ t('config.settings.notify') }}
           <input v-model="draft.steamNotify" type="checkbox" />
         </label>
       </div>
       <p v-if="config.steamDetection" class="status" :class="status.kind">{{ status.text }}</p>
       <template v-if="config.ignoredGames.length">
-        <h3 class="group-title sub">Jeux ignorés</h3>
+        <h3 class="group-title sub">{{ t('config.settings.ignored') }}</h3>
         <ul class="ignored">
           <li v-for="g in byName(config.ignoredGames)" :key="g.appId">
             {{ g.name }}
             <span class="row">
-              <button class="ghost" @click="addGame(g)">Ajouter</button>
-              <button class="ghost" @click="unignore(g.appId)">Retirer</button>
+              <button class="ghost" @click="addGame(g)">{{ t('common.add') }}</button>
+              <button class="ghost" @click="unignore(g.appId)">{{ t('config.settings.unignore') }}</button>
             </span>
           </li>
         </ul>
