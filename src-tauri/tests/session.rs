@@ -292,6 +292,36 @@ fn skipping_a_set_costs_its_exercises() {
 }
 
 #[test]
+fn summary_counts_events_in_game_order_and_jokers() {
+    let (mut s, boss) = session_with_jokers();
+    s.dismiss(boss.id).unwrap();
+    let cfg = default_config(Language::Fr);
+    let death = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
+    s.skip_set(death.id, 20).unwrap();
+    let names: Vec<_> = s
+        .event_counts(&cfg)
+        .into_iter()
+        .map(|e| (e.event, e.count))
+        .collect();
+    assert_eq!(
+        names,
+        vec![
+            ("Mort".to_string(), 1),
+            ("Boss vaincu sans prendre un coup".to_string(), 1)
+        ],
+        "the dismissed boss no longer counts"
+    );
+    assert_eq!(
+        s.jokers(),
+        Jokers {
+            earned: 2,
+            spent: SKIP_COST
+        }
+    );
+    assert!(Session::new(0).event_counts(&cfg).is_empty());
+}
+
+#[test]
 fn skipping_an_exercise_keeps_the_rest_of_the_set() {
     let (mut s, boss) = session_with_jokers();
     let (first, second) = (&boss.items[0], &boss.items[1]);

@@ -11,7 +11,8 @@
     "setsDone": "Sets done",
     "jokers": "Jokers",
     "joker": "{n} joker | {n} jokers",
-    "reward": "+{n} joker | +{n} jokers"
+    "reward": "+{n} joker | +{n} jokers",
+    "copyFailed": "Copy impossible: {error}"
   },
   "keys": {
     "enter": "Enter",
@@ -81,7 +82,11 @@
     "close": "Close",
     "seeAll": "See all",
     "noHistory": "No set recorded yet.",
-    "rest": "rest"
+    "rest": "rest",
+    "copy": "Copy the summary",
+    "copiedSummary": "Copied",
+    "eventCount": "{event} ×{count}",
+    "jokersLine": "Jokers: {earned}, {spent}"
   },
   "duration": {
     "underMinute": "less than a minute",
@@ -98,7 +103,6 @@
     "discard": "Reset the changes",
     "saved": "Configuration saved.",
     "copied": "Copied to the clipboard, ready to share.",
-    "copyFailed": "Copy impossible: {error}",
     "games": {
       "add": "+ Add a game",
       "import": "Import a game",

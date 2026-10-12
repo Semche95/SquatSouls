@@ -75,6 +75,7 @@ pub(crate) fn draw(state: Shared, game_id: String, event_id: String) -> Result<D
     } = &mut *guard;
     let draw = session.draw(config, &game_id, &event_id, &mut rand::rng())?;
     session.start(now());
+    guard.save_session_summary();
     Ok(draw)
 }
 
@@ -89,6 +90,7 @@ pub(crate) fn complete_exercise(
     if let Err(e) = s.store.append_history(&[entry]) {
         log::error!("History not saved: {e}");
     }
+    s.save_session_summary();
     Ok(s.session.view())
 }
 
@@ -99,6 +101,7 @@ pub(crate) fn dismiss(state: Shared, draw_id: u64) -> Result<SessionView, AppErr
     if let Err(e) = s.store.remove_history(&entries) {
         log::error!("History not modified: {e}");
     }
+    s.save_session_summary();
     Ok(s.session.view())
 }
 
@@ -110,6 +113,7 @@ pub(crate) fn halve(
 ) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
     s.session.halve(draw_id, &exercise_id, now())?;
+    s.save_session_summary();
     Ok(s.session.view())
 }
 
@@ -121,6 +125,7 @@ pub(crate) fn skip_exercise(
 ) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
     s.session.skip_exercise(draw_id, &exercise_id, now())?;
+    s.save_session_summary();
     Ok(s.session.view())
 }
 
@@ -128,6 +133,7 @@ pub(crate) fn skip_exercise(
 pub(crate) fn skip_set(state: Shared, draw_id: u64) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
     s.session.skip_set(draw_id, now())?;
+    s.save_session_summary();
     Ok(s.session.view())
 }
 

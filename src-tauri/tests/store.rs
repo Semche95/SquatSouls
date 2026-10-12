@@ -124,7 +124,7 @@ fn applied_migrations_are_dated() {
     std::fs::remove_file(&path).unwrap();
     assert_eq!(
         applied.iter().map(|a| a.0).collect::<Vec<_>>(),
-        [1, 2, 3, 4, 5],
+        [1, 2, 3, 4, 5, 6],
         "a migration is applied only once"
     );
     assert!(
@@ -167,7 +167,7 @@ fn database_migrated_before_refinery_keeps_its_data() {
         let applied = applied(&path);
         std::fs::remove_file(&path).unwrap();
         assert_eq!(history.len(), 1, "{name}");
-        assert_eq!(applied.len(), 5, "{name}");
+        assert_eq!(applied.len(), 6, "{name}");
     }
 }
 
@@ -371,6 +371,41 @@ fn history_and_sessions_are_stored() {
     );
     s.append_history(&[entry(t, t - 60, "Squats", 15)]).unwrap();
 
+    let summed = |s: &Store| {
+        s.history(1, today).unwrap()[0]
+            .sessions
+            .iter()
+            .find(|x| x.sets == 3)
+            .cloned()
+            .unwrap()
+    };
+    assert!(
+        summed(&s).events.is_empty() && summed(&s).jokers.is_none(),
+        "nothing recorded for this session"
+    );
+    let death = |count| EventCount {
+        event: "Death".into(),
+        count,
+    };
+    let boss = EventCount {
+        event: "Boss".into(),
+        count: 1,
+    };
+    let jokers = Jokers {
+        earned: 3,
+        spent: 2,
+    };
+    s.save_session_summary(t - 60, &[death(1)], Jokers::default())
+        .unwrap();
+    s.save_session_summary(t - 60, &[death(2), boss.clone()], jokers)
+        .unwrap();
+    assert_eq!(
+        summed(&s).events,
+        vec![death(2), boss],
+        "replaced, in order"
+    );
+    assert_eq!(summed(&s).jokers, Some(jokers));
+
     s.remove_session(t).unwrap();
     assert_eq!(
         s.history(1, today).unwrap()[0].sets,
@@ -379,6 +414,12 @@ fn history_and_sessions_are_stored() {
     );
     s.remove_session(t - 60).unwrap();
     assert_eq!(s.full_history().unwrap().len(), 1);
+    s.append_history(&[entry(t, t - 60, "Squats", 12)]).unwrap();
+    let again = s.history(1, today).unwrap()[0].sessions[0].clone();
+    assert!(
+        again.events.is_empty() && again.jokers.is_none(),
+        "events and jokers removed with the session"
+    );
 }
 
 #[test]

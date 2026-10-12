@@ -11,7 +11,8 @@
     "setsDone": "Séries faites",
     "jokers": "Jokers",
     "joker": "{n} joker | {n} jokers",
-    "reward": "+{n} joker | +{n} jokers"
+    "reward": "+{n} joker | +{n} jokers",
+    "copyFailed": "Copie impossible : {error}"
   },
   "keys": {
     "enter": "Entrée",
@@ -81,7 +82,11 @@
     "close": "Fermer",
     "seeAll": "Tout voir",
     "noHistory": "Aucune série enregistrée pour l'instant.",
-    "rest": "repos"
+    "rest": "repos",
+    "copy": "Copier le résumé",
+    "copiedSummary": "Copié",
+    "eventCount": "{event} ×{count}",
+    "jokersLine": "Jokers : {earned}, {spent}"
   },
   "duration": {
     "underMinute": "moins d'une minute",
@@ -98,7 +103,6 @@
     "discard": "Réinitialiser les modifications",
     "saved": "Configuration enregistrée.",
     "copied": "Copié dans le presse-papiers, prêt à partager.",
-    "copyFailed": "Copie impossible : {error}",
     "games": {
       "add": "+ Ajouter un jeu",
       "import": "Importer un jeu",

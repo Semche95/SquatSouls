@@ -145,6 +145,19 @@ pub struct TriggerCount {
     pub count: u32,
 }
 
+/// Times an event was triggered in a session, by its name.
+#[derive(Debug, Clone, Serialize, PartialEq)]
+pub struct EventCount {
+    pub event: String,
+    pub count: u32,
+}
+
+#[derive(Debug, Clone, Copy, Default, Serialize, PartialEq)]
+pub struct Jokers {
+    pub earned: u32,
+    pub spent: u32,
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionView {
@@ -593,6 +606,34 @@ impl Session {
             return Err(AppError::new("exercise_already_done"));
         }
         Ok((draw, item))
+    }
+
+    /// Events triggered in the session's game, in the order of its events.
+    pub fn event_counts(&self, config: &Config) -> Vec<EventCount> {
+        let Some(game) = config
+            .games
+            .iter()
+            .find(|g| Some(&g.id) == self.game_id.as_ref())
+        else {
+            return Vec::new();
+        };
+        game.events
+            .iter()
+            .filter_map(|ev| {
+                let count = *self.triggers.get(&(game.id.clone(), ev.id.clone()))?;
+                (count > 0).then(|| EventCount {
+                    event: ev.name.clone(),
+                    count,
+                })
+            })
+            .collect()
+    }
+
+    pub fn jokers(&self) -> Jokers {
+        Jokers {
+            earned: self.jokers_earned,
+            spent: self.skipped.iter().map(|k| k.jokers).sum(),
+        }
     }
 
     pub fn view(&self) -> SessionView {

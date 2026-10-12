@@ -81,7 +81,7 @@ export const [provideConfig, useConfig] = defineShared(() => {
       await navigator.clipboard.writeText(text);
       notify(t('config.copied'));
     } catch (e) {
-      configError.value = t('config.copyFailed', { error: String(e) });
+      configError.value = t('common.copyFailed', { error: String(e) });
     }
   }
 

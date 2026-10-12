@@ -1,6 +1,6 @@
 //! Summary: history sets grouped by day, by session and by game.
 
-use super::{totals, LogEntry, Total};
+use super::{totals, EventCount, Jokers, LogEntry, Total};
 use chrono::{DateTime, Duration, Local, NaiveDate, NaiveTime};
 use serde::Serialize;
 use std::collections::{BTreeMap, HashMap};
@@ -25,10 +25,22 @@ pub struct SessionTotals {
     pub game: String,
     pub sets: usize,
     pub totals: Vec<Total>,
+    /// Events triggered, empty for sessions saved before they were recorded.
+    pub events: Vec<EventCount>,
+    /// Absent for sessions saved before they were recorded.
+    pub jokers: Option<Jokers>,
+}
+
+/// What the history keeps of each session besides its sets, by session start.
+#[derive(Debug, Default)]
+pub struct SessionRecords {
+    pub ends: HashMap<i64, i64>,
+    pub events: HashMap<i64, Vec<EventCount>>,
+    pub jokers: HashMap<i64, Jokers>,
 }
 
 /// Groups sets by session and by game.
-pub fn sessions(entries: &[LogEntry], ends: &HashMap<i64, i64>) -> Vec<SessionTotals> {
+pub fn sessions(entries: &[LogEntry], records: &SessionRecords) -> Vec<SessionTotals> {
     let mut groups: Vec<((i64, &str), Vec<LogEntry>)> = Vec::new();
     for e in entries {
         let key = (e.session, e.game.as_str());
@@ -42,13 +54,18 @@ pub fn sessions(entries: &[LogEntry], ends: &HashMap<i64, i64>) -> Vec<SessionTo
         .map(|((session, game), list)| {
             let start = list.iter().map(|e| e.at).min().unwrap_or_default();
             let last = list.iter().map(|e| e.at).max().unwrap_or_default();
-            let end = ends.get(&session).map_or(last, |&ended| ended.max(last));
+            let end = records
+                .ends
+                .get(&session)
+                .map_or(last, |&ended| ended.max(last));
             SessionTotals {
                 start,
                 duration: end - session.min(start),
                 game: game.to_string(),
                 sets: list.len(),
                 totals: totals(&list),
+                events: records.events.get(&session).cloned().unwrap_or_default(),
+                jokers: records.jokers.get(&session).copied(),
             }
         })
         .collect();
@@ -71,11 +88,11 @@ fn by_day(entries: &[LogEntry]) -> ByDay {
     days
 }
 
-fn day_totals(date: NaiveDate, entries: &[LogEntry], ends: &HashMap<i64, i64>) -> DayTotals {
+fn day_totals(date: NaiveDate, entries: &[LogEntry], records: &SessionRecords) -> DayTotals {
     DayTotals {
         date: date.format("%Y-%m-%d").to_string(),
         sets: entries.len(),
-        sessions: sessions(entries, ends),
+        sessions: sessions(entries, records),
     }
 }
 
@@ -96,7 +113,7 @@ pub fn window_start(days: u32, today: NaiveDate) -> i64 {
 /// Totals of the last `days` days (today included), most recent first.
 pub fn last_days(
     entries: &[LogEntry],
-    ends: &HashMap<i64, i64>,
+    records: &SessionRecords,
     days: u32,
     today: NaiveDate,
 ) -> Vec<DayTotals> {
@@ -104,16 +121,16 @@ pub fn last_days(
     (0..days.max(1))
         .map(|offset| {
             let date = today - Duration::days(i64::from(offset));
-            day_totals(date, &by_day.remove(&date).unwrap_or_default(), ends)
+            day_totals(date, &by_day.remove(&date).unwrap_or_default(), records)
         })
         .collect()
 }
 
 /// Every day on which sets were done, most recent first.
-pub fn active_days(entries: &[LogEntry], ends: &HashMap<i64, i64>) -> Vec<DayTotals> {
+pub fn active_days(entries: &[LogEntry], records: &SessionRecords) -> Vec<DayTotals> {
     by_day(entries)
         .iter()
         .rev()
-        .map(|(date, entries)| day_totals(*date, entries, ends))
+        .map(|(date, entries)| day_totals(*date, entries, records))
         .collect()
 }

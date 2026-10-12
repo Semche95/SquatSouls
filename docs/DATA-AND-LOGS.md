@@ -2,7 +2,7 @@
 
 ## Database
 
-Everything is saved in a SQLite database: configuration (including the global pause, the notification area, Steam detection, its notification and the ignored games), history, last chosen game and names given by the Steam Store.
+Everything is saved in a SQLite database: configuration (including the global pause, the notification area, Steam detection, its notification and the ignored games), history (sets done, and per session its end, events triggered and jokers), last chosen game and names given by the Steam Store.
 
 | OS | Path |
 | --- | --- |

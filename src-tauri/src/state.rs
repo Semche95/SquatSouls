@@ -112,7 +112,22 @@ impl AppState {
         self.config = config;
         self.config_error = None;
         self.session.apply_config(&self.config, &mut rand::rng());
+        self.save_session_summary();
         Ok(self.config_view())
+    }
+
+    /// Saves the events triggered and the jokers of the started session, for the history.
+    pub(crate) fn save_session_summary(&mut self) {
+        let Some(started_at) = self.session.started_at else {
+            return;
+        };
+        let events = self.session.event_counts(&self.config);
+        if let Err(e) = self
+            .store
+            .save_session_summary(started_at, &events, self.session.jokers())
+        {
+            log::error!("Session summary not saved: {e}");
+        }
     }
 
     /// Removes the current session's sets from the history; the next one waits to be started.

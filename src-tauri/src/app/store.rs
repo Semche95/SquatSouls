@@ -1,13 +1,13 @@
 //! SQLite storage: configuration, history and settings, written row by row.
 
 use super::{
-    active_days, default_config, last_days, window_start, Config, DayTotals, Exercise, Game,
-    GameEvent, IgnoredGame, LanguageSetting, LogEntry, SteamName, SteamNames, DEFAULT_PAUSE,
-    DEFAULT_STEAM_NOTIFY,
+    active_days, default_config, last_days, window_start, Config, DayTotals, EventCount, Exercise,
+    Game, GameEvent, IgnoredGame, Jokers, LanguageSetting, LogEntry, SessionRecords, SteamName,
+    SteamNames, DEFAULT_PAUSE, DEFAULT_STEAM_NOTIFY,
 };
 use chrono::NaiveDate;
 use refinery::Target;
-use rusqlite::{params, Connection, Result, Transaction};
+use rusqlite::{params, Connection, Result, Row, Transaction};
 use std::collections::HashMap;
 use std::path::Path;
 use std::str::FromStr;
@@ -270,28 +270,56 @@ impl Store {
         Ok(())
     }
 
-    /// Removes a session's sets and end from the history.
+    /// Replaces the events triggered and the jokers saved for a session.
+    pub fn save_session_summary(
+        &mut self,
+        session: i64,
+        events: &[EventCount],
+        jokers: Jokers,
+    ) -> Result<()> {
+        let tx = self.conn.transaction()?;
+        tx.execute("DELETE FROM session_events WHERE session = ?1", [session])?;
+        {
+            let mut stmt = tx.prepare(
+                "INSERT INTO session_events (session, position, event, count) VALUES (?1, ?2, ?3, ?4)",
+            )?;
+            for (position, e) in events.iter().enumerate() {
+                stmt.execute(params![session, position as i64, e.event, e.count])?;
+            }
+        }
+        tx.execute(
+            "INSERT OR REPLACE INTO session_jokers (session, earned, spent) VALUES (?1, ?2, ?3)",
+            params![session, jokers.earned, jokers.spent],
+        )?;
+        tx.commit()
+    }
+
+    /// Removes a session's sets, end, events and jokers from the history.
     pub fn remove_session(&mut self, session: i64) -> Result<()> {
         let tx = self.conn.transaction()?;
-        tx.execute("DELETE FROM sets WHERE session = ?1", [session])?;
-        tx.execute("DELETE FROM session_ends WHERE session = ?1", [session])?;
+        for table in ["sets", "session_ends", "session_events", "session_jokers"] {
+            tx.execute(
+                &format!("DELETE FROM {table} WHERE session = ?1"),
+                [session],
+            )?;
+        }
         tx.commit()
     }
 
     /// Totals of the last `days` days (today included), most recent first.
     pub fn history(&self, days: u32, today: NaiveDate) -> Result<Vec<DayTotals>> {
-        let (entries, ends) = self.sets_since(window_start(days, today))?;
-        Ok(last_days(&entries, &ends, days, today))
+        let (entries, records) = self.sets_since(window_start(days, today))?;
+        Ok(last_days(&entries, &records, days, today))
     }
 
     /// Every day on which sets were done, most recent first.
     pub fn full_history(&self) -> Result<Vec<DayTotals>> {
-        let (entries, ends) = self.sets_since(i64::MIN)?;
-        Ok(active_days(&entries, &ends))
+        let (entries, records) = self.sets_since(i64::MIN)?;
+        Ok(active_days(&entries, &records))
     }
 
-    /// Sets done since `from`, and end times of their finished sessions.
-    fn sets_since(&self, from: i64) -> Result<(Vec<LogEntry>, HashMap<i64, i64>)> {
+    /// Sets done since `from`, and what is kept of their sessions.
+    fn sets_since(&self, from: i64) -> Result<(Vec<LogEntry>, SessionRecords)> {
         let entries = self
             .conn
             .prepare(
@@ -310,15 +338,54 @@ impl Store {
                 })
             })?
             .collect::<Result<_>>()?;
-        let ends = self
-            .conn
-            .prepare(
-                "SELECT session, ended FROM session_ends
-                 WHERE session IN (SELECT session FROM sets WHERE at >= ?1)",
-            )?
-            .query_map([from], |r| Ok((r.get(0)?, r.get(1)?)))?
-            .collect::<Result<_>>()?;
-        Ok((entries, ends))
+        let ends = self.session_rows("SELECT session, ended FROM session_ends", from, |r| {
+            r.get(1)
+        })?;
+        let mut events: HashMap<i64, Vec<EventCount>> = HashMap::new();
+        for (session, event) in self.session_rows(
+            "SELECT session, event, count FROM session_events",
+            from,
+            |r| {
+                Ok(EventCount {
+                    event: r.get(1)?,
+                    count: r.get(2)?,
+                })
+            },
+        )? {
+            events.entry(session).or_default().push(event);
+        }
+        let jokers = self.session_rows(
+            "SELECT session, earned, spent FROM session_jokers",
+            from,
+            |r| {
+                Ok(Jokers {
+                    earned: r.get(1)?,
+                    spent: r.get(2)?,
+                })
+            },
+        )?;
+        let records = SessionRecords {
+            ends: ends.into_iter().collect(),
+            events,
+            jokers: jokers.into_iter().collect(),
+        };
+        Ok((entries, records))
+    }
+
+    /// Rows of `select` (whose first column is the session) for sessions with sets since `from`,
+    /// in their saved order.
+    fn session_rows<T>(
+        &self,
+        select: &str,
+        from: i64,
+        value: impl Fn(&Row) -> Result<T>,
+    ) -> Result<Vec<(i64, T)>> {
+        self.conn
+            .prepare(&format!(
+                "{select} WHERE session IN (SELECT session FROM sets WHERE at >= ?1) ORDER BY rowid"
+            ))?
+            .query_map([from], |r| Ok((r.get(0)?, value(r)?)))?
+            .collect()
     }
 
     /// Last chosen game, empty if there is none yet.

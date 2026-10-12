@@ -22,3 +22,14 @@ export function formatDuration(seconds) {
   if (minutes < 60) return t('duration.minutes', { minutes });
   return t('duration.hours', { hours: Math.floor(minutes / 60), minutes: String(minutes % 60).padStart(2, '0') });
 }
+
+// Session summary to paste in a messaging app: game and duration, events triggered, totals per
+// exercise, then jokers if they were recorded.
+export function sessionSummary({ game, duration, events, totals, jokers }) {
+  return [
+    `${game} · ${formatDuration(duration)}`,
+    events.map(({ event, count }) => t('summary.eventCount', { event, count })).join(' · '),
+    totals.map((total) => `${total.exercise} ${total.amount} ${total.unit}`).join(' · '),
+    jokers && t('summary.jokersLine', { earned: t('summary.earned', jokers.earned), spent: t('summary.spent', jokers.spent) }),
+  ].filter(Boolean).join('\n');
+}

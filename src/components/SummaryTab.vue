@@ -1,13 +1,16 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { formatDay, formatDuration, formatTime } from '../format.js';
+import { formatDay, formatDuration, formatTime, sessionSummary } from '../format.js';
 import { t } from '../i18n.js';
 import { useApi } from '../composables/useApi.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import { useKeydown } from '../composables/useKeydown.js';
 
-const { call } = useApi();
+// How long a copy button reads "Copied".
+const COPIED_MS = 2000;
+
+const { error, call } = useApi();
 const { config } = useConfig();
 const { session } = useSession();
 
@@ -17,6 +20,36 @@ const fullHistory = ref(null);
 // Game set on the session's first event, absent before.
 const gameName = computed(() => config.value?.games.find((g) => g.id === session.value.gameId)?.name);
 const jokersSpent = computed(() => session.value.skipped.reduce((sum, k) => sum + k.jokers, 0));
+// Copy button that last copied its summary, '' after a while.
+const copied = ref('');
+let copiedTimer;
+
+// The current session lasts until now; its events follow the order of the game's events.
+function currentSummary() {
+  const s = session.value;
+  const events = config.value.games.find((g) => g.id === s.gameId)?.events ?? [];
+  return sessionSummary({
+    game: gameName.value,
+    duration: Math.floor(Date.now() / 1000) - s.startedAt,
+    events: events.flatMap((ev) => {
+      const count = s.triggers.find((tr) => tr.gameId === s.gameId && tr.eventId === ev.id)?.count;
+      return count ? [{ event: ev.name, count }] : [];
+    }),
+    totals: s.totals,
+    jokers: { earned: s.jokersEarned, spent: jokersSpent.value },
+  });
+}
+
+async function copySummary(key, text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    copied.value = key;
+    clearTimeout(copiedTimer);
+    copiedTimer = setTimeout(() => (copied.value = ''), COPIED_MS);
+  } catch (e) {
+    error.value = t('common.copyFailed', { error: String(e) });
+  }
+}
 
 async function openFullHistory() {
   try {
@@ -45,6 +78,9 @@ onMounted(async () => {
       <header class="group-head">
         <h2 class="group-title">{{ t('summary.current') }}</h2>
         <span class="muted"><template v-if="gameName">{{ gameName }} · </template>{{ session.startedAt ? t('summary.since', { time: formatTime(session.startedAt) }) : t('summary.notStarted') }}</span>
+        <button v-if="session.sets" class="ghost" @click="copySummary('current', currentSummary())">
+          {{ t(copied === 'current' ? 'summary.copiedSummary' : 'summary.copy') }}
+        </button>
       </header>
       <p v-if="!session.sets" class="empty">{{ t('summary.noSets') }}</p>
       <div v-else class="session-detail">
@@ -97,7 +133,12 @@ onMounted(async () => {
           <span v-if="!d.sets" class="muted">{{ t('summary.rest') }}</span>
           <span v-else class="day-body">
             <span v-for="se in d.sessions" :key="se.start + se.game" class="day-session">
-              <span class="day-games">{{ formatTime(se.start) }} · {{ se.game }} · {{ formatDuration(se.duration) }}</span>
+              <span class="day-games">
+                {{ formatTime(se.start) }} · {{ se.game }} · {{ formatDuration(se.duration) }}
+                <button class="link" @click="copySummary(se.start + se.game, sessionSummary(se))">
+                  {{ t(copied === se.start + se.game ? 'summary.copiedSummary' : 'summary.copy') }}
+                </button>
+              </span>
               <span class="day-totals">
                 <span v-for="total in se.totals" :key="total.exercise + total.unit" class="chip">
                   {{ total.exercise }} {{ total.amount }} {{ total.unit }}
