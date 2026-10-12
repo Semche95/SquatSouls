@@ -199,20 +199,46 @@ fn session_with_jokers() -> (Session, Draw) {
     let cfg = default_config(Language::Fr);
     let mut s = Session::new(0);
     let mut r = rng();
-    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
-    assert_eq!(
-        s.skip_set(boss.id, 5).unwrap_err(),
-        AppError::new("not_enough_jokers"),
-        "no joker at first"
-    );
-
     let nohit = s.draw(&cfg, "ds3", "boss-nohit", &mut r).unwrap();
     assert_eq!(nohit.items.len(), 2, "the reward comes with a set");
     assert_eq!(nohit.jokers, 2);
-    assert_eq!(s.view().jokers, 0, "nothing is earned before completion");
+    assert_eq!(
+        s.skip_set(nohit.id, 5).unwrap_err(),
+        AppError::new("not_enough_jokers"),
+        "no joker at first"
+    );
     assert_eq!(complete(&mut s, nohit.id, 10).unwrap().len(), 2);
-    assert_eq!(s.view().jokers, 2);
+    assert_eq!(s.view().jokers, 2, "earned on completion");
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
     (s, boss)
+}
+
+/// Same session, whose boss set is dismissed to leave room for the set `event`.
+fn session_with_jokers_on(event: &str) -> (Session, Draw) {
+    let (mut s, boss) = session_with_jokers();
+    s.dismiss(boss.id).unwrap();
+    let cfg = default_config(Language::Fr);
+    let draw = s.draw(&cfg, "ds3", event, &mut rng()).unwrap();
+    (s, draw)
+}
+
+#[test]
+fn sets_are_done_in_the_order_they_were_drawn() {
+    let (mut s, boss) = session_with_jokers();
+    let cfg = default_config(Language::Fr);
+    let death = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
+    let id = &death.items[0].exercise_id;
+    for refused in [
+        s.complete_exercise(death.id, id, 20).map(|_| ()),
+        s.halve(death.id, id, 20),
+        s.skip_exercise(death.id, id, 20),
+        s.skip_set(death.id, 20),
+    ] {
+        assert_eq!(refused.unwrap_err().code, "set_not_current");
+    }
+    s.dismiss(death.id).unwrap();
+    s.complete_exercise(boss.id, &boss.items[0].exercise_id, 30)
+        .unwrap();
 }
 
 #[test]
@@ -224,6 +250,7 @@ fn skipping_a_set_costs_its_exercises() {
         "two exercises cost 4 jokers"
     );
 
+    s.dismiss(boss.id).unwrap();
     let cfg = default_config(Language::Fr);
     let death = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
     s.skip_set(death.id, 20).unwrap();
@@ -237,7 +264,7 @@ fn skipping_a_set_costs_its_exercises() {
         (20, "Mort", SKIP_COST, false)
     );
     assert_eq!(k.items, death.items);
-    assert_eq!(v.pending.len(), 1, "only the boss set remains");
+    assert!(v.pending.is_empty());
     assert_eq!(v.sets, 2, "only the no hit set is done");
     let count = v
         .triggers
@@ -311,17 +338,15 @@ fn halving_then_skipping_costs_a_full_skip() {
 
 #[test]
 fn spending_jokers_on_a_rewarding_set_forfeits_its_reward() {
-    let cfg = default_config(Language::Fr);
     for spend in [Session::halve, Session::skip_exercise] {
-        let (mut s, _) = session_with_jokers();
-        let nohit = s.draw(&cfg, "ds3", "boss-nohit", &mut rng()).unwrap();
+        let (mut s, nohit) = session_with_jokers_on("boss-nohit");
         let first = nohit
             .items
             .iter()
             .find(|it| it.halve_cost.is_some())
             .unwrap();
         spend(&mut s, nohit.id, &first.exercise_id, 20).unwrap();
-        assert_eq!(s.view().pending[1].jokers, 0, "the reward is lost");
+        assert_eq!(s.view().pending[0].jokers, 0, "the reward is lost");
         let left = s.view().jokers;
         complete(&mut s, nohit.id, 30).unwrap();
         let v = s.view();
@@ -332,9 +357,7 @@ fn spending_jokers_on_a_rewarding_set_forfeits_its_reward() {
 
 #[test]
 fn skipping_every_exercise_removes_the_set() {
-    let (mut s, _) = session_with_jokers();
-    let cfg = default_config(Language::Fr);
-    let death = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
+    let (mut s, death) = session_with_jokers_on("mort");
     s.skip_exercise(death.id, &death.items[0].exercise_id, 20)
         .unwrap();
     assert!(s.view().pending.iter().all(|d| d.id != death.id));
@@ -355,9 +378,7 @@ fn a_single_unit_cannot_be_halved() {
 
 #[test]
 fn exercises_are_done_one_by_one() {
-    let (mut s, boss) = session_with_jokers();
-    let cfg = default_config(Language::Fr);
-    let nohit = s.draw(&cfg, "ds3", "boss-nohit", &mut rng()).unwrap();
+    let (mut s, nohit) = session_with_jokers_on("boss-nohit");
     let (first, second) = (&nohit.items[0], &nohit.items[1]);
     assert_eq!(
         s.complete_exercise(nohit.id, &second.exercise_id, 20)
@@ -392,9 +413,11 @@ fn exercises_are_done_one_by_one() {
         .unwrap();
     let v = s.view();
     assert_eq!(v.jokers, 4, "set finished: the reward is earned");
-    assert_eq!(v.pending.len(), 1, "only the boss set remains");
+    assert!(v.pending.is_empty());
     assert_eq!(v.log[0].at, 30);
 
+    let cfg = default_config(Language::Fr);
+    let boss = s.draw(&cfg, "ds3", "boss", &mut rng()).unwrap();
     s.complete_exercise(boss.id, &boss.items[0].exercise_id, 40)
         .unwrap();
     s.skip_set(boss.id, 50).unwrap();

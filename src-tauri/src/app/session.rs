@@ -393,7 +393,7 @@ impl Session {
 
     /// Skips what is left of a set: the trigger stays counted.
     pub fn skip_set(&mut self, id: u64, now: i64) -> Result<(), AppError> {
-        let draw = self.pending_draw(id)?;
+        let draw = &self.pending[self.current_pos(id)?];
         let cost = skip_set_cost(draw);
         if self.jokers < cost {
             return Err(AppError::new(NOT_ENOUGH_JOKERS));
@@ -554,6 +554,14 @@ impl Session {
             .ok_or(AppError::new("set_not_pending"))
     }
 
+    /// Position of the set, which must be the oldest one: sets are done in the order they were drawn.
+    fn current_pos(&self, id: u64) -> Result<usize, AppError> {
+        match self.pending_pos(id)? {
+            0 => Ok(0),
+            _ => Err(AppError::new("set_not_current")),
+        }
+    }
+
     fn pending_draw(&self, id: u64) -> Result<&Draw, AppError> {
         Ok(&self.pending[self.pending_pos(id)?])
     }
@@ -565,7 +573,7 @@ impl Session {
 
     /// Pending set and position in it of the exercise, still to do.
     fn pending_item(&mut self, id: u64, exercise_id: &str) -> Result<(&mut Draw, usize), AppError> {
-        let pos = self.pending_pos(id)?;
+        let pos = self.current_pos(id)?;
         let draw = &mut self.pending[pos];
         let item = draw
             .items
