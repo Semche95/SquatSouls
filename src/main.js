@@ -6,6 +6,12 @@ import 'floating-vue/dist/style.css';
 import './style.css';
 
 logUncaught();
+// The webview's right-click menu (reload, inspect...) is only useful in development; text fields keep theirs for copy and paste.
+if (!import.meta.env.DEV) {
+  window.addEventListener('contextmenu', (e) => {
+    if (!e.target.closest('input, textarea')) e.preventDefault();
+  });
+}
 // Language known before mounting: no flash in the wrong language.
 loadLanguage().then(() => {
   const app = createApp(App);
