@@ -93,6 +93,9 @@ describe('configuration', () => {
     await w.find('input[aria-label="Nom du nouveau jeu"]').setValue(' sekiro ');
     expect(w.find('form.cfg-game').text()).toContain('Un jeu porte déjà ce nom.');
     expect(w.find('form.cfg-game .primary').element.disabled).toBe(true);
+    await expectTip(w.find('form.cfg-game .primary'), 'Un jeu porte déjà ce nom.');
+    await w.find('input[aria-label="Nom du nouveau jeu"]').setValue(' ');
+    await expectTip(w.find('form.cfg-game .primary'), 'Donner un nom au jeu');
   });
 
   it('asks for confirmation before removing a game, then saves right away', async () => {
@@ -132,6 +135,7 @@ describe('configuration', () => {
     const w = await openConfig();
     await w.findAll('.subtabs button')[1].trigger('click');
     expect(w.find('.cfg-exercises .icon').element.disabled).toBe(true);
+    await expectTip(w.find('.cfg-exercises .icon'), 'Il faut au moins un exercice');
     await w.find('input[aria-label="Maximum"]').setValue('');
     responses.save_config = (args) => ({ config: args.config });
     await w.find('.cfg-actions .primary').trigger('click');

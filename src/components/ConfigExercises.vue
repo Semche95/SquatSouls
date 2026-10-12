@@ -7,6 +7,7 @@ import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import CountInput from './CountInput.vue';
 import ShareImport from './ShareImport.vue';
+import DisabledTip from './DisabledTip.vue';
 
 const { config, draft, notify, copy } = useConfig();
 const { saveNow } = useSession();
@@ -33,7 +34,9 @@ function addExercise() {
     <header class="group-head">
       <h2 class="group-title">{{ t('config.tabs.exercises') }}</h2>
       <button class="ghost" @click="copy(shareExercises(config.exercises))">{{ t('common.share') }}</button>
-      <button class="ghost" :disabled="importing" @click="importing = true">{{ t('common.import') }}</button>
+      <DisabledTip :tip="importing ? t('common.importOpen') : ''">
+        <button class="ghost" :disabled="importing" @click="importing = true">{{ t('common.import') }}</button>
+      </DisabledTip>
     </header>
     <ShareImport v-if="importing" :parse="parseExercises" @import="importShared" @cancel="importing = false" />
     <label class="field cfg-pause">
@@ -61,12 +64,14 @@ function addExercise() {
           <td><CountInput v-model="ex.max" :aria-label="t('config.exercises.maximum')" /></td>
           <td><CountInput v-model="ex.pause" optional :placeholder="String(draft.pause)" :aria-label="t('config.exercises.pauseLabel')" /></td>
           <td>
-            <button
-              class="ghost icon"
-              :disabled="draft.exercises.length < 2"
-              :title="t('common.remove')"
-              @click="draft.exercises.splice(i, 1)"
-            >✕</button>
+            <DisabledTip :tip="draft.exercises.length < 2 ? t('config.exercises.lastExercise') : ''">
+              <button
+                class="ghost icon"
+                :disabled="draft.exercises.length < 2"
+                :aria-label="t('common.remove')"
+                @click="draft.exercises.splice(i, 1)"
+              >✕</button>
+            </DisabledTip>
           </td>
         </tr>
       </tbody>

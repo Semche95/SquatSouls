@@ -72,7 +72,7 @@ useKeydown((e) => {
   <main class="panel play">
     <label class="field">
       <span>{{ t('play.game') }}</span>
-      <DisabledTip :tip="gameLocked ? t('play.gameLocked') : ''">
+      <DisabledTip class="grow" :tip="gameLocked ? t('play.gameLocked') : ''">
         <select v-model="gameId" :disabled="gameLocked">
           <option value="" disabled>{{ t('play.chooseGame') }}</option>
           <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id">{{ g.name }}</option>

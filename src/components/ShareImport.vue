@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { t } from '../i18n.js';
+import DisabledTip from './DisabledTip.vue';
 
 // `parse` reads the pasted text and throws an error if it is not importable.
 const props = defineProps({ parse: { type: Function, required: true } });
@@ -29,7 +30,9 @@ const importable = computed(() => !!result.value && !invalid.value);
     <p v-if="invalid" class="banner error" role="alert">{{ result.message }}</p>
     <slot v-else-if="importable" :result="result" />
     <div class="row">
-      <button class="primary" :disabled="!importable">{{ t('common.import') }}</button>
+      <DisabledTip :tip="importable ? '' : invalid ? result.message : t('share.pasteFirst')">
+        <button class="primary" :disabled="!importable">{{ t('common.import') }}</button>
+      </DisabledTip>
       <button type="button" class="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</button>
     </div>
   </form>

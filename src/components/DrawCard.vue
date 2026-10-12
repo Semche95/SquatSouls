@@ -55,9 +55,11 @@ const keyed = computed(() => remaining(props.draw)[0]);
       </div>
     </footer>
     <footer v-else class="card-actions">
-      <button v-if="current && session.jokers && remaining(draw).length > 1" class="ghost" :disabled="!canAfford(setSkipCost(draw))" @click="skipSet(draw)">
-        {{ t('draw.skipSet', setSkipCost(draw)) }}
-      </button>
+      <DisabledTip v-if="current && session.jokers && remaining(draw).length > 1" :tip="canAfford(setSkipCost(draw)) ? '' : t('errors.not_enough_jokers')">
+        <button class="ghost" :disabled="!canAfford(setSkipCost(draw))" @click="skipSet(draw)">
+          {{ t('draw.skipSet', setSkipCost(draw)) }}
+        </button>
+      </DisabledTip>
       <button class="ghost" @click="dismiss(draw)">
         {{ t('common.cancel') }} <kbd v-if="current">{{ t('keys.backspace') }}</kbd>
       </button>

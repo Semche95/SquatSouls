@@ -12,7 +12,8 @@
     "jokers": "Jokers",
     "joker": "{n} joker | {n} jokers",
     "reward": "+{n} joker | +{n} jokers",
-    "copyFailed": "Copy impossible: {error}"
+    "copyFailed": "Copy impossible: {error}",
+    "importOpen": "An import is already open"
   },
   "keys": {
     "enter": "Enter",
@@ -118,6 +119,8 @@
       "new": "New game",
       "newName": "Name of the new game",
       "nameTaken": "A game already has this name.",
+      "creating": "A game is already being created",
+      "nameNeeded": "Give the game a name",
       "events": "Events",
       "newEvents": "Events of the new game",
       "noEvents": "None (one event to fill in)",
@@ -126,6 +129,7 @@
       "willReplace": "{name} already exists: it will be replaced.",
       "gameName": "Name of the game",
       "removeGame": "Delete this game",
+      "lastGame": "At least one game is needed",
       "confirmRemove": "Delete {name} and all its events?",
       "thisGame": "this game",
       "keepGame": "Keep the game",
@@ -159,7 +163,8 @@
       "minimum": "Minimum",
       "maximum": "Maximum",
       "pauseLabel": "Pause",
-      "add": "Add an exercise"
+      "add": "Add an exercise",
+      "lastExercise": "At least one exercise is needed"
     },
     "settings": {
       "language": "Language",
@@ -197,6 +202,7 @@
   "share": {
     "text": "Shared text",
     "placeholder": "Paste the shared text here",
+    "pasteFirst": "Paste a shared text first",
     "gameInvalid": "This text is not a valid shared game.",
     "gameMisplaced": "This text shares a game: import it from the Games tab, with Import a game.",
     "exercisesInvalid": "This text is not a valid shared exercise list.",

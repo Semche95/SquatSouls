@@ -12,7 +12,8 @@
     "jokers": "Jokers",
     "joker": "{n} joker | {n} jokers",
     "reward": "+{n} joker | +{n} jokers",
-    "copyFailed": "Copie impossible : {error}"
+    "copyFailed": "Copie impossible : {error}",
+    "importOpen": "Un import est déjà ouvert"
   },
   "keys": {
     "enter": "Entrée",
@@ -118,6 +119,8 @@
       "new": "Nouveau jeu",
       "newName": "Nom du nouveau jeu",
       "nameTaken": "Un jeu porte déjà ce nom.",
+      "creating": "Un jeu est déjà en cours de création",
+      "nameNeeded": "Donner un nom au jeu",
       "events": "Événements",
       "newEvents": "Événements du nouveau jeu",
       "noEvents": "Aucun (un événement à remplir)",
@@ -126,6 +129,7 @@
       "willReplace": "{name} existe déjà : il sera remplacé.",
       "gameName": "Nom du jeu",
       "removeGame": "Supprimer ce jeu",
+      "lastGame": "Il faut au moins un jeu",
       "confirmRemove": "Supprimer {name} et tous ses événements ?",
       "thisGame": "ce jeu",
       "keepGame": "Garder le jeu",
@@ -159,7 +163,8 @@
       "minimum": "Minimum",
       "maximum": "Maximum",
       "pauseLabel": "Pause",
-      "add": "Ajouter un exercice"
+      "add": "Ajouter un exercice",
+      "lastExercise": "Il faut au moins un exercice"
     },
     "settings": {
       "language": "Langue",
@@ -197,6 +202,7 @@
   "share": {
     "text": "Texte partagé",
     "placeholder": "Coller ici le texte partagé",
+    "pasteFirst": "Coller d'abord un texte partagé",
     "gameInvalid": "Ce texte n'est pas un jeu partagé valide.",
     "gameMisplaced": "Ce texte partage un jeu : l'importer depuis l'onglet Jeux, avec Importer un jeu.",
     "exercisesInvalid": "Ce texte n'est pas une liste d'exercices partagée valide.",

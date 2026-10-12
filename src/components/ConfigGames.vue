@@ -7,6 +7,7 @@ import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import ConfigEvent from './ConfigEvent.vue';
 import ShareImport from './ShareImport.vue';
+import DisabledTip from './DisabledTip.vue';
 
 const { config, draft, editedGameId, editedGame, newGame, notify, copy } = useConfig();
 const { saveNow, saveChange } = useSession();
@@ -16,6 +17,11 @@ const importing = ref(false);
 const confirmRemove = ref(null);
 const newGameName = ref(null);
 const nameTaken = computed(() => config.value.games.some((g) => sameName(g.name, newGame.value.name)));
+// Why the new game cannot be created yet, '' when it can.
+const createBlocked = computed(() => {
+  if (!newGame.value.name.trim()) return t('config.games.nameNeeded');
+  return nameTaken.value ? t('config.games.nameTaken') : '';
+});
 
 function selectGame(id) {
   editedGameId.value = id;
@@ -90,8 +96,12 @@ function addEvent(game) {
   <section class="group">
     <header class="group-head">
       <h2 class="group-title">{{ t('config.tabs.games') }}</h2>
-      <button class="primary" :disabled="!!newGame" @click="openNewGame">{{ t('config.games.add') }}</button>
-      <button class="ghost" :disabled="importing" @click="openImport">{{ t('config.games.import') }}</button>
+      <DisabledTip :tip="newGame ? t('config.games.creating') : ''">
+        <button class="primary" :disabled="!!newGame" @click="openNewGame">{{ t('config.games.add') }}</button>
+      </DisabledTip>
+      <DisabledTip :tip="importing ? t('common.importOpen') : ''">
+        <button class="ghost" :disabled="importing" @click="openImport">{{ t('config.games.import') }}</button>
+      </DisabledTip>
     </header>
     <div class="cfg-games">
       <nav class="subtabs cfg-game-list" :aria-label="t('config.games.list')">
@@ -117,7 +127,9 @@ function addEvent(game) {
           </select>
         </label>
         <div class="row">
-          <button class="primary" :disabled="!newGame.name.trim() || nameTaken">{{ t('config.games.create') }}</button>
+          <DisabledTip :tip="createBlocked">
+            <button class="primary" :disabled="!!createBlocked">{{ t('config.games.create') }}</button>
+          </DisabledTip>
           <button type="button" class="ghost" @click="newGame = null">{{ t('common.cancel') }}</button>
         </div>
       </form>
@@ -132,7 +144,9 @@ function addEvent(game) {
           <span>{{ t('common.name') }}</span>
           <input v-model="editedGame.name" :aria-label="t('config.games.gameName')" />
           <button class="ghost" @click="shareEdited">{{ t('common.share') }}</button>
-          <button class="ghost danger" :disabled="draft.games.length < 2" @click="confirmRemove = editedGame">{{ t('config.games.removeGame') }}</button>
+          <DisabledTip :tip="draft.games.length < 2 ? t('config.games.lastGame') : ''">
+            <button class="ghost danger" :disabled="draft.games.length < 2" @click="confirmRemove = editedGame">{{ t('config.games.removeGame') }}</button>
+          </DisabledTip>
         </div>
         <div v-if="confirmRemove === editedGame" class="banner confirm">
           <p>{{ t('config.games.confirmRemove', { name: editedGame.name || t('config.games.thisGame') }) }}</p>

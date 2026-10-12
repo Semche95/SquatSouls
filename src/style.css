@@ -180,8 +180,11 @@ h2 {
   display: inline-flex;
 }
 .field .tip {
-  flex: 1;
   color: inherit;
+}
+/* Tooltip container of a field's input, which takes the remaining width. */
+.field .tip.grow {
+  flex: 1;
 }
 .field select {
   flex: 1;
