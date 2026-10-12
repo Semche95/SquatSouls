@@ -110,6 +110,7 @@
     },
     "save": "Enregistrer",
     "discard": "Réinitialiser les modifications",
+    "noChanges": "Aucune modification en cours.",
     "saved": "Configuration enregistrée.",
     "copied": "Copié dans le presse-papiers, prêt à partager.",
     "games": {

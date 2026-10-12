@@ -10,6 +10,7 @@ Button and setting names are quoted as they appear in the English interface.
 
 - An action is confirmed only once: the button that confirms it (**Create**, confirmation of a removal, **End**, etc.) applies and saves it right away. No action already confirmed should wait for a second confirmation, such as the configuration's **Save** button.
 - **Save** is only for changes made directly in the fields, which have no confirmation button of their own.
+- Confirmation buttons are never hidden, only disabled when there is nothing to confirm: **Save** and **Reset the changes** stay shown, disabled while there is no pending change.
 
 ## Draw
 

@@ -110,6 +110,7 @@
     },
     "save": "Save",
     "discard": "Reset the changes",
+    "noChanges": "No pending changes.",
     "saved": "Configuration saved.",
     "copied": "Copied to the clipboard, ready to share.",
     "games": {

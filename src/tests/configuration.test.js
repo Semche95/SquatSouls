@@ -11,6 +11,11 @@ describe('configuration', () => {
     return w;
   }
 
+  // Without pending changes, the save and reset buttons stay shown but disabled.
+  function expectUnchanged(w) {
+    expect(w.findAll('.cfg-actions button').map((b) => b.element.disabled)).toEqual([true, true]);
+  }
+
   it('shows the game being edited in the list', async () => {
     setup();
     const w = await openConfig();
@@ -22,7 +27,8 @@ describe('configuration', () => {
     setup();
     const w = await openConfig();
     const save = () => w.find('.cfg-actions .primary');
-    expect(save().exists()).toBe(false);
+    expectUnchanged(w);
+    await expectTip(save(), 'Aucune modification en cours.');
     await w.find('input[aria-label="Nom de l\'événement"]').setValue('Brutal death');
     responses.save_config = (args) => ({ config: args.config });
     await save().trigger('click');
@@ -76,7 +82,7 @@ describe('configuration', () => {
       await w.find('form.cfg-game').trigger('submit');
       await flushPromises();
       expect(w.find('.cfg-game-list .active').text()).toBe(name);
-      expect(w.find('.cfg-actions').exists()).toBe(false);
+      expectUnchanged(w);
       return savedGames().at(-1);
     }
     expect(await create('Nioh', 'sekiro')).toMatchObject({ id: 'nioh', events: config.games[1].events });
@@ -111,7 +117,7 @@ describe('configuration', () => {
     await flushPromises();
     expect(w.findAll('.cfg-game-list button').map((b) => b.text())).toEqual(['Sekiro']);
     expect(invoke.mock.calls.find(([cmd]) => cmd === 'save_config')[1].config.games.map((g) => g.id)).toEqual(['sekiro']);
-    expect(w.find('.cfg-actions').exists()).toBe(false);
+    expectUnchanged(w);
     expect(w.find('.cfg-game .confirm').exists()).toBe(false);
   });
 
@@ -195,7 +201,7 @@ describe('configuration', () => {
     await name().setValue('Other');
     await w.find('.cfg-actions .ghost').trigger('click');
     expect(name().element.value).toBe('Elden Ring');
-    expect(w.find('.cfg-actions').exists()).toBe(false);
+    expectUnchanged(w);
   });
 
   it('shows the save error', async () => {
@@ -292,7 +298,7 @@ describe('configuration', () => {
       expect(savedConfig().games[1]).toEqual({ id: 'sekiro', name: 'sekiro', events: [{ id: 'death', name: 'Death', draws: 1, jokers: 1 }] });
       expect(w.find('.banner.ok').text()).toBe('sekiro importé, limité à 1 exercice par événement.');
       expect(w.find('.cfg-game-list .active').text()).toBe('sekiro');
-      expect(w.find('.cfg-actions').exists()).toBe(false);
+      expectUnchanged(w);
       await open().trigger('click');
       await w.find('textarea').setValue(shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1 }] }));
       await w.find('.cfg-import').trigger('submit');

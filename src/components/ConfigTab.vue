@@ -43,11 +43,13 @@ function discardChanges() {
       <ConfigGames v-else />
     </template>
 
-    <div v-if="dirty" class="row cfg-actions">
-      <DisabledTip :tip="draftError" error>
-        <button class="primary" :disabled="!!draftError" @click="saveConfig">{{ t('config.save') }}</button>
+    <div class="row cfg-actions">
+      <DisabledTip :tip="dirty ? draftError : t('config.noChanges')" :error="dirty">
+        <button class="primary" :disabled="!dirty || !!draftError" @click="saveConfig">{{ t('config.save') }}</button>
       </DisabledTip>
-      <button class="ghost" @click="discardChanges">{{ t('config.discard') }}</button>
+      <DisabledTip :tip="dirty ? '' : t('config.noChanges')">
+        <button class="ghost" :disabled="!dirty" @click="discardChanges">{{ t('config.discard') }}</button>
+      </DisabledTip>
     </div>
   </main>
 </template>
