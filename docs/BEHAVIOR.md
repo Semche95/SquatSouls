@@ -41,7 +41,7 @@ Button and setting names are quoted as they appear in the English interface.
 
 - Only events with `jokers` earn some, once all the exercises of their set are done: spending a joker on a set (half or skip) makes it lose those it was meant to earn.
 - **Halve** (1 joker): divides an exercise's number by two, rounded up. Only once per exercise, and not for a number of 1.
-- **Skip** an exercise (2 jokers, only 1 if it was already halved): it is removed from the set, the rest remains to do. Skipping the last exercise removes the set.
+- **Skip** an exercise (2 jokers, only 1 if it was already halved or cannot be, its number being 1): it is removed from the set, the rest remains to do. Skipping the last exercise removes the set.
 - **Skip the set** (set with several remaining exercises): costs the sum of the skips of its remaining exercises; those already done stay done.
 - An exercise done can no longer be halved or skipped.
 - An action is only possible with enough jokers. What is removed is not done (neither totals nor history) and appears in the jokers of the Summary tab, marked "halved" or "skipped".

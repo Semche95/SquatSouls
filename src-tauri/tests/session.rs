@@ -374,6 +374,11 @@ fn a_single_unit_cannot_be_halved() {
         .draw(&cfg, "ds3", "mort", &mut rng())
         .unwrap();
     assert_eq!(d.items[0].halve_cost, None);
+    assert_eq!(
+        d.items[0].skip_cost,
+        SKIP_COST - HALVE_COST,
+        "skipping costs as much as after a half"
+    );
 }
 
 #[test]
@@ -567,6 +572,7 @@ fn new_bounds_clamp_the_amounts_to_do() {
     let item = &pending(&s, boss.id).unwrap().items[0];
     assert_eq!(item.amount, 1);
     assert_eq!(item.halve_cost, None, "a single one cannot be halved");
+    assert_eq!(item.skip_cost, SKIP_COST - HALVE_COST);
 }
 
 #[test]

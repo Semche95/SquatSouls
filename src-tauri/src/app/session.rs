@@ -46,6 +46,8 @@ impl DrawItem {
     fn with_amount(mut self, amount: u32) -> Self {
         self.amount = amount;
         self.halve_cost = (amount >= 2).then_some(HALVE_COST);
+        // An exercise that cannot be halved costs a skip as if it had been.
+        self.skip_cost = SKIP_COST - self.halve_cost.map_or(HALVE_COST, |_| 0);
         self
     }
 
