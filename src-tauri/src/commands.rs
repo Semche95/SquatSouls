@@ -1,8 +1,8 @@
 //! Tauri commands called by the interface.
 
 use crate::app::{
-    steam_app_id, AppError, Config, DayTotals, Draw, LanguageSetting, Session, SessionView,
-    SteamNameError, SteamNames, SteamResponse,
+    steam_app_id, AppError, Config, DayTotals, Draw, Intensity, LanguageSetting, Session,
+    SessionView, SteamNameError, SteamNames, SteamResponse,
 };
 use crate::state::{lock, now, AppState, ConfigView, LanguageView, NativeTexts, Shared};
 use crate::tray;
@@ -68,11 +68,17 @@ pub(crate) fn set_native_texts(
 }
 
 #[tauri::command]
-pub(crate) fn draw(state: Shared, game_id: String, event_id: String) -> Result<Draw, AppError> {
+pub(crate) fn draw(
+    state: Shared,
+    game_id: String,
+    event_id: String,
+    intensity: Intensity,
+) -> Result<Draw, AppError> {
     let mut guard = lock(&state)?;
     let AppState {
         config, session, ..
     } = &mut *guard;
+    session.set_intensity(intensity)?;
     let draw = session.draw(config, &game_id, &event_id, &mut rand::rng())?;
     session.start(now());
     guard.save_session_summary();
@@ -184,6 +190,22 @@ pub(crate) fn set_last_game(state: Shared, game_id: String) -> Result<(), AppErr
         .store
         .set_last_game(&game_id)
         .map_err(|e| AppError::internal("Last game not saved", e))
+}
+
+#[tauri::command]
+pub(crate) fn get_intensity(state: Shared) -> Result<Intensity, AppError> {
+    lock(&state)?
+        .store
+        .intensity()
+        .map_err(|e| AppError::internal("Intensity unreadable", e))
+}
+
+#[tauri::command]
+pub(crate) fn set_intensity(state: Shared, intensity: Intensity) -> Result<(), AppError> {
+    lock(&state)?
+        .store
+        .set_intensity(intensity)
+        .map_err(|e| AppError::internal("Intensity not saved", e))
 }
 
 #[tauri::command]

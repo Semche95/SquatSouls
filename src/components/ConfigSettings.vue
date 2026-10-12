@@ -44,6 +44,16 @@ const status = computed(() => {
       </div>
     </section>
     <section class="group setting">
+      <h2 class="group-title">{{ t('config.settings.intensity') }}</h2>
+      <div>
+        <label class="check">
+          {{ t('config.settings.rememberIntensity') }}
+          <input v-model="draft.rememberIntensity" type="checkbox" />
+        </label>
+        <p class="hint">{{ t('config.settings.rememberIntensityHint') }}</p>
+      </div>
+    </section>
+    <section class="group setting">
       <h2 class="group-title">{{ t('config.settings.tray') }}</h2>
       <div>
         <label class="check">

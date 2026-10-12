@@ -2,8 +2,8 @@
 
 use super::{
     active_days, count_days, default_config, last_days, window_start, Config, DayTotals,
-    EventCount, Exercise, Game, GameEvent, IgnoredGame, Jokers, LanguageSetting, LogEntry,
-    SessionRecords, SteamName, SteamNames, DEFAULT_PAUSE, DEFAULT_STEAM_NOTIFY,
+    EventCount, Exercise, Game, GameEvent, IgnoredGame, Intensity, Jokers, LanguageSetting,
+    LogEntry, SessionRecords, SteamName, SteamNames, DEFAULT_PAUSE, DEFAULT_STEAM_NOTIFY,
 };
 use chrono::NaiveDate;
 use refinery::Target;
@@ -25,6 +25,8 @@ const STEAM_NOTIFY: &str = "steam_notify";
 const TRAY: &str = "tray";
 const CLOSE_TO_TRAY: &str = "close_to_tray";
 const START_HIDDEN: &str = "start_hidden";
+const REMEMBER_INTENSITY: &str = "remember_intensity";
+const INTENSITY: &str = "intensity";
 const STEAM_LAST_CALL: &str = "steam_last_call";
 const STEAM_BLOCKED_UNTIL: &str = "steam_blocked_until";
 
@@ -121,6 +123,7 @@ impl Store {
             tray: self.parsed_setting(TRAY, false)?,
             close_to_tray: self.parsed_setting(CLOSE_TO_TRAY, false)?,
             start_hidden: self.parsed_setting(START_HIDDEN, false)?,
+            remember_intensity: self.parsed_setting(REMEMBER_INTENSITY, false)?,
             ignored_games,
             exercises,
             games,
@@ -153,6 +156,11 @@ impl Store {
                 START_HIDDEN,
                 old.start_hidden.to_string(),
                 config.start_hidden.to_string(),
+            ),
+            (
+                REMEMBER_INTENSITY,
+                old.remember_intensity.to_string(),
+                config.remember_intensity.to_string(),
             ),
         ];
         for (key, old, new) in settings {
@@ -403,6 +411,15 @@ impl Store {
 
     pub fn set_last_game(&self, game_id: &str) -> Result<()> {
         set_setting(&self.conn, LAST_GAME, game_id)
+    }
+
+    /// Last chosen intensity, normal if missing or unknown.
+    pub fn intensity(&self) -> Result<Intensity> {
+        self.parsed_setting(INTENSITY, Intensity::Normal)
+    }
+
+    pub fn set_intensity(&self, intensity: Intensity) -> Result<()> {
+        set_setting(&self.conn, INTENSITY, intensity.as_str())
     }
 
     /// Language setting, `System` if missing or unknown.

@@ -620,6 +620,68 @@ fn new_bounds_clamp_the_amounts_to_do() {
 }
 
 #[test]
+fn intensity_scales_the_drawn_numbers() {
+    assert_eq!(
+        [1, 2, 3, 10].map(|n| Intensity::Easy.scale(n)),
+        [1, 1, 2, 5]
+    );
+    assert_eq!(Intensity::Normal.scale(7), 7);
+    assert_eq!(
+        [1, 2, 3, 10].map(|n| Intensity::Hard.scale(n)),
+        [2, 3, 5, 15]
+    );
+    let cfg = default_config(Language::Fr);
+    let mut r = rng();
+    for intensity in [Intensity::Easy, Intensity::Hard] {
+        let mut s = Session::default();
+        s.set_intensity(intensity).unwrap();
+        for _ in 0..50 {
+            for it in s.draw(&cfg, "ds3", "boss", &mut r).unwrap().items {
+                let ex = cfg
+                    .exercises
+                    .iter()
+                    .find(|e| e.id == it.exercise_id)
+                    .unwrap();
+                assert!(
+                    it.amount >= intensity.scale(ex.min) && it.amount <= intensity.scale(ex.max)
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn intensity_is_locked_with_the_game() {
+    let cfg = default_config(Language::Fr);
+    let mut s = Session::default();
+    let mut r = rng();
+    s.set_intensity(Intensity::Easy).unwrap();
+    s.set_intensity(Intensity::Hard).unwrap();
+    s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    assert_eq!(s.view().intensity, Intensity::Hard);
+    assert_eq!(s.set_intensity(Intensity::Hard), Ok(()));
+    assert_eq!(
+        s.set_intensity(Intensity::Normal).unwrap_err().code,
+        "session_other_intensity"
+    );
+}
+
+#[test]
+fn new_bounds_clamp_the_amounts_to_do_at_the_session_intensity() {
+    let mut cfg = default_config(Language::Fr);
+    let mut s = Session::default();
+    let mut r = rng();
+    s.set_intensity(Intensity::Hard).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let id = boss.items[0].exercise_id.clone();
+    let ex = cfg.exercises.iter_mut().find(|ex| ex.id == id).unwrap();
+    ex.min = 100;
+    ex.max = 200;
+    s.apply_config(&cfg, &mut r);
+    assert_eq!(pending(&s, boss.id).unwrap().items[0].amount, 150);
+}
+
+#[test]
 fn a_removed_exercise_is_replaced_in_the_sets_to_do() {
     let mut cfg = default_config(Language::Fr);
     let mut s = Session::default();

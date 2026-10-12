@@ -11,7 +11,7 @@ describe('session', () => {
     responses.get_session = emptySession({ pending: [draw], triggers: [{ gameId: 'er', eventId: 'death', count: 1 }] });
     await w.find('.event').trigger('click');
     await flushPromises();
-    expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'death' });
+    expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'death', intensity: 'normal' });
     expect(w.find('.card.current').text()).toContain('Squats');
     expect(w.find('.event .count').text()).toBe('1 / 15');
   });
@@ -216,6 +216,38 @@ describe('session', () => {
     const select = w.find('select');
     expect(select.element.disabled).toBe(true);
     expect(select.element.value).toBe('sekiro');
+  });
+
+  describe('intensity', () => {
+    const levels = (w) => w.findAll('.segmented button');
+
+    it('draws at the chosen intensity, normal by default without reading the saved one', async () => {
+      setup({ draw: { id: 7, capped: false }, set_intensity: undefined });
+      const w = await mountApp();
+      expect(invoke).not.toHaveBeenCalledWith('get_intensity');
+      expect(w.find('.segmented .active').text()).toBe(tm('play.intensities').normal);
+      await levels(w)[2].trigger('click');
+      await w.find('.event').trigger('click');
+      await flushPromises();
+      expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'death', intensity: 'hard' });
+      expect(invoke).not.toHaveBeenCalledWith('set_intensity', expect.anything());
+    });
+
+    it('is read and saved when remembered', async () => {
+      setup({ get_config: { config: { ...config, rememberIntensity: true } }, get_intensity: 'easy', set_intensity: undefined });
+      const w = await mountApp();
+      expect(w.find('.segmented .active').text()).toBe(tm('play.intensities').easy);
+      await levels(w)[2].trigger('click');
+      await flushPromises();
+      expect(invoke).toHaveBeenCalledWith('set_intensity', { intensity: 'hard' });
+    });
+
+    it('is locked with the game during the session', async () => {
+      setup({ get_session: emptySession({ gameId: 'sekiro', intensity: 'hard' }) });
+      const w = await mountApp();
+      expect(levels(w).every((b) => b.element.disabled)).toBe(true);
+      expect(w.find('.segmented .active').text()).toBe(tm('play.intensities').hard);
+    });
   });
 
   it('only offers to end the session with sets done and none pending', async () => {

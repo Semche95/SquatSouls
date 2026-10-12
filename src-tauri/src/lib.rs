@@ -100,6 +100,8 @@ pub fn run() {
             commands::cancel_session,
             commands::get_last_game,
             commands::set_last_game,
+            commands::get_intensity,
+            commands::set_intensity,
             commands::get_history,
             commands::get_full_history,
             commands::count_active_days,

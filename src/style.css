@@ -69,10 +69,6 @@ select:focus {
   outline: none;
   border-color: var(--gold);
 }
-select:disabled {
-  cursor: default;
-  opacity: 0.5;
-}
 
 .app {
   max-width: 1280px;
@@ -127,8 +123,11 @@ select:disabled {
   }
 }
 
+/* Tabs, list of games to edit, and segmented control choosing a value (Play intensity): the chosen value
+   stands out in gold. */
 .tabs,
-.cfg-game-list {
+.cfg-game-list,
+.segmented {
   display: flex;
   gap: 4px;
   background: var(--panel);
@@ -137,14 +136,16 @@ select:disabled {
   padding: 3px;
 }
 .tabs button,
-.cfg-game-list button {
+.cfg-game-list button,
+.segmented button {
   border: none;
   background: transparent;
   padding: 6px 12px;
   color: var(--muted);
 }
 .tabs button:hover:not(.active),
-.cfg-game-list button:hover:not(.active) {
+.cfg-game-list button:hover:not(.active),
+.segmented button:hover:not(.active, :disabled) {
   background: var(--gold-soft);
   color: var(--text);
 }
@@ -152,6 +153,20 @@ select:disabled {
 .cfg-game-list button.active {
   background: var(--panel-2);
   color: var(--text);
+}
+.segmented button.active {
+  background: var(--gold);
+  color: #1a160f;
+  font-weight: 600;
+}
+.segmented button:disabled,
+select:disabled {
+  cursor: default;
+  transform: none;
+}
+.segmented button:disabled:not(.active),
+select:disabled {
+  opacity: 0.5;
 }
 .badge {
   display: inline-block;
@@ -1165,7 +1180,7 @@ code {
 
   /* Jouer: larger event tiles, current set large and queue beside it. */
   .play .field {
-    max-width: 360px;
+    max-width: 600px;
   }
   .events {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

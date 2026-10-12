@@ -33,6 +33,13 @@
     "game": "Game",
     "gameLocked": "The game can no longer change during the session",
     "chooseGame": "Choose a game",
+    "intensity": "Intensity",
+    "intensityLocked": "The intensity can no longer change during the session",
+    "intensities": {
+      "easy": "Easy",
+      "normal": "Normal",
+      "hard": "Hard"
+    },
     "detected": "{name} detected.",
     "ignore": "Ignore",
     "pause": "Pause",
@@ -170,6 +177,9 @@
     "settings": {
       "language": "Language",
       "systemLanguage": "System language",
+      "intensity": "Intensity",
+      "rememberIntensity": "Remember the intensity between launches",
+      "rememberIntensityHint": "Otherwise, each launch starts at Normal.",
       "tray": "Notification area",
       "showIcon": "Show the icon in the notification area",
       "trayHint": "Keeps the app reachable from the system bar.",
@@ -241,6 +251,7 @@
     "unknown_game": "Unknown game: {id}.",
     "unknown_event": "Unknown event: {id}.",
     "session_other_game": "The session already started on another game: start a new session to switch.",
+    "session_other_intensity": "The session already started at another intensity: start a new session to change it.",
     "not_enough_jokers": "Not enough jokers.",
     "exercise_not_reducible": "This exercise can no longer be reduced.",
     "set_not_pending": "This set is no longer pending.",

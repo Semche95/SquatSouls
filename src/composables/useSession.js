@@ -7,7 +7,7 @@ import { defineShared } from './shared.js';
 // Refresh rate of the pause countdown.
 const PAUSE_TICK_MS = 250;
 
-export const [provideSession, useSession] = defineShared(({ call }, { config, draft, game, gameId, store }) => {
+export const [provideSession, useSession] = defineShared(({ call }, { config, draft, game, gameId, intensity, store }) => {
   const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], jokers: 0, jokersEarned: 0, jokersSpent: 0 });
   const notice = ref('');
   // Encouragement shown once the session ends, until the next one starts: index in `session.farewells`.
@@ -50,7 +50,10 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   onScopeDispose(skipPause);
 
   watch(session, (s) => {
-    if (s.gameId) gameId.value = s.gameId;
+    if (s.gameId) {
+      gameId.value = s.gameId;
+      intensity.value = s.intensity;
+    }
   });
 
   async function reload() {
@@ -77,7 +80,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   async function trigger(ev) {
     notice.value = '';
     try {
-      const draw = await call('draw', { gameId: game.value.id, eventId: ev.id });
+      const draw = await call('draw', { gameId: game.value.id, eventId: ev.id, intensity: intensity.value });
       if (draw.capped) {
         notice.value = t('play.capped', { event: draw.eventName, max: draw.maxPerSession });
       }

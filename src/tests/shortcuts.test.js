@@ -8,9 +8,9 @@ describe('keyboard shortcuts', () => {
     setup({ draw: { capped: false } });
     await mountApp();
     await press('Digit2');
-    expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'boss' });
+    expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'boss', intensity: 'normal' });
     await press('Numpad1');
-    expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'death' });
+    expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'death', intensity: 'normal' });
   });
 
   it('ignores a digit without an event and key repeats', async () => {

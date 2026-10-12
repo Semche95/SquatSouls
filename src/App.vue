@@ -18,7 +18,7 @@ const slogan = pickSlogan();
 const api = provideApi();
 const { error, call } = api;
 const cfg = provideConfig();
-const { configError, gameId, tab, applyConfigView } = cfg;
+const { config, configError, gameId, intensity, tab, applyConfigView } = cfg;
 const { session, saveChange } = provideSession(api, cfg);
 provideSteam(cfg, { saveChange });
 
@@ -27,6 +27,7 @@ onMounted(async () => {
     // Read before the config: an unknown game is then reset to empty.
     gameId.value = await invoke('get_last_game').catch(() => '');
     applyConfigView(await call('get_config'));
+    if (config.value.rememberIntensity) intensity.value = await invoke('get_intensity').catch(() => 'normal');
     session.value = await call('get_session');
   } catch {
     /* error already shown */

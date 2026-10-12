@@ -77,6 +77,9 @@ pub struct Config {
     /// With the icon, the app starts with its window hidden.
     #[serde(default)]
     pub start_hidden: bool,
+    /// The intensity chosen in Play is kept from one launch to the next, otherwise it starts at normal.
+    #[serde(default)]
+    pub remember_intensity: bool,
     #[serde(default)]
     pub ignored_games: Vec<IgnoredGame>,
     pub exercises: Vec<Exercise>,

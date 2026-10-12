@@ -4,11 +4,55 @@ use super::{AppError, Config, Exercise, Game, GameEvent};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::str::FromStr;
 
 /// Jokers to halve an exercise.
 pub const HALVE_COST: u32 = 1;
 /// Jokers to skip a whole exercise.
 pub const SKIP_COST: u32 = 2;
+
+/// Intensity of the session: scales the drawn numbers without touching the configuration.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Intensity {
+    Easy,
+    #[default]
+    Normal,
+    Hard,
+}
+
+impl Intensity {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Intensity::Easy => "easy",
+            Intensity::Normal => "normal",
+            Intensity::Hard => "hard",
+        }
+    }
+
+    /// Scales a number between an exercise's bounds: half for easy, one and a half for hard, rounded up.
+    pub fn scale(self, amount: u32) -> u32 {
+        let (num, den) = match self {
+            Intensity::Easy => (1, 2),
+            Intensity::Normal => (1, 1),
+            Intensity::Hard => (3, 2),
+        };
+        (amount * num).div_ceil(den)
+    }
+}
+
+impl FromStr for Intensity {
+    type Err = ();
+
+    fn from_str(value: &str) -> Result<Self, ()> {
+        match value {
+            "easy" => Ok(Intensity::Easy),
+            "normal" => Ok(Intensity::Normal),
+            "hard" => Ok(Intensity::Hard),
+            _ => Err(()),
+        }
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -28,8 +72,8 @@ pub struct DrawItem {
 }
 
 impl DrawItem {
-    /// Draws the exercise's number between its bounds.
-    fn drawn<R: Rng + ?Sized>(ex: &Exercise, rng: &mut R) -> Self {
+    /// Draws the exercise's number between its bounds, scaled by the intensity.
+    fn drawn<R: Rng + ?Sized>(ex: &Exercise, intensity: Intensity, rng: &mut R) -> Self {
         DrawItem {
             exercise_id: ex.id.clone(),
             name: ex.name.clone(),
@@ -40,7 +84,7 @@ impl DrawItem {
             halve_cost: None,
             skip_cost: SKIP_COST,
         }
-        .with_amount(rng.random_range(ex.min..=ex.max))
+        .with_amount(intensity.scale(rng.random_range(ex.min..=ex.max)))
     }
 
     fn with_amount(mut self, amount: u32) -> Self {
@@ -51,12 +95,16 @@ impl DrawItem {
         self
     }
 
-    /// Takes the exercise's name and unit and clamps its number between its bounds, if it was not halved.
-    fn refit(&mut self, ex: &Exercise) {
+    /// Takes the exercise's name and unit and clamps its number between its bounds scaled by the intensity,
+    /// if it was not halved.
+    fn refit(&mut self, ex: &Exercise, intensity: Intensity) {
         self.name = ex.name.clone();
         self.unit = ex.unit.clone();
         if !self.halved {
-            *self = self.clone().with_amount(self.amount.clamp(ex.min, ex.max));
+            let amount = self
+                .amount
+                .clamp(intensity.scale(ex.min), intensity.scale(ex.max));
+            *self = self.clone().with_amount(amount);
         }
     }
 }
@@ -145,6 +193,8 @@ pub struct SessionView {
     pub started_at: Option<i64>,
     /// Game of the session, set on the first event.
     pub game_id: Option<String>,
+    /// Intensity of the session, locked with its game.
+    pub intensity: Intensity,
     pub pending: Vec<Draw>,
     pub sets: usize,
     pub totals: Vec<Total>,
@@ -161,6 +211,7 @@ pub struct Session {
     /// Absent until the session is started, by its button or its first event.
     pub started_at: Option<i64>,
     game_id: Option<String>,
+    intensity: Intensity,
     triggers: HashMap<(String, String), u32>,
     pending: Vec<Draw>,
     done: Vec<LogEntry>,
@@ -180,6 +231,15 @@ impl Session {
     /// Starts the session at `now`, unless it already is; returns its start.
     pub fn start(&mut self, now: i64) -> i64 {
         *self.started_at.get_or_insert(now)
+    }
+
+    /// Sets the intensity of the next draws, refused once the game is locked on another one.
+    pub fn set_intensity(&mut self, intensity: Intensity) -> Result<(), AppError> {
+        if self.game_id.is_some() && self.intensity != intensity {
+            return Err(AppError::new("session_other_intensity"));
+        }
+        self.intensity = intensity;
+        Ok(())
     }
 
     pub fn draw<R: Rng + ?Sized>(
@@ -220,7 +280,7 @@ impl Session {
         } else {
             self.pick(config, ev.draws as usize, &[], rng)
                 .into_iter()
-                .map(|ex| DrawItem::drawn(ex, rng))
+                .map(|ex| DrawItem::drawn(ex, self.intensity, rng))
                 .collect()
         };
 
@@ -478,7 +538,7 @@ impl Session {
             let Some(ex) = self.pick(config, 1, &exclude, rng).pop() else {
                 continue;
             };
-            let new = DrawItem::drawn(ex, rng);
+            let new = DrawItem::drawn(ex, self.intensity, rng);
             if let Some(items) = items.as_mut() {
                 if let Some(it) = items.iter_mut().find(|it| it.exercise_id == id && !it.done) {
                     *it = new.clone();
@@ -489,12 +549,15 @@ impl Session {
         drawn.retain(|it| exercise(&it.exercise_id).is_some());
 
         for it in drawn.iter_mut() {
-            it.refit(exercise(&it.exercise_id).expect("retained exercise"));
+            it.refit(
+                exercise(&it.exercise_id).expect("retained exercise"),
+                self.intensity,
+            );
         }
         if let Some(items) = items.as_mut() {
             for it in items.iter_mut().filter(|it| !it.done) {
                 if let Some(ex) = exercise(&it.exercise_id) {
-                    it.refit(ex);
+                    it.refit(ex, self.intensity);
                 }
             }
         }
@@ -525,7 +588,7 @@ impl Session {
                 exclude.extend(ids(items));
             }
             for ex in self.pick(config, draws - drawn.len(), &exclude, rng) {
-                let new = DrawItem::drawn(ex, rng);
+                let new = DrawItem::drawn(ex, self.intensity, rng);
                 if let Some(items) = items.as_mut() {
                     items.push(new.clone());
                 }
@@ -623,6 +686,7 @@ impl Session {
         SessionView {
             started_at: self.started_at,
             game_id: self.game_id.clone(),
+            intensity: self.intensity,
             pending: self.pending.clone(),
             sets: self.done.len(),
             totals: totals(&self.done),

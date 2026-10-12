@@ -1,6 +1,6 @@
 # Behavior
 
-This document describes how Squat Souls behaves: draws, limits, jokers, sessions, history, configuration, language, Steam detection, notification area and sharing.
+This document describes how Squat Souls behaves: draws, intensity, limits, jokers, sessions, history, configuration, language, Steam detection, notification area and sharing.
 
 It is the reference: any change in the app's behavior must be reflected here, in the same change.
 
@@ -19,6 +19,13 @@ Button and setting names are quoted as they appear in the English interface.
 - The range belongs to the exercise: it is the same whatever the event.
 - An exercise switched off in the configuration (toggle at the start of its row) stays defined but is no longer drawn, until it is switched on again. The toggle is saved with **Save**, is not carried by exercise sharing, and an imported exercise arrives enabled (or keeps its state if it already existed).
 - A draw becomes a set "to do". Sets to do are handled from the oldest to the most recent.
+
+## Intensity
+
+- The **Intensity** of the session is chosen in Play, next to the game: **Easy**, **Normal** or **Hard**. It scales the number of each exercise drawn, without touching the configuration: half for **Easy**, one and a half for **Hard**, rounded up (with a range of 10 to 20, **Easy** gives 5 to 10 and **Hard** 15 to 30).
+- It is locked with the game on the first triggered event, until the next session (the backend refuses another one).
+- It appears neither in the summary nor in the history, which show the numbers actually done.
+- Each launch starts at **Normal**, unless **Remember the intensity between launches** is on in Settings (off by default, part of the configuration and saved with **Save**): the chosen intensity is then kept in the database, outside the configuration, from one launch to the next.
 
 ## Per-session limit
 
@@ -51,14 +58,14 @@ Button and setting names are quoted as they appear in the English interface.
 ## Session
 
 - A session does not start on its own, so that its duration only counts the time played: it starts with **Start the session**, shown in place of **End the session** until then, or with its first triggered event. When the app opens and after each end or cancellation, the next session waits to be started.
-- The game is locked on the first triggered event: it can no longer change before the next session. The last chosen game is remembered from one launch to the next. On the very first launch, or if that game no longer exists, no game is selected: it must be chosen before triggering an event.
+- The game and the intensity are locked on the first triggered event: they can no longer change before the next session. The last chosen game is remembered from one launch to the next. On the very first launch, or if that game no longer exists, no game is selected: it must be chosen before triggering an event.
 - **End the session** is only possible with at least one set done and no set to do (the backend refuses it otherwise). The end time is saved in the history.
 - **Cancel the session** resets everything (counters, jokers, sets to do and done) and removes the sets of this session from the history. The button stays disabled until the session has started.
 - A saved configuration applies immediately, without restarting. It touches neither the sets done nor the counters (renaming a game or an event keeps its counters). The sets to do stay as drawn, with up-to-date names, except:
   - a removed event removes its sets to do;
   - a changed number of drawn exercises (`draws`) adjusts its sets: the missing exercises are drawn, or exercises not done yet are removed; a set with nothing left to do is finished and earns its jokers;
   - a removed or disabled exercise is replaced by another enabled exercise drawn at random, absent from the set;
-  - a changed minimum or maximum brings the number of an exercise to do back within the new bounds, unless it was halved;
+  - a changed minimum or maximum brings the number of an exercise to do back within the new bounds (scaled by the intensity), unless it was halved;
   - changed jokers apply to the event's sets, except those on which jokers were already spent, which no longer earn any.
 
   Exercises already done never change. If it removes the game of the current session, the session is cancelled (as with **Cancel the session**) and the game must be chosen again.

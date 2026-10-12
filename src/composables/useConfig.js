@@ -28,6 +28,8 @@ export const [provideConfig, useConfig] = defineShared(() => {
   const newGame = ref(null);
   // Last chosen game, kept by the backend from one launch to the next (empty until one is chosen).
   const gameId = ref('');
+  // Intensity of the next session, normal at each launch unless the configuration remembers it.
+  const intensity = ref('normal');
 
   const game = computed(() => config.value?.games.find((g) => g.id === gameId.value) ?? null);
   const editedGame = computed(() => findOr(draft.value?.games ?? [], editedGameId.value));
@@ -42,6 +44,10 @@ export const [provideConfig, useConfig] = defineShared(() => {
   });
   watch(gameId, (id) => {
     if (id) invoke('set_last_game', { gameId: id }).catch(() => {});
+  });
+  // Saved only while remembered, so that turning it on keeps the current intensity.
+  watch([intensity, () => config.value?.rememberIntensity], ([value, remember]) => {
+    if (remember) invoke('set_intensity', { intensity: value }).catch(() => {});
   });
   // Keeps the "Game to edit" list on the game actually edited (the first by name until one is chosen).
   watch(editedGame, (g) => {
@@ -85,5 +91,5 @@ export const [provideConfig, useConfig] = defineShared(() => {
     }
   }
 
-  return { config, draft, configError, configMsg, notify, copy, tab, cfgTab, editedGameId, newGame, gameId, game, editedGame, dirty, draftError, applyConfigView, store };
+  return { config, draft, configError, configMsg, notify, copy, tab, cfgTab, editedGameId, newGame, gameId, intensity, game, editedGame, dirty, draftError, applyConfigView, store };
 });

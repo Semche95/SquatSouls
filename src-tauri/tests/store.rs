@@ -215,11 +215,13 @@ fn steam_names_receive_retry_at_even_from_draft_schema() {
 }
 
 #[test]
-fn steam_and_tray_settings_are_saved() {
+fn steam_tray_and_intensity_settings_are_saved() {
     let mut s = store();
     let mut cfg = default_config(Language::Fr);
     assert!(!cfg.steam_detection && cfg.steam_notify);
     assert!(!cfg.tray && !cfg.close_to_tray && !cfg.start_hidden);
+    assert!(!cfg.remember_intensity);
+    cfg.remember_intensity = true;
     cfg.steam_detection = true;
     cfg.steam_notify = false;
     cfg.tray = true;
@@ -430,4 +432,12 @@ fn last_game_is_kept() {
     s.set_last_game("ds3").unwrap();
     s.set_last_game("sekiro").unwrap();
     assert_eq!(s.last_game().unwrap(), "sekiro");
+}
+
+#[test]
+fn last_intensity_is_kept() {
+    let s = store();
+    assert_eq!(s.intensity().unwrap(), Intensity::Normal);
+    s.set_intensity(Intensity::Hard).unwrap();
+    assert_eq!(s.intensity().unwrap(), Intensity::Hard);
 }

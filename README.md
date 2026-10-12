@@ -24,6 +24,7 @@ You configure your own games, events and exercises. The defaults are only a star
 
 - Exercises come out in rounds, so each one comes out before any comes back.
 - Per-session limit on each event, and jokers to halve or skip an exercise.
+- Intensity of the session (Easy, Normal, Hard) to scale the numbers on tired days, without touching the configuration.
 - Pause with a countdown between exercises.
 - Summary of the session and of the last 7 days, plus the full history, each session copyable to paste in a messaging app.
 - Keyboard shortcuts, Steam game detection, notification area icon.

@@ -11,11 +11,13 @@ import DrawCard from './DrawCard.vue';
 import SessionActions from './SessionActions.vue';
 import DisabledTip from './DisabledTip.vue';
 
-const { config, gameId, game } = useConfig();
+const { config, gameId, intensity, game } = useConfig();
 const { session, notice, pauseLeft, skipPause, trigger, confirmDismiss, dismiss, remaining, complete, halve, skipExercise } = useSession();
 const { detected, selectDetected, addGame, ignoreDetected } = useSteam();
 
-// The game is locked from the session's first event until the next session.
+const INTENSITIES = ['easy', 'normal', 'hard'];
+
+// The game and the intensity are locked from the session's first event until the next session.
 const gameLocked = computed(() => !!session.value.gameId);
 // Detected Steam game: an unknown game is offered for adding, unless it is ignored; the configured games
 // matching it, for selection, unless one of them already is or the session's game is locked.
@@ -77,6 +79,22 @@ useKeydown((e) => {
           <option value="" disabled>{{ t('play.chooseGame') }}</option>
           <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id">{{ g.name }}</option>
         </select>
+      </DisabledTip>
+      <span id="play-intensity">{{ t('play.intensity') }}</span>
+      <DisabledTip :tip="gameLocked ? t('play.intensityLocked') : ''">
+        <div class="segmented" role="radiogroup" aria-labelledby="play-intensity">
+          <button
+            v-for="level in INTENSITIES"
+            :key="level"
+            role="radio"
+            :aria-checked="intensity === level"
+            :class="{ active: intensity === level }"
+            :disabled="gameLocked"
+            @click="intensity = level"
+          >
+            {{ t(`play.intensities.${level}`) }}
+          </button>
+        </div>
       </DisabledTip>
     </div>
 
