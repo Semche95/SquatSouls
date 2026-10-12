@@ -240,6 +240,8 @@
     "exercise_not_in_set": "This exercise is no longer in the set.",
     "exercise_already_done": "This exercise is already done.",
     "exercise_not_next": "This exercise comes after those not done yet in the set.",
-    "set_not_current": "Finish the older sets first."
+    "set_not_current": "Finish the older sets first.",
+    "end_without_set": "No set done: nothing to end.",
+    "end_with_pending_sets": "Sets are still to do: finish or cancel them before ending the session."
   }
 }

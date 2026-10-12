@@ -149,11 +149,12 @@ pub(crate) fn start_session(state: Shared) -> Result<SessionView, AppError> {
     Ok(s.session.view())
 }
 
-/// Ends the session; the next one waits to be started.
+/// Ends the session, with at least one set done and none left to do; the next one waits to be started.
 #[tauri::command]
 pub(crate) fn end_session(state: Shared) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
-    if let Some(started_at) = s.session.started_at.filter(|_| s.session.view().sets > 0) {
+    s.session.check_end()?;
+    if let Some(started_at) = s.session.started_at {
         if let Err(e) = s.store.end_session(started_at, now()) {
             log::error!("Session end not saved: {e}");
         }

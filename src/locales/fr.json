@@ -240,6 +240,8 @@
     "exercise_not_in_set": "Cet exercice n'est plus dans la série.",
     "exercise_already_done": "Cet exercice est déjà fait.",
     "exercise_not_next": "Cet exercice vient après ceux pas encore faits de la série.",
-    "set_not_current": "Il faut d'abord finir les séries plus anciennes."
+    "set_not_current": "Il faut d'abord finir les séries plus anciennes.",
+    "end_without_set": "Aucune série faite : rien à terminer.",
+    "end_with_pending_sets": "Des séries sont encore à faire : les finir ou les annuler avant de terminer la séance."
   }
 }

@@ -259,6 +259,17 @@ describe('session', () => {
     expect(w.find('.event').element.disabled).toBe(false);
   });
 
+  it('shows a refused end and keeps the session', async () => {
+    setup({ get_session: emptySession({ sets: 1 }), end_session: rejection('end_with_pending_sets') });
+    const w = await mountApp();
+    await w.find('.session-actions .primary').trigger('click');
+    await w.find('.confirm .primary').trigger('click');
+    await flushPromises();
+    expect(w.find('.banner.error').text()).toContain('Des séries sont encore à faire');
+    expect(w.find('.farewell').exists()).toBe(false);
+    expect(w.find('.session-actions .primary').text()).toBe('Terminer la séance');
+  });
+
   it('disables cancelling while the session is not started', async () => {
     setup({ get_session: emptySession({ startedAt: null }) });
     const w = await mountApp();

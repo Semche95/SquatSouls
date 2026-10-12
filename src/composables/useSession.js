@@ -135,14 +135,22 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   }
 
   async function startSession() {
-    session.value = await call('start_session');
+    try {
+      session.value = await call('start_session');
+    } catch {
+      /* error already shown */
+    }
   }
 
   async function endSession() {
     notice.value = '';
     skipPause();
-    session.value = await call('end_session');
-    farewell.value = Math.floor(Math.random() * tm('session.farewells').length);
+    try {
+      session.value = await call('end_session');
+      farewell.value = Math.floor(Math.random() * tm('session.farewells').length);
+    } catch {
+      await reload();
+    }
   }
 
   async function cancelSession() {

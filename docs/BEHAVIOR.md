@@ -51,7 +51,7 @@ Button and setting names are quoted as they appear in the English interface.
 
 - A session does not start on its own, so that its duration only counts the time played: it starts with **Start the session**, shown in place of **End the session** until then, or with its first triggered event. When the app opens and after each end or cancellation, the next session waits to be started.
 - The game is locked on the first triggered event: it can no longer change before the next session. The last chosen game is remembered from one launch to the next. On the very first launch, or if that game no longer exists, no game is selected: it must be chosen before triggering an event.
-- **End the session** is only possible with at least one set done and no set to do. The end time is saved in the history.
+- **End the session** is only possible with at least one set done and no set to do (the backend refuses it otherwise). The end time is saved in the history.
 - **Cancel the session** resets everything (counters, jokers, sets to do and done) and removes the sets of this session from the history. The button stays disabled until the session has started.
 - A saved configuration applies immediately, without restarting. It touches neither the sets done nor the counters (renaming a game or an event keeps its counters). The sets to do stay as drawn, with up-to-date names, except:
   - a removed event removes its sets to do;

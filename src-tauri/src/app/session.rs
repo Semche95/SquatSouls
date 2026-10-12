@@ -396,6 +396,17 @@ impl Session {
         self.jokers_spent += jokers;
     }
 
+    /// Checks that the session can end: at least one set done and none left to do.
+    pub fn check_end(&self) -> Result<(), AppError> {
+        if !self.pending.is_empty() {
+            return Err(AppError::new("end_with_pending_sets"));
+        }
+        if self.done.is_empty() {
+            return Err(AppError::new("end_without_set"));
+        }
+        Ok(())
+    }
+
     /// Adapts the sets to do and the reserved sets to a new configuration, and restarts the round.
     /// The set of a removed event is dropped; a set finished by the adjustment earns its jokers.
     pub fn apply_config<R: Rng + ?Sized>(&mut self, config: &Config, rng: &mut R) {

@@ -165,6 +165,17 @@ fn session_waits_to_be_started() {
 }
 
 #[test]
+fn a_session_ends_with_a_set_done_and_none_to_do() {
+    let cfg = default_config(Language::Fr);
+    let mut s = Session::default();
+    assert_eq!(s.check_end().unwrap_err().code, "end_without_set");
+    let death = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
+    assert_eq!(s.check_end().unwrap_err().code, "end_with_pending_sets");
+    complete(&mut s, death.id, 10).unwrap();
+    s.check_end().unwrap();
+}
+
+#[test]
 fn removed_game_is_detected() {
     let mut cfg = default_config(Language::Fr);
     let mut s = Session::default();
