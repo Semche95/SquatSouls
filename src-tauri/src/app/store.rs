@@ -312,29 +312,29 @@ impl Store {
         Ok(last_days(&entries, &records, days, today))
     }
 
-    /// Every day on which sets were done, most recent first.
+    /// Every day on which a session with sets done started, most recent first.
     pub fn full_history(&self) -> Result<Vec<DayTotals>> {
         let (entries, records) = self.sets_since(i64::MIN)?;
         Ok(active_days(&entries, &records))
     }
 
-    /// Number of days on which sets were done.
+    /// Number of days on which a session with sets done started.
     pub fn active_day_count(&self) -> Result<usize> {
-        let times: Vec<i64> = self
+        let sessions: Vec<i64> = self
             .conn
-            .prepare("SELECT at FROM sets")?
+            .prepare("SELECT DISTINCT session FROM sets")?
             .query_map([], |r| r.get(0))?
             .collect::<Result<_>>()?;
-        Ok(count_days(&times))
+        Ok(count_days(&sessions))
     }
 
-    /// Sets done since `from`, and what is kept of their sessions.
+    /// Sets of the sessions started since `from`, and what is kept of those sessions.
     fn sets_since(&self, from: i64) -> Result<(Vec<LogEntry>, SessionRecords)> {
         let entries = self
             .conn
             .prepare(
                 "SELECT at, session, game, event, exercise, unit, amount FROM sets
-                 WHERE at >= ?1 ORDER BY at, id",
+                 WHERE session >= ?1 ORDER BY at, id",
             )?
             .query_map([from], |r| {
                 Ok(LogEntry {
@@ -382,7 +382,7 @@ impl Store {
         Ok((entries, records))
     }
 
-    /// Rows of `select` (whose first column is the session) for sessions with sets since `from`,
+    /// Rows of `select` (whose first column is the session) for sessions started since `from`,
     /// in their saved order.
     fn session_rows<T>(
         &self,
@@ -391,9 +391,7 @@ impl Store {
         value: impl Fn(&Row) -> Result<T>,
     ) -> Result<Vec<(i64, T)>> {
         self.conn
-            .prepare(&format!(
-                "{select} WHERE session IN (SELECT session FROM sets WHERE at >= ?1) ORDER BY rowid"
-            ))?
+            .prepare(&format!("{select} WHERE session >= ?1 ORDER BY rowid"))?
             .query_map([from], |r| Ok((r.get(0)?, value(r)?)))?
             .collect()
     }

@@ -1,4 +1,4 @@
-//! Summary: history sets grouped by day, by session and by game.
+//! Summary: history sets grouped by day of their session's start, by session and by game.
 
 use super::{totals, EventCount, Jokers, LogEntry, Total};
 use chrono::{DateTime, Duration, Local, NaiveDate, NaiveTime};
@@ -18,7 +18,7 @@ pub struct DayTotals {
 #[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionTotals {
-    /// Time of the first set done.
+    /// Start of the session.
     pub start: i64,
     /// Seconds between the start of the session and its end (or its last set).
     pub duration: i64,
@@ -52,7 +52,8 @@ pub fn sessions(entries: &[LogEntry], records: &SessionRecords) -> Vec<SessionTo
     let mut out: Vec<SessionTotals> = groups
         .into_iter()
         .map(|((session, game), list)| {
-            let start = list.iter().map(|e| e.at).min().unwrap_or_default();
+            // A set done before its session's start can only come from a clock change.
+            let start = list.iter().map(|e| e.at).fold(session, i64::min);
             let last = list.iter().map(|e| e.at).max().unwrap_or_default();
             let end = records
                 .ends
@@ -60,7 +61,7 @@ pub fn sessions(entries: &[LogEntry], records: &SessionRecords) -> Vec<SessionTo
                 .map_or(last, |&ended| ended.max(last));
             SessionTotals {
                 start,
-                duration: end - session.min(start),
+                duration: end - start,
                 game: game.to_string(),
                 sets: list.len(),
                 totals: totals(&list),
@@ -80,20 +81,20 @@ fn local_day(at: i64) -> Option<NaiveDate> {
     DateTime::from_timestamp(at, 0).map(|d| d.with_timezone(&Local).date_naive())
 }
 
-/// Sets grouped by local day.
+/// Sets grouped by the local day their session started: a session past midnight stays whole.
 fn by_day(entries: &[LogEntry]) -> ByDay {
     let mut days = ByDay::new();
     for e in entries {
-        if let Some(d) = local_day(e.at) {
+        if let Some(d) = local_day(e.session) {
             days.entry(d).or_default().push(e.clone());
         }
     }
     days
 }
 
-/// Number of local days among the timestamps of sets done.
-pub fn count_days(times: &[i64]) -> usize {
-    times
+/// Number of local days on which the sessions with sets done started.
+pub fn count_days(sessions: &[i64]) -> usize {
+    sessions
         .iter()
         .filter_map(|&at| local_day(at))
         .collect::<BTreeSet<_>>()

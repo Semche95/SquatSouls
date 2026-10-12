@@ -44,7 +44,7 @@ fn sessions_grouped_by_session_and_game() {
     assert_eq!((groups[0].game.as_str(), groups[0].sets), ("Sekiro", 1));
     assert_eq!(
         (groups[1].game.as_str(), groups[1].start, groups[1].sets),
-        ("Dark Souls", 100, 2)
+        ("Dark Souls", 90, 2)
     );
     assert_eq!(groups[1].totals[0].amount, 22);
     assert_eq!(groups[0].duration, 50, "since the start of the session");
@@ -69,10 +69,10 @@ fn days_window_and_active_days() {
     let today = now.date_naive();
     let t = now.timestamp();
     let entries = [
-        entry(t - 86_400 * 30, 1, "Dark Souls", 99),
-        entry(t - 86_400 * 2, 2, "Dark Souls", 8),
-        entry(t, 3, "Dark Souls", 12),
-        entry(t, 3, "Dark Souls", 15),
+        entry(t - 86_400 * 30, t - 86_400 * 30, "Dark Souls", 99),
+        entry(t - 86_400 * 2, t - 86_400 * 2, "Dark Souls", 8),
+        entry(t, t, "Dark Souls", 12),
+        entry(t, t, "Dark Souls", 15),
     ];
     let records = SessionRecords::default();
 
@@ -90,7 +90,7 @@ fn days_window_and_active_days() {
         vec![2, 1, 1]
     );
     assert_eq!(
-        count_days(&entries.map(|e| e.at)),
+        count_days(&entries.map(|e| e.session)),
         3,
         "one per day, however many sets"
     );
@@ -108,4 +108,32 @@ fn window_starts_at_local_midnight() {
         .timestamp();
     assert_eq!(start, midnight);
     assert_eq!(window_start(0, today), window_start(1, today));
+}
+
+#[test]
+fn a_session_past_midnight_stays_on_the_day_it_started() {
+    let today = Local::now().date_naive();
+    let at = |day: NaiveDate, hour| {
+        day.and_hms_opt(hour, 0, 0)
+            .unwrap()
+            .and_local_timezone(Local)
+            .unwrap()
+            .timestamp()
+    };
+    let yesterday = today - Duration::days(1);
+    let start = at(yesterday, 23);
+    let entries = [
+        entry(at(yesterday, 23) + 600, start, "Dark Souls", 10),
+        entry(at(today, 1), start, "Dark Souls", 12),
+    ];
+    let records = SessionRecords {
+        ends: HashMap::from([(start, at(today, 2))]),
+        ..Default::default()
+    };
+    let days = last_days(&entries, &records, 2, today);
+    assert_eq!(days.iter().map(|d| d.sets).collect::<Vec<_>>(), vec![0, 2]);
+    let session = &days[1].sessions[0];
+    assert_eq!(session.start, start, "from the start of the session");
+    assert_eq!(session.duration, 3 * 3600);
+    assert_eq!(count_days(&[start]), 1);
 }
