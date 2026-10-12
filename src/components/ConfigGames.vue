@@ -37,7 +37,7 @@ async function openNewGame() {
 }
 
 // Creation, import and removal confirmed by the user are saved right away,
-// only the other draft changes wait for "Enregistrer".
+// only the other draft changes wait for "Save".
 function saveGames(games) {
   return saveNow({ ...config.value, games });
 }

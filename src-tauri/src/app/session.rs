@@ -444,7 +444,7 @@ impl Session {
     }
 
     /// Adjusts a set as drawn (`drawn`) and, for a set to do, its remaining exercises (`items`):
-    /// a removed or unchecked exercise is replaced, a number is clamped between the bounds and the set gains or loses
+    /// a removed or disabled exercise is replaced, a number is clamped between the bounds and the set gains or loses
     /// exercises to count `draws` of them. Exercises already done do not change.
     fn refit<R: Rng + ?Sized>(
         &mut self,
@@ -465,7 +465,7 @@ impl Session {
                 .map(|it| it.done)
         };
 
-        // Removed or unchecked exercises: replaced by others, except those already done.
+        // Removed or disabled exercises: replaced by others, except those already done.
         for i in 0..drawn.len() {
             let id = drawn[i].exercise_id.clone();
             if exercise(&id).is_some() {

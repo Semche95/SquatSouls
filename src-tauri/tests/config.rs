@@ -95,7 +95,7 @@ fn validation_catches_mistakes() {
 }
 
 #[test]
-fn draws_are_limited_by_the_checked_exercises() {
+fn draws_are_limited_by_the_enabled_exercises() {
     let mut cfg = default_config(Language::Fr);
     let draws = cfg
         .games
@@ -104,18 +104,18 @@ fn draws_are_limited_by_the_checked_exercises() {
         .map(|ev| ev.draws as usize)
         .max()
         .unwrap();
-    let unchecked = cfg.exercises.len() - draws;
+    let disabled = cfg.exercises.len() - draws;
     cfg.exercises
         .iter_mut()
-        .take(unchecked)
+        .take(disabled)
         .for_each(|ex| ex.enabled = false);
     cfg.validate().unwrap();
-    cfg.exercises[unchecked].enabled = false;
+    cfg.exercises[disabled].enabled = false;
     assert_eq!(cfg.validate().unwrap_err().code, "event_too_many_draws");
 }
 
 #[test]
-fn exercises_are_checked_by_default() {
+fn exercises_are_enabled_by_default() {
     let mut cfg = default_config(Language::Fr);
     assert!(cfg.exercises.iter().all(|ex| ex.enabled));
     cfg.exercises[0].enabled = false;

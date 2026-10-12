@@ -125,7 +125,7 @@ describe('exercise sharing', () => {
     expect(() => parseExercises(shareGame(config.games[0]))).toThrow('Ce texte partage un jeu : l\'importer depuis l\'onglet Jeux, avec Importer un jeu.');
   });
 
-  it('updates exercises with the same name, checked or not, and adds the others, checked, without touching the original', () => {
+  it('updates exercises with the same name, enabled or not, and adds the others, enabled, without touching the original', () => {
     const imported = [
       { name: 'squats', unit: 's', min: 20, max: 30, pause: 45 },
       { name: 'Push-ups', unit: 'reps', min: 8, max: 12, pause: 90 },

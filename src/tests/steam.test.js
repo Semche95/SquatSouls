@@ -182,7 +182,7 @@ describe('Steam game detection', () => {
     expect(lastSaved().ignoredGames).toEqual([]);
   });
 
-  it('enables detection from the settings with Enregistrer', async () => {
+  it('enables detection from the settings with Save', async () => {
     setupSteam({ cfg: config, running_steam_app: null });
     const w = await mountApp();
     await openSettings(w);
@@ -239,7 +239,7 @@ describe('launched Steam game notification', () => {
 });
 
 describe('notification area', () => {
-  it('collapses its settings until the icon is checked, and saves them with Enregistrer', async () => {
+  it('collapses its settings until the icon is checked, and saves them with Save', async () => {
     setupSteam({ cfg: config, running_steam_app: null });
     const w = await mountApp();
     await openSettings(w);

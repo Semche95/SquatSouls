@@ -32,7 +32,7 @@ export const [provideConfig, useConfig] = defineShared(() => {
   const game = computed(() => config.value?.games.find((g) => g.id === gameId.value) ?? null);
   const editedGame = computed(() => findOr(draft.value?.games ?? [], editedGameId.value));
   const dirty = computed(() => !!draft.value && JSON.stringify(draft.value) !== JSON.stringify(config.value));
-  // First badly filled field of the draft, which blocks "Enregistrer" (empty if everything is valid).
+  // First badly filled field of the draft, which blocks "Save" (empty if everything is valid).
   const draftError = computed(() => (draft.value ? numberError(normalized(draft.value)) : ''));
 
   // Remembered or current game removed: ask for the game again. The config is watched too, because an
@@ -43,7 +43,7 @@ export const [provideConfig, useConfig] = defineShared(() => {
   watch(gameId, (id) => {
     if (id) invoke('set_last_game', { gameId: id }).catch(() => {});
   });
-  // Keeps the "Jeu" list on the game actually edited (the first by name until one is chosen).
+  // Keeps the "Game to edit" list on the game actually edited (the first by name until one is chosen).
   watch(editedGame, (g) => {
     if (g && g.id !== editedGameId.value) editedGameId.value = g.id;
   });

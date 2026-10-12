@@ -67,7 +67,7 @@ export function shareGame(game) {
 // Missing optional field (exercise-specific pause, game Steam AppId): the key is omitted.
 const withOptional = (item, key, value) => (value === undefined ? item : { ...item, [key]: value });
 
-// The global pause and the checked exercises are not shared: everyone keeps their own.
+// The global pause and whether exercises are enabled are not shared: everyone keeps their own.
 export function shareExercises(exercises) {
   return share(EXERCISES, { exercises: exercises.map(({ name, unit, min, max, pause }) => withOptional({ name, unit, min, max }, 'pause', pause)) });
 }
@@ -75,7 +75,7 @@ export function shareExercises(exercises) {
 const validEvent = (ev) =>
   isText(ev?.name) && isCount(ev.draws, 1) && (ev.maxPerSession === undefined || isCount(ev.maxPerSession, 1)) && (ev.jokers === undefined || isCount(ev.jokers, 0));
 
-// Shared game ready to import; `draws` is capped at the number of checked exercises (`clamped` reports it).
+// Shared game ready to import; `draws` is capped at the number of enabled exercises (`clamped` reports it).
 export function parseGame(text, exerciseCount) {
   const data = parse(
     text,
@@ -116,8 +116,8 @@ export function importGame(games, { name, steamAppId, events }) {
   return existing ? games.map((g) => (g === existing ? game : g)) : [...games, game];
 }
 
-// Imported exercises update those with the same name, which stay checked or not, and
-// add the others, checked.
+// Imported exercises update those with the same name, which stay enabled or not, and
+// add the others, enabled.
 export function mergeExercises(exercises, imported) {
   const merged = exercises.map((ex) => ({ ...ex }));
   let added = 0;

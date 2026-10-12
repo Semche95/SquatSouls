@@ -716,7 +716,7 @@ kbd.dark {
 .cfg-table th:last-child {
   width: 1%;
 }
-/* Unchecked exercise: kept in the list but out of the draw. */
+/* Disabled exercise: kept in the list but out of the draw. */
 .cfg-off input:not([type='checkbox']) {
   opacity: 0.5;
 }

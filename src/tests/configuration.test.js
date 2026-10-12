@@ -144,7 +144,7 @@ describe('configuration', () => {
     expect(sent.exercises[0]).toMatchObject({ min: 10, max: 0 });
   });
 
-  it('unchecks an exercise to keep it out of the draw without removing it', async () => {
+  it('disables an exercise to keep it out of the draw without removing it', async () => {
     setup();
     const w = await openConfig();
     await w.findAll('.subtabs button')[1].trigger('click');

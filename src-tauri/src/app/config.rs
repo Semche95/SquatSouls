@@ -17,7 +17,7 @@ pub struct Exercise {
     /// Exercise-specific pause, in seconds; otherwise, the global pause.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pause: Option<u32>,
-    /// An unchecked exercise stays defined but is no longer drawn.
+    /// A disabled exercise stays defined but is no longer drawn.
     #[serde(default = "default_enabled")]
     pub enabled: bool,
 }
@@ -153,7 +153,7 @@ impl Config {
         Ok(())
     }
 
-    /// Checked exercises, the only ones that can be drawn.
+    /// Enabled exercises, the only ones that can be drawn.
     pub fn active_exercises(&self) -> impl Iterator<Item = &Exercise> {
         self.exercises.iter().filter(|ex| ex.enabled)
     }

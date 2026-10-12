@@ -31,7 +31,7 @@ describe('loading', () => {
   it('asks for the game again if the remembered game no longer exists', async () => {
     setup({ get_last_game: 'inconnu' });
     const w = await mountApp();
-    // "Choisir un jeu" is shown, not an empty choice.
+    // "Choose a game" is shown, not an empty choice.
     expect(w.find('select').element.selectedIndex).toBe(0);
     expect(w.find('.events').exists()).toBe(false);
   });

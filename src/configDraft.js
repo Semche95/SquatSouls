@@ -18,7 +18,7 @@ export function sameName(a, b) {
   return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
 
-// A name that starts with a game's name, without extending it with a letter ("Megabonk 2", "Elden Ring sans coup"),
+// A name that starts with a game's name, without extending it with a letter ("Megabonk 2", "Elden Ring no hit"),
 // refers to a variant of that game, up to case and surrounding spaces.
 export function extendsName(name, base) {
   const [n, b] = [name, base].map((s) => s.trim().toLowerCase());
