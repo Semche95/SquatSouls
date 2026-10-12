@@ -3,6 +3,7 @@ name = "squat-souls"
 version = "0.1.0"
 description = "Turns in-game events into bodyweight exercises with a random number of reps"
 edition = "2021"
+license = "MIT"
 
 [lib]
 name = "squat_souls_lib"
