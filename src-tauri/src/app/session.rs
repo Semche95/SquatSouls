@@ -198,13 +198,6 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn new(now: i64) -> Self {
-        Session {
-            started_at: Some(now),
-            ..Default::default()
-        }
-    }
-
     /// Starts the session at `now`, unless it already is; returns its start.
     pub fn start(&mut self, now: i64) -> i64 {
         *self.started_at.get_or_insert(now)
