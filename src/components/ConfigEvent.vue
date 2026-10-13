@@ -1,4 +1,5 @@
 <script setup>
+import { MAX_NAME } from '../configDraft.js';
 import { t } from '../i18n.js';
 import CountInput from './CountInput.vue';
 
@@ -20,7 +21,7 @@ defineEmits(['remove']);
     </summary>
     <div class="field">
       <span>{{ t('common.name') }}</span>
-      <input v-model="ev.name" :aria-label="t('config.event.name')" />
+      <input v-model="ev.name" :maxlength="MAX_NAME" :aria-label="t('config.event.name')" />
       <button class="ghost danger" @click="$emit('remove')">{{ t('common.remove') }}</button>
     </div>
     <div class="cfg-params">

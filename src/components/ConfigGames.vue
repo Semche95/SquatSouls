@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, ref } from 'vue';
-import { byName, clone, newId, sameName } from '../configDraft.js';
+import { byName, clone, MAX_NAME, newId, sameName } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { importGame, parseGame, shareGame } from '../share.js';
 import { useConfig } from '../composables/useConfig.js';
@@ -116,7 +116,7 @@ function addEvent(game) {
         <h3 class="group-title">{{ t('config.games.new') }}</h3>
         <label class="field">
           <span>{{ t('common.name') }}</span>
-          <input ref="newGameName" v-model="newGame.name" :aria-label="t('config.games.newName')" />
+          <input ref="newGameName" v-model="newGame.name" :maxlength="MAX_NAME" :aria-label="t('config.games.newName')" />
         </label>
         <p v-if="nameTaken" class="muted">{{ t('config.games.nameTaken') }}</p>
         <div class="field">
@@ -142,7 +142,7 @@ function addEvent(game) {
       <div v-else-if="editedGame" class="cfg-game">
         <div class="field">
           <span>{{ t('common.name') }}</span>
-          <input v-model="editedGame.name" :aria-label="t('config.games.gameName')" />
+          <input v-model="editedGame.name" :maxlength="MAX_NAME" :aria-label="t('config.games.gameName')" />
           <button class="ghost" @click="shareEdited">{{ t('common.share') }}</button>
           <DisabledTip :tip="draft.games.length < 2 ? t('config.games.lastGame') : ''">
             <button class="ghost danger" :disabled="draft.games.length < 2" @click="confirmRemove = editedGame">{{ t('config.games.removeGame') }}</button>

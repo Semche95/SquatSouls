@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { newId } from '../configDraft.js';
+import { MAX_NAME, MAX_UNIT, newId } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { mergeExercises, parseExercises, shareExercises } from '../share.js';
 import { useConfig } from '../composables/useConfig.js';
@@ -58,8 +58,8 @@ function addExercise() {
       <tbody>
         <tr v-for="(ex, i) in draft.exercises" :key="ex.id" :class="{ 'cfg-off': !ex.enabled }">
           <td><input v-model="ex.enabled" type="checkbox" :aria-label="t('config.exercises.enabled')" /></td>
-          <td class="cfg-name"><input v-model="ex.name" :aria-label="t('config.exercises.name')" /></td>
-          <td class="cfg-unit"><input v-model="ex.unit" :aria-label="t('config.exercises.unit')" :placeholder="t('config.exercises.unitPlaceholder')" /></td>
+          <td class="cfg-name"><input v-model="ex.name" :maxlength="MAX_NAME" :aria-label="t('config.exercises.name')" /></td>
+          <td class="cfg-unit"><input v-model="ex.unit" :maxlength="MAX_UNIT" :aria-label="t('config.exercises.unit')" :placeholder="t('config.exercises.unitPlaceholder')" /></td>
           <td><CountInput v-model="ex.min" :aria-label="t('config.exercises.minimum')" /></td>
           <td><CountInput v-model="ex.max" :aria-label="t('config.exercises.maximum')" /></td>
           <td><CountInput v-model="ex.pause" optional :placeholder="String(draft.pause)" :aria-label="t('config.exercises.pauseLabel')" /></td>

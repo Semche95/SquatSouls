@@ -96,6 +96,17 @@ fn name_is_read_from_the_store_without_trademarks_and_asked_once() {
     assert_eq!(again.as_deref(), Ok("Sekiro: Shadows Die Twice"));
 }
 
+/// The name is written by the game's publisher: never trusted, it follows the configuration name limits.
+#[test]
+fn store_name_is_cleaned_and_cut() {
+    let long = "A".repeat(MAX_NAME + 10);
+    let json =
+        format!(r#"{{"1":{{"success":true,"data":{{"name":"\u202eSe\u200bkiro\n{long}"}}}}}}"#);
+    let name = SteamNames::default().name(1, LANGUAGE, START, ok(&json), forget);
+    let expected = format!("Sekiro{}", "A".repeat(MAX_NAME - 6));
+    assert_eq!(name.as_deref(), Ok(expected.as_str()));
+}
+
 #[test]
 fn unknown_or_unanswered_app_is_asked_again_after_a_delay() {
     let mut names = SteamNames::default();

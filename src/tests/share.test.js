@@ -1,5 +1,6 @@
 import { deflateSync, strToU8 } from 'fflate';
 import { describe, expect, it } from 'vitest';
+import { MAX_ITEMS, MAX_NAME, MAX_UNIT } from '../configDraft.js';
 import { importGame, mergeExercises, parseExercises, parseGame, shareExercises, shareGame, toBase64, unpack } from '../share.js';
 import { config } from './app.js';
 
@@ -60,8 +61,26 @@ describe('game sharing', () => {
       shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1, jokers: -1 }] }),
       shareGame({ name: 'Nioh', steamAppId: 0, events: [{ name: 'Death', draws: 1 }] }),
       shareGame({ name: 'Nioh', steamAppId: '485510', events: [{ name: 'Death', draws: 1 }] }),
+      shareGame({ name: 'N'.repeat(MAX_NAME + 1), events: [{ name: 'Death', draws: 1 }] }),
+      ...['\n', '\t', '\u200B', '\u202E', '\uFEFF', '\u0085'].map((c) => shareGame({ name: 'Nioh', events: [{ name: `Death${c}`, draws: 1 }] })),
+      shareGame({ name: 'Nioh', events: Array.from({ length: MAX_ITEMS + 1 }, () => ({ name: 'Death', draws: 1 })) }),
     ];
     for (const text of invalid) expect(() => parseGame(text, 3)).toThrow('Ce texte n\'est pas un jeu partagé valide.');
+  });
+
+  it('keeps only the first of two events with the same name', () => {
+    const text = shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1 }, { name: ' death ', draws: 9 }, { name: 'Boss', draws: 1 }] });
+    expect(parseGame(text, 3)).toMatchObject({ events: [{ name: 'Death', draws: 1 }, { name: 'Boss' }], clamped: false });
+  });
+
+  it('accepts the emoji sequences, joined by a zero width joiner', () => {
+    expect(parseGame(shareGame({ name: 'Nioh 👨‍👩‍👧', events: [{ name: 'Death', draws: 1 }] }), 3).name).toBe('Nioh 👨‍👩‍👧');
+  });
+
+  it('refuses a pasted text or a content too large without decompressing it all', () => {
+    const bomb = 'squatsouls/game:' + toBase64(deflateSync(new Uint8Array(100 * 1024 * 1024)));
+    expect(() => parseGame(bomb, 3)).toThrow('Ce texte n\'est pas un jeu partagé valide.');
+    expect(() => parseGame(shareGame(config.games[0]) + ' '.repeat(300 * 1024), 3)).toThrow('Ce texte n\'est pas un jeu partagé valide.');
   });
 
   it('tells where to import exercises pasted instead of a game', () => {
@@ -104,9 +123,14 @@ describe('exercise sharing', () => {
     expect(parseExercises(` ${text.slice(0, cut)}\n${text.slice(cut)} `)).toEqual(parseExercises(text));
   });
 
-  it('shares a list too long to fit in the arguments of a function call', () => {
-    const long = Array.from({ length: 20000 }, (_, i) => ({ name: `Exercice ${i} ${Math.random()}`, unit: 'reps', min: 1, max: 5 }));
-    expect(parseExercises(shareExercises(long))).toEqual(long);
+  it('encodes content too large to fit in the arguments of a function call', () => {
+    const bytes = Uint8Array.from({ length: 500000 }, (_, i) => i % 256);
+    expect(Uint8Array.from(atob(toBase64(bytes)), (c) => c.charCodeAt(0))).toEqual(bytes);
+  });
+
+  it('reads back the largest list allowed, with the longest names and units', () => {
+    const longest = Array.from({ length: MAX_ITEMS }, (_, i) => ({ name: `${i} ${'😀'.repeat(MAX_NAME - 4)}`, unit: '😀'.repeat(MAX_UNIT), min: 1, max: 5 }));
+    expect(parseExercises(shareExercises(longest))).toEqual(longest);
   });
 
   it('refuses a text that is not a valid exercise list', () => {
@@ -117,8 +141,17 @@ describe('exercise sharing', () => {
       shareExercises([{ name: 'Squats', unit: 'reps', min: 6, max: 5 }]),
       shareExercises([{ name: '', unit: 'reps', min: 1, max: 5 }]),
       shareExercises([{ name: 'Squats', unit: 'reps', min: 1, max: 5, pause: -1 }]),
+      shareExercises([{ name: 'S'.repeat(MAX_NAME + 1), unit: 'reps', min: 1, max: 5 }]),
+      shareExercises([{ name: 'Squats', unit: 'r'.repeat(MAX_UNIT + 1), min: 1, max: 5 }]),
+      shareExercises([{ name: 'Squats', unit: 'reps\u200B', min: 1, max: 5 }]),
+      shareExercises(Array.from({ length: MAX_ITEMS + 1 }, (_, i) => ({ name: `Squats ${i}`, unit: 'reps', min: 1, max: 5 }))),
     ];
     for (const text of invalid) expect(() => parseExercises(text)).toThrow('Ce texte n\'est pas une liste d\'exercices partagée valide.');
+  });
+
+  it('keeps only the first of two exercises with the same name', () => {
+    const text = shareExercises([...exercises, { name: 'squats ', unit: 's', min: 1, max: 2 }]);
+    expect(parseExercises(text)).toEqual(exercises.map(({ id, enabled, ...ex }) => ex));
   });
 
   it('tells where to import a game pasted instead of exercises', () => {

@@ -143,9 +143,12 @@ impl AppState {
 }
 
 fn load_config(store: &Store) -> Result<Config, AppError> {
-    let config = store
+    let mut config = store
         .config()
         .map_err(|e| AppError::internal("Saved configuration unreadable", e))?;
+    if config.repair() {
+        log::warn!("Saved configuration brought within the name and count limits");
+    }
     config.validate()?;
     Ok(config)
 }

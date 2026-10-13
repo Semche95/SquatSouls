@@ -45,6 +45,18 @@ const MAX_COUNT = 4294967295;
 
 export const isCount = (v, min) => Number.isInteger(v) && v >= min && v <= MAX_COUNT;
 
+// Limits checked by the backend: longest name and unit, in characters, and most exercises or events in a game.
+export const MAX_NAME = 300;
+export const MAX_UNIT = 50;
+export const MAX_ITEMS = 100;
+
+// Control or invisible character (zero width, text direction override), refused by the backend.
+// The zero width joiner stays allowed, emoji sequences use it.
+const HIDDEN_CHAR = /[\p{Cc}­​‌‎‏‪-‮⁠-⁤⁦-⁩﻿]/u;
+
+// Text within `max` characters (counted like the backend), without a hidden character.
+export const isCleanText = (v, max) => typeof v === 'string' && [...v].length <= max && !HIDDEN_CHAR.test(v);
+
 // Text typed in a number field: a number if it only has digits, otherwise the text as is
 // (empty, it is ''; anything else, countError reports it).
 export function parseCount(text) {

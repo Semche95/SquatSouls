@@ -1,9 +1,10 @@
 //! SQLite storage: configuration, history and settings, written row by row.
 
 use super::{
-    active_days, count_days, default_config, last_days, window_start, Config, DayTotals,
-    EventCount, Exercise, Game, GameEvent, IgnoredGame, Intensity, Jokers, LanguageSetting,
-    LogEntry, SessionRecords, SteamName, SteamNames, DEFAULT_PAUSE, DEFAULT_STEAM_NOTIFY,
+    active_days, clean_name, count_days, default_config, last_days, window_start, Config,
+    DayTotals, EventCount, Exercise, Game, GameEvent, IgnoredGame, Intensity, Jokers,
+    LanguageSetting, LogEntry, SessionRecords, SteamName, SteamNames, DEFAULT_PAUSE,
+    DEFAULT_STEAM_NOTIFY,
 };
 use chrono::NaiveDate;
 use refinery::Target;
@@ -437,8 +438,9 @@ impl Store {
             .conn
             .prepare("SELECT app_id, name, retry_at FROM steam_names")?
             .query_map([], |r| {
-                let name = match r.get(1)? {
-                    Some(name) => SteamName::Known(name),
+                let name = match r.get::<_, Option<String>>(1)? {
+                    // Name saved before the Steam Store names were cleaned.
+                    Some(name) => SteamName::Known(clean_name(&name)),
                     None => SteamName::RetryAt(r.get::<_, Option<i64>>(2)?.unwrap_or(0)),
                 };
                 Ok((r.get(0)?, name))

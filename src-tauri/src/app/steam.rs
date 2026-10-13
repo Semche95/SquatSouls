@@ -1,6 +1,7 @@
 //! Detection of the running Steam game: AppId read from a process or recorded by Steam, name read from
 //! the Steam Store response.
 
+use super::clean_name;
 use serde::Serialize;
 use serde_json::Value;
 use std::collections::HashMap;
@@ -46,15 +47,18 @@ fn steam_app_url(app_id: u32, language: &str) -> String {
     )
 }
 
-/// Game name in the `steam_app_url` response, without the ™ and ® marks.
+/// Game name in the `steam_app_url` response, without the ™ and ® marks. Written by the game's
+/// publisher, it is never trusted: brought within the configuration name limits.
 fn steam_app_name(app_id: u32, json: &str) -> Option<String> {
     let response: Value = serde_json::from_str(json).ok()?;
-    let name = response
-        .get(app_id.to_string())?
-        .get("data")?
-        .get("name")?
-        .as_str()?
-        .replace(['™', '®'], "");
+    let name = clean_name(
+        &response
+            .get(app_id.to_string())?
+            .get("data")?
+            .get("name")?
+            .as_str()?
+            .replace(['™', '®'], ""),
+    );
     let name = name.trim();
     (!name.is_empty()).then(|| name.to_string())
 }

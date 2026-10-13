@@ -1,5 +1,5 @@
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
-import { isCount, newId, sameName } from './configDraft.js';
+import { isCleanText, isCount, MAX_ITEMS, MAX_NAME, MAX_UNIT, newId, sameName } from './configDraft.js';
 import { t } from './i18n.js';
 
 // Text shared between users: a game (name and events) or the exercise list, without ids,
@@ -19,7 +19,15 @@ const READERS = {
   2: (data) => data,
 };
 
-const isText = (v) => typeof v === 'string' && v.trim() !== '';
+const isName = (v) => typeof v === 'string' && v.trim() !== '' && isCleanText(v, MAX_NAME);
+const isList = (v, valid) => Array.isArray(v) && v.length > 0 && v.length <= MAX_ITEMS && v.every(valid);
+
+// Two items with the same name in a pasted text: only the first is kept.
+const firstByName = (items) => items.filter((it, i) => items.findIndex((other) => sameName(other.name, it.name)) === i);
+
+// Largest pasted text and decompressed content, in characters and bytes, far above a legitimate share:
+// a pasted text is never trusted, and a few bytes can decompress to gigabytes.
+const MAX_SIZE = 256 * 1024;
 
 // Base64 byte by byte: spreading a large array as arguments of String.fromCharCode would exceed the
 // argument limit of a function call.
@@ -34,9 +42,13 @@ function share(kind, data, id) {
 // Version, type and content of a shared text (content absent if the version is unknown); throws an
 // error if the content is unreadable. The identifier, ignored, precedes the last `:`, absent from base64.
 export function unpack(text) {
+  if (text.length > MAX_SIZE) throw new Error('shared text too large');
   const payload = text.slice(text.lastIndexOf(':') + 1);
-  const { version, kind, ...data } = JSON.parse(strFromU8(inflateSync(fromBase64(payload))));
-  return { version, kind, data: READERS[version]?.(data) };
+  // Past its output buffer, inflate stops without an error: one byte beyond the limit reveals it.
+  const bytes = inflateSync(fromBase64(payload), { out: new Uint8Array(MAX_SIZE + 1) });
+  if (bytes.length > MAX_SIZE) throw new Error('shared content too large');
+  const { version, kind, ...data } = JSON.parse(strFromU8(bytes));
+  return { version, kind, data: Object.hasOwn(READERS, version) ? READERS[version](data) : undefined };
 }
 
 // Keys of the import messages by type: invalid text, or text of this type pasted into the other type's import.
@@ -73,39 +85,27 @@ export function shareExercises(exercises) {
 }
 
 const validEvent = (ev) =>
-  isText(ev?.name) && isCount(ev.draws, 1) && (ev.maxPerSession === undefined || isCount(ev.maxPerSession, 1)) && (ev.jokers === undefined || isCount(ev.jokers, 0));
+  isName(ev?.name) && isCount(ev.draws, 1) && (ev.maxPerSession === undefined || isCount(ev.maxPerSession, 1)) && (ev.jokers === undefined || isCount(ev.jokers, 0));
 
 // Shared game ready to import; `draws` is capped at the number of enabled exercises (`clamped` reports it).
 export function parseGame(text, exerciseCount) {
-  const data = parse(
-    text,
-    GAME,
-    (d) =>
-      isText(d.name) &&
-      (d.steamAppId === undefined || isCount(d.steamAppId, 1)) &&
-      Array.isArray(d.events) &&
-      d.events.length > 0 &&
-      d.events.every(validEvent),
-  );
+  const data = parse(text, GAME, (d) => isName(d.name) && (d.steamAppId === undefined || isCount(d.steamAppId, 1)) && isList(d.events, validEvent));
+  const shared = firstByName(data.events);
   const events = [];
-  for (const { name, draws, maxPerSession, jokers = 0 } of data.events) {
+  for (const { name, draws, maxPerSession, jokers = 0 } of shared) {
     const ev = { id: newId(name, events), name: name.trim(), draws: Math.min(draws, exerciseCount), jokers };
     if (maxPerSession !== undefined) ev.maxPerSession = maxPerSession;
     events.push(ev);
   }
-  const game = { name: data.name.trim(), events, clamped: data.events.some((ev) => ev.draws > exerciseCount) };
+  const game = { name: data.name.trim(), events, clamped: shared.some((ev) => ev.draws > exerciseCount) };
   return withOptional(game, 'steamAppId', data.steamAppId);
 }
 
 const validExercise = (ex) =>
-  isText(ex?.name) && typeof ex.unit === 'string' && isCount(ex.min, 0) && isCount(ex.max, 1) && ex.min <= ex.max && (ex.pause === undefined || isCount(ex.pause, 0));
+  isName(ex?.name) && isCleanText(ex.unit, MAX_UNIT) && isCount(ex.min, 0) && isCount(ex.max, 1) && ex.min <= ex.max && (ex.pause === undefined || isCount(ex.pause, 0));
 
 export function parseExercises(text) {
-  return parse(
-    text,
-    EXERCISES,
-    (d) => Array.isArray(d.exercises) && d.exercises.length > 0 && d.exercises.every(validExercise),
-  ).exercises;
+  return firstByName(parse(text, EXERCISES, (d) => isList(d.exercises, validExercise)).exercises);
 }
 
 // The imported game replaces the one with the same name (keeping its id and, unless it brings one,
