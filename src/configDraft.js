@@ -52,7 +52,7 @@ export const MAX_ITEMS = 100;
 
 // Control or invisible character (zero width, text direction override), refused by the backend.
 // The zero width joiner stays allowed, emoji sequences use it.
-const HIDDEN_CHAR = /[\p{Cc}­​‌‎‏‪-‮⁠-⁤⁦-⁩﻿]/u;
+const HIDDEN_CHAR = /[\p{Cc}\u00AD\u200B\u200C\u200E\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/u;
 
 // Text within `max` characters (counted like the backend), without a hidden character.
 export const isCleanText = (v, max) => typeof v === 'string' && [...v].length <= max && !HIDDEN_CHAR.test(v);
