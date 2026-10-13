@@ -13,6 +13,7 @@ import HistoryTab from './components/HistoryTab.vue';
 import ProgramTab from './components/ProgramTab.vue';
 import ConfigFrame from './components/ConfigFrame.vue';
 import ConfigSettings from './components/ConfigSettings.vue';
+import QuitDialog from './components/QuitDialog.vue';
 
 // Picked once at launch, shown under the title.
 const slogan = pickSlogan();
@@ -78,5 +79,6 @@ onMounted(async () => {
     <HistoryTab v-else-if="tab === 'history'" />
     <ProgramTab v-else-if="tab === 'program'" />
     <ConfigFrame v-else settings><ConfigSettings /></ConfigFrame>
+    <QuitDialog />
   </div>
 </template>

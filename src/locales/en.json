@@ -220,6 +220,10 @@
     "exercisesMisplaced": "This text shares exercises: import it from the Exercises tab, with Import.",
     "newer": "This text comes from a newer version of SquatSouls: update it to import the text."
   },
+  "quit": {
+    "title": "Quit Squat Souls?",
+    "confirm": "The current session stops: the sets to do and the jokers are lost, the sets done stay in the history."
+  },
   "native": {
     "show": "Show",
     "quit": "Quit",

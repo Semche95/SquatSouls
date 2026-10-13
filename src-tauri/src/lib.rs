@@ -88,6 +88,8 @@ pub fn run() {
             commands::get_language,
             commands::set_language,
             commands::set_native_texts,
+            commands::request_quit,
+            commands::quit,
             commands::draw,
             commands::complete_exercise,
             commands::dismiss,
@@ -109,6 +111,7 @@ pub fn run() {
             commands::steam_game_name,
             commands::notify
         ])
-        .run(tauri::generate_context!())
-        .expect("error while launching Squat Souls");
+        .build(tauri::generate_context!())
+        .expect("error while launching Squat Souls")
+        .run(tray::on_run_event);
 }

@@ -67,6 +67,18 @@ pub(crate) fn set_native_texts(
         .map_err(|e| AppError::logged("tray_unavailable", "Notification area unavailable", e))
 }
 
+/// Quits the app completely, even when closing the window only hides it; confirmed during a session.
+#[tauri::command]
+pub(crate) fn request_quit(app: AppHandle) {
+    tray::request_quit(&app);
+}
+
+/// Quits once the interface has confirmed it.
+#[tauri::command]
+pub(crate) fn quit(app: AppHandle) {
+    app.exit(0);
+}
+
 #[tauri::command]
 pub(crate) fn draw(
     state: Shared,

@@ -220,6 +220,10 @@
     "exercisesMisplaced": "Ce texte partage des exercices : l'importer depuis l'onglet Exercices, avec Importer.",
     "newer": "Ce texte vient d'une version plus récente de SquatSouls : la mettre à jour pour l'importer."
   },
+  "quit": {
+    "title": "Quitter Squat Souls ?",
+    "confirm": "La séance en cours s'arrête : les séries à faire et les jokers sont perdus, les séries faites restent dans l'historique."
+  },
   "native": {
     "show": "Afficher",
     "quit": "Quitter",

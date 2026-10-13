@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, expect, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
+import { createVfm } from 'vue-final-modal';
 import App from '../App.vue';
 import { i18n } from '../i18n.js';
 
@@ -65,8 +67,9 @@ export const rejection =
     throw { code, params };
   };
 
+// Real transitions: a modal is only removed at the end of its closing one.
 export async function mountApp() {
-  const wrapper = mount(App, { attachTo: document.body, global: { plugins: [i18n] } });
+  const wrapper = mount(App, { attachTo: document.body, global: { plugins: [i18n, createVfm()], stubs: { transition: false } } });
   mounted.push(wrapper);
   await flushPromises();
   return wrapper;
@@ -75,6 +78,12 @@ export async function mountApp() {
 // Settings tab, last of the main tabs.
 export async function openSettings(w) {
   await w.findAll('.tabs button')[3].trigger('click');
+}
+
+// Simulates a backend event, received by the last listener mounted.
+export function emitEvent(name) {
+  listen.mock.calls.findLast(([n]) => n === name)[1]();
+  return flushPromises();
 }
 
 export function press(code, init = {}) {

@@ -1,14 +1,17 @@
-//! Notification area icon, and window hidden rather than closed, depending on the configuration.
+//! Notification area icon, window hidden rather than closed depending on the configuration, and quitting,
+//! confirmed by the interface during a session.
 
 use crate::state::{AppState, NativeTexts};
 use std::sync::Mutex;
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-use tauri::{AppHandle, Manager, Window, WindowEvent};
+use tauri::{AppHandle, Emitter, Manager, RunEvent, Window, WindowEvent};
 
 const TRAY_ID: &str = "main";
 const SHOW: &str = "show";
 const QUIT: &str = "quit";
+/// Event asking the interface to confirm quitting.
+const QUIT_REQUESTED: &str = "quit-requested";
 
 /// Shows the main window in the foreground.
 pub(crate) fn show_main(app: &AppHandle) {
@@ -16,6 +19,41 @@ pub(crate) fn show_main(app: &AppHandle) {
         let _ = window.unminimize();
         let _ = window.show();
         let _ = window.set_focus();
+    }
+}
+
+fn in_session(app: &AppHandle) -> bool {
+    let state = app.state::<Mutex<AppState>>();
+    let in_session = state.lock().is_ok_and(|s| s.session.started_at.is_some());
+    in_session
+}
+
+/// Shows the window with the quit confirmation.
+fn confirm_quit(app: &AppHandle) {
+    show_main(app);
+    let _ = app.emit(QUIT_REQUESTED, ());
+}
+
+/// Quits right away without a session in progress, otherwise lets the interface confirm.
+pub(crate) fn request_quit(app: &AppHandle) {
+    if in_session(app) {
+        confirm_quit(app);
+    } else {
+        app.exit(0);
+    }
+}
+
+/// Quitting by the system (Cmd+Q in the macOS menu) during a session waits for the confirmation.
+/// `app.exit` gives a code and is never held back.
+pub(crate) fn on_run_event(app: &AppHandle, event: RunEvent) {
+    if let RunEvent::ExitRequested {
+        code: None, api, ..
+    } = event
+    {
+        if in_session(app) {
+            api.prevent_exit();
+            confirm_quit(app);
+        }
     }
 }
 
@@ -60,7 +98,7 @@ fn build(app: &AppHandle, texts: &NativeTexts) -> tauri::Result<()> {
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id().as_ref() {
             SHOW => show_main(app),
-            QUIT => app.exit(0),
+            QUIT => request_quit(app),
             _ => {}
         })
         .on_tray_icon_event(|tray, event| {
@@ -81,6 +119,7 @@ fn build(app: &AppHandle, texts: &NativeTexts) -> tauri::Result<()> {
 }
 
 /// With the icon and the setting, closing the window hides it: the app and detection keep running.
+/// Otherwise, closing it during a session waits for the quit confirmation.
 pub(crate) fn on_window_event(window: &Window, event: &WindowEvent) {
     let WindowEvent::CloseRequested { api, .. } = event else {
         return;
@@ -92,5 +131,8 @@ pub(crate) fn on_window_event(window: &Window, event: &WindowEvent) {
     if hide {
         api.prevent_close();
         let _ = window.hide();
+    } else if in_session(window.app_handle()) {
+        api.prevent_close();
+        confirm_quit(window.app_handle());
     }
 }

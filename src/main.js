@@ -1,8 +1,10 @@
 import { createApp } from 'vue';
+import { createVfm } from 'vue-final-modal';
 import App from './App.vue';
 import { i18n, loadLanguage } from './i18n.js';
 import { logError, logUncaught } from './log.js';
 import 'floating-vue/dist/style.css';
+import 'vue-final-modal/style.css';
 import './style.css';
 
 logUncaught();
@@ -16,5 +18,5 @@ if (!import.meta.env.DEV) {
 loadLanguage().then(() => {
   const app = createApp(App);
   app.config.errorHandler = (e, _, info) => logError(`Vue error (${info})`, e);
-  app.use(i18n).mount('#app');
+  app.use(i18n).use(createVfm()).mount('#app');
 });

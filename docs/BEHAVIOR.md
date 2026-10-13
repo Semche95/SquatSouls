@@ -113,6 +113,8 @@ Button and setting names are quoted as they appear in the English interface.
 - Optional, disabled by default: the **Show the icon in the notification area** toggle in Settings is part of the configuration and is saved with **Save**, which adds or removes the icon right away.
 - When on, it unfolds two toggles, off by default: **Closing the window hides it instead of quitting** (the app and Steam detection keep running) and **Start hidden** (the app starts without a window). Without the icon, they have no effect: closing the window quits the app, which always starts with its window shown.
 - A click on the icon shows the window; its menu offers **Show** and **Quit** (on Linux, only the menu is available).
+- **Ctrl+Q** (**Cmd+Q** on macOS) quits the app completely, from any tab, even when closing the window only hides it.
+- During a session (started and not ended), quitting asks for confirmation in a dialog over the window: **Ctrl+Q**, **Quit** in the icon menu (which shows the window) and closing the window when it quits the app. Its sets to do and jokers are lost, its sets done stay in the history. **Quit** or a second **Ctrl+Q** quits, **Keep the session**, Escape or a click outside closes the dialog; while it is open, the other shortcuts do nothing.
 
 ## Sharing
 

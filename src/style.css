@@ -1257,3 +1257,42 @@ code {
   }
 
 }
+
+/* Quit confirmation (VueFinalModal): centered box over the darkened window, buttons at both ends. */
+.confirm-modal {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.confirm-modal .vfm__overlay {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(2px);
+}
+.confirm-modal-content {
+  display: grid;
+  gap: 10px;
+  width: min(440px, 100%);
+  padding: 22px 24px 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--red);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+.confirm-modal-content h3 {
+  margin: 0;
+  font-family: "Cinzel", Georgia, serif;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  font-size: 1.15rem;
+  color: var(--gold);
+}
+.confirm-modal-content p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 0.92rem;
+}
+.confirm-modal-content .card-actions {
+  justify-content: space-between;
+}
