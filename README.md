@@ -10,9 +10,13 @@ Turn what happens in your games into bodyweight exercises.
 
 ![Play tab with a set to do](docs/screenshots/play-set-to-do.png)
 
-| Pause | History | Program |
+| Pause | History | Settings |
 | --- | --- | --- |
-| ![Pause between two exercises](docs/screenshots/pause.png) | ![History tab](docs/screenshots/summary.png) | ![Program tab](docs/screenshots/configuration.png) |
+| ![Pause between two exercises](docs/screenshots/pause.png) | ![History tab](docs/screenshots/history.png) | ![Settings tab](docs/screenshots/settings.png) |
+
+| Program: games | Program: exercises |
+| --- | --- |
+| ![Games of the Program tab](docs/screenshots/program-games.png) | ![Exercises of the Program tab](docs/screenshots/program-exercises.png) |
 
 ## What is it
 
