@@ -3,6 +3,7 @@ import { computed, nextTick, ref } from 'vue';
 import { byName, clone, MAX_NAME, newId, sameName } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { importGame, parseGame, shareGame } from '../share.js';
+import { vReveal } from '../reveal.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import ConfigEvent from './ConfigEvent.vue';
@@ -148,7 +149,7 @@ function addEvent(game) {
             <button class="ghost danger" :disabled="draft.games.length < 2" @click="confirmRemove = editedGame">{{ t('config.games.removeGame') }}</button>
           </DisabledTip>
         </div>
-        <div v-if="confirmRemove === editedGame" class="banner confirm">
+        <div v-if="confirmRemove === editedGame" v-reveal class="banner confirm">
           <p>{{ t('config.games.confirmRemove', { name: editedGame.name || t('config.games.thisGame') }) }}</p>
           <div class="card-actions">
             <button class="danger" @click="removeGame(editedGame)">{{ t('common.remove') }}</button>

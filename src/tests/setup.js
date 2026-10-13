@@ -11,3 +11,6 @@ beforeEach(() => {
   languageSetting.value = 'system';
   return setLanguage('fr');
 });
+
+// jsdom does not lay out pages, so it has no scrolling.
+Element.prototype.scrollIntoView = () => {};

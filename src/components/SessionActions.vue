@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { rt, t, tm } from '../i18n.js';
 import { useSession } from '../composables/useSession.js';
+import { vReveal } from '../reveal.js';
 import DisabledTip from './DisabledTip.vue';
 
 const { session, farewell, startSession, endSession, cancelSession } = useSession();
@@ -31,14 +32,14 @@ function confirmed(action) {
       <button class="ghost danger" :disabled="!started" @click="confirmSession = 'cancel'">{{ t('session.cancel') }}</button>
     </DisabledTip>
   </div>
-  <div v-else-if="confirmSession === 'end'" class="banner confirm validate session-actions">
+  <div v-else-if="confirmSession === 'end'" v-reveal class="banner confirm validate session-actions">
     <p>{{ t('session.confirmEnd') }}</p>
     <div class="card-actions">
       <button class="primary" @click="confirmed(endSession)">{{ t('session.endConfirmed') }}</button>
       <button class="ghost" @click="confirmSession = ''">{{ t('common.cancel') }}</button>
     </div>
   </div>
-  <div v-else class="banner confirm session-actions">
+  <div v-else v-reveal class="banner confirm session-actions">
     <p>{{ t('session.confirmCancel') }}</p>
     <div class="card-actions">
       <button class="danger" @click="confirmed(cancelSession)">{{ t('session.cancel') }}</button>

@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { t } from '../i18n.js';
 import { useSession } from '../composables/useSession.js';
+import { vReveal } from '../reveal.js';
 import DisabledTip from './DisabledTip.vue';
 
 // current: set at the head of the queue, the only one to do; the next ones can only be dismissed.
@@ -47,7 +48,7 @@ const keyed = computed(() => remaining(props.draw)[0]);
         </span>
       </li>
     </ul>
-    <footer v-if="confirmDismiss === draw.id" class="banner confirm">
+    <footer v-if="confirmDismiss === draw.id" v-reveal class="banner confirm">
       <p>{{ t('draw.confirmDismiss') }}</p>
       <div class="card-actions">
         <button class="danger" @click="dismissNow(draw)">{{ t('draw.dismissSet') }}</button>
