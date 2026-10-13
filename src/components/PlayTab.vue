@@ -1,6 +1,5 @@
 <script setup>
 import { computed } from 'vue';
-import { formatCountdown } from '../format.js';
 import { t } from '../i18n.js';
 import { byName } from '../configDraft.js';
 import { useConfig } from '../composables/useConfig.js';
@@ -8,11 +7,12 @@ import { useSession } from '../composables/useSession.js';
 import { useKeydown } from '../composables/useKeydown.js';
 import { useSteam } from '../composables/useSteam.js';
 import DrawCard from './DrawCard.vue';
+import PauseSeal from './PauseSeal.vue';
 import SessionActions from './SessionActions.vue';
 import DisabledTip from './DisabledTip.vue';
 
 const { config, gameId, intensity, game } = useConfig();
-const { session, notice, pauseLeft, skipPause, trigger, confirmDismiss, dismiss, remaining, complete, halve, skipExercise } = useSession();
+const { session, notice, skipPause, trigger, confirmDismiss, dismiss, remaining, complete, halve, skipExercise } = useSession();
 const { detected, selectDetected, addGame, ignoreDetected } = useSteam();
 
 const INTENSITIES = ['easy', 'normal', 'hard'];
@@ -132,11 +132,6 @@ useKeydown((e) => {
 
     <p v-if="notice" class="banner info">{{ notice }}</p>
 
-    <p v-if="pauseLeft" class="banner pause">
-      {{ t('play.pause') }} <strong class="pause-left">{{ formatCountdown(pauseLeft) }}</strong>
-      <button class="ghost" @click="skipPause">{{ t('play.skipPause') }} <kbd>{{ t('keys.escape') }}</kbd></button>
-    </p>
-
     <section class="pending">
       <h2>
         {{ t('play.todo') }}
@@ -146,6 +141,7 @@ useKeydown((e) => {
       </h2>
       <p v-if="!session.pending.length" class="empty">
         {{ t('play.empty') }}
+        <PauseSeal />
       </p>
       <div v-if="session.pending.length" class="stage">
         <div v-for="(col, c) in stage" v-show="col.length" :key="c" :class="c === 0 ? 'stage-current' : 'queue'">

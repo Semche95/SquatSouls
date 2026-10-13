@@ -43,7 +43,7 @@ Button and setting names are quoted as they appear in the English interface.
 
 - Each exercise done (**Done**) starts a pause: its own pause, or otherwise the global pause (60 s in the default configuration). A 0 s pause starts none.
 - During the pause, no exercise can be marked done, neither in the same set nor in another one, including a set drawn during the pause. Jokers and **Cancel the set** remain possible and do not start a pause.
-- **Skip** (or Escape) ends the pause right away. It also stops when the set whose exercise started it is dismissed, and when the session ends or is cancelled.
+- The pause shows as a countdown on the top border of the current set (or of the empty block), its ring emptying as time passes. Clicking it (tooltip **Skip**) or pressing Escape ends the pause right away. It also stops when the set whose exercise started it is dismissed, and when the session ends or is cancelled.
 
 ## Jokers
 

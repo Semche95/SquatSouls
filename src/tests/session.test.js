@@ -137,6 +137,11 @@ describe('session', () => {
     const pushUps = { exerciseId: 'push-ups', name: 'Push-ups', amount: 8, unit: 'reps' };
     const next = { ...draw, id: 8 };
     const doneButtons = (w) => w.findAll('.item-actions .primary');
+    // Lets the countdown finish its leave transition before looking for it.
+    async function sealShown(w) {
+      await vi.advanceTimersByTimeAsync(50);
+      return w.find('.pause-seal').exists();
+    }
 
     // Squats follow the global pause, Push-ups have their own pause; the first one of the set is marked done.
     async function completeOne(first = pushUps, pause = config.pause, own = 90) {
@@ -162,7 +167,7 @@ describe('session', () => {
       await vi.advanceTimersByTimeAsync(30_000);
       expect(w.find('.pause-left').text()).toBe('1:00');
       await vi.advanceTimersByTimeAsync(60_000);
-      expect(w.find('.banner.pause').exists()).toBe(false);
+      expect(await sealShown(w)).toBe(false);
       expect(doneButtons(w).some((b) => b.element.disabled)).toBe(false);
     });
 
@@ -173,13 +178,13 @@ describe('session', () => {
 
     it('is skipped with the button or Escape', async () => {
       const w = await completeOne();
-      await w.find('.banner.pause button').trigger('click');
-      expect(w.find('.banner.pause').exists()).toBe(false);
+      await w.find('.pause-seal').trigger('click');
+      expect(await sealShown(w)).toBe(false);
       await doneButtons(w)[0].trigger('click');
       await flushPromises();
-      expect(w.find('.banner.pause').exists()).toBe(true);
+      expect(await sealShown(w)).toBe(true);
       await press('Escape');
-      expect(w.find('.banner.pause').exists()).toBe(false);
+      expect(await sealShown(w)).toBe(false);
     });
 
     it('stops when the set that started it is dismissed, not another one', async () => {
@@ -187,16 +192,24 @@ describe('session', () => {
       responses.dismiss = emptySession({ pending: [responses.get_session.pending[0]] });
       await w.findAll('.card')[1].find('.card-actions button').trigger('click');
       await flushPromises();
-      expect(w.find('.banner.pause').exists()).toBe(true);
+      expect(await sealShown(w)).toBe(true);
       responses.dismiss = emptySession();
       await w.findAll('.card')[0].find('.card-actions button').trigger('click');
       await flushPromises();
-      expect(w.find('.banner.pause').exists()).toBe(false);
+      expect(await sealShown(w)).toBe(false);
+    });
+
+    it('stays shown once no set is left to do', async () => {
+      const w = await completeOne();
+      responses.dismiss = emptySession();
+      await w.findAll('.card')[1].find('.card-actions button').trigger('click');
+      await flushPromises();
+      expect(w.find('.empty .pause-seal').exists()).toBe(true);
     });
 
     it('does not pause when every pause is 0', async () => {
       const w = await completeOne(pushUps, 0, 0);
-      expect(w.find('.banner.pause').exists()).toBe(false);
+      expect(await sealShown(w)).toBe(false);
     });
   });
 

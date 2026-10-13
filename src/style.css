@@ -359,14 +359,10 @@ kbd.dark {
   background: var(--panel);
   color: var(--muted);
 }
-.banner.pause,
 .banner.steam {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-.banner.pause {
-  border-color: var(--gold);
 }
 .banner.steam {
   border-color: var(--gold);
@@ -376,12 +372,7 @@ kbd.dark {
 .banner.steam strong {
   color: var(--gold);
 }
-.pause-left {
-  font-size: 1.3rem;
-  font-variant-numeric: tabular-nums;
-}
 /* Actions pushed to the right of the text. */
-.banner.pause button,
 .banner.steam .row,
 .ignored .row {
   margin-left: auto;
@@ -453,6 +444,89 @@ kbd.dark {
 .card.current {
   border-color: var(--gold);
   box-shadow: 0 0 0 1px var(--gold-soft), 0 8px 30px rgba(201, 164, 92, 0.08);
+}
+
+/* Pause countdown astride the top border of the current set, or of the empty block. */
+.card.current,
+.empty {
+  --seal: 88px;
+  position: relative;
+}
+.pause-seal {
+  position: absolute;
+  top: calc(var(--seal) / -2);
+  right: 24px;
+  z-index: 5;
+  width: var(--seal);
+  height: var(--seal);
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--panel-2) 55%, var(--bg));
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 22px rgba(201, 164, 92, 0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  color: var(--gold);
+}
+.pause-seal:hover {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 28px rgba(201, 164, 92, 0.35);
+}
+.pause-seal svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+.pause-seal circle {
+  fill: none;
+  stroke-width: 4;
+}
+.seal-track {
+  stroke: var(--line);
+}
+.seal-ring {
+  stroke: var(--gold);
+  stroke-dasharray: 1 1;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.25s linear;
+}
+.seal-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.pause-left {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 1.35rem;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.pause-seal kbd {
+  font-size: 0.6rem;
+  padding: 0 4px;
+}
+/* Keeps the game name clear of the countdown. */
+.card:has(> .pause-seal) .card-head {
+  padding-right: calc(var(--seal) + 12px);
+}
+.seal-enter-active,
+.seal-leave-active {
+  transition: opacity 0.3s, transform 0.3s;
+}
+.seal-enter-from,
+.seal-leave-to {
+  opacity: 0;
+  transform: scale(0.7);
+}
+@media (prefers-reduced-motion: reduce) {
+  .seal-enter-active,
+  .seal-leave-active,
+  .seal-ring {
+    transition: none;
+  }
 }
 .card-head {
   display: flex;

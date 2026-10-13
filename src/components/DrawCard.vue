@@ -4,6 +4,7 @@ import { t } from '../i18n.js';
 import { useSession } from '../composables/useSession.js';
 import { vReveal } from '../reveal.js';
 import DisabledTip from './DisabledTip.vue';
+import PauseSeal from './PauseSeal.vue';
 
 // current: set at the head of the queue, the only one to do; the next ones can only be dismissed.
 const props = defineProps({ draw: Object, current: Boolean });
@@ -15,6 +16,7 @@ const keyed = computed(() => remaining(props.draw)[0]);
 
 <template>
   <article class="card" :class="{ current }">
+    <PauseSeal v-if="current" />
     <header class="card-head">
       <span>{{ draw.eventName }}</span>
       <span class="muted">{{ draw.gameName }}</span>

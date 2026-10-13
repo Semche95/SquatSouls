@@ -17,11 +17,14 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   });
   // Pause after an exercise is done: no other can be marked done before it ends.
   const pauseEnd = ref(0);
+  const pauseSeconds = ref(0);
   const now = ref(0);
   let ticker;
   // Set whose exercise started the pause: dismissing it stops the pause.
   let pauseDrawId = 0;
   const pauseLeft = computed(() => Math.max(0, Math.ceil((pauseEnd.value - now.value) / 1000)));
+  // Share of the pause still to wait, from 1 to 0.
+  const pauseShare = computed(() => (pauseSeconds.value ? Math.max(0, pauseEnd.value - now.value) / (pauseSeconds.value * 1000) : 0));
 
   // Exercise-specific pause, otherwise the global pause.
   function pauseAfter(item) {
@@ -35,6 +38,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     pauseDrawId = drawId;
     now.value = Date.now();
     pauseEnd.value = now.value + seconds * 1000;
+    pauseSeconds.value = seconds;
     ticker = setInterval(() => {
       now.value = Date.now();
       if (!pauseLeft.value) skipPause();
@@ -44,6 +48,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   function skipPause() {
     clearInterval(ticker);
     pauseEnd.value = 0;
+    pauseSeconds.value = 0;
     pauseDrawId = 0;
   }
 
@@ -167,7 +172,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   }
 
   return {
-    session, notice, farewell, pauseLeft, skipPause, reload, saveNow, saveChange, trigger, act, confirmDismiss, dismiss,
+    session, notice, farewell, pauseLeft, pauseShare, skipPause, reload, saveNow, saveChange, trigger, act, confirmDismiss, dismiss,
     dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet, startSession, endSession, cancelSession,
   };
 });
