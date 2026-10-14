@@ -634,7 +634,7 @@ fn intensity_scales_the_drawn_numbers() {
     let mut r = rng();
     for intensity in [Intensity::Easy, Intensity::Hard] {
         let mut s = Session::default();
-        s.set_intensity(intensity).unwrap();
+        s.set_intensity(intensity);
         for _ in 0..50 {
             for it in s.draw(&cfg, "ds3", "boss", &mut r).unwrap().items {
                 let ex = cfg
@@ -651,19 +651,33 @@ fn intensity_scales_the_drawn_numbers() {
 }
 
 #[test]
-fn intensity_is_locked_with_the_game() {
+fn a_new_intensity_rescales_the_amounts_to_do_from_the_drawn_ones() {
     let cfg = default_config(Language::Fr);
     let mut s = Session::default();
-    let mut r = rng();
-    s.set_intensity(Intensity::Easy).unwrap();
-    s.set_intensity(Intensity::Hard).unwrap();
-    s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
-    assert_eq!(s.view().intensity, Intensity::Hard);
-    assert_eq!(s.set_intensity(Intensity::Hard), Ok(()));
+    let boss = s.draw(&cfg, "ds3", "boss", &mut rng()).unwrap();
+    s.complete_exercise(boss.id, &boss.items[0].exercise_id, 0)
+        .unwrap();
+    for intensity in [Intensity::Hard, Intensity::Easy, Intensity::Normal] {
+        s.set_intensity(intensity);
+        assert_eq!(s.view().intensity, intensity);
+        let draw = pending(&s, boss.id).unwrap();
+        assert_eq!(draw.items[0].amount, boss.items[0].amount, "already done");
+        assert_eq!(draw.items[1].amount, intensity.scale(boss.items[1].amount));
+    }
+}
+
+#[test]
+fn a_new_intensity_rescales_a_halved_amount_from_the_halved_drawn_one() {
+    let (mut s, boss) = session_with_jokers();
+    let item = &boss.items[0];
+    s.halve(boss.id, &item.exercise_id).unwrap();
+    s.set_intensity(Intensity::Hard);
+    let halved = &pending(&s, boss.id).unwrap().items[0];
     assert_eq!(
-        s.set_intensity(Intensity::Normal).unwrap_err().code,
-        "session_other_intensity"
+        halved.amount,
+        Intensity::Hard.scale(item.amount.div_ceil(2))
     );
+    assert_eq!(halved.halve_cost, None, "still halved");
 }
 
 #[test]
@@ -671,7 +685,7 @@ fn new_bounds_clamp_the_amounts_to_do_at_the_session_intensity() {
     let mut cfg = default_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
-    s.set_intensity(Intensity::Hard).unwrap();
+    s.set_intensity(Intensity::Hard);
     let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
     let id = boss.items[0].exercise_id.clone();
     let ex = cfg.exercises.iter_mut().find(|ex| ex.id == id).unwrap();

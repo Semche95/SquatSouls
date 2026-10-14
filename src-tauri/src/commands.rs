@@ -90,11 +90,21 @@ pub(crate) fn draw(
     let AppState {
         config, session, ..
     } = &mut *guard;
-    session.set_intensity(intensity)?;
+    session.set_intensity(intensity);
     let draw = session.draw(config, &game_id, &event_id, &mut rand::rng())?;
     session.start(now());
     guard.save_session_summary();
     Ok(draw)
+}
+
+#[tauri::command]
+pub(crate) fn set_session_intensity(
+    state: Shared,
+    intensity: Intensity,
+) -> Result<SessionView, AppError> {
+    let mut s = lock(&state)?;
+    s.session.set_intensity(intensity);
+    Ok(s.session.view())
 }
 
 #[tauri::command]

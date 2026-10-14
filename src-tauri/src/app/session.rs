@@ -61,6 +61,9 @@ pub struct DrawItem {
     pub name: String,
     pub unit: String,
     pub amount: u32,
+    /// Number drawn between the exercise's bounds, before the intensity and the joker.
+    #[serde(skip)]
+    pub base: u32,
     /// True once halved with a joker.
     pub halved: bool,
     /// True once marked done: it stays displayed until the end of the set.
@@ -79,12 +82,24 @@ impl DrawItem {
             name: ex.name.clone(),
             unit: ex.unit.clone(),
             amount: 0,
+            base: rng.random_range(ex.min..=ex.max),
             halved: false,
             done: false,
             halve_cost: None,
             skip_cost: SKIP_COST,
         }
-        .with_amount(intensity.scale(rng.random_range(ex.min..=ex.max)))
+        .at(intensity)
+    }
+
+    /// Takes as number the drawn one scaled by `intensity`, halved first if it was.
+    fn at(self, intensity: Intensity) -> Self {
+        if self.halved {
+            let amount = intensity.scale(self.base - self.base / 2);
+            DrawItem { amount, ..self }
+        } else {
+            let amount = intensity.scale(self.base);
+            self.with_amount(amount)
+        }
     }
 
     fn with_amount(mut self, amount: u32) -> Self {
@@ -101,10 +116,8 @@ impl DrawItem {
         self.name = ex.name.clone();
         self.unit = ex.unit.clone();
         if !self.halved {
-            let amount = self
-                .amount
-                .clamp(intensity.scale(ex.min), intensity.scale(ex.max));
-            *self = self.clone().with_amount(amount);
+            self.base = self.base.clamp(ex.min, ex.max);
+            *self = self.clone().at(intensity);
         }
     }
 }
@@ -193,7 +206,7 @@ pub struct SessionView {
     pub started_at: Option<i64>,
     /// Game of the session, set on the first event.
     pub game_id: Option<String>,
-    /// Intensity of the session, locked with its game.
+    /// Intensity of the session.
     pub intensity: Intensity,
     pub pending: Vec<Draw>,
     pub sets: usize,
@@ -233,13 +246,18 @@ impl Session {
         *self.started_at.get_or_insert(now)
     }
 
-    /// Sets the intensity of the next draws, refused once the game is locked on another one.
-    pub fn set_intensity(&mut self, intensity: Intensity) -> Result<(), AppError> {
-        if self.game_id.is_some() && self.intensity != intensity {
-            return Err(AppError::new("session_other_intensity"));
-        }
+    /// Sets the intensity of the next draws and, as new bounds do, applies it right away to the sets to do
+    /// and to the reserved sets.
+    pub fn set_intensity(&mut self, intensity: Intensity) {
         self.intensity = intensity;
-        Ok(())
+        let pending = self.pending.iter_mut().flat_map(|draw| {
+            draw.drawn
+                .iter_mut()
+                .chain(draw.items.iter_mut().filter(|it| !it.done))
+        });
+        for it in pending.chain(self.reserved.values_mut().flatten()) {
+            *it = it.clone().at(intensity);
+        }
     }
 
     pub fn draw<R: Rng + ?Sized>(

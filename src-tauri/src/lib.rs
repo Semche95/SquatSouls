@@ -92,6 +92,7 @@ pub fn run() {
             commands::request_quit,
             commands::quit,
             commands::draw,
+            commands::set_session_intensity,
             commands::complete_exercise,
             commands::dismiss,
             commands::halve,

@@ -364,11 +364,18 @@ describe('session', () => {
       expect(invoke).toHaveBeenCalledWith('set_intensity', { intensity: 'hard' });
     });
 
-    it('is locked with the game during the session', async () => {
-      setup({ get_session: emptySession({ gameId: 'sekiro', intensity: 'hard' }) });
+    it('changes during the session and applies to its sets to do', async () => {
+      setup({
+        get_session: emptySession({ gameId: 'sekiro', intensity: 'hard' }),
+        set_session_intensity: emptySession({ gameId: 'sekiro', intensity: 'easy' }),
+      });
       const w = await mountApp();
-      expect(levels(w).every((b) => b.element.disabled)).toBe(true);
       expect(w.find('.segmented .active').text()).toBe(tm('play.intensities').hard);
+      expect(levels(w).some((b) => b.element.disabled)).toBe(false);
+      await levels(w)[0].trigger('click');
+      await flushPromises();
+      expect(invoke).toHaveBeenCalledWith('set_session_intensity', { intensity: 'easy' });
+      expect(w.find('.segmented .active').text()).toBe(tm('play.intensities').easy);
     });
   });
 

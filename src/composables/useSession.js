@@ -142,6 +142,16 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     }
   });
 
+  // Intensity changed during the session: applied right away to the sets to do.
+  watch(intensity, async (value) => {
+    if (!session.value.gameId || value === session.value.intensity) return;
+    try {
+      session.value = await call('set_session_intensity', { intensity: value });
+    } catch {
+      await reload();
+    }
+  });
+
   async function reload() {
     session.value = await invoke('get_session');
   }

@@ -17,7 +17,7 @@ const { detected, selectDetected, addGame, ignoreDetected } = useSteam();
 
 const INTENSITIES = ['easy', 'normal', 'hard'];
 
-// The game and the intensity are locked from the session's first event until the next session.
+// The game is locked from the session's first event until the next session.
 const gameLocked = computed(() => !!session.value.gameId);
 // Detected Steam game: an unknown game is offered for adding, unless it is ignored; the configured games
 // matching it, for selection, unless one of them already is or the session's game is locked.
@@ -93,21 +93,18 @@ useKeydown((e) => {
       </div>
       <div class="field">
         <span id="play-intensity">{{ t('play.intensity') }}</span>
-        <DisabledTip :tip="gameLocked ? t('play.intensityLocked') : ''">
-          <div class="segmented" role="radiogroup" aria-labelledby="play-intensity">
-            <button
-              v-for="level in INTENSITIES"
-              :key="level"
-              role="radio"
-              :aria-checked="intensity === level"
-              :class="{ active: intensity === level }"
-              :disabled="gameLocked"
-              @click="intensity = level"
-            >
-              {{ t(`play.intensities.${level}`) }}
-            </button>
-          </div>
-        </DisabledTip>
+        <div class="segmented" role="radiogroup" aria-labelledby="play-intensity">
+          <button
+            v-for="level in INTENSITIES"
+            :key="level"
+            role="radio"
+            :aria-checked="intensity === level"
+            :class="{ active: intensity === level }"
+            @click="intensity = level"
+          >
+            {{ t(`play.intensities.${level}`) }}
+          </button>
+        </div>
       </div>
     </div>
 

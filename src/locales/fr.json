@@ -37,7 +37,6 @@
     "gameLocked": "Le jeu ne peut plus changer pendant la séance",
     "chooseGame": "Choisir un jeu",
     "intensity": "Intensité",
-    "intensityLocked": "L'intensité ne peut plus changer pendant la séance",
     "intensities": {
       "easy": "Facile",
       "normal": "Normale",
@@ -292,7 +291,6 @@
     "unknown_game": "Jeu inconnu : {id}.",
     "unknown_event": "Événement inconnu : {id}.",
     "session_other_game": "La séance a déjà commencé sur un autre jeu : commencer une nouvelle séance pour en changer.",
-    "session_other_intensity": "La séance a déjà commencé à une autre intensité : commencer une nouvelle séance pour en changer.",
     "not_enough_jokers": "Pas assez de jokers.",
     "exercise_not_reducible": "Cet exercice ne peut plus être réduit.",
     "set_not_pending": "Cette série n'est plus en attente.",
