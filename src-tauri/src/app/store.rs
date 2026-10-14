@@ -28,7 +28,7 @@ const CLOSE_TO_TRAY: &str = "close_to_tray";
 const START_HIDDEN: &str = "start_hidden";
 const REMEMBER_INTENSITY: &str = "remember_intensity";
 const INTENSITY: &str = "intensity";
-const TIMER_SOUND: &str = "timer_sound";
+const SOUND: &str = "sound";
 const TIMER_AUTO_DONE: &str = "timer_auto_done";
 const TIMER_PREP: &str = "timer_prep";
 const STEAM_LAST_CALL: &str = "steam_last_call";
@@ -131,7 +131,7 @@ impl Store {
             close_to_tray: self.parsed_setting(CLOSE_TO_TRAY, false)?,
             start_hidden: self.parsed_setting(START_HIDDEN, false)?,
             remember_intensity: self.parsed_setting(REMEMBER_INTENSITY, false)?,
-            timer_sound: self.parsed_setting(TIMER_SOUND, true)?,
+            sound: self.parsed_setting(SOUND, true)?,
             timer_auto_done: self.parsed_setting(TIMER_AUTO_DONE, true)?,
             timer_prep: self.parsed_setting(TIMER_PREP, DEFAULT_TIMER_PREP)?,
             ignored_games,
@@ -172,11 +172,7 @@ impl Store {
                 old.remember_intensity.to_string(),
                 config.remember_intensity.to_string(),
             ),
-            (
-                TIMER_SOUND,
-                old.timer_sound.to_string(),
-                config.timer_sound.to_string(),
-            ),
+            (SOUND, old.sound.to_string(), config.sound.to_string()),
             (
                 TIMER_AUTO_DONE,
                 old.timer_auto_done.to_string(),

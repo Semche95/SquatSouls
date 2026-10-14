@@ -107,9 +107,9 @@ pub struct Config {
     /// The intensity chosen in Play is kept from one launch to the next, otherwise it starts at normal.
     #[serde(default)]
     pub remember_intensity: bool,
-    /// Sound when the timer of a timed exercise ends.
+    /// Sounds of the timer and of the end of recovery.
     #[serde(default = "default_true")]
-    pub timer_sound: bool,
+    pub sound: bool,
     /// The timed exercise is marked done when its timer ends.
     #[serde(default = "default_true")]
     pub timer_auto_done: bool,

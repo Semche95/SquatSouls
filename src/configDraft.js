@@ -5,7 +5,7 @@ export function clone(value) {
 }
 
 // Configuration fields edited in the Settings tab; the Program tab edits all the others.
-export const SETTINGS_FIELDS = ['rememberIntensity', 'timerSound', 'timerAutoDone', 'timerPrep', 'tray', 'closeToTray', 'startHidden', 'steamDetection', 'steamNotify'];
+export const SETTINGS_FIELDS = ['rememberIntensity', 'sound', 'timerAutoDone', 'timerPrep', 'tray', 'closeToTray', 'startHidden', 'steamDetection', 'steamNotify'];
 
 // Saved configuration with the fields of one tab taken from the draft: each tab saves and resets only its own.
 export function withTabDraft(config, draft, settings) {

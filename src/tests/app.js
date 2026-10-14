@@ -13,7 +13,7 @@ export const config = {
   tray: false,
   closeToTray: false,
   startHidden: false,
-  timerSound: true,
+  sound: true,
   timerAutoDone: true,
   timerPrep: 3,
   ignoredGames: [],

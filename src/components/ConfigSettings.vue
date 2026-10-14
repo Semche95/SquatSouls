@@ -45,6 +45,16 @@ const status = computed(() => {
       </div>
     </section>
     <section class="group setting">
+      <h2 class="group-title">{{ t('config.settings.soundTitle') }}</h2>
+      <div>
+        <label class="check">
+          {{ t('config.settings.sound') }}
+          <input v-model="draft.sound" type="checkbox" />
+        </label>
+        <p class="hint">{{ t('config.settings.soundHint') }}</p>
+      </div>
+    </section>
+    <section class="group setting">
       <h2 class="group-title">{{ t('config.settings.intensity') }}</h2>
       <div>
         <label class="check">
@@ -57,10 +67,6 @@ const status = computed(() => {
     <section class="group setting">
       <h2 class="group-title">{{ t('config.settings.timer') }}</h2>
       <p class="hint">{{ t('config.settings.timerHint') }}</p>
-      <label class="check">
-        {{ t('config.settings.timerSound') }}
-        <input v-model="draft.timerSound" type="checkbox" />
-      </label>
       <label class="check">
         {{ t('config.settings.timerAutoDone') }}
         <input v-model="draft.timerAutoDone" type="checkbox" />

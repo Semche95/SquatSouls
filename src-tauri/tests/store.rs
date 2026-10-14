@@ -94,12 +94,12 @@ fn pauses_are_saved() {
 }
 
 #[test]
-fn timed_exercises_and_timer_settings_are_saved() {
+fn timed_exercises_sound_and_timer_settings_are_saved() {
     let mut s = store();
-    let mut cfg = default_config(Language::Fr);
-    assert!(cfg.timer_sound && cfg.timer_auto_done);
+    let mut cfg = s.config().unwrap();
+    assert!(cfg.sound && cfg.timer_auto_done, "on in a new database");
     assert_eq!(cfg.timer_prep, DEFAULT_TIMER_PREP);
-    cfg.timer_sound = false;
+    cfg.sound = false;
     cfg.timer_auto_done = false;
     cfg.timer_prep = 0;
     cfg.exercises[0].timed = Some(TimeUnit::Minutes);
@@ -137,6 +137,20 @@ fn exercises_counted_in_time_become_timed_once_migrated() {
     );
 }
 
+#[test]
+fn timer_sound_setting_becomes_the_sound_setting_once_migrated() {
+    let path = legacy_db("sound", 3);
+    connect(&path)
+        .execute_batch(
+            "INSERT INTO games (id, position, name) VALUES ('sekiro', 0, 'Sekiro');
+             INSERT INTO settings (key, value) VALUES ('timer_sound', 'false');",
+        )
+        .unwrap();
+    let cfg = Store::open(&path, LOCALE).unwrap().config().unwrap();
+    std::fs::remove_file(&path).unwrap();
+    assert!(!cfg.sound);
+}
+
 /// Path of a temporary database specific to test `name`, deleted beforehand.
 fn temp_db(name: &str) -> std::path::PathBuf {
     let path = std::env::temp_dir().join(format!("squatsouls-{name}-{}.db", std::process::id()));
@@ -168,7 +182,7 @@ fn applied_migrations_are_dated() {
     std::fs::remove_file(&path).unwrap();
     assert_eq!(
         applied.iter().map(|a| a.0).collect::<Vec<_>>(),
-        [1, 2, 3, 4, 5, 6, 7],
+        [1, 2, 3, 4, 5, 6, 7, 8],
         "a migration is applied only once"
     );
     assert!(
@@ -211,7 +225,7 @@ fn database_migrated_before_refinery_keeps_its_data() {
         let applied = applied(&path);
         std::fs::remove_file(&path).unwrap();
         assert_eq!(history.len(), 1, "{name}");
-        assert_eq!(applied.len(), 7, "{name}");
+        assert_eq!(applied.len(), 8, "{name}");
     }
 }
 

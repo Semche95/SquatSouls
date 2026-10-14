@@ -406,17 +406,17 @@ describe('program and settings', () => {
     expect(remember(w).element.checked).toBe(true);
   });
 
-  it('saves the timer settings with the Settings tab', async () => {
+  it('saves the sound and timer settings with the Settings tab', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await mountApp();
     await openSettings(w);
     const check = (text) => w.findAll('.check').find((c) => c.text() === text).find('input');
-    await check('Son au départ et à la fin du minuteur').setValue(false);
+    await check('Jouer les sons').setValue(false);
     await check('Marquer l\'exercice fait à la fin du minuteur').setValue(false);
     await check('Préparation du minuteur (s)').setValue('5');
     await w.find('.cfg-actions .primary').trigger('click');
     await flushPromises();
-    expect(sent()).toMatchObject({ timerSound: false, timerAutoDone: false, timerPrep: 5 });
+    expect(sent()).toMatchObject({ sound: false, timerAutoDone: false, timerPrep: 5 });
   });
 
   it('resets only the changes of its own tab', async () => {

@@ -213,8 +213,10 @@
       "unnamed": "Jeu Steam détecté, nom pas encore connu.",
       "ignored": "Jeux ignorés",
       "unignore": "Retirer",
+      "soundTitle": "Son",
+      "sound": "Jouer les sons",
+      "soundHint": "Au départ et à la fin du minuteur, et à la fin de la récupération.",
       "timer": "Minuteur",
-      "timerSound": "Son au départ et à la fin du minuteur",
       "timerAutoDone": "Marquer l'exercice fait à la fin du minuteur",
       "timerPrep": "Préparation du minuteur (s)",
       "timerHint": "Proposé dans Jouer pour les exercices chronométrés dans Programme."

@@ -43,6 +43,7 @@ Button and setting names are quoted as they appear in the English interface.
 
 - Each exercise done (**Done**) starts a recovery: its own recovery, or otherwise the global recovery (60 s in the default configuration). A 0 s recovery starts none.
 - During the recovery, no exercise can be marked done, neither in the same set nor in another one, including a set drawn during the recovery. Jokers and **Cancel the set** remain possible and do not start a recovery.
+- When the recovery reaches its end, a bell rings twice, like the start of a boxing round. Ending it early or stopping it plays nothing.
 - The recovery shows as a countdown on the top border of the current set (or of the empty block), its ring emptying as time passes. Clicking it (tooltip **Skip**) or pressing Escape ends the recovery right away. It also stops when the set whose exercise started it is dismissed, and when the session ends or is cancelled.
 
 ## Timer
@@ -51,7 +52,11 @@ Button and setting names are quoted as they appear in the English interface.
 - **Timer** (or T) is offered next to **Done** on the first remaining exercise of the current set, when it is timed. It runs the exercise's current number, halved included. It cannot start during the recovery.
 - While the timer runs or is held, **Done** and **Timer** are disabled (tooltip "Timer running"); the jokers and **Cancel the set** remain possible.
 - The timer shows in the recovery's countdown, in ember: first the countdown before the timer ("Ready"), then the exercise's duration. Clicking it or Space holds or resumes it (Space never marks an exercise done); Escape stops it, and it starts over from the beginning at the next start. It also stops as soon as its exercise is no longer the one to do as it was: halved or skipped, its set skipped or dismissed, the session cancelled.
-- A short low note plays when the timer starts, after the countdown. At the end, two rising notes play and the exercise is marked done, which starts the recovery. The **Timer** card of Settings turns off both sounds (**Sound when the timer starts and ends**, on by default) or the marking (**Mark the exercise done when the timer ends**, on by default: **Done** is then available again), and sets the **Countdown before the timer (s)** (3 s by default, none at 0). These settings are saved with **Save**.
+- A short low note plays when the timer starts, after the countdown. At the end, two rising notes play and the exercise is marked done, which starts the recovery. The **Timer** card of Settings turns off the marking (**Mark the exercise done when the timer ends**, on by default: **Done** is then available again), and sets the **Countdown before the timer (s)** (3 s by default, none at 0). These settings are saved with **Save**.
+
+## Sound
+
+- **Play sounds**, in the **Sound** card of Settings (on by default, with its uses recalled underneath), turned off, silences every sound: those of the timer and the one at the end of the recovery. On the update that brought it, it took the value of the former timer sound setting. It is saved with **Save**.
 
 ## Jokers
 

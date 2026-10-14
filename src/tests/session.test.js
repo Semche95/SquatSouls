@@ -3,9 +3,9 @@ import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { config, emptySession, draw, rejection, responses, setup, mountApp, press, expectTip } from './app.js';
 import { rt, tm } from '../i18n.js';
-import { chime, startSignal } from '../sound.js';
+import { chime, recoveryEnd, startSignal } from '../sound.js';
 
-vi.mock('../sound.js', () => ({ chime: vi.fn(), startSignal: vi.fn(), unlockSound: vi.fn() }));
+vi.mock('../sound.js', () => ({ chime: vi.fn(), recoveryEnd: vi.fn(), startSignal: vi.fn() }));
 
 describe('session', () => {
   // Lets the countdown finish its leave transition before looking for it.
@@ -148,11 +148,12 @@ describe('session', () => {
     const doneButtons = (w) => w.findAll('.item-actions .primary');
 
     // Squats follow the global pause, Push-ups have their own pause; the first one of the set is marked done.
-    async function completeOne(first = pushUps, pause = config.pause, own = 90) {
+    async function completeOne(first = pushUps, pause = config.pause, own = 90, settings = {}) {
       vi.useFakeTimers();
+      vi.mocked(recoveryEnd).mockClear();
       const both = { ...draw, items: first === pushUps ? [pushUps, draw.items[0]] : [...draw.items, pushUps] };
       setup({
-        get_config: { config: { ...config, pause, exercises: [...config.exercises, { id: 'push-ups', name: 'Push-ups', unit: 'reps', min: 8, max: 12, pause: own }] } },
+        get_config: { config: { ...config, ...settings, pause, exercises: [...config.exercises, { id: 'push-ups', name: 'Push-ups', unit: 'reps', min: 8, max: 12, pause: own }] } },
         get_session: emptySession({ pending: [both, next] }),
         complete_exercise: emptySession({ pending: [both, next] }),
       });
@@ -170,9 +171,17 @@ describe('session', () => {
       expect(invoke.mock.calls.filter(([cmd]) => cmd === 'complete_exercise')).toHaveLength(1);
       await vi.advanceTimersByTimeAsync(30_000);
       expect(w.find('.countdown-left').text()).toBe('1:00');
+      expect(recoveryEnd).not.toHaveBeenCalled();
       await vi.advanceTimersByTimeAsync(60_000);
       expect(await sealShown(w)).toBe(false);
+      expect(recoveryEnd).toHaveBeenCalledOnce();
       expect(doneButtons(w).some((b) => b.element.disabled)).toBe(false);
+    });
+
+    it('ends silently when sounds are off', async () => {
+      await completeOne(pushUps, config.pause, 90, { sound: false });
+      await vi.advanceTimersByTimeAsync(90_000);
+      expect(recoveryEnd).not.toHaveBeenCalled();
     });
 
     it('takes the global pause without an own pause', async () => {
@@ -180,7 +189,7 @@ describe('session', () => {
       expect(w.find('.countdown-left').text()).toBe('1:00');
     });
 
-    it('is skipped with the button or Escape', async () => {
+    it('is skipped with the button or Escape, without a sound', async () => {
       const w = await completeOne();
       await w.find('.countdown-seal').trigger('click');
       expect(await sealShown(w)).toBe(false);
@@ -189,6 +198,8 @@ describe('session', () => {
       expect(await sealShown(w)).toBe(true);
       await press('Escape');
       expect(await sealShown(w)).toBe(false);
+      await vi.advanceTimersByTimeAsync(90_000);
+      expect(recoveryEnd).not.toHaveBeenCalled();
     });
 
     it('stops when the set that started it is dismissed, not another one', async () => {
@@ -279,7 +290,7 @@ describe('session', () => {
     });
 
     it('counts minutes and only ends silently when sound and auto done are off', async () => {
-      const w = await mountTimed('minutes', { timerPrep: 0, timerSound: false, timerAutoDone: false }, { amount: 2 });
+      const w = await mountTimed('minutes', { timerPrep: 0, sound: false, timerAutoDone: false }, { amount: 2 });
       await press('KeyT');
       expect(seal(w)).toEqual(['Minuteur', '2:00']);
       await vi.advanceTimersByTimeAsync(120_000);

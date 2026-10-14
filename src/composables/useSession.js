@@ -2,7 +2,7 @@ import { computed, onScopeDispose, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { clone } from '../configDraft.js';
 import { t, tm } from '../i18n.js';
-import { chime, startSignal, unlockSound } from '../sound.js';
+import { chime, recoveryEnd, startSignal } from '../sound.js';
 import { defineShared } from './shared.js';
 
 // Refresh rate of the countdowns.
@@ -88,7 +88,10 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   function startPause(seconds, drawId) {
     pauseDrawId = drawId;
-    pause.start(seconds, () => (pauseDrawId = 0));
+    pause.start(seconds, () => {
+      pauseDrawId = 0;
+      if (config.value.sound) recoveryEnd();
+    });
   }
 
   function skipPause() {
@@ -105,18 +108,17 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   function startTimer(draw, item) {
     const unit = timedUnit(item);
     if (!unit || pauseLeft.value || timing.value) return;
-    unlockSound();
     timing.value = { drawId: draw.id, exerciseId: item.exerciseId, amount: item.amount, ready: true };
     timer.start(config.value.timerPrep, () => {
       timing.value.ready = false;
-      if (config.value.timerSound) startSignal();
+      if (config.value.sound) startSignal();
       timer.start(item.amount * UNIT_SECONDS[unit], () => timerEnded(draw, item));
     });
   }
 
   function timerEnded(draw, item) {
     timing.value = null;
-    if (config.value.timerSound) chime();
+    if (config.value.sound) chime();
     if (config.value.timerAutoDone) complete(draw, item);
   }
 

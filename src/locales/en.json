@@ -213,8 +213,10 @@
       "unnamed": "Steam game detected, name not known yet.",
       "ignored": "Ignored games",
       "unignore": "Remove",
+      "soundTitle": "Sound",
+      "sound": "Play sounds",
+      "soundHint": "At the start and end of the timer, and at the end of the recovery.",
       "timer": "Timer",
-      "timerSound": "Sound when the timer starts and ends",
       "timerAutoDone": "Mark the exercise done when the timer ends",
       "timerPrep": "Countdown before the timer (s)",
       "timerHint": "Offered in Play for the exercises timed in Program."
