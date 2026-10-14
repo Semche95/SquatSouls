@@ -1,0 +1,43 @@
+<script setup>
+import { computed } from 'vue';
+import { formatCountdown } from '../format.js';
+import { t } from '../i18n.js';
+import { useSession } from '../composables/useSession.js';
+import { vTooltip } from '../tooltip.js';
+
+// Countdown set astride the top border of its container, which must be positioned: the ring empties clockwise.
+// It shows the timer of a timed exercise (click or Space holds or resumes it, Escape stops it), otherwise the pause
+// (click or Escape skips it); both never run together. Its key is the one of the click.
+const { pauseLeft, pauseShare, skipPause, timing, timerLeft, timerShare, timerHeld, toggleTimer } = useSession();
+
+const seal = computed(() => {
+  if (timing.value) {
+    const label = timing.value.ready ? 'timer.ready' : timerHeld.value ? 'draw.paused' : 'draw.timer';
+    const tip = t(timerHeld.value ? 'timer.resume' : 'timer.hold', { toggle: t('keys.space'), stop: t('keys.escape') });
+    return { left: timerLeft.value, share: timerShare.value, label: t(label), tip, key: t('keys.space'), action: toggleTimer };
+  }
+  if (pauseLeft.value) return { left: pauseLeft.value, share: pauseShare.value, label: t('play.pause'), tip: t('play.skipPause'), key: t('keys.escape'), action: skipPause };
+  return null;
+});
+</script>
+
+<template>
+  <Transition name="seal">
+    <button
+      v-if="seal"
+      v-tooltip="{ content: seal.tip, placement: 'top' }"
+      class="countdown-seal"
+      :class="{ timer: timing, held: timerHeld }"
+      :aria-label="seal.tip"
+      @click="seal.action"
+    >
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle class="seal-track" cx="50" cy="50" r="46" />
+        <circle class="seal-ring" cx="50" cy="50" r="46" pathLength="1" :stroke-dashoffset="seal.share - 1" />
+      </svg>
+      <span class="seal-label">{{ seal.label }}</span>
+      <strong class="countdown-left">{{ formatCountdown(seal.left) }}</strong>
+      <kbd>{{ seal.key }}</kbd>
+    </button>
+  </Transition>
+</template>

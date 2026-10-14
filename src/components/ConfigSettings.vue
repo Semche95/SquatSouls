@@ -5,6 +5,7 @@ import { languageSetting, setLanguage, t } from '../i18n.js';
 import { useApi } from '../composables/useApi.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSteam } from '../composables/useSteam.js';
+import CountInput from './CountInput.vue';
 
 const { call } = useApi();
 const { config, draft } = useConfig();
@@ -52,6 +53,22 @@ const status = computed(() => {
         </label>
         <p class="hint">{{ t('config.settings.rememberIntensityHint') }}</p>
       </div>
+    </section>
+    <section class="group setting">
+      <h2 class="group-title">{{ t('config.settings.timer') }}</h2>
+      <p class="hint">{{ t('config.settings.timerHint') }}</p>
+      <label class="check">
+        {{ t('config.settings.timerSound') }}
+        <input v-model="draft.timerSound" type="checkbox" />
+      </label>
+      <label class="check">
+        {{ t('config.settings.timerAutoDone') }}
+        <input v-model="draft.timerAutoDone" type="checkbox" />
+      </label>
+      <label class="check">
+        {{ t('config.settings.timerPrep') }}
+        <CountInput v-model="draft.timerPrep" />
+      </label>
     </section>
     <section class="group setting">
       <h2 class="group-title">{{ t('config.settings.tray') }}</h2>

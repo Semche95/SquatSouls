@@ -7,12 +7,12 @@ import { useSession } from '../composables/useSession.js';
 import { useKeydown } from '../composables/useKeydown.js';
 import { useSteam } from '../composables/useSteam.js';
 import DrawCard from './DrawCard.vue';
-import PauseSeal from './PauseSeal.vue';
+import CountdownSeal from './CountdownSeal.vue';
 import SessionActions from './SessionActions.vue';
 import DisabledTip from './DisabledTip.vue';
 
 const { config, gameId, intensity, game } = useConfig();
-const { session, notice, skipPause, trigger, confirmDismiss, dismiss, remaining, complete, halve, skipExercise } = useSession();
+const { session, notice, skipPause, stopTimer, startTimer, toggleTimer, timing, trigger, confirmDismiss, dismiss, remaining, complete, halve, skipExercise } = useSession();
 const { detected, selectDetected, addGame, ignoreDetected } = useSteam();
 
 const INTENSITIES = ['easy', 'normal', 'hard'];
@@ -50,20 +50,29 @@ useKeydown((e) => {
   }
   if (e.code === 'Escape') {
     skipPause();
+    stopTimer();
     confirmDismiss.value = 0;
     return;
   }
-  const validate = e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space';
+  // Space holds or resumes the timer, it never marks done: a press just after the timer would do so by mistake.
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (timing.value) toggleTimer();
+    return;
+  }
+  const validate = e.code === 'Enter' || e.code === 'NumpadEnter';
   const skip = e.code === 'KeyJ';
   const half = e.code === 'KeyH';
-  if (!validate && !skip && !half && e.code !== 'Backspace') return;
+  const time = e.code === 'KeyT';
+  if (!validate && !skip && !half && !time && e.code !== 'Backspace') return;
   // Always blocked: otherwise they would activate the focused button (e.g. "Cancel the session").
   e.preventDefault();
   const first = session.value.pending[0];
   if (!first) return;
-  // Done and jokers apply to the first remaining exercise of the set.
+  // Done, the timer and jokers apply to the first remaining exercise of the set.
   const [item] = remaining(first);
   if (validate) complete(first, item);
+  else if (time) startTimer(first, item);
   else if (skip) skipExercise(first, item);
   else if (half) halve(first, item);
   else dismiss(first);
@@ -72,30 +81,34 @@ useKeydown((e) => {
 
 <template>
   <main class="panel play">
-    <div class="field">
-      <label for="play-game">{{ t('play.game') }}</label>
-      <DisabledTip class="grow" :tip="gameLocked ? t('play.gameLocked') : ''">
-        <select id="play-game" v-model="gameId" :disabled="gameLocked">
-          <option value="" disabled>{{ t('play.chooseGame') }}</option>
-          <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id">{{ g.name }}</option>
-        </select>
-      </DisabledTip>
-      <span id="play-intensity">{{ t('play.intensity') }}</span>
-      <DisabledTip :tip="gameLocked ? t('play.intensityLocked') : ''">
-        <div class="segmented" role="radiogroup" aria-labelledby="play-intensity">
-          <button
-            v-for="level in INTENSITIES"
-            :key="level"
-            role="radio"
-            :aria-checked="intensity === level"
-            :class="{ active: intensity === level }"
-            :disabled="gameLocked"
-            @click="intensity = level"
-          >
-            {{ t(`play.intensities.${level}`) }}
-          </button>
-        </div>
-      </DisabledTip>
+    <div class="play-head">
+      <div class="field">
+        <label for="play-game">{{ t('play.game') }}</label>
+        <DisabledTip class="grow" :tip="gameLocked ? t('play.gameLocked') : ''">
+          <select id="play-game" v-model="gameId" :disabled="gameLocked">
+            <option value="" disabled>{{ t('play.chooseGame') }}</option>
+            <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id">{{ g.name }}</option>
+          </select>
+        </DisabledTip>
+      </div>
+      <div class="field">
+        <span id="play-intensity">{{ t('play.intensity') }}</span>
+        <DisabledTip :tip="gameLocked ? t('play.intensityLocked') : ''">
+          <div class="segmented" role="radiogroup" aria-labelledby="play-intensity">
+            <button
+              v-for="level in INTENSITIES"
+              :key="level"
+              role="radio"
+              :aria-checked="intensity === level"
+              :class="{ active: intensity === level }"
+              :disabled="gameLocked"
+              @click="intensity = level"
+            >
+              {{ t(`play.intensities.${level}`) }}
+            </button>
+          </div>
+        </DisabledTip>
+      </div>
     </div>
 
     <p v-if="steamOffer" class="banner steam">
@@ -141,7 +154,7 @@ useKeydown((e) => {
       </h2>
       <p v-if="!session.pending.length" class="empty">
         {{ t('play.empty') }}
-        <PauseSeal />
+        <CountdownSeal />
       </p>
       <div v-if="session.pending.length" class="stage">
         <div v-for="(col, c) in stage" v-show="col.length" :key="c" :class="c === 0 ? 'stage-current' : 'queue'">

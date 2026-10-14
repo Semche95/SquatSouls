@@ -13,6 +13,9 @@ export const config = {
   tray: false,
   closeToTray: false,
   startHidden: false,
+  timerSound: true,
+  timerAutoDone: true,
+  timerPrep: 3,
   ignoredGames: [],
   exercises: [{ id: 'squat', name: 'Squats', enabled: true, unit: 'reps', min: 10, max: 15 }],
   games: [

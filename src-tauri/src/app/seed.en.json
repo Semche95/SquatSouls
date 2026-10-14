@@ -69,14 +69,16 @@
       "name": "Plank",
       "unit": "s",
       "min": 20,
-      "max": 45
+      "max": 45,
+      "timed": "seconds"
     },
     {
       "id": "gainage-genoux",
       "name": "Knee plank",
       "unit": "s",
       "min": 15,
-      "max": 30
+      "max": 30,
+      "timed": "seconds"
     },
     {
       "id": "superman",
@@ -90,7 +92,8 @@
       "name": "Arm circles",
       "unit": "s",
       "min": 20,
-      "max": 40
+      "max": 40,
+      "timed": "seconds"
     }
   ],
   "games": [

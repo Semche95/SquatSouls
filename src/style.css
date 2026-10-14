@@ -205,7 +205,8 @@ h2 {
   margin: 0;
 }
 
-.field {
+.field,
+.play-head {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -224,6 +225,13 @@ h2 {
 /* Tooltip container of a field's input, which takes the remaining width. */
 .field .tip.grow {
   flex: 1;
+}
+/* Game then intensity, which drops below the game when the window narrows. */
+.play-head {
+  flex-wrap: wrap;
+}
+.play-head > :first-child {
+  flex: 1 1 240px;
 }
 .field select {
   flex: 1;
@@ -408,9 +416,13 @@ kbd.dark {
 }
 
 .pending {
+  --seal: 112px;
+  --seal-inset: 24px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  /* The countdown sticks out above the set by half its size, the heading and the gap above leave about 44px. */
+  padding-top: calc(var(--seal) / 2 - 44px);
 }
 .pending h2 {
   margin-bottom: 0;
@@ -449,13 +461,12 @@ kbd.dark {
 /* Pause countdown astride the top border of the current set, or of the empty block. */
 .card.current,
 .empty {
-  --seal: 88px;
   position: relative;
 }
-.pause-seal {
+.countdown-seal {
   position: absolute;
   top: calc(var(--seal) / -2);
-  right: 24px;
+  right: var(--seal-inset);
   z-index: 5;
   width: var(--seal);
   height: var(--seal);
@@ -471,15 +482,15 @@ kbd.dark {
   gap: 1px;
   color: var(--gold);
 }
-.pause-seal:hover {
+.countdown-seal:hover {
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 28px rgba(201, 164, 92, 0.35);
 }
-.pause-seal svg {
+.countdown-seal svg {
   position: absolute;
   inset: 0;
   transform: rotate(-90deg);
 }
-.pause-seal circle {
+.countdown-seal circle {
   fill: none;
   stroke-width: 4;
 }
@@ -493,24 +504,42 @@ kbd.dark {
   transition: stroke-dashoffset 0.25s linear;
 }
 .seal-label {
-  font-size: 0.6rem;
-  letter-spacing: 0.15em;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--text);
 }
-.pause-left {
+.countdown-left {
   font-family: "Cinzel", Georgia, serif;
-  font-size: 1.35rem;
+  font-size: 1.8rem;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
-.pause-seal kbd {
-  font-size: 0.6rem;
+.countdown-seal kbd {
+  font-size: 0.7rem;
   padding: 0 4px;
 }
+/* Timer of a timed exercise: ember instead of gold, its time dimmed while held. */
+.countdown-seal.timer {
+  color: var(--ember);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 22px rgba(217, 119, 59, 0.2);
+}
+.countdown-seal.timer:hover {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 28px rgba(217, 119, 59, 0.4);
+}
+.countdown-seal.timer .seal-ring {
+  stroke: var(--ember);
+}
+.countdown-seal.held .countdown-left {
+  opacity: 0.5;
+}
 /* Keeps the game name clear of the countdown. */
-.card:has(> .pause-seal) .card-head {
+.card:has(> .countdown-seal) .card-head {
   padding-right: calc(var(--seal) + 12px);
+}
+/* Keeps the centered empty text clear of the countdown on both sides. */
+.empty:has(> .countdown-seal) {
+  padding-inline: calc(var(--seal-inset) + var(--seal) + 12px);
 }
 .seal-enter-active,
 .seal-leave-active {
@@ -812,29 +841,8 @@ kbd.dark {
 .icon {
   padding: 4px 10px;
 }
-.cfg-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.cfg-table th {
-  text-align: left;
-  font-weight: 400;
-  font-size: 0.8rem;
-  color: var(--muted);
-  padding: 0 8px 4px;
-}
-.cfg-table td {
-  padding: 5px 8px;
-}
-.cfg-table :is(th, td):first-child {
-  padding-left: 0;
-}
-.cfg-table td:last-child,
-.cfg-table th:last-child {
-  width: 1%;
-}
 /* Disabled exercise: kept in the list but out of the draw. */
-.cfg-off input:not([type='checkbox']) {
+.cfg-off :is(input:not([type='checkbox']), select, .cfg-event-head) {
   opacity: 0.5;
 }
 /* Configuration: games and exercises on separate sub-tabs, underlined so as not to look like a segmented control. */
@@ -988,11 +996,6 @@ label.check {
 .ignored li:last-child {
   border-bottom: none;
 }
-/* The name takes all the width left by the other columns. */
-.cfg-name {
-  width: 100%;
-}
-.cfg-unit,
 .config .check select {
   min-width: 11em;
 }
@@ -1005,7 +1008,8 @@ label.check {
   width: 5.5em;
 }
 
-.cfg-table .count-input {
+.setting .count-input {
+  flex: none;
   width: 5.5em;
 }
 /* Tooltip (floating-vue) in the app's colors, with a red border for an error. */
@@ -1082,13 +1086,14 @@ label.check {
 .cfg-event + .cfg-event {
   margin-top: 8px;
 }
-.cfg-event[open] {
+.cfg-event:is([open], .open) {
   border-color: var(--gold);
 }
-.cfg-event > :not(summary) {
+.cfg-event > :not(summary, .cfg-exercise-head) {
   margin: 12px;
 }
-.cfg-event summary {
+.cfg-event summary,
+.cfg-exercise-head {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1099,14 +1104,16 @@ label.check {
 .cfg-event summary::-webkit-details-marker {
   display: none;
 }
-.cfg-event summary:hover {
+.cfg-event summary:hover,
+.cfg-exercise-head:has(> .cfg-event-head:hover) {
   background: var(--gold-soft);
 }
-.cfg-event[open] summary {
+.cfg-event[open] summary,
+.cfg-exercise.open .cfg-exercise-head {
   border-bottom: 1px solid var(--line);
 }
 /* Fields darker than the card to stand out from it. */
-.config .cfg-event input {
+.config .cfg-event :is(input, select) {
   background: var(--panel);
 }
 .cfg-event-head {
@@ -1124,12 +1131,78 @@ label.check {
   color: var(--gold);
   transition: transform 0.12s;
 }
-.cfg-event[open] .cfg-event-head::before {
+.cfg-event:is([open], .open) .cfg-event-head::before {
   transform: rotate(90deg);
 }
 .cfg-event-head .muted {
   margin-left: auto;
   font-size: 0.8rem;
+  white-space: nowrap;
+}
+/* Exercise: the switch, then the name that opens the card, then the range always at hand.
+   The range keeps a fixed width so that it lines up from one card to the next. */
+.cfg-exercise-head {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  cursor: default;
+  gap: 12px;
+  padding-block: 6px;
+}
+.cfg-exercise-head .cfg-event-head {
+  flex: 1 1 10em;
+  min-width: 0;
+  align-self: stretch;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+}
+.cfg-exercise-head .cfg-event-head:active {
+  transform: none;
+}
+/* The name gives way first: the pause and the timer icon stay against the range. */
+.cfg-exercise-head strong {
+  min-width: 0;
+  margin-right: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cfg-exercise-head .cfg-event-head .muted {
+  margin-left: 0;
+}
+/* Ember, like the timer seal in play. */
+.cfg-timed-icon {
+  flex: none;
+  color: var(--ember);
+  font-size: 2rem;
+  line-height: 1;
+}
+.cfg-range {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cfg-range label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.cfg-range input {
+  color: var(--text);
+}
+/* Narrower than the other counts, to leave the unit as much room as possible. */
+.cfg-range .count-input {
+  flex: none;
+  width: 3.5em;
+}
+.cfg-range > .muted {
+  width: 9em;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .cfg-params {
@@ -1253,7 +1326,7 @@ code {
   }
 
   /* Jouer: larger event tiles, current set large and queue beside it. */
-  .play .field {
+  .play-head {
     max-width: 600px;
   }
   .events {

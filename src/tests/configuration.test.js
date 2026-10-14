@@ -10,6 +10,13 @@ describe('configuration', () => {
     await w.findAll('.tabs button')[2].trigger('click');
     return w;
   }
+  // Exercises sub-tab, with the first exercise's card opened unless asked otherwise.
+  async function openExercises({ card = true } = {}) {
+    const w = await openConfig();
+    await w.findAll('.subtabs button')[1].trigger('click');
+    if (card) await w.find('.cfg-exercise .cfg-event-head').trigger('click');
+    return w;
+  }
 
   // Without pending changes, the save and reset buttons stay shown but disabled.
   function expectUnchanged(w) {
@@ -60,6 +67,11 @@ describe('configuration', () => {
     const add = w.find('.cfg-exercises > button');
     await add.trigger('click');
     await add.trigger('click');
+    const cards = w.findAll('.cfg-exercise');
+    expect(cards.map((c) => c.classes().includes('open'))).toEqual([false, true, true]);
+    const name = cards[2].find('input[aria-label="Nom de l\'exercice"]').element;
+    expect(document.activeElement).toBe(name);
+    expect([name.selectionStart, name.selectionEnd]).toEqual([0, name.value.length]);
     responses.save_config = (args) => ({ config: args.config });
     await w.find('.cfg-actions .primary').trigger('click');
     await flushPromises();
@@ -136,12 +148,15 @@ describe('configuration', () => {
     expect(w.find('.events').exists()).toBe(false);
   });
 
-  it('sets an exercise\'s range and keeps at least one exercise', async () => {
+  it('sets an exercise\'s range from its closed card and keeps at least one exercise', async () => {
     setup();
-    const w = await openConfig();
-    await w.findAll('.subtabs button')[1].trigger('click');
-    expect(w.find('.cfg-exercises .icon').element.disabled).toBe(true);
-    await expectTip(w.find('.cfg-exercises .icon'), 'Il faut au moins un exercice');
+    const w = await openExercises({ card: false });
+    expect(w.find('.cfg-exercise').classes()).not.toContain('open');
+    expect(w.find('.cfg-exercise .cfg-range').text()).toContain('reps');
+    await w.find('.cfg-exercise .cfg-event-head').trigger('click');
+    const remove = w.find('.cfg-exercise .danger');
+    expect(remove.element.disabled).toBe(true);
+    await expectTip(remove, 'Il faut au moins un exercice');
     await w.find('input[aria-label="Maximum"]').setValue('');
     responses.save_config = (args) => ({ config: args.config });
     await w.find('.cfg-actions .primary').trigger('click');
@@ -152,9 +167,8 @@ describe('configuration', () => {
 
   it('disables an exercise to keep it out of the draw without removing it', async () => {
     setup();
-    const w = await openConfig();
-    await w.findAll('.subtabs button')[1].trigger('click');
-    const row = w.find('.cfg-table tbody tr');
+    const w = await openExercises({ card: false });
+    const row = w.find('.cfg-exercise');
     expect(row.classes()).not.toContain('cfg-off');
     await w.find('input[aria-label="Proposer cet exercice"]').setValue(false);
     expect(row.classes()).toContain('cfg-off');
@@ -167,12 +181,12 @@ describe('configuration', () => {
 
   it('sets the global pause and an exercise\'s own pause', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
-    const w = await openConfig();
-    await w.findAll('.subtabs button')[1].trigger('click');
-    const own = () => w.find('input[aria-label="Pause"]');
+    const w = await openExercises();
+    const own = () => w.find('input[aria-label="Récupération"]');
     await w.find('.cfg-pause input').setValue(45);
     expect(own().attributes('placeholder')).toBe('45');
     await own().setValue('90');
+    expect(w.find('.cfg-exercise .cfg-event-head').text()).toContain('récup 90 s');
     await w.find('.cfg-actions .primary').trigger('click');
     await flushPromises();
     const sent = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)[1].config;
@@ -181,6 +195,24 @@ describe('configuration', () => {
     await w.find('.cfg-actions .primary').trigger('click');
     await flushPromises();
     expect(sent().exercises[0]).not.toHaveProperty('pause');
+  });
+
+  it('times an exercise in seconds or minutes, or no longer', async () => {
+    setup({ save_config: (args) => ({ config: args.config }) });
+    const w = await openExercises();
+    const timed = w.find('select[aria-label="Minuteur"]');
+    expect(timed.findAll('option').map((o) => o.text())).toEqual(['Non chronométré', 'Secondes', 'Minutes']);
+    await timed.setValue('minutes');
+    expect(w.find('.cfg-timed-icon').attributes('aria-label')).toBe('Chronométré en minutes');
+    await w.find('.cfg-actions .primary').trigger('click');
+    await flushPromises();
+    const sent = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)[1].config;
+    expect(sent().exercises[0].timed).toBe('minutes');
+    timed.element.selectedIndex = 0;
+    await timed.trigger('change');
+    await w.find('.cfg-actions .primary').trigger('click');
+    await flushPromises();
+    expect(sent().exercises[0]).not.toHaveProperty('timed');
   });
 
   it('clears the per-session limit to remove it', async () => {
@@ -328,7 +360,7 @@ describe('configuration', () => {
       expect(savedConfig().games[0].name).toBe('Elden Ring');
       expect(w.find('.banner.ok').text()).toBe('Exercices importés : 1 ajouté, 1 mis à jour.');
       expect(w.find('.cfg-import').exists()).toBe(false);
-      expect(w.findAll('input[aria-label="Nom de l\'exercice"]')).toHaveLength(2);
+      expect(w.findAll('.cfg-exercise')).toHaveLength(2);
       await w.find('.cfg-actions .primary').trigger('click');
       await flushPromises();
       expect(savedConfig().games[0].name).toBe('Elden Ring DLC');
@@ -372,6 +404,19 @@ describe('program and settings', () => {
     expect(sent().rememberIntensity).toBeFalsy();
     await openSettings(w);
     expect(remember(w).element.checked).toBe(true);
+  });
+
+  it('saves the timer settings with the Settings tab', async () => {
+    setup({ save_config: (args) => ({ config: args.config }) });
+    const w = await mountApp();
+    await openSettings(w);
+    const check = (text) => w.findAll('.check').find((c) => c.text() === text).find('input');
+    await check('Son au départ et à la fin du minuteur').setValue(false);
+    await check('Marquer l\'exercice fait à la fin du minuteur').setValue(false);
+    await check('Préparation du minuteur (s)').setValue('5');
+    await w.find('.cfg-actions .primary').trigger('click');
+    await flushPromises();
+    expect(sent()).toMatchObject({ timerSound: false, timerAutoDone: false, timerPrep: 5 });
   });
 
   it('resets only the changes of its own tab', async () => {

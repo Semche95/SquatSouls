@@ -10,9 +10,9 @@ Turn what happens in your games into bodyweight exercises.
 
 ![Play tab with a set to do](docs/screenshots/play-set-to-do.png)
 
-| Pause | History | Settings |
+| Recovery | History | Settings |
 | --- | --- | --- |
-| ![Pause between two exercises](docs/screenshots/pause.png) | ![History tab](docs/screenshots/history.png) | ![Settings tab](docs/screenshots/settings.png) |
+| ![Recovery between two exercises](docs/screenshots/pause.png) | ![History tab](docs/screenshots/history.png) | ![Settings tab](docs/screenshots/settings.png) |
 
 | Program: games | Program: exercises |
 | --- | --- |
@@ -29,7 +29,7 @@ You configure your own games, events and exercises. The defaults are only a star
 - Exercises come out in rounds, so each one comes out before any comes back.
 - Per-session limit on each event, and jokers to halve or skip an exercise.
 - Intensity of the session (Easy, Normal, Hard) to scale the numbers on tired days, without touching the configuration.
-- Pause with a countdown between exercises.
+- Recovery countdown between exercises, and a timer for exercises counted in time.
 - Summary of the session and of the last 7 days, plus the full history, each session copyable to paste in a messaging app.
 - Keyboard shortcuts, Steam game detection, notification area icon.
 - Share games and exercises with other players.
@@ -67,17 +67,19 @@ pnpm tauri build   # packages in src-tauri/target/release/bundle/
 
 1. In **Play**, choose your game, then click **Start the session** when you start playing.
 2. You die in game: click **Death**, or press 1. A set appears in **To do**, for example 14 squats.
-3. Do them, then click **Done** or press Enter. A pause starts.
+3. Do them, then click **Done** or press Enter. A recovery starts.
 4. When you stop playing, click **End the session**. It shows up in **History**.
 
 | Key | Action |
 | --- | --- |
 | 1 to 9 | Trigger the event with that number |
-| Enter or Space | Mark the next exercise done |
+| Enter | Mark the next exercise done |
 | H | Halve it (1 joker) |
 | J | Skip it |
+| T | Start its timer, if it is timed |
+| Space | Hold or resume the timer |
 | Backspace | Cancel the set |
-| Escape | Skip the pause |
+| Escape | Skip the recovery or stop the timer |
 
 Games, events and exercises are edited in **Program**, the options in **Settings**. The full rules are in [docs/BEHAVIOR.md](docs/BEHAVIOR.md). Where the database and logs are stored: [docs/DATA-AND-LOGS.md](docs/DATA-AND-LOGS.md).
 

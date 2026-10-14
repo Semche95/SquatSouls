@@ -13,6 +13,7 @@ function packed(version, shared, data = unpack(shared).data) {
 const exercises = [
   { id: 'squat', name: 'Squats', enabled: false, unit: 'reps', min: 10, max: 15 },
   { id: 'push-ups', name: 'Push-ups', enabled: true, unit: 'reps', min: 8, max: 12, pause: 90 },
+  { id: 'plank', name: 'Plank', enabled: true, unit: 'hold', min: 20, max: 45, timed: 'seconds' },
 ];
 
 describe('game sharing', () => {
@@ -112,11 +113,12 @@ describe('game sharing', () => {
 });
 
 describe('exercise sharing', () => {
-  it('shares the exercises without ids, with their own pause, then reads them back', () => {
+  it('shares the exercises without ids, with their own pause and timer, then reads them back', () => {
     const text = shareExercises(exercises);
     expect(text).toMatch(/^squatsouls\/exercises:/);
     expect(JSON.stringify(unpack(text).data)).not.toContain('"id"');
     expect(JSON.stringify(unpack(text).data)).toContain('"pause":90');
+    expect(JSON.stringify(unpack(text).data)).toContain('"timed":"seconds"');
     expect(parseExercises(text)).toEqual(exercises.map(({ id, enabled, ...ex }) => ex));
     // Spaces and line breaks added by a messaging app are ignored.
     const cut = text.indexOf(':') + 10;
@@ -141,6 +143,7 @@ describe('exercise sharing', () => {
       shareExercises([{ name: 'Squats', unit: 'reps', min: 6, max: 5 }]),
       shareExercises([{ name: '', unit: 'reps', min: 1, max: 5 }]),
       shareExercises([{ name: 'Squats', unit: 'reps', min: 1, max: 5, pause: -1 }]),
+      shareExercises([{ name: 'Plank', unit: 's', min: 1, max: 5, timed: 'hours' }]),
       shareExercises([{ name: 'S'.repeat(MAX_NAME + 1), unit: 'reps', min: 1, max: 5 }]),
       shareExercises([{ name: 'Squats', unit: 'r'.repeat(MAX_UNIT + 1), min: 1, max: 5 }]),
       shareExercises([{ name: 'Squats', unit: 'reps\u200B', min: 1, max: 5 }]),
@@ -152,6 +155,15 @@ describe('exercise sharing', () => {
   it('keeps only the first of two exercises with the same name', () => {
     const text = shareExercises([...exercises, { name: 'squats ', unit: 's', min: 1, max: 2 }]);
     expect(parseExercises(text)).toEqual(exercises.map(({ id, enabled, ...ex }) => ex));
+  });
+
+  it('times the exercises of older versions whose unit reads as a duration', () => {
+    const units = ['s', ' Secondes ', 'min', 'reps', 'seconds held'];
+    const old = { exercises: units.map((unit, i) => ({ name: `Exercise ${i}`, unit, min: 1, max: 5 })) };
+    for (const version of [1, 2]) {
+      const read = parseExercises(packed(version, shareExercises(exercises), old));
+      expect(read.map((ex) => ex.timed)).toEqual(['seconds', 'seconds', 'minutes', undefined, undefined]);
+    }
   });
 
   it('tells where to import a game pasted instead of exercises', () => {
@@ -168,6 +180,7 @@ describe('exercise sharing', () => {
       exercises: [
         { id: 'squat', name: 'Squats', enabled: false, unit: 's', min: 20, max: 30, pause: 45 },
         exercises[1],
+        exercises[2],
         { id: 'lunges', name: 'Lunges', enabled: true, unit: 'reps', min: 5, max: 8 },
       ],
       added: 1,
@@ -175,6 +188,9 @@ describe('exercise sharing', () => {
     });
     // Without an own pause in the import, the exercise goes back to the global pause.
     expect(mergeExercises(exercises, [{ name: 'Push-ups', unit: 'reps', min: 8, max: 12 }]).exercises[1]).toEqual({ id: 'push-ups', name: 'Push-ups', enabled: true, unit: 'reps', min: 8, max: 12 });
+    // Likewise without a timer, the exercise is no longer timed; with one, it becomes timed.
+    expect(mergeExercises(exercises, [{ name: 'Plank', unit: 'hold', min: 20, max: 45 }]).exercises[2]).not.toHaveProperty('timed');
+    expect(mergeExercises(exercises, [{ name: 'Squats', unit: 'reps', min: 10, max: 15, timed: 'minutes' }]).exercises[0].timed).toBe('minutes');
     expect(exercises[0].unit).toBe('reps');
   });
 });

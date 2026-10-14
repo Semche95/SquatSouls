@@ -2,10 +2,69 @@ import { computed, onScopeDispose, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { clone } from '../configDraft.js';
 import { t, tm } from '../i18n.js';
+import { chime, startSignal, unlockSound } from '../sound.js';
 import { defineShared } from './shared.js';
 
-// Refresh rate of the pause countdown.
-const PAUSE_TICK_MS = 250;
+// Refresh rate of the countdowns.
+const TICK_MS = 250;
+// Seconds in each time unit of a timed exercise.
+const UNIT_SECONDS = { seconds: 1, minutes: 60 };
+
+// Countdown that can be held then resumed; `onEnd` runs when it reaches 0, right away for 0 s.
+function countdown() {
+  const end = ref(0);
+  const seconds = ref(0);
+  // Milliseconds left while held, 0 otherwise.
+  const heldMs = ref(0);
+  const now = ref(0);
+  let ticker;
+  let onEnd;
+  const msLeft = computed(() => heldMs.value || Math.max(0, end.value - now.value));
+  const left = computed(() => Math.ceil(msLeft.value / 1000));
+  // Share still to wait, from 1 to 0.
+  const share = computed(() => (seconds.value ? msLeft.value / (seconds.value * 1000) : 0));
+  const held = computed(() => !!heldMs.value);
+
+  function run(ms) {
+    heldMs.value = 0;
+    now.value = Date.now();
+    end.value = now.value + ms;
+    ticker = setInterval(() => {
+      now.value = Date.now();
+      if (msLeft.value) return;
+      const then = onEnd;
+      stop();
+      then?.();
+    }, TICK_MS);
+  }
+
+  function start(duration, then) {
+    stop();
+    if (!duration) return then?.();
+    seconds.value = duration;
+    onEnd = then;
+    run(duration * 1000);
+  }
+
+  function stop() {
+    clearInterval(ticker);
+    end.value = 0;
+    seconds.value = 0;
+    heldMs.value = 0;
+    onEnd = undefined;
+  }
+
+  function hold() {
+    clearInterval(ticker);
+    heldMs.value = msLeft.value;
+  }
+
+  function resume() {
+    if (heldMs.value) run(heldMs.value);
+  }
+
+  return { left, share, held, start, stop, hold, resume };
+}
 
 export const [provideSession, useSession] = defineShared(({ call }, { config, draft, game, gameId, intensity, store }) => {
   const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], jokers: 0, jokersEarned: 0, jokersSpent: 0 });
@@ -16,43 +75,65 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     if (started) farewell.value = -1;
   });
   // Pause after an exercise is done: no other can be marked done before it ends.
-  const pauseEnd = ref(0);
-  const pauseSeconds = ref(0);
-  const now = ref(0);
-  let ticker;
+  const pause = countdown();
+  const { left: pauseLeft, share: pauseShare } = pause;
   // Set whose exercise started the pause: dismissing it stops the pause.
   let pauseDrawId = 0;
-  const pauseLeft = computed(() => Math.max(0, Math.ceil((pauseEnd.value - now.value) / 1000)));
-  // Share of the pause still to wait, from 1 to 0.
-  const pauseShare = computed(() => (pauseSeconds.value ? Math.max(0, pauseEnd.value - now.value) / (pauseSeconds.value * 1000) : 0));
 
+  const exerciseOf = (item) => config.value.exercises.find((ex) => ex.id === item.exerciseId);
   // Exercise-specific pause, otherwise the global pause.
-  function pauseAfter(item) {
-    const { exercises, pause } = config.value;
-    return exercises.find((ex) => ex.id === item.exerciseId)?.pause ?? pause;
-  }
+  const pauseAfter = (item) => exerciseOf(item)?.pause ?? config.value.pause;
+  // Time unit of a timed exercise, undefined otherwise.
+  const timedUnit = (item) => exerciseOf(item)?.timed;
 
   function startPause(seconds, drawId) {
-    skipPause();
-    if (!seconds) return;
     pauseDrawId = drawId;
-    now.value = Date.now();
-    pauseEnd.value = now.value + seconds * 1000;
-    pauseSeconds.value = seconds;
-    ticker = setInterval(() => {
-      now.value = Date.now();
-      if (!pauseLeft.value) skipPause();
-    }, PAUSE_TICK_MS);
+    pause.start(seconds, () => (pauseDrawId = 0));
   }
 
   function skipPause() {
-    clearInterval(ticker);
-    pauseEnd.value = 0;
-    pauseSeconds.value = 0;
+    pause.stop();
     pauseDrawId = 0;
   }
 
-  onScopeDispose(skipPause);
+  // Timer of a timed exercise: its preparation, then its duration. Like the pause, it blocks Done.
+  const timer = countdown();
+  const { left: timerLeft, share: timerShare, held: timerHeld } = timer;
+  // Exercise timed, with its set and number, and whether the timer is still in its preparation.
+  const timing = ref(null);
+
+  function startTimer(draw, item) {
+    const unit = timedUnit(item);
+    if (!unit || pauseLeft.value || timing.value) return;
+    unlockSound();
+    timing.value = { drawId: draw.id, exerciseId: item.exerciseId, amount: item.amount, ready: true };
+    timer.start(config.value.timerPrep, () => {
+      timing.value.ready = false;
+      if (config.value.timerSound) startSignal();
+      timer.start(item.amount * UNIT_SECONDS[unit], () => timerEnded(draw, item));
+    });
+  }
+
+  function timerEnded(draw, item) {
+    timing.value = null;
+    if (config.value.timerSound) chime();
+    if (config.value.timerAutoDone) complete(draw, item);
+  }
+
+  function stopTimer() {
+    timer.stop();
+    timing.value = null;
+  }
+
+  function toggleTimer() {
+    if (timerHeld.value) timer.resume();
+    else timer.hold();
+  }
+
+  onScopeDispose(() => {
+    skipPause();
+    stopTimer();
+  });
 
   watch(session, (s) => {
     if (s.gameId) {
@@ -125,8 +206,18 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   const canAfford = (cost) => cost != null && session.value.jokers >= cost;
   const setSkipCost = (draw) => remaining(draw).reduce((sum, it) => sum + it.skipCost, 0);
 
+  // The timer stops once its exercise is no longer the one to do as it was: set dismissed or skipped,
+  // exercise halved or skipped, session cancelled.
+  watch(session, (s) => {
+    const timed = timing.value;
+    if (!timed) return;
+    const first = s.pending[0];
+    const item = first?.id === timed.drawId ? remaining(first)[0] : undefined;
+    if (item?.exerciseId !== timed.exerciseId || item.amount !== timed.amount) stopTimer();
+  });
+
   async function complete(draw, item) {
-    if (pauseLeft.value) return;
+    if (pauseLeft.value || timing.value) return;
     if (await act('complete_exercise', draw, { exerciseId: item.exerciseId })) startPause(pauseAfter(item), draw.id);
   }
 
@@ -172,7 +263,8 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   }
 
   return {
-    session, notice, farewell, pauseLeft, pauseShare, skipPause, reload, saveNow, saveChange, trigger, act, confirmDismiss, dismiss,
-    dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet, startSession, endSession, cancelSession,
+    session, notice, farewell, pauseLeft, pauseShare, skipPause, timing, timerLeft, timerShare, timerHeld, timedUnit, startTimer, stopTimer,
+    toggleTimer, reload, saveNow, saveChange, trigger, act, confirmDismiss, dismiss, dismissNow, remaining, canAfford, setSkipCost,
+    complete, halve, skipExercise, skipSet, startSession, endSession, cancelSession,
   };
 });

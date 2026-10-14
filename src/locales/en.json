@@ -18,6 +18,7 @@
   "keys": {
     "enter": "Enter",
     "escape": "Esc",
+    "space": "Space",
     "backspace": "Backspace"
   },
   "app": {
@@ -43,7 +44,7 @@
     },
     "detected": "{name} detected.",
     "ignore": "Ignore",
-    "pause": "Pause",
+    "pause": "Recovery",
     "skipPause": "Skip",
     "todo": "To do",
     "jokersTip": "H: Halve, J: Skip, on the first remaining exercise",
@@ -60,7 +61,14 @@
     "confirmDismiss": "Cancel the set? Its exercises already done will not count and will be removed from the history.",
     "dismissSet": "Cancel the set",
     "keepSet": "Keep the set",
-    "skipSet": "Skip the set ({n} joker) | Skip the set ({n} jokers)"
+    "skipSet": "Skip the set ({n} joker) | Skip the set ({n} jokers)",
+    "timer": "Timer",
+    "timing": "Timer running"
+  },
+  "timer": {
+    "ready": "Ready",
+    "hold": "Pause ({toggle}), {stop} to stop",
+    "resume": "Resume ({toggle}), {stop} to stop"
   },
   "session": {
     "pendingSets": "Sets are still to do",
@@ -160,19 +168,28 @@
       "added": "{n} added | {n} added",
       "new": "New exercise",
       "defaultUnit": "reps",
-      "pause": "Pause after each exercise (s)",
+      "pause": "Recovery after each exercise (s)",
       "unit": "Unit",
       "min": "Min",
       "max": "Max",
-      "pauseColumn": "Pause (s)",
+      "pauseColumn": "Recovery (s)",
       "enabled": "Include this exercise",
       "name": "Name of the exercise",
       "unitPlaceholder": "reps, s…",
       "minimum": "Minimum",
       "maximum": "Maximum",
-      "pauseLabel": "Pause",
+      "pauseLabel": "Recovery",
       "add": "Add an exercise",
-      "lastExercise": "At least one exercise is needed"
+      "lastExercise": "At least one exercise is needed",
+      "timed": "Timer",
+      "notTimed": "Not timed",
+      "seconds": "Seconds",
+      "timedSummary": {
+        "seconds": "Timed in seconds",
+        "minutes": "Timed in minutes"
+      },
+      "pauseSummary": "recovery {n} s",
+      "minutes": "Minutes"
     },
     "settings": {
       "language": "Language",
@@ -195,20 +212,26 @@
       "blocked": "Steam game detected, but the Steam Store is rate-limiting requests: unknown games will not be offered for up to 24 h.",
       "unnamed": "Steam game detected, name not known yet.",
       "ignored": "Ignored games",
-      "unignore": "Remove"
+      "unignore": "Remove",
+      "timer": "Timer",
+      "timerSound": "Sound when the timer starts and ends",
+      "timerAutoDone": "Mark the exercise done when the timer ends",
+      "timerPrep": "Countdown before the timer (s)",
+      "timerHint": "Offered in Play for the exercises timed in Program."
     }
   },
   "fields": {
     "error": "{field}: {error}.",
     "notCount": "a whole number is needed, 0 or more",
     "tooLarge": "number too large",
-    "globalPause": "Pause after each exercise",
+    "globalPause": "Recovery after each exercise",
     "minimum": "minimum",
     "maximum": "maximum",
-    "pause": "pause",
+    "pause": "recovery",
     "draws": "exercises required",
     "limit": "limit per session",
-    "jokers": "jokers earned"
+    "jokers": "jokers earned",
+    "timerPrep": "Countdown before the timer"
   },
   "share": {
     "text": "Shared text",

@@ -4,19 +4,21 @@ import { t } from '../i18n.js';
 import { useSession } from '../composables/useSession.js';
 import { vReveal } from '../reveal.js';
 import DisabledTip from './DisabledTip.vue';
-import PauseSeal from './PauseSeal.vue';
+import CountdownSeal from './CountdownSeal.vue';
 
 // current: set at the head of the queue, the only one to do; the next ones can only be dismissed.
 const props = defineProps({ draw: Object, current: Boolean });
 
-const { session, pauseLeft, confirmDismiss, dismiss, dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet } = useSession();
-// First remaining exercise of the current set: the only one to mark done, also targeted by shortcuts.
+const { session, pauseLeft, timing, timedUnit, startTimer, confirmDismiss, dismiss, dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet } = useSession();
+// First remaining exercise of the current set: the only one to mark done or time, also targeted by shortcuts.
 const keyed = computed(() => remaining(props.draw)[0]);
+// Why Done and the timer are blocked: pause or timer running, empty otherwise.
+const busy = computed(() => (pauseLeft.value ? t('draw.paused') : timing.value ? t('draw.timing') : ''));
 </script>
 
 <template>
   <article class="card" :class="{ current }">
-    <PauseSeal v-if="current" />
+    <CountdownSeal v-if="current" />
     <header class="card-head">
       <span>{{ draw.eventName }}</span>
       <span class="muted">{{ draw.gameName }}</span>
@@ -30,11 +32,16 @@ const keyed = computed(() => remaining(props.draw)[0]);
           <span class="muted">{{ it.unit }}<template v-if="it.halved"> · {{ t('common.halved') }}</template><template v-if="it.done"> · {{ t('draw.done') }}</template></span>
         </span>
         <span v-if="current && !it.done" class="item-actions">
-          <DisabledTip v-if="it === keyed" :tip="pauseLeft ? t('draw.paused') : ''">
-            <button class="primary" :disabled="!!pauseLeft" @click="complete(draw, it)">
-              {{ t('draw.complete') }} <kbd class="dark">{{ t('keys.enter') }}</kbd>
-            </button>
-          </DisabledTip>
+          <template v-if="it === keyed">
+            <DisabledTip :tip="busy">
+              <button class="primary" :disabled="!!busy" @click="complete(draw, it)">
+                {{ t('draw.complete') }} <kbd class="dark">{{ t('keys.enter') }}</kbd>
+              </button>
+            </DisabledTip>
+            <DisabledTip v-if="timedUnit(it)" :tip="busy">
+              <button class="ghost" :disabled="!!busy" @click="startTimer(draw, it)">{{ t('draw.timer') }} <kbd>T</kbd></button>
+            </DisabledTip>
+          </template>
           <template v-if="session.jokers">
             <DisabledTip v-if="it.halveCost" :tip="t('common.joker', it.halveCost)">
               <button class="ghost" :disabled="!canAfford(it.halveCost)" @click="halve(draw, it)">

@@ -93,6 +93,50 @@ fn pauses_are_saved() {
     assert_eq!(s.config().unwrap(), cfg);
 }
 
+#[test]
+fn timed_exercises_and_timer_settings_are_saved() {
+    let mut s = store();
+    let mut cfg = default_config(Language::Fr);
+    assert!(cfg.timer_sound && cfg.timer_auto_done);
+    assert_eq!(cfg.timer_prep, DEFAULT_TIMER_PREP);
+    cfg.timer_sound = false;
+    cfg.timer_auto_done = false;
+    cfg.timer_prep = 0;
+    cfg.exercises[0].timed = Some(TimeUnit::Minutes);
+    s.save_config(&cfg).unwrap();
+    assert_eq!(s.config().unwrap(), cfg);
+    cfg.exercises[0].timed = None;
+    s.save_config(&cfg).unwrap();
+    assert_eq!(s.config().unwrap(), cfg);
+}
+
+#[test]
+fn exercises_counted_in_time_become_timed_once_migrated() {
+    let path = legacy_db("timed", 3);
+    connect(&path)
+        .execute_batch(
+            "INSERT INTO games (id, position, name) VALUES ('sekiro', 0, 'Sekiro');
+             INSERT INTO events (game, id, position, name, draws, jokers) VALUES ('sekiro', 'death', 0, 'Death', 1, 0);
+             INSERT INTO exercises (id, position, name, unit, min, max) VALUES
+             ('plank', 0, 'Plank', ' S ', 20, 45), ('wall-sit', 1, 'Wall sit', 'secondes', 20, 45),
+             ('run', 2, 'Run', 'min', 1, 2), ('squat', 3, 'Squats', 'reps', 10, 15), ('hold', 4, 'Hold', 'seconds held', 5, 10);",
+        )
+        .unwrap();
+    let cfg = Store::open(&path, LOCALE).unwrap().config().unwrap();
+    std::fs::remove_file(&path).unwrap();
+    let timed: Vec<_> = cfg.exercises.iter().map(|ex| ex.timed).collect();
+    assert_eq!(
+        timed,
+        [
+            Some(TimeUnit::Seconds),
+            Some(TimeUnit::Seconds),
+            Some(TimeUnit::Minutes),
+            None,
+            None
+        ]
+    );
+}
+
 /// Path of a temporary database specific to test `name`, deleted beforehand.
 fn temp_db(name: &str) -> std::path::PathBuf {
     let path = std::env::temp_dir().join(format!("squatsouls-{name}-{}.db", std::process::id()));
@@ -124,7 +168,7 @@ fn applied_migrations_are_dated() {
     std::fs::remove_file(&path).unwrap();
     assert_eq!(
         applied.iter().map(|a| a.0).collect::<Vec<_>>(),
-        [1, 2, 3, 4, 5, 6],
+        [1, 2, 3, 4, 5, 6, 7],
         "a migration is applied only once"
     );
     assert!(
@@ -167,7 +211,7 @@ fn database_migrated_before_refinery_keeps_its_data() {
         let applied = applied(&path);
         std::fs::remove_file(&path).unwrap();
         assert_eq!(history.len(), 1, "{name}");
-        assert_eq!(applied.len(), 6, "{name}");
+        assert_eq!(applied.len(), 7, "{name}");
     }
 }
 

@@ -18,8 +18,35 @@ pub struct Exercise {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pause: Option<u32>,
     /// A disabled exercise stays defined but is no longer drawn.
-    #[serde(default = "default_enabled")]
+    #[serde(default = "default_true")]
     pub enabled: bool,
+    /// Time unit of the drawn number for an exercise run with the timer; otherwise, not timed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub timed: Option<TimeUnit>,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum TimeUnit {
+    Seconds,
+    Minutes,
+}
+
+impl TimeUnit {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            TimeUnit::Seconds => "seconds",
+            TimeUnit::Minutes => "minutes",
+        }
+    }
+
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "seconds" => Some(TimeUnit::Seconds),
+            "minutes" => Some(TimeUnit::Minutes),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -80,6 +107,15 @@ pub struct Config {
     /// The intensity chosen in Play is kept from one launch to the next, otherwise it starts at normal.
     #[serde(default)]
     pub remember_intensity: bool,
+    /// Sound when the timer of a timed exercise ends.
+    #[serde(default = "default_true")]
+    pub timer_sound: bool,
+    /// The timed exercise is marked done when its timer ends.
+    #[serde(default = "default_true")]
+    pub timer_auto_done: bool,
+    /// Countdown before the timer starts, in seconds.
+    #[serde(default = "default_timer_prep")]
+    pub timer_prep: u32,
     #[serde(default)]
     pub ignored_games: Vec<IgnoredGame>,
     pub exercises: Vec<Exercise>,
@@ -290,8 +326,14 @@ fn default_pause() -> u32 {
     DEFAULT_PAUSE
 }
 
-fn default_enabled() -> bool {
+fn default_true() -> bool {
     true
+}
+
+pub const DEFAULT_TIMER_PREP: u32 = 3;
+
+fn default_timer_prep() -> u32 {
+    DEFAULT_TIMER_PREP
 }
 
 pub const DEFAULT_STEAM_NOTIFY: bool = true;

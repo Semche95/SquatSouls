@@ -18,6 +18,7 @@
   "keys": {
     "enter": "Entrée",
     "escape": "Échap",
+    "space": "Espace",
     "backspace": "Retour arr."
   },
   "app": {
@@ -43,7 +44,7 @@
     },
     "detected": "{name} détecté.",
     "ignore": "Ignorer",
-    "pause": "Pause",
+    "pause": "Récup",
     "skipPause": "Passer",
     "todo": "À faire",
     "jokersTip": "H : Moitié, J : Sauter, sur le premier exercice restant",
@@ -60,7 +61,14 @@
     "confirmDismiss": "Annuler la série ? Ses exercices déjà faits ne seront pas comptés et seront retirés de l'historique.",
     "dismissSet": "Annuler la série",
     "keepSet": "Garder la série",
-    "skipSet": "Sauter la série ({n} joker) | Sauter la série ({n} jokers)"
+    "skipSet": "Sauter la série ({n} joker) | Sauter la série ({n} jokers)",
+    "timer": "Minuteur",
+    "timing": "Minuteur en cours"
+  },
+  "timer": {
+    "ready": "Prêt",
+    "hold": "Mettre en pause ({toggle}), {stop} pour arrêter",
+    "resume": "Reprendre ({toggle}), {stop} pour arrêter"
   },
   "session": {
     "pendingSets": "Des séries sont encore à faire",
@@ -160,19 +168,28 @@
       "added": "{n} ajouté | {n} ajoutés",
       "new": "Nouvel exercice",
       "defaultUnit": "rép.",
-      "pause": "Pause après chaque exercice (s)",
+      "pause": "Récupération après chaque exercice (s)",
       "unit": "Unité",
       "min": "Min",
       "max": "Max",
-      "pauseColumn": "Pause (s)",
+      "pauseColumn": "Récup (s)",
       "enabled": "Proposer cet exercice",
       "name": "Nom de l'exercice",
       "unitPlaceholder": "rép., s…",
       "minimum": "Minimum",
       "maximum": "Maximum",
-      "pauseLabel": "Pause",
+      "pauseLabel": "Récupération",
       "add": "Ajouter un exercice",
-      "lastExercise": "Il faut au moins un exercice"
+      "lastExercise": "Il faut au moins un exercice",
+      "timed": "Minuteur",
+      "notTimed": "Non chronométré",
+      "seconds": "Secondes",
+      "timedSummary": {
+        "seconds": "Chronométré en secondes",
+        "minutes": "Chronométré en minutes"
+      },
+      "pauseSummary": "récup {n} s",
+      "minutes": "Minutes"
     },
     "settings": {
       "language": "Langue",
@@ -195,20 +212,26 @@
       "blocked": "Jeu Steam détecté, mais le Steam Store limite les requêtes : les jeux inconnus ne seront plus proposés pendant 24 h au plus.",
       "unnamed": "Jeu Steam détecté, nom pas encore connu.",
       "ignored": "Jeux ignorés",
-      "unignore": "Retirer"
+      "unignore": "Retirer",
+      "timer": "Minuteur",
+      "timerSound": "Son au départ et à la fin du minuteur",
+      "timerAutoDone": "Marquer l'exercice fait à la fin du minuteur",
+      "timerPrep": "Préparation du minuteur (s)",
+      "timerHint": "Proposé dans Jouer pour les exercices chronométrés dans Programme."
     }
   },
   "fields": {
     "error": "{field} : {error}.",
     "notCount": "il faut un nombre entier, 0 ou plus",
     "tooLarge": "nombre trop grand",
-    "globalPause": "Pause après chaque exercice",
+    "globalPause": "Récupération après chaque exercice",
     "minimum": "minimum",
     "maximum": "maximum",
-    "pause": "pause",
+    "pause": "récupération",
     "draws": "exercices demandés",
     "limit": "limite par séance",
-    "jokers": "jokers gagnés"
+    "jokers": "jokers gagnés",
+    "timerPrep": "Préparation du minuteur"
   },
   "share": {
     "text": "Texte partagé",

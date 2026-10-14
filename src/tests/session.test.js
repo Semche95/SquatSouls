@@ -3,8 +3,17 @@ import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { config, emptySession, draw, rejection, responses, setup, mountApp, press, expectTip } from './app.js';
 import { rt, tm } from '../i18n.js';
+import { chime, startSignal } from '../sound.js';
+
+vi.mock('../sound.js', () => ({ chime: vi.fn(), startSignal: vi.fn(), unlockSound: vi.fn() }));
 
 describe('session', () => {
+  // Lets the countdown finish its leave transition before looking for it.
+  async function sealShown(w) {
+    await vi.advanceTimersByTimeAsync(50);
+    return w.find('.countdown-seal').exists();
+  }
+
   it('draws a set on clicking an event', async () => {
     setup({ draw: { id: 7, capped: false } });
     const w = await mountApp();
@@ -137,11 +146,6 @@ describe('session', () => {
     const pushUps = { exerciseId: 'push-ups', name: 'Push-ups', amount: 8, unit: 'reps' };
     const next = { ...draw, id: 8 };
     const doneButtons = (w) => w.findAll('.item-actions .primary');
-    // Lets the countdown finish its leave transition before looking for it.
-    async function sealShown(w) {
-      await vi.advanceTimersByTimeAsync(50);
-      return w.find('.pause-seal').exists();
-    }
 
     // Squats follow the global pause, Push-ups have their own pause; the first one of the set is marked done.
     async function completeOne(first = pushUps, pause = config.pause, own = 90) {
@@ -160,12 +164,12 @@ describe('session', () => {
 
     it('takes the exercise\'s own pause and blocks every exercise until it ends', async () => {
       const w = await completeOne();
-      expect(w.find('.pause-left').text()).toBe('1:30');
+      expect(w.find('.countdown-left').text()).toBe('1:30');
       expect(doneButtons(w).every((b) => b.element.disabled)).toBe(true);
       await press('Enter');
       expect(invoke.mock.calls.filter(([cmd]) => cmd === 'complete_exercise')).toHaveLength(1);
       await vi.advanceTimersByTimeAsync(30_000);
-      expect(w.find('.pause-left').text()).toBe('1:00');
+      expect(w.find('.countdown-left').text()).toBe('1:00');
       await vi.advanceTimersByTimeAsync(60_000);
       expect(await sealShown(w)).toBe(false);
       expect(doneButtons(w).some((b) => b.element.disabled)).toBe(false);
@@ -173,12 +177,12 @@ describe('session', () => {
 
     it('takes the global pause without an own pause', async () => {
       const w = await completeOne(draw.items[0]);
-      expect(w.find('.pause-left').text()).toBe('1:00');
+      expect(w.find('.countdown-left').text()).toBe('1:00');
     });
 
     it('is skipped with the button or Escape', async () => {
       const w = await completeOne();
-      await w.find('.pause-seal').trigger('click');
+      await w.find('.countdown-seal').trigger('click');
       expect(await sealShown(w)).toBe(false);
       await doneButtons(w)[0].trigger('click');
       await flushPromises();
@@ -204,12 +208,117 @@ describe('session', () => {
       responses.dismiss = emptySession();
       await w.findAll('.card')[1].find('.card-actions button').trigger('click');
       await flushPromises();
-      expect(w.find('.empty .pause-seal').exists()).toBe(true);
+      expect(w.find('.empty .countdown-seal').exists()).toBe(true);
     });
 
     it('does not pause when every pause is 0', async () => {
       const w = await completeOne(pushUps, 0, 0);
       expect(await sealShown(w)).toBe(false);
+    });
+  });
+
+  describe('timer of a timed exercise', () => {
+    const timerButton = (w) => w.findAll('.item-actions button').find((b) => b.text() === 'Minuteur T');
+    const doneButton = (w) => w.find('.item-actions .primary');
+    const seal = (w) => [w.find('.countdown-seal .seal-label').text(), w.find('.countdown-left').text()];
+
+    // Squats timed in `timed`, with the timer settings of `settings`; the set is the only one to do.
+    async function mountTimed(timed = 'seconds', settings = {}, item = {}) {
+      vi.useFakeTimers();
+      vi.mocked(chime).mockClear();
+      vi.mocked(startSignal).mockClear();
+      const pending = [{ ...draw, items: [{ ...draw.items[0], ...item }] }];
+      setup({
+        get_config: { config: { ...config, ...settings, exercises: [{ ...config.exercises[0], timed }] } },
+        get_session: emptySession({ pending, jokers: 2 }),
+        complete_exercise: emptySession(),
+      });
+      return mountApp();
+    }
+
+    it('is only offered for a timed exercise', async () => {
+      expect(timerButton(await mountTimed(null))).toBeUndefined();
+      expect(timerButton(await mountTimed())).toBeDefined();
+    });
+
+    it('gets ready, sounds the start, runs, then sounds the end and marks the exercise done, which starts the pause', async () => {
+      const w = await mountTimed();
+      await timerButton(w).trigger('click');
+      expect(seal(w)).toEqual(['Prêt', '0:03']);
+      expect(startSignal).not.toHaveBeenCalled();
+      expect(doneButton(w).element.disabled).toBe(true);
+      expect(timerButton(w).element.disabled).toBe(true);
+      await expectTip(doneButton(w), 'Minuteur en cours');
+      await press('Enter');
+      expect(invoke).not.toHaveBeenCalledWith('complete_exercise', expect.anything());
+      await vi.advanceTimersByTimeAsync(3000);
+      expect(seal(w)).toEqual(['Minuteur', '0:10']);
+      expect(startSignal).toHaveBeenCalledOnce();
+      expect(chime).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(10_000);
+      await flushPromises();
+      expect(chime).toHaveBeenCalledOnce();
+      expect(invoke).toHaveBeenCalledWith('complete_exercise', { drawId: 7, exerciseId: 'squat' });
+      expect(seal(w)).toEqual(['Récup', '1:00']);
+    });
+
+    it('holds and resumes on a click on the countdown or Space', async () => {
+      const w = await mountTimed('seconds', { timerPrep: 0 });
+      await timerButton(w).trigger('click');
+      await vi.advanceTimersByTimeAsync(4000);
+      await w.find('.countdown-seal').trigger('click');
+      expect(seal(w)).toEqual(['En pause', '0:06']);
+      expect(w.find('.countdown-seal kbd').text()).toBe('Espace');
+      await vi.advanceTimersByTimeAsync(20_000);
+      expect(seal(w)).toEqual(['En pause', '0:06']);
+      await press('Space');
+      expect(seal(w)).toEqual(['Minuteur', '0:06']);
+      await press('Space');
+      expect(seal(w)).toEqual(['En pause', '0:06']);
+      expect(w.find('.countdown-seal').attributes('aria-label')).toBe('Reprendre (Espace), Échap pour arrêter');
+    });
+
+    it('counts minutes and only ends silently when sound and auto done are off', async () => {
+      const w = await mountTimed('minutes', { timerPrep: 0, timerSound: false, timerAutoDone: false }, { amount: 2 });
+      await press('KeyT');
+      expect(seal(w)).toEqual(['Minuteur', '2:00']);
+      await vi.advanceTimersByTimeAsync(120_000);
+      await flushPromises();
+      expect(startSignal).not.toHaveBeenCalled();
+      expect(chime).not.toHaveBeenCalled();
+      expect(invoke).not.toHaveBeenCalledWith('complete_exercise', expect.anything());
+      expect(await sealShown(w)).toBe(false);
+      expect(doneButton(w).element.disabled).toBe(false);
+    });
+
+    it('stops with Escape, or when a joker changes its exercise', async () => {
+      const w = await mountTimed();
+      await timerButton(w).trigger('click');
+      await press('Escape');
+      expect(await sealShown(w)).toBe(false);
+      await timerButton(w).trigger('click');
+      responses.halve = emptySession({ pending: [{ ...draw, items: [{ ...draw.items[0], amount: 5, halved: true }] }], jokers: 1 });
+      await press('KeyH');
+      expect(await sealShown(w)).toBe(false);
+      await vi.advanceTimersByTimeAsync(20_000);
+      expect(invoke).not.toHaveBeenCalledWith('complete_exercise', expect.anything());
+    });
+
+    it('cannot start during the pause', async () => {
+      vi.useFakeTimers();
+      const plank = { ...draw.items[0], exerciseId: 'plank', name: 'Plank' };
+      const both = { ...draw, items: [draw.items[0], plank] };
+      setup({
+        get_config: { config: { ...config, exercises: [...config.exercises, { id: 'plank', name: 'Plank', enabled: true, unit: 's', min: 20, max: 45, timed: 'seconds' }] } },
+        get_session: emptySession({ pending: [both] }),
+        complete_exercise: emptySession({ pending: [{ ...both, items: [{ ...draw.items[0], done: true }, plank] }] }),
+      });
+      const w = await mountApp();
+      await doneButton(w).trigger('click');
+      await flushPromises();
+      expect(timerButton(w).element.disabled).toBe(true);
+      await press('KeyT');
+      expect(seal(w)).toEqual(['Récup', '1:00']);
     });
   });
 

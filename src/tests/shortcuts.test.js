@@ -25,6 +25,8 @@ describe('keyboard shortcuts', () => {
     const other = { ...draw, id: 8 };
     setup({ get_session: emptySession({ pending: [draw, other], jokers: 3 }), complete_exercise: () => responses.get_session, dismiss: () => responses.get_session, halve: () => responses.get_session, skip_exercise: () => responses.get_session });
     await mountApp();
+    await press('Space');
+    expect(invoke).not.toHaveBeenCalledWith('complete_exercise', expect.anything());
     await press('Enter');
     expect(invoke).toHaveBeenCalledWith('complete_exercise', { drawId: 7, exerciseId: 'squat' });
     await press('Backspace');

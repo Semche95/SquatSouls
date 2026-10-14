@@ -5,7 +5,7 @@ export function clone(value) {
 }
 
 // Configuration fields edited in the Settings tab; the Program tab edits all the others.
-export const SETTINGS_FIELDS = ['rememberIntensity', 'tray', 'closeToTray', 'startHidden', 'steamDetection', 'steamNotify'];
+export const SETTINGS_FIELDS = ['rememberIntensity', 'timerSound', 'timerAutoDone', 'timerPrep', 'tray', 'closeToTray', 'startHidden', 'steamDetection', 'steamNotify'];
 
 // Saved configuration with the fields of one tab taken from the draft: each tab saves and resets only its own.
 export function withTabDraft(config, draft, settings) {
@@ -74,7 +74,7 @@ export function countError(value) {
 export function numberError(cfg) {
   // Field path: names from the data, then the translated field name.
   const at = (...path) => path.slice(0, -1).concat(t(`fields.${path.at(-1)}`)).join(' › ');
-  const fields = [[cfg.pause, at('globalPause')]];
+  const fields = [[cfg.pause, at('globalPause')], [cfg.timerPrep, at('timerPrep')]];
   for (const ex of cfg.exercises) {
     fields.push([ex.min, at(ex.name, 'minimum')], [ex.max, at(ex.name, 'maximum')], [ex.pause, at(ex.name, 'pause')]);
   }
@@ -97,6 +97,7 @@ const orZero = (v) => (v === '' || v === undefined ? 0 : v);
 export function normalized(cfg) {
   const c = clone(cfg);
   c.pause = orZero(c.pause);
+  c.timerPrep = orZero(c.timerPrep);
   for (const ex of c.exercises) {
     ex.min = orZero(ex.min);
     ex.max = orZero(ex.max);

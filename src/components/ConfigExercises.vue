@@ -1,10 +1,11 @@
 <script setup>
 import { ref } from 'vue';
-import { MAX_NAME, MAX_UNIT, newId } from '../configDraft.js';
+import { newId } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { mergeExercises, parseExercises, shareExercises } from '../share.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
+import ConfigExercise from './ConfigExercise.vue';
 import CountInput from './CountInput.vue';
 import ShareImport from './ShareImport.vue';
 import DisabledTip from './DisabledTip.vue';
@@ -12,6 +13,8 @@ import DisabledTip from './DisabledTip.vue';
 const { config, draft, notify, copy } = useConfig();
 const { saveNow } = useSession();
 const importing = ref(false);
+// Exercise just added, opened to type its name.
+const freshId = ref(null);
 
 // The confirmed import is saved right away; the draft receives it without losing its other changes.
 async function importShared(imported) {
@@ -25,7 +28,9 @@ async function importShared(imported) {
 function addExercise() {
   const list = draft.value.exercises;
   const name = t('config.exercises.new');
-  list.push({ id: newId(name, list), name, enabled: true, unit: t('config.exercises.defaultUnit'), min: 5, max: 10 });
+  const id = newId(name, list);
+  list.push({ id, name, enabled: true, unit: t('config.exercises.defaultUnit'), min: 5, max: 10 });
+  freshId.value = id;
 }
 </script>
 
@@ -43,39 +48,17 @@ function addExercise() {
       <span>{{ t('config.exercises.pause') }}</span>
       <CountInput v-model="draft.pause" />
     </label>
-    <table class="cfg-table">
-      <thead>
-        <tr>
-          <th></th>
-          <th>{{ t('common.name') }}</th>
-          <th>{{ t('config.exercises.unit') }}</th>
-          <th>{{ t('config.exercises.min') }}</th>
-          <th>{{ t('config.exercises.max') }}</th>
-          <th>{{ t('config.exercises.pauseColumn') }}</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(ex, i) in draft.exercises" :key="ex.id" :class="{ 'cfg-off': !ex.enabled }">
-          <td><input v-model="ex.enabled" type="checkbox" :aria-label="t('config.exercises.enabled')" /></td>
-          <td class="cfg-name"><input v-model="ex.name" :maxlength="MAX_NAME" :aria-label="t('config.exercises.name')" /></td>
-          <td class="cfg-unit"><input v-model="ex.unit" :maxlength="MAX_UNIT" :aria-label="t('config.exercises.unit')" :placeholder="t('config.exercises.unitPlaceholder')" /></td>
-          <td><CountInput v-model="ex.min" :aria-label="t('config.exercises.minimum')" /></td>
-          <td><CountInput v-model="ex.max" :aria-label="t('config.exercises.maximum')" /></td>
-          <td><CountInput v-model="ex.pause" optional :placeholder="String(draft.pause)" :aria-label="t('config.exercises.pauseLabel')" /></td>
-          <td>
-            <DisabledTip :tip="draft.exercises.length < 2 ? t('config.exercises.lastExercise') : ''">
-              <button
-                class="ghost icon"
-                :disabled="draft.exercises.length < 2"
-                :aria-label="t('common.remove')"
-                @click="draft.exercises.splice(i, 1)"
-              >✕</button>
-            </DisabledTip>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div>
+      <ConfigExercise
+        v-for="(ex, i) in draft.exercises"
+        :key="ex.id"
+        :ex="ex"
+        :pause="draft.pause"
+        :removable="draft.exercises.length > 1"
+        :fresh="ex.id === freshId"
+        @remove="draft.exercises.splice(i, 1)"
+      />
+    </div>
     <button class="ghost" @click="addExercise">{{ t('config.exercises.add') }}</button>
   </section>
 </template>

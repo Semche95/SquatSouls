@@ -7,17 +7,34 @@ import { t } from './i18n.js';
 // compressed JSON; the short identifier placed in front (`squatsouls/game/sekiro:`, `squatsouls/exercises:`)
 // is only informative and the import ignores it.
 const MARK = 'squatsouls';
-const VERSION = 2;
+const VERSION = 3;
 const GAME = 'game';
 const EXERCISES = 'exercises';
 
 // Reads the content according to the format version that wrote it. Changing the format means moving to a
 // new version and adding a reader for it, keeping those of the previous ones to import their texts.
 // Version 2: a game can carry the Steam AppId used to detect it.
+// Version 3: an exercise can be timed; before, it is timed if its unit reads as a duration.
 const READERS = {
-  1: (data) => data,
-  2: (data) => data,
+  1: (data) => withUnitTimes(data),
+  2: (data) => withUnitTimes(data),
+  3: (data) => data,
 };
+
+// Time units of a timed exercise, and the units read as one in texts shared before exercises could be timed
+// (the same as the database migration that made the existing exercises timed).
+const TIME_UNITS = ['seconds', 'minutes'];
+const DURATION_UNITS = {
+  seconds: ['s', 'sec', 'sec.', 'secs', 'second', 'seconds', 'seconde', 'secondes'],
+  minutes: ['min', 'min.', 'mins', 'minute', 'minutes'],
+};
+
+const unitTime = (unit) => (typeof unit === 'string' ? TIME_UNITS.find((u) => DURATION_UNITS[u].includes(unit.trim().toLowerCase())) : undefined);
+
+function withUnitTimes(data) {
+  if (!Array.isArray(data.exercises)) return data;
+  return { ...data, exercises: data.exercises.map((ex) => withOptional(ex, 'timed', unitTime(ex?.unit))) };
+}
 
 const isName = (v) => typeof v === 'string' && v.trim() !== '' && isCleanText(v, MAX_NAME);
 const isList = (v, valid) => Array.isArray(v) && v.length > 0 && v.length <= MAX_ITEMS && v.every(valid);
@@ -76,12 +93,12 @@ export function shareGame(game) {
   return share(GAME, { name: game.name, steamAppId: game.steamAppId, events }, newId(game.name, []));
 }
 
-// Missing optional field (exercise-specific pause, game Steam AppId): the key is omitted.
+// Missing optional field (exercise-specific pause or timer, game Steam AppId): the key is omitted.
 const withOptional = (item, key, value) => (value === undefined ? item : { ...item, [key]: value });
 
 // The global pause and whether exercises are enabled are not shared: everyone keeps their own.
 export function shareExercises(exercises) {
-  return share(EXERCISES, { exercises: exercises.map(({ name, unit, min, max, pause }) => withOptional({ name, unit, min, max }, 'pause', pause)) });
+  return share(EXERCISES, { exercises: exercises.map(({ name, unit, min, max, pause, timed }) => withOptional(withOptional({ name, unit, min, max }, 'pause', pause), 'timed', timed)) });
 }
 
 const validEvent = (ev) =>
@@ -102,7 +119,7 @@ export function parseGame(text, exerciseCount) {
 }
 
 const validExercise = (ex) =>
-  isName(ex?.name) && isCleanText(ex.unit, MAX_UNIT) && isCount(ex.min, 0) && isCount(ex.max, 1) && ex.min <= ex.max && (ex.pause === undefined || isCount(ex.pause, 0));
+  isName(ex?.name) && isCleanText(ex.unit, MAX_UNIT) && isCount(ex.min, 0) && isCount(ex.max, 1) && ex.min <= ex.max && (ex.pause === undefined || isCount(ex.pause, 0)) && (ex.timed === undefined || TIME_UNITS.includes(ex.timed));
 
 export function parseExercises(text) {
   return firstByName(parse(text, EXERCISES, (d) => isList(d.exercises, validExercise)).exercises);
@@ -122,14 +139,15 @@ export function mergeExercises(exercises, imported) {
   const merged = exercises.map((ex) => ({ ...ex }));
   let added = 0;
   let updated = 0;
-  for (const { name, unit, min, max, pause } of imported) {
+  for (const { name, unit, min, max, pause, timed } of imported) {
     const i = merged.findIndex((e) => sameName(e.name, name));
     const ex = merged[i];
+    const shared = (item) => withOptional(withOptional({ ...item, unit, min, max }, 'pause', pause), 'timed', timed);
     if (!ex) {
-      merged.push(withOptional({ id: newId(name, merged), name: name.trim(), enabled: true, unit, min, max }, 'pause', pause));
+      merged.push(shared({ id: newId(name, merged), name: name.trim(), enabled: true }));
       added++;
-    } else if (ex.unit !== unit || ex.min !== min || ex.max !== max || ex.pause !== pause) {
-      merged[i] = withOptional({ id: ex.id, name: ex.name, enabled: ex.enabled, unit, min, max }, 'pause', pause);
+    } else if (ex.unit !== unit || ex.min !== min || ex.max !== max || ex.pause !== pause || ex.timed !== timed) {
+      merged[i] = shared({ id: ex.id, name: ex.name, enabled: ex.enabled });
       updated++;
     }
   }

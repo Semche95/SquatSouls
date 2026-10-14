@@ -3,8 +3,8 @@
 use super::{
     active_days, clean_name, count_days, default_config, last_days, window_start, Config,
     DayTotals, EventCount, Exercise, Game, GameEvent, IgnoredGame, Intensity, Jokers,
-    LanguageSetting, LogEntry, SessionRecords, SteamName, SteamNames, DEFAULT_PAUSE,
-    DEFAULT_STEAM_NOTIFY,
+    LanguageSetting, LogEntry, SessionRecords, SteamName, SteamNames, TimeUnit, DEFAULT_PAUSE,
+    DEFAULT_STEAM_NOTIFY, DEFAULT_TIMER_PREP,
 };
 use chrono::NaiveDate;
 use refinery::Target;
@@ -28,6 +28,9 @@ const CLOSE_TO_TRAY: &str = "close_to_tray";
 const START_HIDDEN: &str = "start_hidden";
 const REMEMBER_INTENSITY: &str = "remember_intensity";
 const INTENSITY: &str = "intensity";
+const TIMER_SOUND: &str = "timer_sound";
+const TIMER_AUTO_DONE: &str = "timer_auto_done";
+const TIMER_PREP: &str = "timer_prep";
 const STEAM_LAST_CALL: &str = "steam_last_call";
 const STEAM_BLOCKED_UNTIL: &str = "steam_blocked_until";
 
@@ -65,7 +68,7 @@ impl Store {
         let exercises = self
             .conn
             .prepare(
-                "SELECT id, name, unit, min, max, pause, enabled FROM exercises ORDER BY position",
+                "SELECT id, name, unit, min, max, pause, enabled, timed FROM exercises ORDER BY position",
             )?
             .query_map([], |r| {
                 Ok(Exercise {
@@ -76,6 +79,9 @@ impl Store {
                     max: r.get(4)?,
                     pause: r.get(5)?,
                     enabled: r.get(6)?,
+                    timed: r
+                        .get::<_, Option<String>>(7)?
+                        .and_then(|t| TimeUnit::parse(&t)),
                 })
             })?
             .collect::<Result<_>>()?;
@@ -125,6 +131,9 @@ impl Store {
             close_to_tray: self.parsed_setting(CLOSE_TO_TRAY, false)?,
             start_hidden: self.parsed_setting(START_HIDDEN, false)?,
             remember_intensity: self.parsed_setting(REMEMBER_INTENSITY, false)?,
+            timer_sound: self.parsed_setting(TIMER_SOUND, true)?,
+            timer_auto_done: self.parsed_setting(TIMER_AUTO_DONE, true)?,
+            timer_prep: self.parsed_setting(TIMER_PREP, DEFAULT_TIMER_PREP)?,
             ignored_games,
             exercises,
             games,
@@ -163,6 +172,21 @@ impl Store {
                 old.remember_intensity.to_string(),
                 config.remember_intensity.to_string(),
             ),
+            (
+                TIMER_SOUND,
+                old.timer_sound.to_string(),
+                config.timer_sound.to_string(),
+            ),
+            (
+                TIMER_AUTO_DONE,
+                old.timer_auto_done.to_string(),
+                config.timer_auto_done.to_string(),
+            ),
+            (
+                TIMER_PREP,
+                old.timer_prep.to_string(),
+                config.timer_prep.to_string(),
+            ),
         ];
         for (key, old, new) in settings {
             if old != new {
@@ -184,9 +208,12 @@ impl Store {
             &old.exercises,
             &config.exercises,
             |e| e.id.as_str(),
-            "INSERT INTO exercises (id, position, name, unit, min, max, pause, enabled) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
-             ON CONFLICT (id) DO UPDATE SET position = ?2, name = ?3, unit = ?4, min = ?5, max = ?6, pause = ?7, enabled = ?8",
-            |stmt, pos, e| stmt.execute(params![e.id, pos, e.name, e.unit, e.min, e.max, e.pause, e.enabled]),
+            "INSERT INTO exercises (id, position, name, unit, min, max, pause, enabled, timed) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+             ON CONFLICT (id) DO UPDATE SET position = ?2, name = ?3, unit = ?4, min = ?5, max = ?6, pause = ?7, enabled = ?8, timed = ?9",
+            |stmt, pos, e| {
+                let timed = e.timed.map(TimeUnit::as_str);
+                stmt.execute(params![e.id, pos, e.name, e.unit, e.min, e.max, e.pause, e.enabled, timed])
+            },
             "DELETE FROM exercises WHERE id = ?1",
             |stmt, e| stmt.execute([&e.id]),
         )?;
