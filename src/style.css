@@ -533,7 +533,7 @@ kbd.dark {
 .countdown-seal.held .countdown-left {
   opacity: 0.5;
 }
-/* Keeps the game name clear of the countdown. */
+/* Keeps the event name clear of the countdown. */
 .card:has(> .countdown-seal) .card-head {
   padding-right: calc(var(--seal) + 12px);
 }

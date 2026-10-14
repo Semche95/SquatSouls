@@ -21,7 +21,6 @@ const busy = computed(() => (pauseLeft.value ? t('draw.paused') : timing.value ?
     <CountdownSeal v-if="current" />
     <header class="card-head">
       <span>{{ draw.eventName }}</span>
-      <span class="muted">{{ draw.gameName }}</span>
     </header>
     <p v-if="draw.jokers" class="reward">{{ t('common.reward', draw.jokers) }}</p>
     <ul class="items">
