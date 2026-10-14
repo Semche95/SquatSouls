@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { pickSlogan } from './slogans.js';
 import { t } from './i18n.js';
@@ -14,9 +14,12 @@ import ProgramTab from './components/ProgramTab.vue';
 import ConfigFrame from './components/ConfigFrame.vue';
 import ConfigSettings from './components/ConfigSettings.vue';
 import QuitDialog from './components/QuitDialog.vue';
+import AboutDialog from './components/AboutDialog.vue';
 
 // Picked once at launch, shown under the title.
 const slogan = pickSlogan();
+
+const about = ref(false);
 
 const api = provideApi();
 const { error, call } = api;
@@ -52,6 +55,7 @@ onMounted(async () => {
         </button>
         <button :class="{ active: tab === 'program' }" @click="tab = 'program'">{{ t('app.tabs.program') }}</button>
         <button :class="{ active: tab === 'settings' }" @click="tab = 'settings'">{{ t('app.tabs.settings') }}</button>
+        <button class="about" @click="about = true">{{ t('app.about') }}</button>
       </nav>
       <dl class="hud">
         <div>
@@ -80,5 +84,6 @@ onMounted(async () => {
     <ProgramTab v-else-if="tab === 'program'" />
     <ConfigFrame v-else settings><ConfigSettings /></ConfigFrame>
     <QuitDialog />
+    <AboutDialog v-model="about" />
   </div>
 </template>

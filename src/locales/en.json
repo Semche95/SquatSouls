@@ -28,6 +28,7 @@
       "program": "Program",
       "settings": "Settings"
     },
+    "about": "About",
     "sessionSince": "Session since",
     "viewConfig": "View the program"
   },
@@ -246,6 +247,13 @@
   "quit": {
     "title": "Quit Squat Souls?",
     "confirm": "The current session stops: the sets to do and the jokers are lost, the sets done stay in the history."
+  },
+  "about": {
+    "description": "Squat Souls turns your games into a workout: boss down, missed jump, rage-inducing game over, you pay in bodyweight exercises before picking the controller back up. The harsher the game, the stronger you get. Prepare to squat.",
+    "author": "By {author}",
+    "version": "Version {version}",
+    "sourceCode": "Source code on GitHub",
+    "close": "Close"
   },
   "native": {
     "show": "Show",

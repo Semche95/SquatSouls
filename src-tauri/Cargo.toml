@@ -26,6 +26,7 @@ refinery = { version = "0.9", features = ["rusqlite"] }
 sys-locale = "0.3"
 log = "0.4"
 tauri-plugin-log = "2"
+tauri-plugin-opener = "2"
 
 [target."cfg(target_os = \"linux\")".dependencies]
 notify-rust = "4.18"

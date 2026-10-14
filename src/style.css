@@ -1286,6 +1286,7 @@ code {
     font-size: 1.6rem;
   }
   .tabs {
+    flex: 1;
     flex-direction: column;
     background: none;
     border: none;
@@ -1301,11 +1302,16 @@ code {
   .tabs button.active {
     border-left-color: var(--gold);
   }
+  /* About sits at the bottom of the sidebar, right above the session status. */
+  .tabs .about {
+    margin-top: auto;
+  }
   .hud {
     display: flex;
     flex-direction: column;
     gap: 14px;
-    margin: auto 0 0;
+    /* Close to About, above it: cancels most of the sidebar gap. */
+    margin: -16px 0 0;
     padding-top: 18px;
     border-top: 1px solid var(--line);
   }
@@ -1441,6 +1447,29 @@ code {
   color: var(--muted);
   line-height: 1.5;
   font-size: 0.92rem;
+}
+.confirm-modal-content.about-modal {
+  position: relative;
+  border-top-color: var(--gold);
+}
+.about-modal a {
+  justify-self: start;
+  color: var(--gold);
+  font-size: 0.92rem;
+}
+.modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: none;
+  background: none;
+  padding: 2px 8px;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--muted);
+}
+.modal-close:hover {
+  color: var(--text);
 }
 .confirm-modal-content .card-actions {
   justify-content: space-between;

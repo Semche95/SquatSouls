@@ -3,6 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "license": "MIT",
+  "author": "Semche95",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Semche95/SquatSouls"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,6 +19,7 @@
   "dependencies": {
     "@tauri-apps/api": "^2.12.2",
     "@tauri-apps/plugin-log": "^2.10.1",
+    "@tauri-apps/plugin-opener": "^2.7.1",
     "fflate": "^0.8.3",
     "floating-vue": "^5.4.0",
     "vue": "^3.5.43",

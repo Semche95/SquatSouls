@@ -459,7 +459,7 @@ describe('language', () => {
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('set_language', { setting: 'en' });
     expect(invoke.mock.calls.some(([cmd]) => cmd === 'save_config')).toBe(false);
-    expect(w.findAll('.tabs button').map((b) => b.text())).toEqual(['Play', 'History', 'Program', 'Settings']);
+    expect(w.findAll('.tabs button').map((b) => b.text())).toEqual(['Play', 'History', 'Program', 'Settings', 'About']);
     expect(w.find('.cfg-settings .setting').text()).toContain('Language');
     expect(select(w).find('option').text()).toBe('System language');
     expect(document.documentElement.lang).toBe('en');
