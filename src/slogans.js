@@ -50,6 +50,7 @@ export const slogans = [
   'Amazing effort ahead. Therefore, try rest.',
   'Here, there\'s an easy mode.',
   'Treat every rep like a new area: slowly, carefully, and watching your step.',
+  'Your body, your rules: character creation is nobody else\'s business.',
 ];
 
 // Slogans already shown since the list was last cleared, kept from one launch to the next.
