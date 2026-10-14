@@ -367,10 +367,14 @@ kbd.dark {
   background: var(--panel);
   color: var(--muted);
 }
-.banner.steam {
+.banner.steam,
+.banner.update {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+.banner.update {
+  margin-bottom: 12px;
 }
 .banner.steam {
   border-color: var(--gold);
@@ -382,6 +386,7 @@ kbd.dark {
 }
 /* Actions pushed to the right of the text. */
 .banner.steam .row,
+.banner.update .row,
 .ignored .row {
   margin-left: auto;
 }

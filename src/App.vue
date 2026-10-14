@@ -15,6 +15,7 @@ import ConfigFrame from './components/ConfigFrame.vue';
 import ConfigSettings from './components/ConfigSettings.vue';
 import QuitDialog from './components/QuitDialog.vue';
 import AboutDialog from './components/AboutDialog.vue';
+import UpdateBanner from './components/UpdateBanner.vue';
 
 // Picked once at launch, shown under the title.
 const slogan = pickSlogan();
@@ -73,6 +74,7 @@ onMounted(async () => {
       </dl>
     </header>
 
+    <UpdateBanner />
     <p v-if="error" class="banner error">{{ error }}</p>
     <p v-if="configError && !['program', 'settings'].includes(tab)" class="banner error">
       {{ configError }}

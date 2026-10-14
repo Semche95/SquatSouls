@@ -16,7 +16,7 @@ On save, only the modified exercises, games and events are rewritten.
 
 ## Migrations
 
-The schema lives in `src-tauri/migrations/`, one `V<n>__<name>.sql` file per migration. At launch, the database receives the schema migrations it is missing, each dated when applied. A migration is never modified once created: every schema change adds a new one. A database created by a newer version of the app is refused.
+The schema lives in `src-tauri/migrations/`, one `V<n>__<name>.sql` file per migration. At launch, the database receives the schema migrations it is missing, each dated when applied. A migration is never modified once created: every schema change adds a new one. A database created by a newer version of the app is refused. Updates and reinstalls never touch the database folder, so the data is kept from one version to the next.
 
 ## Logs
 

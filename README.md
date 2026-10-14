@@ -2,7 +2,7 @@
 
 Turn what happens in your games into bodyweight exercises.
 
-![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux-informational)
+![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-informational)
 ![Tauri 2](https://img.shields.io/badge/Tauri-2-informational)
 ![Vue 3](https://img.shields.io/badge/Vue-3-informational)
 [![License: MIT](https://img.shields.io/badge/license-MIT-informational)](LICENSE)
@@ -39,11 +39,15 @@ You configure your own games, events and exercises. The defaults are only a star
 
 | OS | Packages | Status |
 | --- | --- | --- |
-| Windows | `.msi`, `.exe` | Tested |
-| macOS | | Coming later |
+| Windows | `.exe` | Tested |
+| macOS | `.dmg` | Not tested |
 | Linux | `.deb`, `.rpm`, `.AppImage` | Developed and used on Arch Linux |
 
-No release is published yet. Packages are artifacts of the [Build workflow](https://github.com/Semche95/SquatSouls/actions/workflows/build.yml): open a successful run and download `squat-souls-windows` or `squat-souls-linux` (GitHub sign-in required).
+Packages are on the [Releases](https://github.com/Semche95/SquatSouls/releases) page. The app then updates itself, except the `.deb` and `.rpm` packages. The macOS app is not signed by Apple: the first time, macOS blocks it, then lets you open it with **Open Anyway** in **System Settings**, **Privacy & Security**.
+
+### Publish a release
+
+Set the version in `package.json` and `src-tauri/Cargo.toml`, then push a `v<version>` tag: the [Build workflow](https://github.com/Semche95/SquatSouls/actions/workflows/build.yml) creates a draft release, which the app offers once published. It signs the updates with the private key of the `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` repository secrets, matching the public key of `src-tauri/tauri.conf.json`.
 
 ### Build from source
 

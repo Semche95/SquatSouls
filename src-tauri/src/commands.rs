@@ -6,12 +6,13 @@ use crate::app::{
 };
 use crate::state::{lock, now, AppState, ConfigView, LanguageView, NativeTexts, Shared};
 use crate::tray;
+use crate::update::{self, PendingUpdate};
 use chrono::Local;
 use std::sync::Mutex;
 use std::time::Duration;
 use sysinfo::{ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind};
 use tauri::async_runtime::spawn_blocking;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, State};
 
 const HISTORY_UNREADABLE: &str = "History unreadable";
 
@@ -77,6 +78,18 @@ pub(crate) fn request_quit(app: AppHandle) {
 #[tauri::command]
 pub(crate) fn quit(app: AppHandle) {
     app.exit(0);
+}
+
+/// Version of the downloaded update waiting to be installed, if any.
+#[tauri::command]
+pub(crate) fn get_update(pending: State<'_, PendingUpdate>) -> Option<String> {
+    pending.version()
+}
+
+/// Installs the downloaded update right away and restarts the app.
+#[tauri::command]
+pub(crate) fn restart_to_update(app: AppHandle) -> Result<(), AppError> {
+    update::install_and_restart(&app)
 }
 
 #[tauri::command]

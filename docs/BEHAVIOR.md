@@ -137,6 +137,13 @@ Button and setting names are quoted as they appear in the English interface.
 - An imported game is added, or replaces the game with the same name (ignoring case and surrounding spaces): the form announces it before the import. Without a Steam AppId in the import, the replaced game keeps its own. An event that draws more exercises than are defined is capped at that number, and the confirmation message reports it.
 - Imported exercises update the unit, minimum, maximum, own recovery and timer of those with the same name (without an own recovery in the import, the exercise goes back to the global recovery; without a timer, it is no longer timed) and add the others; no exercise is removed.
 
+## Update
+
+- At launch, the installed app looks for a newer version among the published releases and downloads it in the background. Offline or on failure, nothing is shown: only a warning is logged. The development app, and on Linux the `.deb` and `.rpm` packages (updated by their package manager), never look for one.
+- Once downloaded, a banner at the top of the window announces that the version will be installed on quitting, with a **Restart now** button that installs it and restarts the app. During a session, the button is disabled, and its tooltip says it is available once the session is over.
+- Quitting the app (whatever the way) installs the downloaded update, without restarting it. An update never interrupts a session.
+- The database is kept from one version to the next: the new version applies its missing migrations at launch.
+
 ## About
 
 - **About**, last entry of the menu (at the bottom of the sidebar, right above the session status), opens a window without leaving the current tab: a description of the app, its author, its version and a **Source code on GitHub** link, which opens the repository in the default browser. Its cross in the top right corner or Escape closes it.

@@ -1,7 +1,8 @@
 //! Notification area icon, window hidden rather than closed depending on the configuration, and quitting,
-//! confirmed by the interface during a session.
+//! confirmed by the interface during a session, installing the downloaded update.
 
 use crate::state::{AppState, NativeTexts};
+use crate::update;
 use std::sync::Mutex;
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
@@ -44,16 +45,17 @@ pub(crate) fn request_quit(app: &AppHandle) {
 }
 
 /// Quitting by the system (Cmd+Q in the macOS menu) during a session waits for the confirmation.
-/// `app.exit` gives a code and is never held back.
+/// `app.exit` gives a code and is never held back. Once quitting, the downloaded update is installed.
 pub(crate) fn on_run_event(app: &AppHandle, event: RunEvent) {
-    if let RunEvent::ExitRequested {
-        code: None, api, ..
-    } = event
-    {
-        if in_session(app) {
+    match event {
+        RunEvent::ExitRequested {
+            code: None, api, ..
+        } if in_session(app) => {
             api.prevent_exit();
             confirm_quit(app);
         }
+        RunEvent::Exit => update::install_on_exit(app),
+        _ => {}
     }
 }
 

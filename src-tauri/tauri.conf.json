@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Squat Souls",
-  "version": "0.1.0",
+  "version": "../package.json",
   "identifier": "com.semche.squatsouls",
   "build": {
     "beforeDevCommand": "pnpm dev",
@@ -34,6 +34,20 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "macOS": {
+      "signingIdentity": "-"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM5NTU4OEZEQjYxOEM0MDIKUldRQ3hCaTIvWWhWeVluT0RHNm5kc2N5dnkxZHJZTk0zc1ZPbHpSU05QanY1bHFxQk12N0ozNVAK",
+      "endpoints": [
+        "https://github.com/Semche95/SquatSouls/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

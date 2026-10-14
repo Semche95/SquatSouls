@@ -2,12 +2,14 @@ pub mod app;
 mod commands;
 mod state;
 mod tray;
+mod update;
 
 use app::Store;
 use state::AppState;
 use std::fs;
 use std::sync::Mutex;
 use tauri::Manager;
+use update::PendingUpdate;
 use tauri_plugin_log::{RotationStrategy, Target, TargetKind, TimezoneStrategy};
 
 /// Size beyond which the log file is archived, and number of archives kept.
@@ -61,6 +63,7 @@ pub fn run() {
         )
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             let dir = app.path().app_config_dir()?;
             fs::create_dir_all(&dir)?;
@@ -80,6 +83,8 @@ pub fn run() {
                 tray::show_main(app.handle());
             }
             app.manage(Mutex::new(state));
+            app.manage(PendingUpdate::default());
+            update::check(app.handle());
             Ok(())
         })
         .on_window_event(tray::on_window_event)
@@ -91,6 +96,8 @@ pub fn run() {
             commands::set_native_texts,
             commands::request_quit,
             commands::quit,
+            commands::get_update,
+            commands::restart_to_update,
             commands::draw,
             commands::set_session_intensity,
             commands::complete_exercise,

@@ -257,6 +257,11 @@
     "sourceCode": "Code source sur GitHub",
     "close": "Fermer"
   },
+  "update": {
+    "ready": "La version {version} sera installée en quittant.",
+    "restart": "Redémarrer maintenant",
+    "restartLocked": "Disponible une fois la séance terminée"
+  },
   "native": {
     "show": "Afficher",
     "quit": "Quitter",

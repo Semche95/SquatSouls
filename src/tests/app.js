@@ -84,8 +84,8 @@ export async function openSettings(w) {
 }
 
 // Simulates a backend event, received by the last listener mounted.
-export function emitEvent(name) {
-  listen.mock.calls.findLast(([n]) => n === name)[1]();
+export function emitEvent(name, payload) {
+  listen.mock.calls.findLast(([n]) => n === name)[1]({ payload });
   return flushPromises();
 }
 
