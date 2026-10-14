@@ -207,6 +207,15 @@ describe('launched Steam game notification', () => {
     expect(notifications()).toHaveLength(2);
   });
 
+  it('does not notify a game already selected, even once another one is selected', async () => {
+    vi.useFakeTimers();
+    setupSteam({ get_last_game: 'er' });
+    const w = await mountApp();
+    await w.find('.play select').setValue('sekiro');
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(notifications()).toEqual([]);
+  });
+
   it('notifies an unknown game once its name is known', async () => {
     setupSteam({ running_steam_app: 367520, steam_game_name: 'Hollow Knight' });
     await mountApp();

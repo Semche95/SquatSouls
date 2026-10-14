@@ -40,12 +40,14 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
     return { appId, name: named[0]?.name ?? name, games: named, ignored: false };
   }
 
-  // One notification per launch, once the name is known, except for an ignored game. Its texts are
-  // those sent to the backend for the current language.
+  // One notification per launch, once the name is known, except for an ignored game. A game already selected
+  // counts as notified, so selecting another one does not notify it until relaunched. Its texts are those sent
+  // to the backend for the current language.
   async function notify(found) {
     if (found?.appId !== notified) notified = null;
     if (!found?.name || found.ignored || notified !== null || !config.value.steamNotify) return;
     notified = found.appId;
+    if (found.games.some((g) => g.id === gameId.value)) return;
     await invoke('notify', { name: found.name, configured: found.games.length > 0 });
   }
 
