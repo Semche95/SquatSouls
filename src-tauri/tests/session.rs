@@ -553,7 +553,7 @@ fn a_saved_configuration_keeps_the_sets_to_do() {
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
     event_mut(&mut cfg, "ds3", "boss").name = "Boss defeated".into();
-    cfg.pause = 30;
+    cfg.recovery = 30;
     s.apply_config(&cfg, &mut r);
     let kept = pending(&s, boss.id).expect("the set remains to do");
     assert_eq!(kept.items, boss.items, "same exercises, same numbers");

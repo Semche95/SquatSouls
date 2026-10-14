@@ -179,22 +179,22 @@ describe('configuration', () => {
     expect(sent.exercises).toEqual([expect.objectContaining({ id: 'squat', enabled: false })]);
   });
 
-  it('sets the global pause and an exercise\'s own pause', async () => {
+  it('sets the global recovery and an exercise\'s own recovery', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openExercises();
     const own = () => w.find('input[aria-label="Récupération"]');
-    await w.find('.cfg-pause input').setValue(45);
+    await w.find('.cfg-recovery input').setValue(45);
     expect(own().attributes('placeholder')).toBe('45');
     await own().setValue('90');
     expect(w.find('.cfg-exercise .cfg-event-head').text()).toContain('récup 90 s');
     await w.find('.cfg-actions .primary').trigger('click');
     await flushPromises();
     const sent = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)[1].config;
-    expect(sent()).toMatchObject({ pause: 45, exercises: [{ id: 'squat', pause: 90 }] });
+    expect(sent()).toMatchObject({ recovery: 45, exercises: [{ id: 'squat', recovery: 90 }] });
     await own().setValue('');
     await w.find('.cfg-actions .primary').trigger('click');
     await flushPromises();
-    expect(sent().exercises[0]).not.toHaveProperty('pause');
+    expect(sent().exercises[0]).not.toHaveProperty('recovery');
   });
 
   it('times an exercise in seconds or minutes, or no longer', async () => {

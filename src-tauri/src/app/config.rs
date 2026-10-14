@@ -14,9 +14,9 @@ pub struct Exercise {
     /// Range of the drawn number, bounds included.
     pub min: u32,
     pub max: u32,
-    /// Exercise-specific pause, in seconds; otherwise, the global pause.
+    /// Exercise-specific recovery, in seconds; otherwise, the global recovery.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub pause: Option<u32>,
+    pub recovery: Option<u32>,
     /// A disabled exercise stays defined but is no longer drawn.
     #[serde(default = "default_true")]
     pub enabled: bool,
@@ -86,9 +86,9 @@ pub struct IgnoredGame {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Config {
-    /// Pause after each exercise done, in seconds, for exercises without their own pause.
-    #[serde(default = "default_pause")]
-    pub pause: u32,
+    /// Recovery after each exercise done, in seconds, for exercises without their own recovery.
+    #[serde(default = "default_recovery")]
+    pub recovery: u32,
     /// Detection of the running Steam game, disabled by default.
     #[serde(default)]
     pub steam_detection: bool,
@@ -320,10 +320,10 @@ pub fn event(id: &str, name: &str, draws: u32, max: Option<u32>) -> GameEvent {
     }
 }
 
-pub const DEFAULT_PAUSE: u32 = 60;
+pub const DEFAULT_RECOVERY: u32 = 60;
 
-fn default_pause() -> u32 {
-    DEFAULT_PAUSE
+fn default_recovery() -> u32 {
+    DEFAULT_RECOVERY
 }
 
 fn default_true() -> bool {

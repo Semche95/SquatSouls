@@ -74,32 +74,32 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   watch(() => session.value.startedAt, (started) => {
     if (started) farewell.value = -1;
   });
-  // Pause after an exercise is done: no other can be marked done before it ends.
-  const pause = countdown();
-  const { left: pauseLeft, share: pauseShare } = pause;
-  // Set whose exercise started the pause: dismissing it stops the pause.
-  let pauseDrawId = 0;
+  // Recovery after an exercise is done: no other can be marked done before it ends.
+  const recovery = countdown();
+  const { left: recoveryLeft, share: recoveryShare } = recovery;
+  // Set whose exercise started the recovery: dismissing it stops the recovery.
+  let recoveryDrawId = 0;
 
   const exerciseOf = (item) => config.value.exercises.find((ex) => ex.id === item.exerciseId);
-  // Exercise-specific pause, otherwise the global pause.
-  const pauseAfter = (item) => exerciseOf(item)?.pause ?? config.value.pause;
+  // Exercise-specific recovery, otherwise the global recovery.
+  const recoveryAfter = (item) => exerciseOf(item)?.recovery ?? config.value.recovery;
   // Time unit of a timed exercise, undefined otherwise.
   const timedUnit = (item) => exerciseOf(item)?.timed;
 
-  function startPause(seconds, drawId) {
-    pauseDrawId = drawId;
-    pause.start(seconds, () => {
-      pauseDrawId = 0;
+  function startRecovery(seconds, drawId) {
+    recoveryDrawId = drawId;
+    recovery.start(seconds, () => {
+      recoveryDrawId = 0;
       if (config.value.sound) recoveryEnd();
     });
   }
 
-  function skipPause() {
-    pause.stop();
-    pauseDrawId = 0;
+  function skipRecovery() {
+    recovery.stop();
+    recoveryDrawId = 0;
   }
 
-  // Timer of a timed exercise: its preparation, then its duration. Like the pause, it blocks Done.
+  // Timer of a timed exercise: its preparation, then its duration. Like the recovery, it blocks Done.
   const timer = countdown();
   const { left: timerLeft, share: timerShare, held: timerHeld } = timer;
   // Exercise timed, with its set and number, and whether the timer is still in its preparation.
@@ -107,7 +107,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   function startTimer(draw, item) {
     const unit = timedUnit(item);
-    if (!unit || pauseLeft.value || timing.value) return;
+    if (!unit || recoveryLeft.value || timing.value) return;
     timing.value = { drawId: draw.id, exerciseId: item.exerciseId, amount: item.amount, ready: true };
     timer.start(config.value.timerPrep, () => {
       timing.value.ready = false;
@@ -133,7 +133,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   }
 
   onScopeDispose(() => {
-    skipPause();
+    skipRecovery();
     stopTimer();
   });
 
@@ -209,7 +209,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   async function dismissNow(draw) {
     confirmDismiss.value = 0;
-    if ((await act('dismiss', draw)) && draw.id === pauseDrawId) skipPause();
+    if ((await act('dismiss', draw)) && draw.id === recoveryDrawId) skipRecovery();
   }
 
   // Exercises of the set still to do.
@@ -229,8 +229,8 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   });
 
   async function complete(draw, item) {
-    if (pauseLeft.value || timing.value) return;
-    if (await act('complete_exercise', draw, { exerciseId: item.exerciseId })) startPause(pauseAfter(item), draw.id);
+    if (recoveryLeft.value || timing.value) return;
+    if (await act('complete_exercise', draw, { exerciseId: item.exerciseId })) startRecovery(recoveryAfter(item), draw.id);
   }
 
   function halve(draw, item) {
@@ -255,7 +255,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   async function endSession() {
     notice.value = '';
-    skipPause();
+    skipRecovery();
     try {
       session.value = await call('end_session');
       farewell.value = Math.floor(Math.random() * tm('session.farewells').length);
@@ -266,7 +266,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   async function cancelSession() {
     notice.value = '';
-    skipPause();
+    skipRecovery();
     try {
       session.value = await call('cancel_session');
     } catch {
@@ -275,7 +275,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   }
 
   return {
-    session, notice, farewell, pauseLeft, pauseShare, skipPause, timing, timerLeft, timerShare, timerHeld, timedUnit, startTimer, stopTimer,
+    session, notice, farewell, recoveryLeft, recoveryShare, skipRecovery, timing, timerLeft, timerShare, timerHeld, timedUnit, startTimer, stopTimer,
     toggleTimer, reload, saveNow, saveChange, trigger, act, confirmDismiss, dismiss, dismissNow, remaining, canAfford, setSkipCost,
     complete, halve, skipExercise, skipSet, startSession, endSession, cancelSession,
   };

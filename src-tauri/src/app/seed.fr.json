@@ -1,5 +1,5 @@
 {
-  "pause": 60,
+  "recovery": 60,
   "exercises": [
     {
       "id": "pompes",

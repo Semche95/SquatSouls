@@ -3,7 +3,7 @@
 use super::{
     active_days, clean_name, count_days, default_config, last_days, window_start, Config,
     DayTotals, EventCount, Exercise, Game, GameEvent, IgnoredGame, Intensity, Jokers,
-    LanguageSetting, LogEntry, SessionRecords, SteamName, SteamNames, TimeUnit, DEFAULT_PAUSE,
+    LanguageSetting, LogEntry, SessionRecords, SteamName, SteamNames, TimeUnit, DEFAULT_RECOVERY,
     DEFAULT_STEAM_NOTIFY, DEFAULT_TIMER_PREP,
 };
 use chrono::NaiveDate;
@@ -20,7 +20,7 @@ refinery::embed_migrations!("migrations");
 
 const LAST_GAME: &str = "last_game";
 const LANGUAGE: &str = "language";
-const PAUSE: &str = "pause";
+const RECOVERY: &str = "recovery";
 const STEAM_DETECTION: &str = "steam_detection";
 const STEAM_NOTIFY: &str = "steam_notify";
 const TRAY: &str = "tray";
@@ -68,7 +68,7 @@ impl Store {
         let exercises = self
             .conn
             .prepare(
-                "SELECT id, name, unit, min, max, pause, enabled, timed FROM exercises ORDER BY position",
+                "SELECT id, name, unit, min, max, recovery, enabled, timed FROM exercises ORDER BY position",
             )?
             .query_map([], |r| {
                 Ok(Exercise {
@@ -77,7 +77,7 @@ impl Store {
                     unit: r.get(2)?,
                     min: r.get(3)?,
                     max: r.get(4)?,
-                    pause: r.get(5)?,
+                    recovery: r.get(5)?,
                     enabled: r.get(6)?,
                     timed: r
                         .get::<_, Option<String>>(7)?
@@ -124,7 +124,7 @@ impl Store {
             })?
             .collect::<Result<_>>()?;
         Ok(Config {
-            pause: self.parsed_setting(PAUSE, DEFAULT_PAUSE)?,
+            recovery: self.parsed_setting(RECOVERY, DEFAULT_RECOVERY)?,
             steam_detection: self.parsed_setting(STEAM_DETECTION, false)?,
             steam_notify: self.parsed_setting(STEAM_NOTIFY, DEFAULT_STEAM_NOTIFY)?,
             tray: self.parsed_setting(TRAY, false)?,
@@ -145,7 +145,11 @@ impl Store {
         let old = self.config()?;
         let tx = self.conn.transaction()?;
         let settings = [
-            (PAUSE, old.pause.to_string(), config.pause.to_string()),
+            (
+                RECOVERY,
+                old.recovery.to_string(),
+                config.recovery.to_string(),
+            ),
             (
                 STEAM_DETECTION,
                 old.steam_detection.to_string(),
@@ -204,11 +208,11 @@ impl Store {
             &old.exercises,
             &config.exercises,
             |e| e.id.as_str(),
-            "INSERT INTO exercises (id, position, name, unit, min, max, pause, enabled, timed) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
-             ON CONFLICT (id) DO UPDATE SET position = ?2, name = ?3, unit = ?4, min = ?5, max = ?6, pause = ?7, enabled = ?8, timed = ?9",
+            "INSERT INTO exercises (id, position, name, unit, min, max, recovery, enabled, timed) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+             ON CONFLICT (id) DO UPDATE SET position = ?2, name = ?3, unit = ?4, min = ?5, max = ?6, recovery = ?7, enabled = ?8, timed = ?9",
             |stmt, pos, e| {
                 let timed = e.timed.map(TimeUnit::as_str);
-                stmt.execute(params![e.id, pos, e.name, e.unit, e.min, e.max, e.pause, e.enabled, timed])
+                stmt.execute(params![e.id, pos, e.name, e.unit, e.min, e.max, e.recovery, e.enabled, timed])
             },
             "DELETE FROM exercises WHERE id = ?1",
             |stmt, e| stmt.execute([&e.id]),

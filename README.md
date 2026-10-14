@@ -12,7 +12,7 @@ Turn what happens in your games into bodyweight exercises.
 
 | Recovery | History | Settings |
 | --- | --- | --- |
-| ![Recovery between two exercises](docs/screenshots/pause.png) | ![History tab](docs/screenshots/history.png) | ![Settings tab](docs/screenshots/settings.png) |
+| ![Recovery between two exercises](docs/screenshots/recovery.png) | ![History tab](docs/screenshots/history.png) | ![Settings tab](docs/screenshots/settings.png) |
 
 | Program: games | Program: exercises |
 | --- | --- |

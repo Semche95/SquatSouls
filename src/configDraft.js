@@ -74,9 +74,9 @@ export function countError(value) {
 export function numberError(cfg) {
   // Field path: names from the data, then the translated field name.
   const at = (...path) => path.slice(0, -1).concat(t(`fields.${path.at(-1)}`)).join(' › ');
-  const fields = [[cfg.pause, at('globalPause')], [cfg.timerPrep, at('timerPrep')]];
+  const fields = [[cfg.recovery, at('globalRecovery')], [cfg.timerPrep, at('timerPrep')]];
   for (const ex of cfg.exercises) {
-    fields.push([ex.min, at(ex.name, 'minimum')], [ex.max, at(ex.name, 'maximum')], [ex.pause, at(ex.name, 'pause')]);
+    fields.push([ex.min, at(ex.name, 'minimum')], [ex.max, at(ex.name, 'maximum')], [ex.recovery, at(ex.name, 'recovery')]);
   }
   for (const g of cfg.games) {
     for (const ev of g.events) {
@@ -96,7 +96,7 @@ const orZero = (v) => (v === '' || v === undefined ? 0 : v);
 
 export function normalized(cfg) {
   const c = clone(cfg);
-  c.pause = orZero(c.pause);
+  c.recovery = orZero(c.recovery);
   c.timerPrep = orZero(c.timerPrep);
   for (const ex of c.exercises) {
     ex.min = orZero(ex.min);

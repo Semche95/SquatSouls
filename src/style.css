@@ -458,7 +458,7 @@ kbd.dark {
   box-shadow: 0 0 0 1px var(--gold-soft), 0 8px 30px rgba(201, 164, 92, 0.08);
 }
 
-/* Pause countdown astride the top border of the current set, or of the empty block. */
+/* Recovery countdown astride the top border of the current set, or of the empty block. */
 .card.current,
 .empty {
   position: relative;
@@ -1001,11 +1001,11 @@ label.check {
 .config .check select {
   min-width: 11em;
 }
-.cfg-pause {
+.cfg-recovery {
   align-self: flex-start;
 }
 
-.config .cfg-pause input {
+.config .cfg-recovery input {
   flex: none;
   width: 5.5em;
 }
@@ -1163,7 +1163,7 @@ label.check {
 .cfg-exercise-head .cfg-event-head:active {
   transform: none;
 }
-/* The name gives way first: the pause and the timer icon stay against the range. */
+/* The name gives way first: the recovery and the timer icon stay against the range. */
 .cfg-exercise-head strong {
   min-width: 0;
   margin-right: auto;

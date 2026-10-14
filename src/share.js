@@ -7,7 +7,7 @@ import { t } from './i18n.js';
 // compressed JSON; the short identifier placed in front (`squatsouls/game/sekiro:`, `squatsouls/exercises:`)
 // is only informative and the import ignores it.
 const MARK = 'squatsouls';
-const VERSION = 3;
+const VERSION = 4;
 const GAME = 'game';
 const EXERCISES = 'exercises';
 
@@ -15,10 +15,12 @@ const EXERCISES = 'exercises';
 // new version and adding a reader for it, keeping those of the previous ones to import their texts.
 // Version 2: a game can carry the Steam AppId used to detect it.
 // Version 3: an exercise can be timed; before, it is timed if its unit reads as a duration.
+// Version 4: an exercise's own recovery is named `recovery`; before, `pause`.
 const READERS = {
-  1: (data) => withUnitTimes(data),
-  2: (data) => withUnitTimes(data),
-  3: (data) => data,
+  1: (data) => withRecoveries(withUnitTimes(data)),
+  2: (data) => withRecoveries(withUnitTimes(data)),
+  3: (data) => withRecoveries(data),
+  4: (data) => data,
 };
 
 // Time units of a timed exercise, and the units read as one in texts shared before exercises could be timed
@@ -34,6 +36,11 @@ const unitTime = (unit) => (typeof unit === 'string' ? TIME_UNITS.find((u) => DU
 function withUnitTimes(data) {
   if (!Array.isArray(data.exercises)) return data;
   return { ...data, exercises: data.exercises.map((ex) => withOptional(ex, 'timed', unitTime(ex?.unit))) };
+}
+
+function withRecoveries(data) {
+  if (!Array.isArray(data.exercises)) return data;
+  return { ...data, exercises: data.exercises.map(({ pause, ...ex }) => withOptional(ex, 'recovery', pause)) };
 }
 
 const isName = (v) => typeof v === 'string' && v.trim() !== '' && isCleanText(v, MAX_NAME);
@@ -93,12 +100,12 @@ export function shareGame(game) {
   return share(GAME, { name: game.name, steamAppId: game.steamAppId, events }, newId(game.name, []));
 }
 
-// Missing optional field (exercise-specific pause or timer, game Steam AppId): the key is omitted.
+// Missing optional field (exercise-specific recovery or timer, game Steam AppId): the key is omitted.
 const withOptional = (item, key, value) => (value === undefined ? item : { ...item, [key]: value });
 
-// The global pause and whether exercises are enabled are not shared: everyone keeps their own.
+// The global recovery and whether exercises are enabled are not shared: everyone keeps their own.
 export function shareExercises(exercises) {
-  return share(EXERCISES, { exercises: exercises.map(({ name, unit, min, max, pause, timed }) => withOptional(withOptional({ name, unit, min, max }, 'pause', pause), 'timed', timed)) });
+  return share(EXERCISES, { exercises: exercises.map(({ name, unit, min, max, recovery, timed }) => withOptional(withOptional({ name, unit, min, max }, 'recovery', recovery), 'timed', timed)) });
 }
 
 const validEvent = (ev) =>
@@ -119,7 +126,7 @@ export function parseGame(text, exerciseCount) {
 }
 
 const validExercise = (ex) =>
-  isName(ex?.name) && isCleanText(ex.unit, MAX_UNIT) && isCount(ex.min, 0) && isCount(ex.max, 1) && ex.min <= ex.max && (ex.pause === undefined || isCount(ex.pause, 0)) && (ex.timed === undefined || TIME_UNITS.includes(ex.timed));
+  isName(ex?.name) && isCleanText(ex.unit, MAX_UNIT) && isCount(ex.min, 0) && isCount(ex.max, 1) && ex.min <= ex.max && (ex.recovery === undefined || isCount(ex.recovery, 0)) && (ex.timed === undefined || TIME_UNITS.includes(ex.timed));
 
 export function parseExercises(text) {
   return firstByName(parse(text, EXERCISES, (d) => isList(d.exercises, validExercise)).exercises);
@@ -139,14 +146,14 @@ export function mergeExercises(exercises, imported) {
   const merged = exercises.map((ex) => ({ ...ex }));
   let added = 0;
   let updated = 0;
-  for (const { name, unit, min, max, pause, timed } of imported) {
+  for (const { name, unit, min, max, recovery, timed } of imported) {
     const i = merged.findIndex((e) => sameName(e.name, name));
     const ex = merged[i];
-    const shared = (item) => withOptional(withOptional({ ...item, unit, min, max }, 'pause', pause), 'timed', timed);
+    const shared = (item) => withOptional(withOptional({ ...item, unit, min, max }, 'recovery', recovery), 'timed', timed);
     if (!ex) {
       merged.push(shared({ id: newId(name, merged), name: name.trim(), enabled: true }));
       added++;
-    } else if (ex.unit !== unit || ex.min !== min || ex.max !== max || ex.pause !== pause || ex.timed !== timed) {
+    } else if (ex.unit !== unit || ex.min !== min || ex.max !== max || ex.recovery !== recovery || ex.timed !== timed) {
       merged[i] = shared({ id: ex.id, name: ex.name, enabled: ex.enabled });
       updated++;
     }

@@ -44,16 +44,16 @@ function addExercise() {
       </DisabledTip>
     </header>
     <ShareImport v-if="importing" :parse="parseExercises" @import="importShared" @cancel="importing = false" />
-    <label class="field cfg-pause">
-      <span>{{ t('config.exercises.pause') }}</span>
-      <CountInput v-model="draft.pause" />
+    <label class="field cfg-recovery">
+      <span>{{ t('config.exercises.recovery') }}</span>
+      <CountInput v-model="draft.recovery" />
     </label>
     <div>
       <ConfigExercise
         v-for="(ex, i) in draft.exercises"
         :key="ex.id"
         :ex="ex"
-        :pause="draft.pause"
+        :recovery="draft.recovery"
         :removable="draft.exercises.length > 1"
         :fresh="ex.id === freshId"
         @remove="draft.exercises.splice(i, 1)"

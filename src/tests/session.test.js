@@ -142,18 +142,18 @@ describe('session', () => {
     });
   });
 
-  describe('pause after an exercise is done', () => {
+  describe('recovery after an exercise is done', () => {
     const pushUps = { exerciseId: 'push-ups', name: 'Push-ups', amount: 8, unit: 'reps' };
     const next = { ...draw, id: 8 };
     const doneButtons = (w) => w.findAll('.item-actions .primary');
 
-    // Squats follow the global pause, Push-ups have their own pause; the first one of the set is marked done.
-    async function completeOne(first = pushUps, pause = config.pause, own = 90, settings = {}) {
+    // Squats follow the global recovery, Push-ups have their own recovery; the first one of the set is marked done.
+    async function completeOne(first = pushUps, recovery = config.recovery, own = 90, settings = {}) {
       vi.useFakeTimers();
       vi.mocked(recoveryEnd).mockClear();
       const both = { ...draw, items: first === pushUps ? [pushUps, draw.items[0]] : [...draw.items, pushUps] };
       setup({
-        get_config: { config: { ...config, ...settings, pause, exercises: [...config.exercises, { id: 'push-ups', name: 'Push-ups', unit: 'reps', min: 8, max: 12, pause: own }] } },
+        get_config: { config: { ...config, ...settings, recovery, exercises: [...config.exercises, { id: 'push-ups', name: 'Push-ups', unit: 'reps', min: 8, max: 12, recovery: own }] } },
         get_session: emptySession({ pending: [both, next] }),
         complete_exercise: emptySession({ pending: [both, next] }),
       });
@@ -163,10 +163,11 @@ describe('session', () => {
       return w;
     }
 
-    it('takes the exercise\'s own pause and blocks every exercise until it ends', async () => {
+    it('takes the exercise\'s own recovery and blocks every exercise until it ends', async () => {
       const w = await completeOne();
       expect(w.find('.countdown-left').text()).toBe('1:30');
       expect(doneButtons(w).every((b) => b.element.disabled)).toBe(true);
+      await expectTip(doneButtons(w)[0], 'Récupération en cours');
       await press('Enter');
       expect(invoke.mock.calls.filter(([cmd]) => cmd === 'complete_exercise')).toHaveLength(1);
       await vi.advanceTimersByTimeAsync(30_000);
@@ -179,12 +180,12 @@ describe('session', () => {
     });
 
     it('ends silently when sounds are off', async () => {
-      await completeOne(pushUps, config.pause, 90, { sound: false });
+      await completeOne(pushUps, config.recovery, 90, { sound: false });
       await vi.advanceTimersByTimeAsync(90_000);
       expect(recoveryEnd).not.toHaveBeenCalled();
     });
 
-    it('takes the global pause without an own pause', async () => {
+    it('takes the global recovery without an own recovery', async () => {
       const w = await completeOne(draw.items[0]);
       expect(w.find('.countdown-left').text()).toBe('1:00');
     });
@@ -222,7 +223,7 @@ describe('session', () => {
       expect(w.find('.empty .countdown-seal').exists()).toBe(true);
     });
 
-    it('does not pause when every pause is 0', async () => {
+    it('does not start a recovery when every recovery is 0', async () => {
       const w = await completeOne(pushUps, 0, 0);
       expect(await sealShown(w)).toBe(false);
     });
@@ -252,7 +253,7 @@ describe('session', () => {
       expect(timerButton(await mountTimed())).toBeDefined();
     });
 
-    it('gets ready, sounds the start, runs, then sounds the end and marks the exercise done, which starts the pause', async () => {
+    it('gets ready, sounds the start, runs, then sounds the end and marks the exercise done, which starts the recovery', async () => {
       const w = await mountTimed();
       await timerButton(w).trigger('click');
       expect(seal(w)).toEqual(['Prêt', '0:03']);
@@ -315,7 +316,7 @@ describe('session', () => {
       expect(invoke).not.toHaveBeenCalledWith('complete_exercise', expect.anything());
     });
 
-    it('cannot start during the pause', async () => {
+    it('cannot start during the recovery', async () => {
       vi.useFakeTimers();
       const plank = { ...draw.items[0], exerciseId: 'plank', name: 'Plank' };
       const both = { ...draw, items: [draw.items[0], plank] };

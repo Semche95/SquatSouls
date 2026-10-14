@@ -12,7 +12,7 @@ import SessionActions from './SessionActions.vue';
 import DisabledTip from './DisabledTip.vue';
 
 const { config, gameId, intensity, game } = useConfig();
-const { session, notice, skipPause, stopTimer, startTimer, toggleTimer, timing, trigger, confirmDismiss, dismiss, remaining, complete, halve, skipExercise } = useSession();
+const { session, notice, skipRecovery, stopTimer, startTimer, toggleTimer, timing, trigger, confirmDismiss, dismiss, remaining, complete, halve, skipExercise } = useSession();
 const { detected, selectDetected, addGame, ignoreDetected } = useSteam();
 
 const INTENSITIES = ['easy', 'normal', 'hard'];
@@ -49,7 +49,7 @@ useKeydown((e) => {
     return;
   }
   if (e.code === 'Escape') {
-    skipPause();
+    skipRecovery();
     stopTimer();
     confirmDismiss.value = 0;
     return;

@@ -9,11 +9,11 @@ import CountdownSeal from './CountdownSeal.vue';
 // current: set at the head of the queue, the only one to do; the next ones can only be dismissed.
 const props = defineProps({ draw: Object, current: Boolean });
 
-const { session, pauseLeft, timing, timedUnit, startTimer, confirmDismiss, dismiss, dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet } = useSession();
+const { session, recoveryLeft, timing, timedUnit, startTimer, confirmDismiss, dismiss, dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet } = useSession();
 // First remaining exercise of the current set: the only one to mark done or time, also targeted by shortcuts.
 const keyed = computed(() => remaining(props.draw)[0]);
-// Why Done and the timer are blocked: pause or timer running, empty otherwise.
-const busy = computed(() => (pauseLeft.value ? t('draw.paused') : timing.value ? t('draw.timing') : ''));
+// Why Done and the timer are blocked: recovery or timer running, empty otherwise.
+const busy = computed(() => (recoveryLeft.value ? t('draw.recovering') : timing.value ? t('draw.timing') : ''));
 </script>
 
 <template>

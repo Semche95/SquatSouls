@@ -6,17 +6,17 @@ import { useSession } from '../composables/useSession.js';
 import { vTooltip } from '../tooltip.js';
 
 // Countdown set astride the top border of its container, which must be positioned: the ring empties clockwise.
-// It shows the timer of a timed exercise (click or Space holds or resumes it, Escape stops it), otherwise the pause
+// It shows the timer of a timed exercise (click or Space holds or resumes it, Escape stops it), otherwise the recovery
 // (click or Escape skips it); both never run together. Its key is the one of the click.
-const { pauseLeft, pauseShare, skipPause, timing, timerLeft, timerShare, timerHeld, toggleTimer } = useSession();
+const { recoveryLeft, recoveryShare, skipRecovery, timing, timerLeft, timerShare, timerHeld, toggleTimer } = useSession();
 
 const seal = computed(() => {
   if (timing.value) {
-    const label = timing.value.ready ? 'timer.ready' : timerHeld.value ? 'draw.paused' : 'draw.timer';
+    const label = timing.value.ready ? 'timer.ready' : timerHeld.value ? 'timer.paused' : 'draw.timer';
     const tip = t(timerHeld.value ? 'timer.resume' : 'timer.hold', { toggle: t('keys.space'), stop: t('keys.escape') });
     return { left: timerLeft.value, share: timerShare.value, label: t(label), tip, key: t('keys.space'), action: toggleTimer };
   }
-  if (pauseLeft.value) return { left: pauseLeft.value, share: pauseShare.value, label: t('play.pause'), tip: t('play.skipPause'), key: t('keys.escape'), action: skipPause };
+  if (recoveryLeft.value) return { left: recoveryLeft.value, share: recoveryShare.value, label: t('play.recovery'), tip: t('play.skipRecovery'), key: t('keys.escape'), action: skipRecovery };
   return null;
 });
 </script>

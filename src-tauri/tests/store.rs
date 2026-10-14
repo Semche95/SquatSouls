@@ -79,16 +79,16 @@ fn config_changes_are_saved() {
 }
 
 #[test]
-fn pauses_are_saved() {
+fn recoveries_are_saved() {
     let mut s = store();
     let mut cfg = default_config(Language::Fr);
-    assert_eq!(cfg.pause, DEFAULT_PAUSE);
-    cfg.pause = 90;
-    cfg.exercises[0].pause = Some(120);
-    cfg.exercises[1].pause = Some(0);
+    assert_eq!(cfg.recovery, DEFAULT_RECOVERY);
+    cfg.recovery = 90;
+    cfg.exercises[0].recovery = Some(120);
+    cfg.exercises[1].recovery = Some(0);
     s.save_config(&cfg).unwrap();
     assert_eq!(s.config().unwrap(), cfg);
-    cfg.exercises[0].pause = None;
+    cfg.exercises[0].recovery = None;
     s.save_config(&cfg).unwrap();
     assert_eq!(s.config().unwrap(), cfg);
 }
@@ -138,17 +138,20 @@ fn exercises_counted_in_time_become_timed_once_migrated() {
 }
 
 #[test]
-fn timer_sound_setting_becomes_the_sound_setting_once_migrated() {
-    let path = legacy_db("sound", 3);
+fn renamed_settings_keep_their_value_once_migrated() {
+    let path = legacy_db("renamed", 3);
     connect(&path)
         .execute_batch(
             "INSERT INTO games (id, position, name) VALUES ('sekiro', 0, 'Sekiro');
-             INSERT INTO settings (key, value) VALUES ('timer_sound', 'false');",
+             INSERT INTO exercises (id, position, name, unit, min, max, pause) VALUES ('squat', 0, 'Squats', 'reps', 10, 15, 45);
+             INSERT INTO settings (key, value) VALUES ('timer_sound', 'false'), ('pause', '90');",
         )
         .unwrap();
     let cfg = Store::open(&path, LOCALE).unwrap().config().unwrap();
     std::fs::remove_file(&path).unwrap();
     assert!(!cfg.sound);
+    assert_eq!(cfg.recovery, 90);
+    assert_eq!(cfg.exercises[0].recovery, Some(45));
 }
 
 /// Path of a temporary database specific to test `name`, deleted beforehand.
@@ -182,7 +185,7 @@ fn applied_migrations_are_dated() {
     std::fs::remove_file(&path).unwrap();
     assert_eq!(
         applied.iter().map(|a| a.0).collect::<Vec<_>>(),
-        [1, 2, 3, 4, 5, 6, 7, 8],
+        [1, 2, 3, 4, 5, 6, 7, 8, 9],
         "a migration is applied only once"
     );
     assert!(
@@ -225,7 +228,7 @@ fn database_migrated_before_refinery_keeps_its_data() {
         let applied = applied(&path);
         std::fs::remove_file(&path).unwrap();
         assert_eq!(history.len(), 1, "{name}");
-        assert_eq!(applied.len(), 8, "{name}");
+        assert_eq!(applied.len(), 9, "{name}");
     }
 }
 
