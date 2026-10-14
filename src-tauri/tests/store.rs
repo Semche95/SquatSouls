@@ -250,6 +250,7 @@ fn steam_names_receive_retry_at_even_from_draft_schema() {
             "INSERT INTO steam_names (app_id, name, retry_at) VALUES (814380, 'Sekiro', NULL), (1, NULL, 5000)"
         })
         .unwrap();
+        drop(conn);
         let mut names = Store::open(&path, LOCALE).unwrap().steam_names().unwrap();
         std::fs::remove_file(&path).unwrap();
         assert_eq!(
