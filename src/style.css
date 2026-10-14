@@ -574,6 +574,7 @@ kbd.dark {
 }
 .items li {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   gap: 14px;
 }
@@ -606,6 +607,7 @@ kbd.dark {
 }
 .item-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-left: auto;
 }
