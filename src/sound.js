@@ -1,6 +1,15 @@
 // Timer and recovery sounds, synthesized so that no sound file is bundled.
 let context;
 
+// The webview keeps an audio context suspended until a user gesture resumes it, and the sounds
+// play later, at the end of a countdown: every click or key press wakes the context up beforehand.
+export function unlockSound() {
+  const AudioContext = window.AudioContext ?? window.webkitAudioContext;
+  if (!AudioContext) return;
+  context ??= new AudioContext();
+  if (context.state === 'suspended') context.resume();
+}
+
 // Pure tone: a single partial.
 const PURE = [[1, 1]];
 // Bell: inharmonic partials (frequency ratio, volume), which give its metallic ring.
@@ -8,9 +17,7 @@ const BELL = [[1, 1], [2.76, 0.5], [5.4, 0.25], [8.93, 0.12]];
 
 // Notes one after the other, each fading out, every partial of `timbre` playing at once.
 function notes(frequencies, length, { gap = 0.18, timbre = PURE } = {}) {
-  const AudioContext = window.AudioContext ?? window.webkitAudioContext;
-  if (!AudioContext) return;
-  context ??= new AudioContext();
+  if (!context) return;
   frequencies.forEach((frequency, i) => {
     const at = context.currentTime + i * gap;
     for (const [ratio, level] of timbre) {

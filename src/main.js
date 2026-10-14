@@ -3,11 +3,13 @@ import { createVfm } from 'vue-final-modal';
 import App from './App.vue';
 import { i18n, loadLanguage } from './i18n.js';
 import { logError, logUncaught } from './log.js';
+import { unlockSound } from './sound.js';
 import 'floating-vue/dist/style.css';
 import 'vue-final-modal/style.css';
 import './style.css';
 
 logUncaught();
+for (const type of ['pointerdown', 'keydown']) window.addEventListener(type, unlockSound, { capture: true });
 // The webview's right-click menu (reload, inspect...) is only useful in development; text fields keep theirs for copy and paste.
 if (!import.meta.env.DEV) {
   window.addEventListener('contextmenu', (e) => {
