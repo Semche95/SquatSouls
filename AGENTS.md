@@ -35,13 +35,13 @@ pnpm test                   # interface tests (Vitest)
 - Any change to the share/import format (`share.js`) is versioned: increment `VERSION`, add the new version's reader to `READERS` while keeping those of the previous ones, and test importing texts from the old versions.
 - Tests only live in `src/tests/` (interface) and `src-tauri/tests/` (backend): no `*.test.js` file elsewhere in `src/`, no `#[cfg(test)]` module in `src-tauri/src/`.
 - The CI also runs the tests on Windows, which refuses to delete an open file: in the backend tests, close every connection and `Store` on a database (`drop`, or a temporary that is not kept) before removing its file.
-- Never mention in the sources (comments included) a file or folder ignored by git (`.claude/`, skills, `todo.md`): the reference would be broken for anyone cloning the repository.
+- Never mention in the sources (comments included) a file or folder that is not in the repository: the reference would be broken for anyone cloning the repository.
 - Follow the DRY rule everywhere (Rust, Vue, CSS, tests): factor out any duplicated logic, value or style rather than copying it.
 - Run `cargo test` after any change to the Rust code, `pnpm test` after any change to `src/`.
 - Before asking for any validation, always write the complete proposal in the chat (structure, files, choices), then ask a short question. Never put the content to validate only in an interactive question.
 - Never commit without the user's explicit agreement: accepting an operation that leads to it is not agreement; do the work locally, then ask.
 - Never push (`git push`, force push included), even on explicit request: the user pushes themselves.
-- Never commit the files in `.claude/` (skills, settings) unless explicitly asked: stage files one by one and check `git diff --cached --stat` before each commit.
+- Stage files one by one and check `git diff --cached --stat` before each commit.
 - Commits in Conventional Commits, a single line, without `Co-Authored-By`.
 - Each commit is consistent: a single change, with its code, tests and documentation, and the tests pass. Split by file hunk (not by whole file) when a file mixes several changes.
 
