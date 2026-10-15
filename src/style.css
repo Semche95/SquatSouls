@@ -125,10 +125,9 @@ select:focus {
   }
 }
 
-/* Tabs, list of games to edit, and segmented control choosing a value (Play intensity): the chosen value
+/* Tabs and segmented control choosing a value (Play intensity): the chosen value
    stands out in gold. */
 .tabs,
-.cfg-game-list,
 .segmented {
   display: flex;
   gap: 4px;
@@ -138,7 +137,6 @@ select:focus {
   padding: 3px;
 }
 .tabs button,
-.cfg-game-list button,
 .segmented button {
   border: none;
   background: transparent;
@@ -146,13 +144,11 @@ select:focus {
   color: var(--muted);
 }
 .tabs button:hover:not(.active),
-.cfg-game-list button:hover:not(.active),
 .segmented button:hover:not(.active, :disabled) {
   background: var(--gold-soft);
   color: var(--text);
 }
-.tabs button.active,
-.cfg-game-list button.active {
+.tabs button.active {
   background: var(--panel-2);
   color: var(--text);
 }
@@ -1054,20 +1050,6 @@ label.check {
 }
 .config .group-head {
   justify-content: flex-start;
-}
-/* Games: list on the left, selected game detailed on the right. */
-.cfg-games {
-  display: grid;
-  grid-template-columns: minmax(140px, 200px) 1fr;
-  gap: 20px;
-  align-items: start;
-}
-.cfg-game-list {
-  flex-direction: column;
-  align-self: flex-start;
-}
-.cfg-game-list button {
-  text-align: left;
 }
 .cfg-game,
 .cfg-import {

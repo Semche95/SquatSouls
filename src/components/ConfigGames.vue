@@ -17,21 +17,49 @@ const importing = ref(false);
 // Game whose removal awaits confirmation; switching games closes it.
 const confirmRemove = ref(null);
 const newGameName = ref(null);
+// Name being typed while renaming the edited game, null outside renaming.
+const renaming = ref(null);
+const renameInput = ref(null);
 const nameTaken = computed(() => config.value.games.some((g) => sameName(g.name, newGame.value.name)));
 // Why the new game cannot be created yet, '' when it can.
 const createBlocked = computed(() => {
   if (!newGame.value.name.trim()) return t('config.games.nameNeeded');
   return nameTaken.value ? t('config.games.nameTaken') : '';
 });
+// Same for the renamed game, whose name only has to differ from the other games.
+const renameBlocked = computed(() => {
+  if (!renaming.value.trim()) return t('config.games.nameNeeded');
+  const taken = draft.value.games.some((g) => g !== editedGame.value && sameName(g.name, renaming.value));
+  return taken ? t('config.games.nameTaken') : '';
+});
+// Game shown in the select, none while a game is being created or imported.
+const shownGame = computed(() => (newGame.value || importing.value ? null : editedGame.value));
 
 function selectGame(id) {
   editedGameId.value = id;
   newGame.value = null;
   importing.value = false;
+  renaming.value = null;
+}
+
+// The caret goes to the end of the name, to complete it rather than retype it.
+async function openRename() {
+  renaming.value = editedGame.value.name;
+  await nextTick();
+  const end = renaming.value.length;
+  renameInput.value.focus();
+  renameInput.value.setSelectionRange(end, end);
+}
+
+// The new name waits for "Save", like the other changes to the game.
+function applyRename() {
+  editedGame.value.name = renaming.value.trim();
+  renaming.value = null;
 }
 
 async function openNewGame() {
   importing.value = false;
+  renaming.value = null;
   newGame.value = { name: '', source: '' };
   await nextTick();
   newGameName.value.focus();
@@ -68,6 +96,7 @@ async function removeGame(game) {
 
 function openImport() {
   newGame.value = null;
+  renaming.value = null;
   importing.value = true;
 }
 
@@ -104,64 +133,68 @@ function addEvent(game) {
         <button class="ghost" :disabled="importing" @click="openImport">{{ t('config.games.import') }}</button>
       </DisabledTip>
     </header>
-    <div class="cfg-games">
-      <nav class="cfg-game-list" :aria-label="t('config.games.list')">
-        <button
-          v-for="g in byName(config.games)"
-          :key="g.id"
-          :class="{ active: !newGame && !importing && g.id === editedGame?.id }"
-          @click="selectGame(g.id)"
-        >{{ g.name }}</button>
-      </nav>
-      <form v-if="newGame" class="cfg-game" @submit.prevent="createGame">
-        <h3 class="group-title">{{ t('config.games.new') }}</h3>
-        <label class="field">
-          <span>{{ t('common.name') }}</span>
-          <input ref="newGameName" v-model="newGame.name" :maxlength="MAX_NAME" :aria-label="t('config.games.newName')" />
-        </label>
-        <p v-if="nameTaken" class="muted">{{ t('config.games.nameTaken') }}</p>
-        <div class="field">
-          <span>{{ t('config.games.events') }}</span>
-          <select v-model="newGame.source" :aria-label="t('config.games.newEvents')">
-            <option value="">{{ t('config.games.noEvents') }}</option>
-            <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">{{ t('config.games.copyFrom', { name: g.name || t('common.unnamed') }) }}</option>
-          </select>
-        </div>
-        <div class="row">
-          <DisabledTip :tip="createBlocked">
-            <button class="primary" :disabled="!!createBlocked">{{ t('config.games.create') }}</button>
-          </DisabledTip>
-          <button type="button" class="ghost" @click="newGame = null">{{ t('common.cancel') }}</button>
-        </div>
-      </form>
-      <div v-else-if="importing" class="cfg-game">
-        <h3 class="group-title">{{ t('config.games.import') }}</h3>
-        <ShareImport v-slot="{ result }" :parse="parseShared" @import="importShared" @cancel="importing = false">
-          <p v-if="takenName(result.name)" class="banner warn">{{ t('config.games.willReplace', { name: result.name }) }}</p>
-        </ShareImport>
+    <form v-if="renaming !== null" class="field" @submit.prevent="applyRename" @keydown.esc="renaming = null">
+      <label for="cfg-game">{{ t('play.game') }}</label>
+      <input id="cfg-game" ref="renameInput" v-model="renaming" :maxlength="MAX_NAME" :aria-label="t('config.games.gameName')" />
+      <DisabledTip :tip="renameBlocked">
+        <button class="primary" :disabled="!!renameBlocked">{{ t('config.games.renameDone') }}</button>
+      </DisabledTip>
+      <button type="button" class="ghost" @click="renaming = null">{{ t('common.cancel') }}</button>
+    </form>
+    <div v-else class="field">
+      <label for="cfg-game">{{ t('play.game') }}</label>
+      <select id="cfg-game" :value="shownGame?.id ?? ''" @change="selectGame($event.target.value)">
+        <option v-if="!shownGame" value="" disabled>{{ t('play.chooseGame') }}</option>
+        <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">{{ g.name }}</option>
+      </select>
+      <template v-if="shownGame">
+        <button class="ghost" @click="openRename">{{ t('config.games.rename') }}</button>
+        <button class="ghost" @click="shareEdited">{{ t('common.share') }}</button>
+        <DisabledTip :tip="draft.games.length < 2 ? t('config.games.lastGame') : ''">
+          <button class="ghost danger" :disabled="draft.games.length < 2" @click="confirmRemove = shownGame">{{ t('config.games.removeGame') }}</button>
+        </DisabledTip>
+      </template>
+    </div>
+    <form v-if="newGame" class="cfg-game" @submit.prevent="createGame">
+      <h3 class="group-title">{{ t('config.games.new') }}</h3>
+      <label class="field">
+        <span>{{ t('common.name') }}</span>
+        <input ref="newGameName" v-model="newGame.name" :maxlength="MAX_NAME" :aria-label="t('config.games.newName')" />
+      </label>
+      <p v-if="nameTaken" class="muted">{{ t('config.games.nameTaken') }}</p>
+      <div class="field">
+        <span>{{ t('config.games.events') }}</span>
+        <select v-model="newGame.source" :aria-label="t('config.games.newEvents')">
+          <option value="">{{ t('config.games.noEvents') }}</option>
+          <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">{{ t('config.games.copyFrom', { name: g.name || t('common.unnamed') }) }}</option>
+        </select>
       </div>
-      <div v-else-if="editedGame" class="cfg-game">
-        <div class="field">
-          <span>{{ t('common.name') }}</span>
-          <input v-model="editedGame.name" :maxlength="MAX_NAME" :aria-label="t('config.games.gameName')" />
-          <button class="ghost" @click="shareEdited">{{ t('common.share') }}</button>
-          <DisabledTip :tip="draft.games.length < 2 ? t('config.games.lastGame') : ''">
-            <button class="ghost danger" :disabled="draft.games.length < 2" @click="confirmRemove = editedGame">{{ t('config.games.removeGame') }}</button>
-          </DisabledTip>
+      <div class="row">
+        <DisabledTip :tip="createBlocked">
+          <button class="primary" :disabled="!!createBlocked">{{ t('config.games.create') }}</button>
+        </DisabledTip>
+        <button type="button" class="ghost" @click="newGame = null">{{ t('common.cancel') }}</button>
+      </div>
+    </form>
+    <div v-else-if="importing" class="cfg-game">
+      <h3 class="group-title">{{ t('config.games.import') }}</h3>
+      <ShareImport v-slot="{ result }" :parse="parseShared" @import="importShared" @cancel="importing = false">
+        <p v-if="takenName(result.name)" class="banner warn">{{ t('config.games.willReplace', { name: result.name }) }}</p>
+      </ShareImport>
+    </div>
+    <div v-else-if="editedGame" class="cfg-game">
+      <div v-if="confirmRemove === editedGame" v-reveal class="banner confirm">
+        <p>{{ t('config.games.confirmRemove', { name: editedGame.name || t('config.games.thisGame') }) }}</p>
+        <div class="card-actions">
+          <button class="danger" @click="removeGame(editedGame)">{{ t('common.remove') }}</button>
+          <button class="ghost" @click="confirmRemove = null">{{ t('config.games.keepGame') }}</button>
         </div>
-        <div v-if="confirmRemove === editedGame" v-reveal class="banner confirm">
-          <p>{{ t('config.games.confirmRemove', { name: editedGame.name || t('config.games.thisGame') }) }}</p>
-          <div class="card-actions">
-            <button class="danger" @click="removeGame(editedGame)">{{ t('common.remove') }}</button>
-            <button class="ghost" @click="confirmRemove = null">{{ t('config.games.keepGame') }}</button>
-          </div>
-        </div>
+      </div>
 
-        <div class="cfg-events">
-          <ConfigEvent v-for="(ev, i) in editedGame.events" :key="ev.id" :ev="ev" @remove="editedGame.events.splice(i, 1)" />
-        </div>
-        <button class="ghost" @click="addEvent(editedGame)">{{ t('config.games.addEvent') }}</button>
+      <div class="cfg-events">
+        <ConfigEvent v-for="(ev, i) in editedGame.events" :key="ev.id" :ev="ev" @remove="editedGame.events.splice(i, 1)" />
       </div>
+      <button class="ghost" @click="addEvent(editedGame)">{{ t('config.games.addEvent') }}</button>
     </div>
   </section>
 </template>

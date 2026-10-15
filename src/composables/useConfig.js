@@ -46,7 +46,7 @@ export const [provideConfig, useConfig] = defineShared(() => {
   watch([intensity, () => config.value?.rememberIntensity], ([value, remember]) => {
     if (remember) invoke('set_intensity', { intensity: value }).catch(() => {});
   });
-  // Keeps the "Game to edit" list on the game actually edited (the first by name until one is chosen).
+  // Keeps the Program game select on the game actually edited (the first by name until one is chosen).
   watch(editedGame, (g) => {
     if (g && g.id !== editedGameId.value) editedGameId.value = g.id;
   });

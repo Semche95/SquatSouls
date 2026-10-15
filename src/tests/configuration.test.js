@@ -4,6 +4,17 @@ import { invoke } from '@tauri-apps/api/core';
 import { config, emptySession, rejection, responses, setup, mountApp, shownTip, expectTip, openSettings } from './app.js';
 import { shareExercises, shareGame } from '../share.js';
 
+// Game shown in the select of the Program tab, and the games it offers.
+const shownGame = (w) => w.find('#cfg-game option:checked').text();
+const gameNames = (w) => w.findAll('#cfg-game option').map((o) => o.text());
+const gameButton = (w, text) => w.findAll('.group > .field button').find((b) => b.text() === text);
+// Renames the edited game with Rename then Done: the new name waits for Save.
+async function rename(w, name) {
+  await gameButton(w, 'Rename').trigger('click');
+  await w.find('input[aria-label="Name of the game"]').setValue(name);
+  await w.find('.group > form.field').trigger('submit');
+}
+
 describe('configuration', () => {
   async function openConfig() {
     const w = await mountApp();
@@ -23,10 +34,13 @@ describe('configuration', () => {
     expect(w.findAll('.cfg-actions button').map((b) => b.element.disabled)).toEqual([true, true]);
   }
 
-  it('shows the game being edited in the list', async () => {
+  it('shows the game being edited in the select and switches games with it', async () => {
     setup();
     const w = await openConfig();
-    expect(w.find('.cfg-game-list .active').text()).toBe('Elden Ring');
+    expect(shownGame(w)).toBe('Elden Ring');
+    await w.find('#cfg-game').setValue('sekiro');
+    expect(shownGame(w)).toBe('Sekiro');
+    expect(w.find('.cfg-event-head strong').text()).toBe(config.games[1].events[0].name);
   });
 
   it('edits the configuration with fields and applies it on save', async () => {
@@ -49,21 +63,36 @@ describe('configuration', () => {
     expect(w.find('.event').text()).toContain('Brutal death');
   });
 
-  it('only renames the game in the list on save', async () => {
+  it('renames the game from the end of its name, the new name waiting for save', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
-    await w.find('input[aria-label="Name of the game"]').setValue('Elden Ring DLC');
-    expect(w.find('.cfg-game-list .active').text()).toBe('Elden Ring');
+    await gameButton(w, 'Rename').trigger('click');
+    await flushPromises();
+    const input = w.find('input[aria-label="Name of the game"]');
+    expect(document.activeElement).toBe(input.element);
+    expect([input.element.selectionStart, input.element.selectionEnd]).toEqual([10, 10]);
+    expect(w.find('#cfg-game').element.tagName).toBe('INPUT');
+    const done = () => w.find('.group > form.field .primary');
+    await input.setValue(' ');
+    await expectTip(done(), 'Give the game a name');
+    await input.setValue(' sekiro ');
+    await expectTip(done(), 'A game already has this name.');
+    await input.setValue('Other');
+    await input.trigger('keydown', { key: 'Escape' });
+    expect(shownGame(w)).toBe('Elden Ring');
+    expectUnchanged(w);
+    await rename(w, ' Elden Ring DLC ');
+    expect(shownGame(w)).toBe('Elden Ring DLC');
     await w.find('.cfg-actions .primary').trigger('click');
     await flushPromises();
-    expect(w.find('.cfg-game-list .active').text()).toBe('Elden Ring DLC');
+    expect(invoke.mock.calls.find(([cmd]) => cmd === 'save_config')[1].config.games[0].name).toBe('Elden Ring DLC');
   });
 
   it('adds an exercise with an id derived from the name', async () => {
     setup();
     const w = await openConfig();
     await w.findAll('.subtabs button')[1].trigger('click');
-    expect(w.find('.cfg-game-list').exists()).toBe(false);
+    expect(w.find('#cfg-game').exists()).toBe(false);
     const add = w.find('.cfg-exercises > button');
     await add.trigger('click');
     await add.trigger('click');
@@ -87,20 +116,22 @@ describe('configuration', () => {
       await w.find('.group-head .primary').trigger('click');
       await flushPromises();
       expect(w.find('form.cfg-game .primary').element.disabled).toBe(true);
+      expect(shownGame(w)).toBe('Choose a game');
+      expect(gameButton(w, 'Rename')).toBeUndefined();
       const nameInput = w.find('input[aria-label="Name of the new game"]');
       expect(document.activeElement).toBe(nameInput.element);
       await nameInput.setValue(name);
       await w.find('select[aria-label="Events of the new game"]').setValue(source);
       await w.find('form.cfg-game').trigger('submit');
       await flushPromises();
-      expect(w.find('.cfg-game-list .active').text()).toBe(name);
+      expect(shownGame(w)).toBe(name);
       expectUnchanged(w);
       return savedGames().at(-1);
     }
     expect(await create('Nioh', 'sekiro')).toMatchObject({ id: 'nioh', events: config.games[1].events });
     expect(await create('Lies of P', '')).toMatchObject({ id: 'lies-of-p', events: [{ name: 'New event', draws: 1 }] });
     expect(savedGames().map((g) => g.id)).toEqual(['er', 'sekiro', 'nioh', 'lies-of-p']);
-    expect(w.findAll('.cfg-game-list button').map((b) => b.text())).toEqual(['Elden Ring', 'Lies of P', 'Nioh', 'Sekiro']);
+    expect(gameNames(w)).toEqual(['Elden Ring', 'Lies of P', 'Nioh', 'Sekiro']);
   });
 
   it('refuses to create a game with a name already taken', async () => {
@@ -119,15 +150,15 @@ describe('configuration', () => {
   it('asks for confirmation before removing a game, then saves right away', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
-    const remove = () => w.find('.cfg-game .field .danger');
+    const remove = () => w.find('.group > .field .danger');
     await remove().trigger('click');
     await w.find('.cfg-game .confirm .ghost').trigger('click');
     expect(w.find('.cfg-game .confirm').exists()).toBe(false);
-    expect(w.findAll('.cfg-game-list button')).toHaveLength(2);
+    expect(gameNames(w)).toHaveLength(2);
     await remove().trigger('click');
     await w.find('.cfg-game .confirm .danger').trigger('click');
     await flushPromises();
-    expect(w.findAll('.cfg-game-list button').map((b) => b.text())).toEqual(['Sekiro']);
+    expect(gameNames(w)).toEqual(['Sekiro']);
     expect(invoke.mock.calls.find(([cmd]) => cmd === 'save_config')[1].config.games.map((g) => g.id)).toEqual(['sekiro']);
     expectUnchanged(w);
     expect(w.find('.cfg-game .confirm').exists()).toBe(false);
@@ -138,7 +169,7 @@ describe('configuration', () => {
     const w = await openConfig();
     // The backend cancels the session of the removed game.
     responses.get_session = emptySession();
-    await w.find('.cfg-game .field .danger').trigger('click');
+    await w.find('.group > .field .danger').trigger('click');
     await w.find('.cfg-game .confirm .danger').trigger('click');
     await flushPromises();
     await w.findAll('.tabs button')[0].trigger('click');
@@ -229,17 +260,16 @@ describe('configuration', () => {
   it('resets unsaved changes', async () => {
     setup();
     const w = await openConfig();
-    const name = () => w.find('input[aria-label="Name of the game"]');
-    await name().setValue('Other');
+    await rename(w, 'Other');
     await w.find('.cfg-actions .ghost').trigger('click');
-    expect(name().element.value).toBe('Elden Ring');
+    expect(shownGame(w)).toBe('Elden Ring');
     expectUnchanged(w);
   });
 
   it('shows the save error', async () => {
     setup({ save_config: rejection('exercise_range', { name: 'Squats', min: 20, max: 15 }) });
     const w = await openConfig();
-    await w.find('input[aria-label="Name of the game"]').setValue('Other');
+    await rename(w, 'Other');
     await w.find('.cfg-actions .primary').trigger('click');
     await flushPromises();
     expect(w.find('.banner.error').text()).toBe('Invalid range for "Squats" (20 to 15).');
@@ -297,8 +327,8 @@ describe('configuration', () => {
       vi.stubGlobal('navigator', { clipboard: { writeText } });
       setup();
       const w = await openConfig();
-      await w.find('input[aria-label="Name of the game"]').setValue('Unsaved');
-      await w.find('.cfg-game .field .ghost').trigger('click');
+      await rename(w, 'Unsaved');
+      await gameButton(w, 'Share').trigger('click');
       await flushPromises();
       expect(writeText).toHaveBeenLastCalledWith(shareGame(config.games[0]));
       expect(w.find('.banner.ok').text()).toBe('Copied to the clipboard, ready to share.');
@@ -329,7 +359,7 @@ describe('configuration', () => {
       expect(savedConfig().games.map((g) => g.id)).toEqual(['er', 'sekiro']);
       expect(savedConfig().games[1]).toEqual({ id: 'sekiro', name: 'sekiro', events: [{ id: 'death', name: 'Death', draws: 1, jokers: 1 }] });
       expect(w.find('.banner.ok').text()).toBe('sekiro imported, limited to 1 exercise per event.');
-      expect(w.find('.cfg-game-list .active').text()).toBe('sekiro');
+      expect(shownGame(w)).toBe('sekiro');
       expectUnchanged(w);
       await open().trigger('click');
       await w.find('textarea').setValue(shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1 }] }));
@@ -342,7 +372,7 @@ describe('configuration', () => {
     it('imports shared exercises without losing pending changes', async () => {
       setup({ save_config: (args) => ({ config: args.config }) });
       const w = await openConfig();
-      await w.find('input[aria-label="Name of the game"]').setValue('Elden Ring DLC');
+      await rename(w, 'Elden Ring DLC');
       await w.findAll('.subtabs button')[1].trigger('click');
       await w.findAll('.cfg-exercises .group-head .ghost')[1].trigger('click');
       await w.find('textarea').setValue(
@@ -371,14 +401,13 @@ describe('configuration', () => {
 
 describe('program and settings', () => {
   const remember = (w) => w.findAll('.check').find((c) => c.text() === 'Remember the intensity between launches').find('input');
-  const name = (w) => w.find('input[aria-label="Name of the game"]');
   const sent = () => invoke.mock.calls.find(([cmd]) => cmd === 'save_config')[1].config;
 
   async function editBoth() {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await mountApp();
     await w.findAll('.tabs button')[2].trigger('click');
-    await name(w).setValue('Elden Ring DLC');
+    await rename(w, 'Elden Ring DLC');
     await openSettings(w);
     await remember(w).setValue(true);
     return w;
@@ -391,7 +420,7 @@ describe('program and settings', () => {
     expect(sent().rememberIntensity).toBe(true);
     expect(sent().games[0].name).toBe('Elden Ring');
     await w.findAll('.tabs button')[2].trigger('click');
-    expect(name(w).element.value).toBe('Elden Ring DLC');
+    expect(shownGame(w)).toBe('Elden Ring DLC');
     expect(w.find('.cfg-actions .primary').element.disabled).toBe(false);
   });
 
@@ -425,7 +454,7 @@ describe('program and settings', () => {
     expect(remember(w).element.checked).toBe(false);
     expect(w.find('.cfg-actions .primary').element.disabled).toBe(true);
     await w.findAll('.tabs button')[2].trigger('click');
-    expect(name(w).element.value).toBe('Elden Ring DLC');
+    expect(shownGame(w)).toBe('Elden Ring DLC');
   });
 });
 
@@ -453,7 +482,7 @@ describe('language', () => {
     setup();
     const w = await mountSettings();
     await w.findAll('.tabs button')[2].trigger('click');
-    await w.find('input[aria-label="Name of the game"]').setValue('Elden Ring DLC');
+    await rename(w, 'Elden Ring DLC');
     await openSettings(w);
     await select(w).setValue('fr');
     await flushPromises();
@@ -464,7 +493,8 @@ describe('language', () => {
     expect(select(w).find('option').text()).toBe('Langue du système');
     expect(document.documentElement.lang).toBe('fr');
     await w.findAll('.tabs button')[2].trigger('click');
-    expect(w.find('input[aria-label="Nom du jeu"]').element.value).toBe('Elden Ring DLC');
+    expect(shownGame(w)).toBe('Elden Ring DLC');
+    expect(gameButton(w, 'Renommer').exists()).toBe(true);
     expect(w.find('.cfg-actions .primary').text()).toBe('Enregistrer');
   });
 

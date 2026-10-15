@@ -139,7 +139,6 @@
     "games": {
       "add": "+ Add a game",
       "import": "Import a game",
-      "list": "Game to edit",
       "new": "New game",
       "newName": "Name of the new game",
       "nameTaken": "A game already has this name.",
@@ -152,6 +151,8 @@
       "create": "Create",
       "willReplace": "{name} already exists: it will be replaced.",
       "gameName": "Name of the game",
+      "rename": "Rename",
+      "renameDone": "Done",
       "removeGame": "Delete this game",
       "lastGame": "At least one game is needed",
       "confirmRemove": "Delete {name} and all its events?",

@@ -139,7 +139,6 @@
     "games": {
       "add": "+ Ajouter un jeu",
       "import": "Importer un jeu",
-      "list": "Jeu à modifier",
       "new": "Nouveau jeu",
       "newName": "Nom du nouveau jeu",
       "nameTaken": "Un jeu porte déjà ce nom.",
@@ -152,6 +151,8 @@
       "create": "Créer",
       "willReplace": "{name} existe déjà : il sera remplacé.",
       "gameName": "Nom du jeu",
+      "rename": "Renommer",
+      "renameDone": "Valider",
       "removeGame": "Supprimer ce jeu",
       "lastGame": "Il faut au moins un jeu",
       "confirmRemove": "Supprimer {name} et tous ses événements ?",
