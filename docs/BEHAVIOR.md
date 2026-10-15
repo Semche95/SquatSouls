@@ -24,7 +24,8 @@ Button and setting names are quoted as they appear in the English interface.
 
 ## Intensity
 
-- The **Intensity** of the session is chosen in Play, next to the game: **Easy**, **Normal** or **Hard**. It scales the number of each exercise drawn, without touching the configuration: half for **Easy**, one and a half for **Hard**, rounded up (with a range of 10 to 20, **Easy** gives 5 to 10 and **Hard** 15 to 30).
+- The **Intensity** of the session is chosen in Play, next to the game: **Easy**, **Normal** or **Hard**. It scales the number of each exercise drawn, without touching the configuration: half for **Easy**, one and a half for **Hard** (with a range of 10 to 20, **Easy** gives 5 to 10 and **Hard** 15 to 30).
+- **Easy** always rounds down, without falling to 0, and **Normal** and **Hard** always round up, **Halve** included: 15 gives 7 in **Easy** and 23 in **Hard**, and a 9 halved gives 4 in **Easy** and 5 otherwise.
 - It can change during the session and, as a changed minimum or maximum does, applies right away to the exercises to do: their number is the one drawn, halved first if it was, scaled by the new intensity (18 drawn gives 27 in **Hard** and 9 in **Easy**). Exercises already done never change.
 - Hovering a level shows its effect on the number of exercises.
 - It appears neither in the summary nor in the history, which show the numbers actually done.
@@ -64,7 +65,7 @@ Button and setting names are quoted as they appear in the English interface.
 ## Jokers
 
 - Only events with `jokers` earn some, once all the exercises of their set are done: spending a joker on a set (half or skip) makes it lose those it was meant to earn.
-- **Halve** (1 joker): divides an exercise's number by two, rounded up. Only once per exercise, and not for a number of 1.
+- **Halve** (1 joker): divides an exercise's number by two, rounded as the intensity does (down in **Easy**, up otherwise). Only once per exercise, and not for a number of 1.
 - **Skip** an exercise (2 jokers, only 1 if it was already halved or cannot be, its number being 1): it is removed from the set, the rest remains to do. Skipping the last exercise removes the set.
 - **Skip the set** (set with several remaining exercises): costs the sum of the skips of its remaining exercises; those already done stay done.
 - An exercise done can no longer be halved or skipped.

@@ -393,7 +393,7 @@ describe('session', () => {
     it('explains on hover how each level scales the exercises', async () => {
       setup();
       const w = await mountApp();
-      await expectTip(levels(w)[0], 'La moitié des exercices demandés, arrondie au-dessus');
+      await expectTip(levels(w)[0], 'La moitié des exercices demandés, arrondie en dessous');
       await expectTip(levels(w)[1], 'Les exercices demandés par le programme');
       await expectTip(levels(w)[2], 'Une fois et demie les exercices demandés, arrondie au-dessus');
     });

@@ -44,7 +44,7 @@
       "hard": "Difficile"
     },
     "intensityTips": {
-      "easy": "La moitié des exercices demandés, arrondie au-dessus",
+      "easy": "La moitié des exercices demandés, arrondie en dessous",
       "normal": "Les exercices demandés par le programme",
       "hard": "Une fois et demie les exercices demandés, arrondie au-dessus"
     },

@@ -30,14 +30,26 @@ impl Intensity {
         }
     }
 
-    /// Scales a number between an exercise's bounds: half for easy, one and a half for hard, rounded up.
+    /// Scales a number between an exercise's bounds: half for easy, one and a half for hard.
     pub fn scale(self, amount: u32) -> u32 {
-        let (num, den) = match self {
-            Intensity::Easy => (1, 2),
-            Intensity::Normal => (1, 1),
-            Intensity::Hard => (3, 2),
-        };
-        (amount * num).div_ceil(den)
+        match self {
+            Intensity::Easy => self.round_half(amount),
+            Intensity::Normal => amount,
+            Intensity::Hard => self.round_half(amount * 3),
+        }
+    }
+
+    /// Halves a number with a joker.
+    pub fn halve(self, amount: u32) -> u32 {
+        self.round_half(amount)
+    }
+
+    /// Divides by two: easy rounds down without falling to 0, the others round up.
+    fn round_half(self, amount: u32) -> u32 {
+        match self {
+            Intensity::Easy => (amount / 2).max(amount.min(1)),
+            _ => amount.div_ceil(2),
+        }
     }
 }
 
@@ -94,7 +106,7 @@ impl DrawItem {
     /// Takes as number the drawn one scaled by `intensity`, halved first if it was.
     fn at(self, intensity: Intensity) -> Self {
         if self.halved {
-            let amount = intensity.scale(self.base - self.base / 2);
+            let amount = intensity.scale(intensity.halve(self.base));
             DrawItem { amount, ..self }
         } else {
             let amount = intensity.scale(self.base);
@@ -423,9 +435,9 @@ impl Session {
         Ok(draw.logged)
     }
 
-    /// Halves an exercise (rounded up): the other half is not done.
+    /// Halves an exercise (rounded as the intensity does): the other half is not done.
     pub fn halve(&mut self, id: u64, exercise_id: &str) -> Result<(), AppError> {
-        let jokers = self.jokers;
+        let (jokers, intensity) = (self.jokers, self.intensity);
         let (draw, pos) = self.pending_item(id, exercise_id)?;
         let item = &mut draw.items[pos];
         let cost = item
@@ -434,7 +446,7 @@ impl Session {
         if jokers < cost {
             return Err(AppError::new(NOT_ENOUGH_JOKERS));
         }
-        item.amount -= item.amount / 2;
+        item.amount = intensity.halve(item.amount);
         item.halved = true;
         item.halve_cost = None;
         item.skip_cost -= cost;

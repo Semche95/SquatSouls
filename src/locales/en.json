@@ -44,7 +44,7 @@
       "hard": "Hard"
     },
     "intensityTips": {
-      "easy": "Half the exercises requested, rounded up",
+      "easy": "Half the exercises requested, rounded down",
       "normal": "The exercises requested by the program",
       "hard": "One and a half times the exercises requested, rounded up"
     },
