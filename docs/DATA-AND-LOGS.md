@@ -2,7 +2,7 @@
 
 ## Database
 
-Everything is saved in a SQLite database: configuration (including the global recovery, the sound setting, the timer settings, the notification area, Steam detection, its notification and the ignored games), history (sets done, and per session its end, events triggered and jokers), last chosen game, whether the onboarding was closed once and names given by the Steam Store.
+Everything is saved in a SQLite database: configuration (including the global recovery, the sound setting, the timer settings, the notification area, Steam detection, its notification and the ignored games), history (sets done, and per session its end, events triggered and jokers), last chosen game, language setting, intensity when it is remembered, whether the onboarding was closed once, and names given by the Steam Store with the delays between its calls.
 
 | OS | Path |
 | --- | --- |
