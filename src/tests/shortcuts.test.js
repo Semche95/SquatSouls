@@ -70,7 +70,7 @@ describe('keyboard shortcuts', () => {
   it('ignores keys typed in a field', async () => {
     setup({ draw: { capped: false } });
     const w = await mountApp();
-    w.find('select').element.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit1', bubbles: true }));
+    w.find('.ts-control').element.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit1', bubbles: true }));
     await flushPromises();
     expect(invoke).not.toHaveBeenCalledWith('draw', expect.anything());
   });

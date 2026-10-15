@@ -23,6 +23,9 @@ importers:
       floating-vue:
         specifier: ^5.4.0
         version: 5.4.0(vue@3.5.43)
+      tom-select:
+        specifier: ^2.6.2
+        version: 2.6.2
       vue:
         specifier: ^3.5.43
         version: 3.5.43
@@ -165,6 +168,12 @@ packages:
 
   '@one-ini/wasm@0.2.1':
     resolution: {integrity: sha512-TUqERXGNTifZ9y2g3wPxQrw3HpHv/02DsW3D90T9x0hhonrL1ZqpSmNrU2XkoIq0fP1N6gZfVQzy2Fw1ZvGBNg==}
+
+  '@orchidjs/sifter@1.1.0':
+    resolution: {integrity: sha512-mYwHCfr736cIWWdhhSZvDbf90AKt2xyrJspKFC3qyIJG1LtrJeJunYEqCGG4Aq2ijENbc4WkOjszcvNaIAS/pQ==}
+
+  '@orchidjs/unicode-variants@1.2.2':
+    resolution: {integrity: sha512-Tfdm/fa2NN+75KwtkjpdOvUeaBOgZlyo08Ngb3m6UXe4ACPcKlgnX32vAI5lp39tlLdv2tXiRW0PPdbWyM5ieA==}
 
   '@oxc-project/types@0.153.0':
     resolution: {integrity: sha512-jSNrRIyvPVLL5E1z/tS5zLAprosGz/FuI1PWwEOz59j3E4TTTzSpqKb/RDGqJhhW0QHYISGXxq582wGx6T11Tw==}
@@ -800,6 +809,9 @@ packages:
     resolution: {integrity: sha512-somxA8xKAUzlAxl0TX/jMSYIbRNFIVGnI96pVGJPeMc5BsHmfVXn6mOJT6U++ELnl04eGfzpfcEuZe8WiASkXg==}
     hasBin: true
 
+  tom-select@2.6.2:
+    resolution: {integrity: sha512-eiXIkk82XzzUTOVQDFpy+ZGejuqdTvMukyUyeZBQaKnqW42UoTiTZnrod/eX0rkqJEc4rZY9DZ3zdjV07i29wQ==}
+
   tough-cookie@6.0.2:
     resolution: {integrity: sha512-exgYmnmL/sJpR3upZfXG5PoatXQii55xAiXGXzY+sROLZ/Y+SLcp9PgJNI9Vz37HpQ74WvDcLT8eqm+kV3FzrA==}
     engines: {node: '>=16'}
@@ -1048,6 +1060,12 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.6.0
 
   '@one-ini/wasm@0.2.1': {}
+
+  '@orchidjs/sifter@1.1.0':
+    dependencies:
+      '@orchidjs/unicode-variants': 1.2.2
+
+  '@orchidjs/unicode-variants@1.2.2': {}
 
   '@oxc-project/types@0.153.0': {}
 
@@ -1547,6 +1565,11 @@ snapshots:
   tldts@7.4.18:
     dependencies:
       tldts-core: 7.4.18
+
+  tom-select@2.6.2:
+    dependencies:
+      '@orchidjs/sifter': 1.1.0
+      '@orchidjs/unicode-variants': 1.2.2
 
   tough-cookie@6.0.2:
     dependencies:

@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { byName } from '../configDraft.js';
 import { languageSetting, setLanguage, t } from '../i18n.js';
+import { vSelect } from '../select.js';
 import { useApi } from '../composables/useApi.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSteam } from '../composables/useSteam.js';
@@ -37,7 +38,7 @@ const status = computed(() => {
     <section class="group setting">
       <div class="check">
         <label for="language">{{ t('config.settings.language') }}</label>
-        <select id="language" :value="languageSetting" @change="changeLanguage">
+        <select v-select id="language" :value="languageSetting" @change="changeLanguage">
           <option value="system">{{ t('config.settings.systemLanguage') }}</option>
           <option value="en">English</option>
           <option value="fr">Français</option>

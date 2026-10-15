@@ -4,6 +4,7 @@ import { byName, clone, MAX_NAME, newId, sameName } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { importGame, parseGame, shareGame } from '../share.js';
 import { vReveal } from '../reveal.js';
+import { vSelect } from '../select.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import ConfigEvent from './ConfigEvent.vue';
@@ -143,7 +144,7 @@ function addEvent(game) {
     </form>
     <div v-else class="field">
       <label for="cfg-game">{{ t('play.game') }}</label>
-      <select id="cfg-game" :value="shownGame?.id ?? ''" @change="selectGame($event.target.value)">
+      <select v-select id="cfg-game" :value="shownGame?.id ?? ''" @change="selectGame($event.target.value)">
         <option v-if="!shownGame" value="" disabled>{{ t('play.chooseGame') }}</option>
         <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">{{ g.name }}</option>
       </select>
@@ -164,7 +165,7 @@ function addEvent(game) {
       <p v-if="nameTaken" class="muted">{{ t('config.games.nameTaken') }}</p>
       <div class="field">
         <span>{{ t('config.games.events') }}</span>
-        <select v-model="newGame.source" :aria-label="t('config.games.newEvents')">
+        <select v-select v-model="newGame.source" :aria-label="t('config.games.newEvents')">
           <option value="">{{ t('config.games.noEvents') }}</option>
           <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">{{ t('config.games.copyFrom', { name: g.name || t('common.unnamed') }) }}</option>
         </select>

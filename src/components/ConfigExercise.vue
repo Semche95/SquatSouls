@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { MAX_NAME, MAX_UNIT } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { vReveal } from '../reveal.js';
+import { vSelect } from '../select.js';
 import { vTooltip } from '../tooltip.js';
 import CountInput from './CountInput.vue';
 import DisabledTip from './DisabledTip.vue';
@@ -61,7 +62,7 @@ const timedTip = computed(() => props.ex.timed && t(`config.exercises.timedSumma
         </label>
         <label>
           <span>{{ t('config.exercises.timed') }}</span>
-          <select v-model="ex.timed" :aria-label="t('config.exercises.timed')">
+          <select v-select v-model="ex.timed" :aria-label="t('config.exercises.timed')">
             <option :value="undefined">{{ t('config.exercises.notTimed') }}</option>
             <option v-for="unit in TIME_UNITS" :key="unit" :value="unit">{{ t(`config.exercises.${unit}`) }}</option>
           </select>

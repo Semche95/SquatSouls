@@ -30,7 +30,6 @@ body {
 }
 
 button,
-select,
 input,
 textarea {
   font: inherit;
@@ -51,24 +50,76 @@ button:hover {
 button:active {
   transform: translateY(1px);
 }
-/* Selects are drawn in CSS rather than by the WebKitGTK theme, whose hover and pressed state follows the
-   neighboring controls; the arrow is two gradient triangles. */
-select {
-  appearance: none;
+/* Selects are drawn by Tom Select (select.js), its theme replaced by the app's colors. The background comes
+   from --select-bg, set by the context, and stays when the select has the focus. */
+.ts-dropdown,
+.ts-control {
+  font: inherit;
+  color: inherit;
+}
+.ts-control,
+.full .ts-control,
+.ts-wrapper.single.input-active .ts-control,
+.disabled .ts-control {
+  background: var(--select-bg, var(--panel));
   cursor: pointer;
+}
+.ts-control {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.12s;
+}
+/* Chosen option cut if it is too long. */
+.ts-control > .item {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ts-wrapper:not(.disabled):hover .ts-control,
+.ts-wrapper.focus .ts-control {
+  border-color: var(--gold);
+}
+/* Arrow made of two gradient triangles, turned over while the list is open. */
+.ts-wrapper.single {
+  --ts-pr-caret: 32px;
+}
+.ts-wrapper.single .ts-control::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  width: 10px;
+  height: 5px;
+  translate: 0 -50%;
   background-image:
     linear-gradient(45deg, transparent 50%, var(--muted) 50%),
     linear-gradient(135deg, var(--muted) 50%, transparent 50%);
-  background-position: right 16px center, right 11px center;
+  background-position: left, right;
   background-size: 5px 5px;
   background-repeat: no-repeat;
-  padding-right: 32px;
-  transition: border-color 0.12s;
+  transition: rotate 0.12s;
 }
-select:hover:not(:disabled),
-select:focus {
-  outline: none;
-  border-color: var(--gold);
+.ts-wrapper.dropdown-active .ts-control::after {
+  rotate: 180deg;
+}
+.ts-dropdown {
+  margin-top: 4px;
+  overflow: hidden;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+.ts-dropdown .option {
+  padding: 6px 10px;
+}
+.ts-dropdown .selected {
+  color: var(--gold);
+}
+.ts-dropdown .active {
+  background: var(--gold-soft);
+  color: var(--text);
 }
 
 .app {
@@ -157,13 +208,11 @@ select:focus {
   color: #1a160f;
   font-weight: 600;
 }
-.segmented button:disabled,
-select:disabled {
+.segmented button:disabled {
   cursor: default;
   transform: none;
 }
-.segmented button:disabled:not(.active),
-select:disabled {
+.segmented button:disabled:not(.active) {
   opacity: 0.5;
 }
 .badge {
@@ -232,13 +281,11 @@ h2,
 .play-head > :first-child {
   flex: 1 1 240px;
 }
-.field select {
+.field .ts-wrapper {
   flex: 1;
-  background-color: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding-block: 8px;
-  padding-left: 10px;
+}
+.field .ts-control {
+  padding: 8px 10px;
 }
 
 .events {
@@ -815,7 +862,6 @@ kbd.dark {
 }
 
 .config input,
-.config select,
 .config textarea {
   font: inherit;
   color: inherit;
@@ -829,13 +875,19 @@ kbd.dark {
 .config :is(input, textarea) {
   padding-right: 8px;
 }
+.config .ts-wrapper {
+  --select-bg: var(--panel-2);
+}
+.config .ts-control {
+  padding-block: 6px;
+  padding-left: 8px;
+}
 .config input:focus,
 .config textarea:focus {
   outline: none;
   border-color: var(--gold);
 }
-.config .field input,
-.config .field select {
+.config .field input {
   flex: 1;
 }
 .config .field button {
@@ -850,7 +902,7 @@ kbd.dark {
   padding: 4px 10px;
 }
 /* Disabled exercise: kept in the list but out of the draw. */
-.cfg-off :is(input:not([type='checkbox']), select, .cfg-event-head) {
+.cfg-off :is(input:not([type='checkbox']), .ts-control, .cfg-event-head) {
   opacity: 0.5;
 }
 /* Configuration: games and exercises on separate sub-tabs, underlined so as not to look like a segmented control. */
@@ -933,17 +985,14 @@ label.check {
   transform: translateX(16px);
   background: var(--bg);
 }
-.config :is(input[type='checkbox'], .check select):focus-visible {
+.config input[type='checkbox']:focus-visible {
   outline: 2px solid var(--gold-soft);
   outline-offset: 2px;
 }
-/* Language list: field look, focus of the switches. */
-.config .check select {
+/* Language list. */
+.config .check .ts-wrapper {
   flex: none;
-  width: auto;
-}
-.config .check select:focus {
-  border-color: var(--line);
+  width: 12em;
 }
 .setting .hint {
   margin: 2px 0 0;
@@ -1003,9 +1052,6 @@ label.check {
 }
 .ignored li:last-child {
   border-bottom: none;
-}
-.config .check select {
-  min-width: 11em;
 }
 .cfg-recovery {
   align-self: flex-start;
@@ -1070,13 +1116,12 @@ label.check {
 .cfg-import .banner.error {
   margin-bottom: 0;
 }
-/* Event as an accordion: one card per event, header and content on the same background,
-   separated by a line once open. */
+/* Event as an accordion: one card per event, header and content on the same background. The header is
+   rounded rather than the card clipped, which would cut a select's list. */
 .cfg-event {
   background: var(--panel-2);
   border: 1px solid var(--line);
   border-radius: 8px;
-  overflow: hidden;
 }
 .cfg-event + .cfg-event {
   margin-top: 8px;
@@ -1089,6 +1134,7 @@ label.check {
 }
 .cfg-event summary,
 .cfg-exercise-head {
+  border-radius: 7px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1099,17 +1145,16 @@ label.check {
 .cfg-event summary::-webkit-details-marker {
   display: none;
 }
-.cfg-event summary:hover,
-.cfg-exercise-head:has(> .cfg-event-head:hover) {
+.cfg-event:not([open]) summary:hover,
+.cfg-exercise:not(.open) .cfg-exercise-head:has(> .cfg-event-head:hover) {
   background: var(--gold-soft);
 }
-.cfg-event[open] summary,
-.cfg-exercise.open .cfg-exercise-head {
-  border-bottom: 1px solid var(--line);
-}
 /* Fields darker than the card to stand out from it. */
-.config .cfg-event :is(input, select) {
+.config .cfg-event input {
   background: var(--panel);
+}
+.config .cfg-event .ts-wrapper {
+  --select-bg: var(--panel);
 }
 .cfg-event-head {
   display: flex;

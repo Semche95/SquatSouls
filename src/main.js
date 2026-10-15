@@ -5,6 +5,7 @@ import { i18n, loadLanguage } from './i18n.js';
 import { logError, logUncaught } from './log.js';
 import { unlockSound } from './sound.js';
 import 'floating-vue/dist/style.css';
+import 'tom-select/dist/css/tom-select.css';
 import 'vue-final-modal/style.css';
 import './style.css';
 

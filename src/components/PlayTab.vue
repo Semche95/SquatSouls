@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { t } from '../i18n.js';
 import { byName } from '../configDraft.js';
+import { vSelect } from '../select.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import { useKeydown } from '../composables/useKeydown.js';
@@ -37,7 +38,7 @@ function triggerCount(eventId) {
 
 useKeydown((e) => {
   if (e.repeat) return;
-  if (e.target.closest?.('input, textarea, select')) return;
+  if (e.target.closest?.('input, textarea, .ts-wrapper')) return;
   // e.code ignores the layout: 1-9 work on AZERTY without Shift.
   const digit = e.code.match(/^(?:Digit|Numpad)([1-9])$/);
   if (digit) {
@@ -85,7 +86,7 @@ useKeydown((e) => {
       <div class="field">
         <label for="play-game">{{ t('play.game') }}</label>
         <DisabledTip class="grow" :tip="gameLocked ? t('play.gameLocked') : ''">
-          <select id="play-game" v-model="gameId" :disabled="gameLocked">
+          <select v-select id="play-game" v-model="gameId" :disabled="gameLocked">
             <option value="" disabled>{{ t('play.chooseGame') }}</option>
             <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id">{{ g.name }}</option>
           </select>
