@@ -13,7 +13,6 @@
     "joker": "{n} joker | {n} jokers",
     "reward": "+{n} joker | +{n} jokers",
     "copyFailed": "Copy impossible: {error}",
-    "importOpen": "An import is already open",
     "close": "Close"
   },
   "keys": {
@@ -143,12 +142,10 @@
       "new": "New game",
       "newName": "Name of the new game",
       "nameTaken": "A game already has this name.",
-      "creating": "A game is already being created",
       "nameNeeded": "Give the game a name",
-      "events": "Events",
+      "copyEvents": "Copy the events of",
       "newEvents": "Events of the new game",
-      "noEvents": "None (one event to fill in)",
-      "copyFrom": "Copy from {name}",
+      "noCopy": "Copy nothing",
       "create": "Create",
       "shareEmpty": "Add an event to share it",
       "willReplace": "{name} already exists: it will be replaced.",
@@ -175,6 +172,7 @@
       "jokers": "Jokers earned"
     },
     "exercises": {
+      "import": "Import exercises",
       "imported": "Exercises imported: {added}, {updated} updated.",
       "added": "{n} added | {n} added",
       "new": "New exercise",

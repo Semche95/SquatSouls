@@ -868,8 +868,8 @@ kbd.dark {
   font-size: 0.8rem;
 }
 
-.config input,
-.config textarea {
+:is(.config, .form-dialog) input,
+:is(.config, .form-dialog) textarea {
   font: inherit;
   color: inherit;
   width: 100%;
@@ -879,18 +879,18 @@ kbd.dark {
   padding-block: 6px;
   padding-left: 8px;
 }
-.config :is(input, textarea) {
+:is(.config, .form-dialog) :is(input, textarea) {
   padding-right: 8px;
 }
-.config .ts-wrapper {
+:is(.config, .form-dialog) .ts-wrapper {
   --select-bg: var(--panel-2);
 }
-.config .ts-control {
+:is(.config, .form-dialog) .ts-control {
   padding-block: 6px;
   padding-left: 8px;
 }
-.config input:focus,
-.config textarea:focus {
+:is(.config, .form-dialog) input:focus,
+:is(.config, .form-dialog) textarea:focus {
   outline: none;
   border-color: var(--gold);
 }
@@ -900,7 +900,7 @@ kbd.dark {
 .config .field button {
   flex: none;
 }
-.config button:disabled {
+:is(.config, .form-dialog) button:disabled {
   opacity: 0.4;
   cursor: default;
   transform: none;
@@ -1117,7 +1117,7 @@ label.check {
   resize: vertical;
   word-break: break-all;
 }
-.config :is(input, textarea)[aria-invalid='true'] {
+:is(.config, .form-dialog) :is(input, textarea)[aria-invalid='true'] {
   border-color: var(--red);
 }
 /* The spacing between blocks already comes from the form. */
@@ -1505,6 +1505,31 @@ code {
   color: var(--muted);
   line-height: 1.5;
   font-size: 0.92rem;
+}
+/* Creation or import of a game, import of exercises: gold like About, nothing is at stake; labels in a column, fields aligned. */
+.confirm-modal-content.form-dialog {
+  position: relative;
+  gap: 16px;
+  width: min(480px, 100%);
+  border-top-color: var(--gold);
+}
+.form-dialog form {
+  display: grid;
+  gap: 16px;
+}
+.game-fields {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: center;
+  gap: 12px;
+}
+.game-fields span {
+  color: var(--muted);
+}
+/* Import: Cancel on the left and Import on the right, like the other modals. */
+.cfg-import .row {
+  flex-direction: row-reverse;
+  justify-content: space-between;
 }
 /* About: centered like a title screen, from the identity down to the fine print. */
 .confirm-modal-content.about-modal {

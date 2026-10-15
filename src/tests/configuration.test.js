@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, rejection, responses, setup, mountApp, shownTip, expectTip, openSettings } from './app.js';
+import { config, emptySession, rejection, responses, setup, mountApp, shownTip, expectTip, openSettings, layOutControls, formDialog, formDialogOpen, formDialogClosed } from './app.js';
 import { shareExercises, shareGame } from '../share.js';
 
 // Game shown in the select of the Program tab, and the games it offers.
@@ -16,6 +16,7 @@ async function rename(w, name) {
 }
 
 describe('configuration', () => {
+  layOutControls();
   async function openConfig() {
     const w = await mountApp();
     await w.findAll('.tabs button')[2].trigger('click');
@@ -108,43 +109,56 @@ describe('configuration', () => {
     expect(sent.exercises.map((e) => e.id)).toEqual(['squat', 'new-exercise', 'new-exercise-2']);
   });
 
-  it('creates an empty game or one with events copied from another game and saves it right away', async () => {
+  it('creates an empty game or one with events copied from another game in a modal and saves it right away', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
     const savedGames = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)[1].config.games;
     async function create(name, source) {
       await w.find('.group-head .primary').trigger('click');
-      await flushPromises();
-      expect(w.find('form.cfg-game .primary').element.disabled).toBe(true);
-      expect(shownGame(w)).toBe('Choose a game');
-      expect(gameButton(w, 'Rename')).toBeUndefined();
-      const nameInput = w.find('input[aria-label="Name of the new game"]');
+      await formDialogOpen();
+      expect(formDialog().find('.primary').element.disabled).toBe(true);
+      const nameInput = formDialog().find('input[aria-label="Name of the new game"]');
       expect(document.activeElement).toBe(nameInput.element);
       await nameInput.setValue(name);
-      await w.find('select[aria-label="Events of the new game"]').setValue(source);
-      await w.find('form.cfg-game').trigger('submit');
+      await formDialog().find('select[aria-label="Events of the new game"]').setValue(source);
+      await formDialog().find('form').trigger('submit');
       await flushPromises();
+      await formDialogClosed();
       expect(shownGame(w)).toBe(name);
       expectUnchanged(w);
       return savedGames().at(-1);
     }
     expect(await create('Nioh', 'sekiro')).toMatchObject({ id: 'nioh', events: config.games[1].events });
-    expect(await create('Lies of P', '')).toMatchObject({ id: 'lies-of-p', events: [{ name: 'New event', draws: 1 }] });
+    expect(await create('Lies of P', '')).toMatchObject({ id: 'lies-of-p', events: [] });
     expect(savedGames().map((g) => g.id)).toEqual(['er', 'sekiro', 'nioh', 'lies-of-p']);
     expect(gameNames(w)).toEqual(['Elden Ring', 'Lies of P', 'Nioh', 'Sekiro']);
+  });
+
+  it('offers to copy the events of each game, and closes the modal without creating anything on Cancel', async () => {
+    setup();
+    const w = await openConfig();
+    await w.find('.group-head .primary').trigger('click');
+    await formDialogOpen();
+    expect(formDialog().text()).toContain('Copy the events of');
+    expect(formDialog().findAll('select option').map((o) => o.text())).toEqual(['Copy nothing', 'Elden Ring', 'Sekiro']);
+    await formDialog().find('input').setValue('Nioh');
+    await formDialog().findAll('button').find((b) => b.text().startsWith('Cancel')).trigger('click');
+    await formDialogClosed();
+    expect(invoke.mock.calls.some(([cmd]) => cmd === 'save_config')).toBe(false);
+    expect(shownGame(w)).toBe('Elden Ring');
   });
 
   it('refuses to create a game with a name already taken', async () => {
     setup();
     const w = await openConfig();
     await w.find('.group-head .primary').trigger('click');
-    await flushPromises();
-    await w.find('input[aria-label="Name of the new game"]').setValue(' sekiro ');
-    expect(w.find('form.cfg-game').text()).toContain('A game already has this name.');
-    expect(w.find('form.cfg-game .primary').element.disabled).toBe(true);
-    await expectTip(w.find('form.cfg-game .primary'), 'A game already has this name.');
-    await w.find('input[aria-label="Name of the new game"]').setValue(' ');
-    await expectTip(w.find('form.cfg-game .primary'), 'Give the game a name');
+    await formDialogOpen();
+    await formDialog().find('input[aria-label="Name of the new game"]').setValue(' sekiro ');
+    expect(formDialog().text()).toContain('A game already has this name.');
+    expect(formDialog().find('.primary').element.disabled).toBe(true);
+    await expectTip(formDialog().find('.primary'), 'A game already has this name.');
+    await formDialog().find('input[aria-label="Name of the new game"]').setValue(' ');
+    await expectTip(formDialog().find('.primary'), 'Give the game a name');
   });
 
   it('asks for confirmation before removing a game, then saves right away', async () => {
@@ -346,58 +360,64 @@ describe('configuration', () => {
       vi.unstubAllGlobals();
     });
 
-    it('imports a shared game, replaces the one with the same name and saves it right away', async () => {
+    it('imports a shared game in a modal, replaces the one with the same name and saves it right away', async () => {
       setup({ save_config: (args) => ({ config: args.config }) });
       const w = await openConfig();
       const open = () => w.find('.group-head .ghost');
       await open().trigger('click');
-      await flushPromises();
-      const text = w.find('textarea[aria-label="Shared text"]');
+      await formDialogOpen();
+      const text = formDialog().find('textarea[aria-label="Shared text"]');
       expect(document.activeElement).toBe(text.element);
-      const submit = () => w.find('.cfg-import .primary');
+      const submit = () => formDialog().find('.cfg-import .primary');
       expect(submit().element.disabled).toBe(true);
       await text.setValue('not a game');
-      expect(w.find('.cfg-import .banner.error').text()).toBe('This text is not a valid shared game.');
+      expect(formDialog().find('.cfg-import .banner.error').text()).toBe('This text is not a valid shared game.');
       expect(text.attributes('aria-invalid')).toBe('true');
       expect(submit().element.disabled).toBe(true);
       await text.setValue(shareGame({ name: 'sekiro', events: [{ name: 'Death', draws: 3, jokers: 1 }] }));
-      expect(w.find('.cfg-import .banner.warn').text()).toBe('sekiro already exists: it will be replaced.');
-      await w.find('.cfg-import').trigger('submit');
+      expect(formDialog().find('.cfg-import .banner.warn').text()).toBe('sekiro already exists: it will be replaced.');
+      await formDialog().find('.cfg-import').trigger('submit');
       await flushPromises();
+      await formDialogClosed();
       expect(savedConfig().games.map((g) => g.id)).toEqual(['er', 'sekiro']);
       expect(savedConfig().games[1]).toEqual({ id: 'sekiro', name: 'sekiro', events: [{ id: 'death', name: 'Death', draws: 1, jokers: 1 }] });
       expect(w.find('.banner.ok').text()).toBe('sekiro imported, limited to 1 exercise per event.');
       expect(shownGame(w)).toBe('sekiro');
       expectUnchanged(w);
       await open().trigger('click');
-      await w.find('textarea').setValue(shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1 }] }));
-      await w.find('.cfg-import').trigger('submit');
+      await formDialogOpen();
+      await formDialog().find('textarea').setValue(shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1 }] }));
+      await formDialog().find('.cfg-import').trigger('submit');
       await flushPromises();
+      await formDialogClosed();
       expect(savedConfig().games.map((g) => g.id)).toEqual(['er', 'sekiro', 'nioh']);
       expect(w.find('.banner.ok').text()).toBe('Nioh imported.');
     });
 
-    it('imports shared exercises without losing pending changes', async () => {
+    it('imports shared exercises in a modal without losing pending changes', async () => {
       setup({ save_config: (args) => ({ config: args.config }) });
       const w = await openConfig();
       await rename(w, 'Elden Ring DLC');
       await w.findAll('.subtabs button')[1].trigger('click');
       await w.findAll('.cfg-exercises .group-head .ghost')[1].trigger('click');
-      await w.find('textarea').setValue(
+      await formDialogOpen();
+      expect(formDialog().find('h3').text()).toBe('Import exercises');
+      expect(document.activeElement).toBe(formDialog().find('textarea').element);
+      await formDialog().find('textarea').setValue(
         shareExercises([
           { name: 'squats', unit: 'reps', min: 12, max: 20 },
           { name: 'Push-ups', unit: 'reps', min: 8, max: 12 },
         ]),
       );
-      await w.find('.cfg-import').trigger('submit');
+      await formDialog().find('.cfg-import').trigger('submit');
       await flushPromises();
+      await formDialogClosed();
       expect(savedConfig().exercises).toEqual([
         { id: 'squat', name: 'Squats', enabled: true, unit: 'reps', min: 12, max: 20 },
         { id: 'push-ups', name: 'Push-ups', enabled: true, unit: 'reps', min: 8, max: 12 },
       ]);
       expect(savedConfig().games[0].name).toBe('Elden Ring');
       expect(w.find('.banner.ok').text()).toBe('Exercises imported: 1 added, 1 updated.');
-      expect(w.find('.cfg-import').exists()).toBe(false);
       expect(w.findAll('.cfg-exercise')).toHaveLength(2);
       await w.find('.cfg-actions .primary').trigger('click');
       await flushPromises();

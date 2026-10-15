@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { setup, mountApp, press, emitEvent } from './app.js';
+import { setup, mountApp, press, emitEvent, layOutControls } from './app.js';
 
 const ctrlQ = { key: 'q', ctrlKey: true };
 // Teleported to the body, outside the app's wrapper.
@@ -19,11 +19,7 @@ async function ask() {
 }
 
 describe('quit', () => {
-  // jsdom lays nothing out: without this, the modal's focus trap finds no visible button.
-  beforeEach(() => {
-    const spy = vi.spyOn(HTMLButtonElement.prototype, 'getClientRects').mockReturnValue([{}]);
-    return () => spy.mockRestore();
-  });
+  layOutControls();
 
   it('asks to quit with Ctrl+Q, whatever the tab and the layout', async () => {
     setup();

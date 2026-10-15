@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { VueFinalModal } from 'vue-final-modal';
 import { newId } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { mergeExercises, parseExercises, shareExercises } from '../share.js';
@@ -8,7 +9,6 @@ import { useSession } from '../composables/useSession.js';
 import ConfigExercise from './ConfigExercise.vue';
 import CountInput from './CountInput.vue';
 import ShareImport from './ShareImport.vue';
-import DisabledTip from './DisabledTip.vue';
 
 const { config, draft, notify, copy } = useConfig();
 const { saveNow } = useSession();
@@ -39,11 +39,20 @@ function addExercise() {
     <header class="group-head">
       <h2 class="group-title">{{ t('config.tabs.exercises') }}</h2>
       <button class="ghost" @click="copy(shareExercises(config.exercises))">{{ t('common.share') }}</button>
-      <DisabledTip :tip="importing ? t('common.importOpen') : ''">
-        <button class="ghost" :disabled="importing" @click="importing = true">{{ t('common.import') }}</button>
-      </DisabledTip>
+      <button class="ghost" @click="importing = true">{{ t('common.import') }}</button>
     </header>
-    <ShareImport v-if="importing" :parse="parseExercises" @import="importShared" @cancel="importing = false" />
+    <VueFinalModal
+      v-model="importing"
+      class="confirm-modal"
+      content-class="confirm-modal-content form-dialog"
+      overlay-transition="vfm-fade"
+      content-transition="vfm-fade"
+      :focus-trap="{ initialFocus: '.form-dialog textarea' }"
+    >
+      <button class="modal-close" :aria-label="t('common.close')" @click="importing = false">×</button>
+      <h3>{{ t('config.exercises.import') }}</h3>
+      <ShareImport :parse="parseExercises" @import="importShared" @cancel="importing = false" />
+    </VueFinalModal>
     <label class="field cfg-recovery">
       <span>{{ t('config.exercises.recovery') }}</span>
       <CountInput v-model="draft.recovery" />

@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { setup, mountApp } from './app.js';
+import { setup, mountApp, layOutControls } from './app.js';
 
 // Teleported to the body, outside the app's wrapper.
 const screen = () => document.querySelector('.onboarding-screen');
@@ -9,11 +9,7 @@ const title = () => screen().querySelector('h2').textContent;
 const button = (text) => [...screen().querySelectorAll('button')].find((b) => b.textContent === text);
 
 describe('onboarding', () => {
-  // jsdom lays nothing out: without this, the modal's focus trap finds no visible button.
-  beforeEach(() => {
-    const spy = vi.spyOn(HTMLButtonElement.prototype, 'getClientRects').mockReturnValue([{}]);
-    return () => spy.mockRestore();
-  });
+  layOutControls();
 
   async function firstLaunch() {
     setup({ get_onboarding_seen: false });

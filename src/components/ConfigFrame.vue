@@ -9,7 +9,7 @@ import { vReveal } from '../reveal.js';
 import DisabledTip from './DisabledTip.vue';
 
 const props = defineProps({ settings: Boolean });
-const { config, draft, configError, configMsg, notify, newGame } = useConfig();
+const { config, draft, configError, configMsg, notify } = useConfig();
 const { saveNow } = useSession();
 onBeforeUnmount(() => notify(''));
 
@@ -33,7 +33,6 @@ async function saveConfig() {
 
 function discardChanges() {
   resetTab();
-  if (!props.settings) newGame.value = null;
   notify('');
 }
 </script>

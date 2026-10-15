@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, vi } from 'vitest';
-import { flushPromises, mount } from '@vue/test-utils';
+import { DOMWrapper, flushPromises, mount } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { createVfm } from 'vue-final-modal';
@@ -108,6 +108,24 @@ afterEach(() => {
 
 // Text of the shown tooltip, or undefined without a tooltip.
 export const shownTip = () => document.querySelector('.v-popper__popper--shown .v-popper__inner')?.textContent.trim();
+
+// jsdom lays nothing out: without this, a modal's focus trap finds no visible control.
+export function layOutControls() {
+  beforeEach(() => {
+    const spy = vi.spyOn(HTMLElement.prototype, 'getClientRects').mockReturnValue([{}]);
+    return () => spy.mockRestore();
+  });
+}
+
+// Modal creating or importing a game, or importing exercises, teleported to the body outside the app's wrapper.
+export const formDialog = () => new DOMWrapper(document.querySelector('.form-dialog'));
+// Open once its focus trap holds the focus: it activates on the next frame, then focuses after a timer,
+// and closing the modal before would leave it active. Closed at the end of its closing transition.
+export async function formDialogOpen() {
+  await vi.waitFor(() => expect(document.querySelector('.form-dialog')?.contains(document.activeElement)).toBe(true));
+  await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve)));
+}
+export const formDialogClosed = () => vi.waitFor(() => expect(document.querySelector('.form-dialog')).toBeNull());
 
 // Hovers a control's tooltip container (DisabledTip), waits for the expected text, then leaves it.
 export async function expectTip(wrapper, text) {

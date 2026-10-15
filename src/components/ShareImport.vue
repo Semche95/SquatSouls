@@ -4,7 +4,7 @@ import { t } from '../i18n.js';
 import { vReveal } from '../reveal.js';
 import DisabledTip from './DisabledTip.vue';
 
-// `parse` reads the pasted text and throws an error if it is not importable.
+// `parse` reads the pasted text and throws an error if it is not importable. Shown in a modal: Escape cancels.
 const props = defineProps({ parse: { type: Function, required: true } });
 const emit = defineEmits(['import', 'cancel']);
 
@@ -34,7 +34,7 @@ const importable = computed(() => !!result.value && !invalid.value);
       <DisabledTip :tip="importable ? '' : invalid ? result.message : t('share.pasteFirst')">
         <button class="primary" :disabled="!importable">{{ t('common.import') }}</button>
       </DisabledTip>
-      <button type="button" class="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</button>
+      <button type="button" class="ghost" @click="emit('cancel')">{{ t('common.cancel') }} <kbd>{{ t('keys.escape') }}</kbd></button>
     </div>
   </form>
 </template>

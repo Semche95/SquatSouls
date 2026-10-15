@@ -1,17 +1,13 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { setup, mountApp } from './app.js';
+import { setup, mountApp, layOutControls } from './app.js';
 import { author, repository } from '../../package.json';
 
 // Teleported to the body, outside the app's wrapper.
 const modal = () => document.querySelector('.about-modal');
 
 describe('about', () => {
-  // jsdom lays nothing out: without this, the modal's focus trap finds no visible button.
-  beforeEach(() => {
-    const spy = vi.spyOn(HTMLButtonElement.prototype, 'getClientRects').mockReturnValue([{}]);
-    return () => spy.mockRestore();
-  });
+  layOutControls();
 
   async function openAbout() {
     setup();

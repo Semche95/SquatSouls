@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, setup, mountApp, openSettings } from './app.js';
+import { config, emptySession, setup, mountApp, openSettings, layOutControls, formDialog, formDialogOpen } from './app.js';
 
 // Configuration with detection enabled, Elden Ring carrying its Steam AppId.
 const steamConfig = (extra = {}) => ({
@@ -30,6 +30,7 @@ const notifications = () => invoke.mock.calls.filter(([cmd]) => cmd === 'notify'
 const lastSaved = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)?.[1].config;
 
 describe('Steam game detection', () => {
+  layOutControls();
   it('reads no process until the option is checked', async () => {
     setupSteam({ cfg: config });
     const w = await mountApp();
@@ -142,8 +143,9 @@ describe('Steam game detection', () => {
     const w = await mountApp();
     expect(banner(w).text()).toContain('Hollow Knight detected.');
     await banner(w).find('.primary').trigger('click');
-    expect(w.find('input[aria-label="Name of the new game"]').element.value).toBe('Hollow Knight');
-    await w.find('form.cfg-game').trigger('submit');
+    await formDialogOpen();
+    expect(formDialog().find('input[aria-label="Name of the new game"]').element.value).toBe('Hollow Knight');
+    await formDialog().find('form').trigger('submit');
     await flushPromises();
     expect(lastSaved().games.at(-1)).toMatchObject({ name: 'Hollow Knight', steamAppId: 367520 });
   });
@@ -172,7 +174,8 @@ describe('Steam game detection', () => {
     const w = await mountApp();
     await openSettings(w);
     await w.find('.ignored button').trigger('click');
-    await w.find('form.cfg-game').trigger('submit');
+    await formDialogOpen();
+    await formDialog().find('form').trigger('submit');
     await flushPromises();
     expect(lastSaved().games.at(-1)).toMatchObject({ name: 'Hollow Knight', steamAppId: 367520 });
     expect(lastSaved().ignoredGames).toEqual([]);
