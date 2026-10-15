@@ -1,4 +1,4 @@
-import { beforeEach, vi } from 'vitest';
+import { beforeEach, expect, vi } from 'vitest';
 import { languageSetting, setLanguage } from '../i18n.js';
 
 // The Tauri backend does not exist under Vitest: each test simulates its responses.
@@ -12,6 +12,16 @@ vi.mock('@tauri-apps/plugin-log', () => ({ error: vi.fn(async () => {}) }));
 beforeEach(() => {
   languageSetting.value = 'system';
   return setLanguage('fr');
+});
+
+// A vue-i18n warning (missing key, scope not found...) fails the test, which would only print it.
+beforeEach(() => {
+  const spy = vi.spyOn(console, 'warn');
+  return () => {
+    const warnings = spy.mock.calls.map(([message]) => String(message)).filter((m) => m.startsWith('[intlify]'));
+    spy.mockRestore();
+    expect(warnings).toEqual([]);
+  };
 });
 
 // jsdom does not lay out pages, so it has no scrolling.

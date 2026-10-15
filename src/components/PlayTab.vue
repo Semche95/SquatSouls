@@ -109,7 +109,7 @@ useKeydown((e) => {
     </div>
 
     <p v-if="steamOffer" class="banner steam">
-      <i18n-t keypath="play.detected" tag="span">
+      <i18n-t keypath="play.detected" tag="span" scope="global">
         <template #name><strong>{{ detected.name }}</strong></template>
       </i18n-t>
       <span class="row">
