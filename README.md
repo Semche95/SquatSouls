@@ -72,7 +72,7 @@ These links always point to the latest version, older ones are on the [Releases]
 | J | Skip it |
 | T | Start its timer, if it is timed |
 | Space | Hold or resume the timer |
-| Backspace | Cancel the set |
+| Backspace | Cancel the set, or stop it once started |
 | Escape | Skip the recovery or stop the timer |
 | Ctrl+Q (Cmd+Q on macOS) | Quit the app |
 

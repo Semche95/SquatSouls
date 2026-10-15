@@ -138,10 +138,7 @@ pub(crate) fn complete_exercise(
 #[tauri::command]
 pub(crate) fn dismiss(state: Shared, draw_id: u64) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
-    let entries = s.session.dismiss(draw_id)?;
-    if let Err(e) = s.store.remove_history(&entries) {
-        log::error!("History not modified: {e}");
-    }
+    s.session.dismiss(draw_id)?;
     s.save_session_summary();
     Ok(s.session.view())
 }

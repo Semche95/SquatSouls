@@ -427,13 +427,6 @@ fn history_and_sessions_are_stored() {
         }
     );
 
-    s.remove_history(&[entry(t, t - 60, "Squats", 15)]).unwrap();
-    assert_eq!(
-        s.history(1, today).unwrap()[0].sets,
-        3,
-        "dismissed set removed"
-    );
-    s.append_history(&[entry(t, t - 60, "Squats", 15)]).unwrap();
 
     let summed = |s: &Store| {
         s.history(1, today).unwrap()[0]

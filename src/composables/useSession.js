@@ -77,8 +77,6 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   // Recovery after an exercise is done: no other can be marked done before it ends.
   const recovery = countdown();
   const { left: recoveryLeft, share: recoveryShare } = recovery;
-  // Set whose exercise started the recovery: dismissing it stops the recovery.
-  let recoveryDrawId = 0;
 
   const exerciseOf = (item) => config.value.exercises.find((ex) => ex.id === item.exerciseId);
   // Exercise-specific recovery, otherwise the global recovery.
@@ -86,17 +84,14 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   // Time unit of a timed exercise, undefined otherwise.
   const timedUnit = (item) => exerciseOf(item)?.timed;
 
-  function startRecovery(seconds, drawId) {
-    recoveryDrawId = drawId;
+  function startRecovery(seconds) {
     recovery.start(seconds, () => {
-      recoveryDrawId = 0;
       if (config.value.sound) recoveryEnd();
     });
   }
 
   function skipRecovery() {
     recovery.stop();
-    recoveryDrawId = 0;
   }
 
   // Timer of a timed exercise: its preparation, then its duration. Like the recovery, it blocks Done.
@@ -199,17 +194,19 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     }
   }
 
-  // Started set whose dismissal awaits confirmation: its done exercises will not count.
-  const confirmDismiss = ref(0);
+  // Started set whose stop awaits confirmation: the rest of the set is dropped, its done exercises stay counted.
+  const confirmStop = ref(0);
+  const started = (draw) => draw.items.some((it) => it.done);
 
+  // A set not started is dismissed in one click, a started one stops after confirmation.
   function dismiss(draw) {
-    if (draw.items.some((it) => it.done)) confirmDismiss.value = draw.id;
+    if (started(draw)) confirmStop.value = draw.id;
     else dismissNow(draw);
   }
 
-  async function dismissNow(draw) {
-    confirmDismiss.value = 0;
-    if ((await act('dismiss', draw)) && draw.id === recoveryDrawId) skipRecovery();
+  function dismissNow(draw) {
+    confirmStop.value = 0;
+    return act('dismiss', draw);
   }
 
   // Exercises of the set still to do.
@@ -230,7 +227,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   async function complete(draw, item) {
     if (recoveryLeft.value || timing.value) return;
-    if (await act('complete_exercise', draw, { exerciseId: item.exerciseId })) startRecovery(recoveryAfter(item), draw.id);
+    if (await act('complete_exercise', draw, { exerciseId: item.exerciseId })) startRecovery(recoveryAfter(item));
   }
 
   function halve(draw, item) {
@@ -276,7 +273,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   return {
     session, notice, farewell, recoveryLeft, recoveryShare, skipRecovery, timing, timerLeft, timerShare, timerHeld, timedUnit, startTimer, stopTimer,
-    toggleTimer, reload, saveNow, saveChange, trigger, act, confirmDismiss, dismiss, dismissNow, remaining, canAfford, setSkipCost,
+    toggleTimer, reload, saveNow, saveChange, trigger, act, confirmStop, started, dismiss, dismissNow, remaining, canAfford, setSkipCost,
     complete, halve, skipExercise, skipSet, startSession, endSession, cancelSession,
   };
 });

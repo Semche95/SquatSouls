@@ -9,7 +9,7 @@ import CountdownSeal from './CountdownSeal.vue';
 // current: set at the head of the queue, the only one to do; the next ones can only be dismissed.
 const props = defineProps({ draw: Object, current: Boolean });
 
-const { session, recoveryLeft, timing, timedUnit, startTimer, confirmDismiss, dismiss, dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet } = useSession();
+const { session, recoveryLeft, timing, timedUnit, startTimer, confirmStop, started, dismiss, dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet } = useSession();
 // First remaining exercise of the current set: the only one to mark done or time, also targeted by shortcuts.
 const keyed = computed(() => remaining(props.draw)[0]);
 // Why Done and the timer are blocked: recovery or timer running, empty otherwise.
@@ -56,11 +56,11 @@ const busy = computed(() => (recoveryLeft.value ? t('draw.recovering') : timing.
         </span>
       </li>
     </ul>
-    <footer v-if="confirmDismiss === draw.id" v-reveal class="banner confirm">
-      <p>{{ t('draw.confirmDismiss') }}</p>
+    <footer v-if="confirmStop === draw.id" v-reveal class="banner confirm">
+      <p>{{ t('draw.confirmStop') }}</p>
       <div class="card-actions">
-        <button class="danger" @click="dismissNow(draw)">{{ t('draw.dismissSet') }}</button>
-        <button class="ghost" @click="confirmDismiss = 0">{{ t('draw.keepSet') }} <kbd>{{ t('keys.escape') }}</kbd></button>
+        <button class="primary" @click="dismissNow(draw)">{{ t('draw.stopSet') }}</button>
+        <button class="ghost" @click="confirmStop = 0">{{ t('draw.keepSet') }} <kbd>{{ t('keys.escape') }}</kbd></button>
       </div>
     </footer>
     <footer v-else class="card-actions">
@@ -70,7 +70,7 @@ const busy = computed(() => (recoveryLeft.value ? t('draw.recovering') : timing.
         </button>
       </DisabledTip>
       <button class="ghost" @click="dismiss(draw)">
-        {{ t('common.cancel') }} <kbd v-if="current">{{ t('keys.backspace') }}</kbd>
+        {{ t(started(draw) ? 'draw.stop' : 'common.cancel') }} <kbd v-if="current">{{ t('keys.backspace') }}</kbd>
       </button>
     </footer>
   </article>

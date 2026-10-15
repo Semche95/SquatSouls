@@ -481,28 +481,25 @@ fn exercises_are_done_one_by_one() {
 }
 
 #[test]
-fn dismissing_a_started_set_drops_its_done_exercises() {
+fn dismissing_a_started_set_keeps_its_done_exercises() {
     let cfg = default_config(Language::Fr);
     let mut s = Session::default();
-    let mort = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
-    let kept = complete(&mut s, mort.id, 5).unwrap();
-    let boss = s.draw(&cfg, "ds3", "boss", &mut rng()).unwrap();
+    let mut r = rng();
+    let started = s.draw(&cfg, "ds3", "boss-nohit", &mut r).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss-nohit", &mut r).unwrap();
     let entry = s
-        .complete_exercise(boss.id, &boss.items[0].exercise_id, 10)
+        .complete_exercise(started.id, &started.items[0].exercise_id, 10)
         .unwrap();
-    assert_eq!(
-        s.dismiss(boss.id).unwrap(),
-        vec![entry],
-        "to remove from the history"
-    );
+    s.dismiss(started.id).unwrap();
     let v = s.view();
-    assert!(v.pending.is_empty());
-    assert_eq!(
-        v.log,
-        kept.into_iter().rev().collect::<Vec<_>>(),
-        "nothing of the dismissed set is counted"
-    );
-    assert_eq!(v.triggers.len(), 1, "the trigger is uncounted");
+    assert_eq!(v.pending.len(), 1, "the rest of the set is dropped");
+    assert_eq!(v.pending[0].id, boss.id);
+    assert_eq!(v.log, vec![entry], "the exercise done stays counted");
+    assert_eq!(v.triggers[0].count, 2, "the trigger stays counted");
+    assert_eq!(v.jokers, 0, "a stopped set earns no jokers");
+    let again = s.draw(&cfg, "ds3", "boss-nohit", &mut r).unwrap();
+    assert_eq!(again.trigger_count, 3);
+    assert_ne!(again.items, started.items, "nothing is reserved");
 }
 
 #[test]
@@ -511,8 +508,6 @@ fn a_dismissed_set_comes_back_on_the_next_trigger_of_its_event() {
     let mut s = Session::default();
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
-    s.complete_exercise(boss.id, &boss.items[0].exercise_id, 2)
-        .unwrap();
     s.dismiss(boss.id).unwrap();
     let other = s.draw(&cfg, "ds3", "boss-premier", &mut r).unwrap();
     assert_ne!(other.items, boss.items, "another event draws normally");

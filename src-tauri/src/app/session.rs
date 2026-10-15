@@ -149,10 +149,7 @@ pub struct Draw {
     pub capped: bool,
     pub trigger_count: u32,
     pub max_per_session: Option<u32>,
-    /// Exercises of the set already done, removed if it is dismissed.
-    #[serde(skip)]
-    pub logged: Vec<LogEntry>,
-    /// Exercises as drawn, reserved for the next trigger if the set is dismissed.
+    /// Exercises as drawn, reserved for the next trigger if the set is dismissed before being started.
     #[serde(skip)]
     pub drawn: Vec<DrawItem>,
     /// True once jokers have been spent on the set.
@@ -326,7 +323,6 @@ impl Session {
             capped,
             trigger_count,
             max_per_session: ev.max_per_session,
-            logged: Vec::new(),
             drawn: items,
             forfeited: false,
         };
@@ -402,7 +398,6 @@ impl Session {
             unit: item.unit.clone(),
             amount: item.amount,
         };
-        draw.logged.push(entry.clone());
         self.done.push(entry.clone());
         self.finish_if_done(id)?;
         Ok(entry)
@@ -418,21 +413,20 @@ impl Session {
         Ok(())
     }
 
-    /// Dismisses a trigger: it is no longer counted, nor are the set's exercises already done, returned to remove them from the history.
-    /// Its exercises as drawn are reserved for the next trigger of the same event.
-    pub fn dismiss(&mut self, id: u64) -> Result<Vec<LogEntry>, AppError> {
+    /// Dismisses a set. Not started, it is a misclick: the trigger is no longer counted, and its exercises as drawn
+    /// are reserved for the next trigger of the same event. Started, it stops there: its exercises done stay counted,
+    /// as does the trigger, without the jokers of the set.
+    pub fn dismiss(&mut self, id: u64) -> Result<(), AppError> {
         let draw = self.take_pending(id)?;
+        if draw.items.iter().any(|it| it.done) {
+            return Ok(());
+        }
         let key = (draw.game_id, draw.event_id);
         if let Some(count) = self.triggers.get_mut(&key) {
             *count = count.saturating_sub(1);
         }
         self.reserved.insert(key, draw.drawn);
-        for entry in &draw.logged {
-            if let Some(pos) = self.done.iter().position(|e| e == entry) {
-                self.done.remove(pos);
-            }
-        }
-        Ok(draw.logged)
+        Ok(())
     }
 
     /// Halves an exercise (rounded as the intensity does): the other half is not done.

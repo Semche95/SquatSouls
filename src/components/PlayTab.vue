@@ -12,7 +12,7 @@ import SessionActions from './SessionActions.vue';
 import DisabledTip from './DisabledTip.vue';
 
 const { config, gameId, intensity, game } = useConfig();
-const { session, notice, skipRecovery, stopTimer, startTimer, toggleTimer, timing, trigger, confirmDismiss, dismiss, remaining, complete, halve, skipExercise } = useSession();
+const { session, notice, skipRecovery, stopTimer, startTimer, toggleTimer, timing, trigger, confirmStop, dismiss, remaining, complete, halve, skipExercise } = useSession();
 const { detected, selectDetected, addGame, ignoreDetected } = useSteam();
 
 const INTENSITIES = ['easy', 'normal', 'hard'];
@@ -51,7 +51,7 @@ useKeydown((e) => {
   if (e.code === 'Escape') {
     skipRecovery();
     stopTimer();
-    confirmDismiss.value = 0;
+    confirmStop.value = 0;
     return;
   }
   // Space holds or resumes the timer, it never marks done: a press just after the timer would do so by mistake.

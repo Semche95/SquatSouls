@@ -85,17 +85,18 @@ describe('session', () => {
     expect(invoke).toHaveBeenCalledWith('dismiss', { drawId: 7 });
   });
 
-  it('asks for confirmation before dismissing a started set', async () => {
+  it('stops a started set after confirmation', async () => {
     const started = { ...draw, items: [{ ...draw.items[0], done: true }, { ...draw.items[0], exerciseId: 'push-ups', name: 'Push-ups' }] };
     setup({ get_session: emptySession({ pending: [started] }), dismiss: emptySession() });
     const w = await mountApp();
+    expect(w.find('.card-actions .ghost').text()).toBe('Stop Backspace');
     await press('Backspace');
-    expect(w.find('.card .banner.confirm').text()).toContain('will not count');
+    expect(w.find('.card .banner.confirm').text()).toContain('stay in the history');
     await press('Escape');
     expect(w.find('.card .banner.confirm').exists()).toBe(false);
     await w.find('.card-actions .ghost').trigger('click');
     expect(invoke).not.toHaveBeenCalledWith('dismiss', expect.anything());
-    await w.find('.card .banner.confirm .danger').trigger('click');
+    await w.find('.card .banner.confirm .primary').trigger('click');
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('dismiss', { drawId: 7 });
     expect(w.find('.card').exists()).toBe(false);
@@ -203,16 +204,12 @@ describe('session', () => {
       expect(recoveryEnd).not.toHaveBeenCalled();
     });
 
-    it('stops when the set that started it is dismissed, not another one', async () => {
+    it('keeps running when the set that started it stops', async () => {
       const w = await completeOne();
-      responses.dismiss = emptySession({ pending: [responses.get_session.pending[0]] });
-      await w.findAll('.card')[1].find('.card-actions button').trigger('click');
-      await flushPromises();
-      expect(await sealShown(w)).toBe(true);
-      responses.dismiss = emptySession();
+      responses.dismiss = emptySession({ pending: [responses.get_session.pending[1]] });
       await w.findAll('.card')[0].find('.card-actions button').trigger('click');
       await flushPromises();
-      expect(await sealShown(w)).toBe(false);
+      expect(await sealShown(w)).toBe(true);
     });
 
     it('stays shown once no set is left to do', async () => {
