@@ -88,6 +88,43 @@
       "max": 15
     },
     {
+      "id": "montees-bassin",
+      "name": "Lying hip raises",
+      "unit": "reps",
+      "min": 12,
+      "max": 18
+    },
+    {
+      "id": "glisses-bras-mur",
+      "name": "Arm slides against a wall",
+      "unit": "reps",
+      "min": 8,
+      "max": 12
+    },
+    {
+      "id": "etirement-hanche",
+      "name": "Kneeling hip stretch",
+      "unit": "s per leg",
+      "min": 20,
+      "max": 30,
+      "timed": "seconds",
+      "eachSide": true
+    },
+    {
+      "id": "leves-bras-ventre",
+      "name": "Face-down arm raises",
+      "unit": "reps",
+      "min": 8,
+      "max": 12
+    },
+    {
+      "id": "menton-rentre",
+      "name": "Chin tucks against a wall",
+      "unit": "reps",
+      "min": 8,
+      "max": 12
+    },
+    {
       "id": "cercles-bras",
       "name": "Arm circles",
       "unit": "s",

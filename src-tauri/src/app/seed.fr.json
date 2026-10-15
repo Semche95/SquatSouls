@@ -88,6 +88,43 @@
       "max": 15
     },
     {
+      "id": "montees-bassin",
+      "name": "Montées de bassin allongé",
+      "unit": "rép.",
+      "min": 12,
+      "max": 18
+    },
+    {
+      "id": "glisses-bras-mur",
+      "name": "Glissés de bras contre un mur",
+      "unit": "rép.",
+      "min": 8,
+      "max": 12
+    },
+    {
+      "id": "etirement-hanche",
+      "name": "Étirement de hanche à genou",
+      "unit": "s par jambe",
+      "min": 20,
+      "max": 30,
+      "timed": "seconds",
+      "eachSide": true
+    },
+    {
+      "id": "leves-bras-ventre",
+      "name": "Levés de bras à plat ventre",
+      "unit": "rép.",
+      "min": 8,
+      "max": 12
+    },
+    {
+      "id": "menton-rentre",
+      "name": "Menton rentré contre un mur",
+      "unit": "rép.",
+      "min": 8,
+      "max": 12
+    },
+    {
       "id": "cercles-bras",
       "name": "Cercles de bras",
       "unit": "s",
