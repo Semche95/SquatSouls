@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { t } from '../i18n.js';
+import { vReveal } from '../reveal.js';
 import DisabledTip from './DisabledTip.vue';
 
 // `parse` reads the pasted text and throws an error if it is not importable.
@@ -27,7 +28,7 @@ const importable = computed(() => !!result.value && !invalid.value);
 <template>
   <form class="cfg-import" @submit.prevent="emit('import', result)">
     <textarea ref="input" v-model="text" rows="5" :aria-label="t('share.text')" :placeholder="t('share.placeholder')" :aria-invalid="invalid"></textarea>
-    <p v-if="invalid" class="banner error" role="alert">{{ result.message }}</p>
+    <p v-if="invalid" v-reveal class="banner error" role="alert">{{ result.message }}</p>
     <slot v-else-if="importable" :result="result" />
     <div class="row">
       <DisabledTip :tip="importable ? '' : invalid ? result.message : t('share.pasteFirst')">

@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { t } from '../i18n.js';
 import { byName } from '../configDraft.js';
+import { vReveal } from '../reveal.js';
 import { vSelect } from '../select.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
@@ -141,7 +142,7 @@ useKeydown((e) => {
       </button>
     </div>
 
-    <p v-if="notice" class="banner info">{{ notice }}</p>
+    <p v-if="notice" v-reveal class="banner info">{{ notice }}</p>
 
     <section class="pending">
       <h2>

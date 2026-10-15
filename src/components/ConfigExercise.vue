@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { MAX_NAME, MAX_UNIT } from '../configDraft.js';
 import { t } from '../i18n.js';
-import { vReveal } from '../reveal.js';
+import { reveal, vReveal } from '../reveal.js';
 import { vSelect } from '../select.js';
 import { vTooltip } from '../tooltip.js';
 import CountInput from './CountInput.vue';
@@ -15,11 +15,13 @@ defineEmits(['remove']);
 const TIME_UNITS = ['seconds', 'minutes'];
 
 const open = ref(props.fresh);
+const card = ref(null);
 const nameInput = ref(null);
 onMounted(() => {
   if (!props.fresh) return;
   nameInput.value.focus();
   nameInput.value.select();
+  reveal(card.value);
 });
 
 // Settings only visible once open, recalled in the header: the timer as an icon, the own recovery as text.
@@ -27,7 +29,7 @@ const timedTip = computed(() => props.ex.timed && t(`config.exercises.timedSumma
 </script>
 
 <template>
-  <div class="cfg-event cfg-exercise" :class="{ open, 'cfg-off': !ex.enabled }">
+  <div ref="card" v-reveal="open" class="cfg-event cfg-exercise" :class="{ open, 'cfg-off': !ex.enabled }">
     <div class="cfg-exercise-head">
       <input v-model="ex.enabled" type="checkbox" :aria-label="t('config.exercises.enabled')" />
       <button class="cfg-event-head" :aria-expanded="open" @click="open = !open">
@@ -55,7 +57,7 @@ const timedTip = computed(() => props.ex.timed && t(`config.exercises.timedSumma
           <button class="ghost danger" :disabled="!removable" @click="$emit('remove')">{{ t('common.remove') }}</button>
         </DisabledTip>
       </div>
-      <div v-reveal class="cfg-params">
+      <div class="cfg-params">
         <label>
           <span>{{ t('config.exercises.unit') }}</span>
           <input v-model="ex.unit" :maxlength="MAX_UNIT" :placeholder="t('config.exercises.unitPlaceholder')" />

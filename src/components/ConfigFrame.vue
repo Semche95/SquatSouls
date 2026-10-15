@@ -5,6 +5,7 @@ import { normalized, numberError, withTabDraft } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
+import { vReveal } from '../reveal.js';
 import DisabledTip from './DisabledTip.vue';
 
 const props = defineProps({ settings: Boolean });
@@ -39,8 +40,8 @@ function discardChanges() {
 
 <template>
   <main class="panel config">
-    <p v-if="configError" class="banner error">{{ configError }}</p>
-    <p v-if="configMsg" class="banner ok">{{ configMsg }}</p>
+    <p v-if="configError" v-reveal class="banner error">{{ configError }}</p>
+    <p v-if="configMsg" v-reveal class="banner ok">{{ configMsg }}</p>
 
     <slot v-if="draft" />
 

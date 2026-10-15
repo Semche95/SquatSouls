@@ -1,6 +1,7 @@
 <script setup>
 import { MAX_NAME } from '../configDraft.js';
 import { t } from '../i18n.js';
+import { reveal } from '../reveal.js';
 import CountInput from './CountInput.vue';
 
 // ev belongs to the draft: it is edited in place.
@@ -9,7 +10,7 @@ defineEmits(['remove']);
 </script>
 
 <template>
-  <details class="cfg-event">
+  <details class="cfg-event" @toggle="$event.target.open && reveal($event.target)">
     <summary>
       <span class="cfg-event-head">
         <strong>{{ ev.name || t('common.unnamed') }}</strong>

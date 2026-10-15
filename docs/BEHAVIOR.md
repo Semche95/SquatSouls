@@ -14,6 +14,11 @@ Button and setting names are quoted as they appear in the English interface.
 - **Save** is only for changes made directly in the fields, which have no confirmation button of their own.
 - Confirmation buttons are never hidden, only disabled when there is nothing to confirm: **Save** and **Reset the changes** stay shown, disabled while there is no pending change.
 
+## Display
+
+- Any section opened or block shown by an action (an exercise or event opened, a nested setting, a confirmation, a message after an action) that ends up partly hidden in the window or under the configuration's save bar scrolls just enough to show it entirely, or as much of it as fits, starting from its top.
+- What appears without an action from the user (update notice, Steam offer, new sets in the queue) never scrolls the window, so the page never moves under them.
+
 ## Draw
 
 - Each game offers a list of events. Triggering an event draws `draws` distinct exercises among the enabled exercises, each with a whole number picked at random between its `min` and its `max` (inclusive).

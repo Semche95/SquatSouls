@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { byName } from '../configDraft.js';
 import { languageSetting, setLanguage, t } from '../i18n.js';
+import { vReveal } from '../reveal.js';
 import { vSelect } from '../select.js';
 import { useApi } from '../composables/useApi.js';
 import { useConfig } from '../composables/useConfig.js';
@@ -86,7 +87,7 @@ const status = computed(() => {
         </label>
         <p class="hint">{{ t('config.settings.trayHint') }}</p>
       </div>
-      <div v-if="draft.tray" class="nested">
+      <div v-if="draft.tray" v-reveal class="nested">
         <label class="check">
           {{ t('config.settings.closeToTray') }}
           <input v-model="draft.closeToTray" type="checkbox" />
@@ -106,7 +107,7 @@ const status = computed(() => {
         </label>
         <p class="hint">{{ t('config.settings.detectHint') }}</p>
       </div>
-      <div v-if="draft.steamDetection" class="nested">
+      <div v-if="draft.steamDetection" v-reveal class="nested">
         <label class="check">
           {{ t('config.settings.notify') }}
           <input v-model="draft.steamNotify" type="checkbox" />

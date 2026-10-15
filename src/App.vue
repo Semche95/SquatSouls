@@ -4,6 +4,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { pickSlogan } from './slogans.js';
 import { t } from './i18n.js';
 import { formatTime } from './format.js';
+import { vReveal } from './reveal.js';
 import { provideApi } from './composables/useApi.js';
 import { provideConfig } from './composables/useConfig.js';
 import { provideSession } from './composables/useSession.js';
@@ -77,7 +78,7 @@ onMounted(async () => {
 
     <div class="content">
       <UpdateBanner />
-      <p v-if="error" class="banner error">{{ error }}</p>
+      <p v-if="error" v-reveal class="banner error">{{ error }}</p>
       <p v-if="configError && !['program', 'settings'].includes(tab)" class="banner error">
         {{ configError }}
         <button class="link" @click="tab = 'program'">{{ t('app.viewConfig') }}</button>
