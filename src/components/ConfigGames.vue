@@ -20,6 +20,8 @@ const confirmRemove = ref(null);
 // Name being typed while renaming the edited game, null outside renaming.
 const renaming = ref(null);
 const renameInput = ref(null);
+// Event just added, revealed as soon as it appears.
+const freshId = ref(null);
 // Why the renamed game cannot take this name, '' when it can: it only has to differ from the other games.
 const renameBlocked = computed(() => {
   if (!renaming.value.trim()) return t('config.games.nameNeeded');
@@ -30,6 +32,7 @@ const renameBlocked = computed(() => {
 function selectGame(id) {
   editedGameId.value = id;
   renaming.value = null;
+  freshId.value = null;
 }
 
 // The caret goes to the end of the name, to complete it rather than retype it.
@@ -74,7 +77,9 @@ function shareEdited() {
 // Event added to fill in: one exercise per set, no joker.
 function addEvent(game) {
   const name = t('config.games.newEvent');
-  game.events.push({ id: newId(name, game.events), name, draws: 1, jokers: 0 });
+  const id = newId(name, game.events);
+  game.events.push({ id, name, draws: 1, jokers: 0 });
+  freshId.value = id;
 }
 </script>
 
@@ -119,7 +124,7 @@ function addEvent(game) {
       </div>
 
       <div class="cfg-events">
-        <ConfigEvent v-for="(ev, i) in editedGame.events" :key="ev.id" :ev="ev" @remove="editedGame.events.splice(i, 1)" />
+        <ConfigEvent v-for="(ev, i) in editedGame.events" :key="ev.id" :ev="ev" :fresh="ev.id === freshId" @remove="editedGame.events.splice(i, 1)" />
       </div>
       <button class="ghost" @click="addEvent(editedGame)">{{ t('config.games.addEvent') }}</button>
     </div>

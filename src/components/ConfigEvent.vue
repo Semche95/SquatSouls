@@ -1,16 +1,26 @@
 <script setup>
+import { onMounted, ref } from 'vue';
 import { MAX_NAME } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { reveal } from '../reveal.js';
 import CountInput from './CountInput.vue';
 
-// ev belongs to the draft: it is edited in place.
-defineProps({ ev: Object });
+// ev belongs to the draft: it is edited in place. A fresh event opens with its name selected.
+const props = defineProps({ ev: Object, fresh: Boolean });
 defineEmits(['remove']);
+
+const card = ref(null);
+const nameInput = ref(null);
+onMounted(() => {
+  if (!props.fresh) return;
+  card.value.open = true;
+  nameInput.value.focus();
+  nameInput.value.select();
+});
 </script>
 
 <template>
-  <details class="cfg-event" @toggle="$event.target.open && reveal($event.target)">
+  <details ref="card" class="cfg-event" @toggle="$event.target.open && reveal($event.target)">
     <summary>
       <span class="cfg-event-head">
         <strong>{{ ev.name || t('common.unnamed') }}</strong>
@@ -22,7 +32,7 @@ defineEmits(['remove']);
     </summary>
     <div class="field">
       <span>{{ t('common.name') }}</span>
-      <input v-model="ev.name" :maxlength="MAX_NAME" :aria-label="t('config.event.name')" />
+      <input ref="nameInput" v-model="ev.name" :maxlength="MAX_NAME" :aria-label="t('config.event.name')" />
       <button class="ghost danger" @click="$emit('remove')">{{ t('common.remove') }}</button>
     </div>
     <div class="cfg-params">

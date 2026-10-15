@@ -109,6 +109,20 @@ describe('configuration', () => {
     expect(sent.exercises.map((e) => e.id)).toEqual(['squat', 'new-exercise', 'new-exercise-2']);
   });
 
+  it('opens and reveals an added event with its name selected', async () => {
+    setup();
+    const w = await openConfig();
+    const scroll = vi.spyOn(Element.prototype, 'scrollIntoView');
+    await w.find('.cfg-game > button').trigger('click');
+    await flushPromises();
+    const added = w.findAll('.cfg-event').at(-1);
+    expect(added.element.open).toBe(true);
+    expect(scroll.mock.contexts).toEqual([added.element]);
+    const name = added.find('input[aria-label="Name of the event"]').element;
+    expect(document.activeElement).toBe(name);
+    expect([name.selectionStart, name.selectionEnd]).toEqual([0, name.value.length]);
+  });
+
   it('creates an empty game or one with events copied from another game in a modal and saves it right away', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
