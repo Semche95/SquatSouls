@@ -513,12 +513,14 @@
           "id": "laisse",
           "name": "Left behind at extraction",
           "draws": 2,
+          "maxPerSession": 5,
           "jokers": 0
         },
         {
           "id": "echec",
           "name": "Mission failed",
           "draws": 2,
+          "maxPerSession": 5,
           "jokers": 0
         },
         {

@@ -513,12 +513,14 @@
           "id": "laisse",
           "name": "Laissé dans la grotte à l'extraction",
           "draws": 2,
+          "maxPerSession": 5,
           "jokers": 0
         },
         {
           "id": "echec",
           "name": "Mission échouée",
           "draws": 2,
+          "maxPerSession": 5,
           "jokers": 0
         },
         {
