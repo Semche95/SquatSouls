@@ -13,8 +13,8 @@ use std::sync::Mutex;
 #[cfg(target_os = "linux")]
 use tauri::utils::{config::BundleType, platform::bundle_type};
 use tauri::Manager;
-use update::PendingUpdate;
 use tauri_plugin_log::{RotationStrategy, Target, TargetKind, TimezoneStrategy};
+use update::PendingUpdate;
 
 /// Size beyond which the log file is archived, and number of archives kept.
 const LOG_MAX_BYTES: u128 = 1_000_000;

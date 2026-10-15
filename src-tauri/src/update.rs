@@ -2,8 +2,8 @@
 
 use crate::app::AppError;
 use std::sync::Mutex;
-use tauri::utils::platform::bundle_type;
 use tauri::utils::config::BundleType;
+use tauri::utils::platform::bundle_type;
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_updater::{Update, UpdaterExt};
 
