@@ -255,7 +255,7 @@
   },
   "quit": {
     "title": "Quit Squat Souls?",
-    "confirm": "The current session stops: the sets to do and the jokers are lost, the sets done stay in the history."
+    "confirm": "The current session stops: the sets to do are dropped and unused jokers go away, the sets done stay in the history."
   },
   "about": {
     "description": "Squat Souls turns your games into a workout: boss down, missed jump, rage-inducing game over, you pay in bodyweight exercises before picking the controller back up. The harsher the game, the stronger you get. Prepare to squat.",

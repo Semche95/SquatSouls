@@ -255,7 +255,7 @@
   },
   "quit": {
     "title": "Quitter Squat Souls ?",
-    "confirm": "La séance en cours s'arrête : les séries à faire et les jokers sont perdus, les séries faites restent dans l'historique."
+    "confirm": "La séance en cours s'arrête : les séries à faire sont retirées et les jokers non utilisés s'en vont, les séries faites restent dans l'historique."
   },
   "about": {
     "description": "Squat Souls transforme tes parties en entraînement : boss vaincu, saut raté, game over rageant, tout se règle au poids du corps avant de reprendre la manette. Plus le jeu est impitoyable, plus tu deviens solide. Prépare-toi à transpirer.",
