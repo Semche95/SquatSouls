@@ -29,7 +29,11 @@ export function sessionSummary({ game, duration, events, totals, jokers }) {
   return [
     `${game} · ${formatDuration(duration)}`,
     events.map(({ event, count }) => t('history.eventCount', { event, count })).join(' · '),
-    totals.map((total) => `${total.exercise} ${total.amount} ${total.unit}`).join(' · '),
+    formatTotals(totals),
     jokers && t('history.jokersLine', { earned: t('history.earned', jokers.earned), spent: t('history.spent', jokers.spent) }),
   ].filter(Boolean).join('\n');
+}
+
+function formatTotals(totals) {
+  return totals.map((total) => `${total.exercise} ${total.amount} ${total.unit}`).join(' · ');
 }
