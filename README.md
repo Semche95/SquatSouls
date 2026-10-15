@@ -108,7 +108,7 @@ Install Rust (stable), Node.js (LTS), pnpm and the [Tauri 2 prerequisites](https
 
 ```bash
 sudo apt update
-sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev patchelf gstreamer1.0-plugins-base gstreamer1.0-plugins-good
+sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev patchelf gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-alsa gstreamer1.0-pulseaudio
 curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
 ```
 
