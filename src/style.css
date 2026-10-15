@@ -27,6 +27,20 @@ body {
   margin: 0;
   background: var(--bg);
   min-height: 100vh;
+  /* A desktop app, not a web page: text is neither selectable nor pointed at with the text cursor, and images
+     cannot be dragged out, except in the text fields. */
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+img {
+  -webkit-user-drag: none;
+}
+input:not([type='checkbox']),
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
 }
 
 button,
