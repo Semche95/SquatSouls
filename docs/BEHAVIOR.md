@@ -2,6 +2,8 @@
 
 This document describes how Squat Souls behaves: draws, intensity, limits, jokers, sessions, history, configuration, language, Steam detection, notification area and sharing.
 
+Squat Souls is meant to be kind and encouraging: every rule below follows from that.
+
 It is the reference: any change in the app's behavior must be reflected here, in the same change.
 
 Button and setting names are quoted as they appear in the English interface.

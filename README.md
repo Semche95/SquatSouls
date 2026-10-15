@@ -1,6 +1,6 @@
 # Squat Souls
 
-Turn what happens in your games into bodyweight exercises.
+Turn what happens in your games into bodyweight exercises, at your own pace.
 
 **[Download](#download)** for Windows, macOS and Linux.
 

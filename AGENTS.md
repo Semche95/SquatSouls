@@ -8,6 +8,7 @@ The business rules are described in `docs/BEHAVIOR.md`, which is the reference.
 
 - Read it before changing the app's behavior.
 - Update it in the same change as soon as a rule changes or is added (draw, limits, jokers, session, history, configuration validation).
+- The app is meant to be kind and encouraging, never guilt-inducing: weigh every change, rule or text against that.
 
 ## Structure
 
