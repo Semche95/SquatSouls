@@ -7,7 +7,11 @@ mod update;
 use app::Store;
 use state::AppState;
 use std::fs;
+#[cfg(target_os = "linux")]
+use std::path::PathBuf;
 use std::sync::Mutex;
+#[cfg(target_os = "linux")]
+use tauri::utils::{config::BundleType, platform::bundle_type};
 use tauri::Manager;
 use update::PendingUpdate;
 use tauri_plugin_log::{RotationStrategy, Target, TargetKind, TimezoneStrategy};
@@ -28,6 +32,22 @@ pub fn run() {
     ] {
         if std::env::var_os(key).is_none() {
             std::env::set_var(key, value);
+        }
+    }
+    let context = tauri::generate_context!();
+    // The AppImage bundles its own GStreamer plugins: kept in the GStreamer cache of the system, they
+    // would replace its list, rescanned by every other GStreamer app. The AppImage gets a cache of its own.
+    #[cfg(target_os = "linux")]
+    if bundle_type() == Some(BundleType::AppImage) && std::env::var_os("GST_REGISTRY_1_0").is_none()
+    {
+        let cache = std::env::var_os("XDG_CACHE_HOME")
+            .map(PathBuf::from)
+            .or_else(|| std::env::var_os("HOME").map(|home| PathBuf::from(home).join(".cache")));
+        if let Some(cache) = cache {
+            let registry = cache
+                .join(&context.config().identifier)
+                .join("gstreamer-registry.bin");
+            std::env::set_var("GST_REGISTRY_1_0", registry);
         }
     }
     // A panic is logged too, before the usual report.
@@ -120,7 +140,7 @@ pub fn run() {
             commands::steam_game_name,
             commands::notify
         ])
-        .build(tauri::generate_context!())
+        .build(context)
         .expect("error while launching Squat Souls")
         .run(tray::on_run_event);
 }

@@ -29,3 +29,7 @@ Warnings and errors are written to a log file, in local time: technical detail o
 | macOS | `~/Library/Logs/com.semche.squatsouls` |
 
 The file is `squatsouls.log` (`squatsouls-dev.log` for the development app). Past 1 MB, the file is archived with its date and only the 3 most recent archives are kept.
+
+## Cache
+
+On Linux, `~/.cache/com.semche.squatsouls` holds rebuildable files only: `icon.png`, the notification icon, and for the AppImage `gstreamer-registry.bin`, the list of its bundled sound plugins, kept apart from the system's GStreamer cache.
