@@ -14,7 +14,7 @@ describe('update', () => {
   it('announces the update downloaded before the interface', async () => {
     setup({ get_update: '0.2.0', get_session: emptySession({ startedAt: null }) });
     const w = await mountApp();
-    expect(banner(w).text()).toContain('La version 0.2.0 sera installée en quittant.');
+    expect(banner(w).text()).toContain('Version 0.2.0 will be installed when you quit.');
   });
 
   it('announces the update once downloaded and restarts on request outside a session', async () => {
@@ -31,6 +31,6 @@ describe('update', () => {
     const w = await mountApp();
     const button = banner(w).find('button');
     expect(button.element.disabled).toBe(true);
-    await expectTip(button, 'Disponible une fois la séance terminée');
+    await expectTip(button, 'Available once the session is over');
   });
 });

@@ -45,8 +45,8 @@ describe('parseCount and countError', () => {
     expect(parseCount('')).toBe('');
     expect(countError(parseCount(''))).toBe('');
     expect(countError(parseCount('12'))).toBe('');
-    for (const text of ['abc', '-2', '1.5', '3e2']) expect(countError(parseCount(text))).toBe('il faut un nombre entier, 0 ou plus');
-    expect(countError(parseCount('99999999999'))).toBe('nombre trop grand');
+    for (const text of ['abc', '-2', '1.5', '3e2']) expect(countError(parseCount(text))).toBe('a whole number is needed, 0 or more');
+    expect(countError(parseCount('99999999999'))).toBe('number too large');
   });
 });
 
@@ -62,12 +62,12 @@ describe('numberError', () => {
   });
 
   it('names the first negative, decimal or too large field', () => {
-    expect(numberError({ ...cfg(), recovery: -1 })).toBe('Récupération après chaque exercice : il faut un nombre entier, 0 ou plus.');
-    expect(numberError({ ...cfg(), timerPrep: 'abc' })).toBe('Préparation du minuteur : il faut un nombre entier, 0 ou plus.');
-    expect(numberError(cfg({ ex: { min: 1.5 } }))).toBe('Squats › minimum : il faut un nombre entier, 0 ou plus.');
-    expect(numberError(cfg({ ex: { recovery: -3 } }))).toBe('Squats › récupération : il faut un nombre entier, 0 ou plus.');
-    expect(numberError(cfg({ ev: { maxPerSession: 2.5 } }))).toBe('Elden Ring › Death › limite par séance : il faut un nombre entier, 0 ou plus.');
-    expect(numberError(cfg({ ev: { jokers: 1e10 } }))).toBe('Elden Ring › Death › jokers gagnés : nombre trop grand.');
-    expect(numberError(cfg({ ev: { draws: 'deux' } }))).toBe('Elden Ring › Death › exercices demandés : il faut un nombre entier, 0 ou plus.');
+    expect(numberError({ ...cfg(), recovery: -1 })).toBe('Recovery after each exercise: a whole number is needed, 0 or more.');
+    expect(numberError({ ...cfg(), timerPrep: 'abc' })).toBe('Countdown before the timer: a whole number is needed, 0 or more.');
+    expect(numberError(cfg({ ex: { min: 1.5 } }))).toBe('Squats › minimum: a whole number is needed, 0 or more.');
+    expect(numberError(cfg({ ex: { recovery: -3 } }))).toBe('Squats › recovery: a whole number is needed, 0 or more.');
+    expect(numberError(cfg({ ev: { maxPerSession: 2.5 } }))).toBe('Elden Ring › Death › limit per session: a whole number is needed, 0 or more.');
+    expect(numberError(cfg({ ev: { jokers: 1e10 } }))).toBe('Elden Ring › Death › jokers earned: number too large.');
+    expect(numberError(cfg({ ev: { draws: 'two' } }))).toBe('Elden Ring › Death › exercises required: a whole number is needed, 0 or more.');
   });
 });

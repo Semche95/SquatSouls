@@ -5,8 +5,8 @@ import { emptySession, setup, mountApp } from './app.js';
 
 describe('history', () => {
   it.each([
-    [null, 'Rien pour l\'instant.'],
-    [1, 'Séance lancée. Le premier combat t\'attend.'],
+    [null, 'Nothing yet.'],
+    [1, 'Session underway. The first fight awaits.'],
   ])('encourages a session without sets, started at %s', async (startedAt, text) => {
     setup({ get_session: emptySession({ startedAt }) });
     const w = await mountApp();
@@ -40,12 +40,12 @@ describe('history', () => {
     await w.findAll('.tabs button')[1].trigger('click');
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('get_history', { days: 7 });
-    expect(w.find('.current .group-head').text()).toContain('Elden Ring · en cours depuis');
+    expect(w.find('.current .group-head').text()).toContain('Elden Ring · running since');
     expect(w.find('.totals').text()).toContain('10 reps');
-    expect(w.find('.group:not(.current) .group-title').text()).toBe('7 derniers jours');
-    expect(w.find('.group:not(.current) .group-head').text()).toContain('par séance · 12 jours d\'activité');
+    expect(w.find('.group:not(.current) .group-title').text()).toBe('Last 7 days');
+    expect(w.find('.group:not(.current) .group-head').text()).toContain('by session · 12 days of activity');
     const days = w.findAll('.days li');
-    expect(days[0].text()).toContain('repos');
+    expect(days[0].text()).toContain('rest');
     expect(days[1].text()).toContain('Squats 10 reps');
     expect(days[1].text()).toContain('Elden Ring');
     expect(days[1].text()).toContain('1 h 05');
@@ -58,7 +58,7 @@ describe('history', () => {
     const w = await mountApp();
     await w.findAll('.tabs button')[1].trigger('click');
     await flushPromises();
-    expect(w.text()).toContain('3 gagnés · 3 utilisés');
+    expect(w.text()).toContain('3 earned · 3 used');
     expect(w.find('.log').exists()).toBe(false);
   });
 
@@ -92,8 +92,8 @@ describe('history', () => {
     const current = w.find('.current .group-head button');
     await current.trigger('click');
     await flushPromises();
-    expect(writeText).toHaveBeenCalledWith('Elden Ring · 1 h 00\nDeath ×2 · Boss defeated ×1\nSquats 10 reps\nJokers : 2 gagnés, 0 utilisé');
-    expect(current.text()).toBe('Copié');
+    expect(writeText).toHaveBeenCalledWith('Elden Ring · 1 h 00 min\nDeath ×2 · Boss defeated ×1\nSquats 10 reps\nJokers: 2 earned, 0 used');
+    expect(current.text()).toBe('Copied');
     await w.find('.day-games button').trigger('click');
     expect(writeText).toHaveBeenLastCalledWith('Sekiro · 10 min\nSquats 8 reps');
     vi.useRealTimers();

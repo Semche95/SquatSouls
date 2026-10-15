@@ -31,7 +31,7 @@ describe('session', () => {
     const w = await mountApp();
     const queued = w.find('.queue .card');
     expect(queued.find('.item-actions').exists()).toBe(false);
-    expect(queued.findAll('.card-actions button').map((b) => b.text())).toEqual(['Annuler']);
+    expect(queued.findAll('.card-actions button').map((b) => b.text())).toEqual(['Cancel']);
   });
 
   it('warns when the per-session limit is reached', async () => {
@@ -39,7 +39,7 @@ describe('session', () => {
     const w = await mountApp();
     await w.find('.event').trigger('click');
     await flushPromises();
-    expect(w.find('.banner.info').text()).toBe('Death : limite de 15 atteinte pour la séance, pas de série.');
+    expect(w.find('.banner.info').text()).toBe('Death: limit of 15 reached for the session, no set.');
   });
 
   it('marks each exercise of a set done', async () => {
@@ -48,7 +48,7 @@ describe('session', () => {
       complete_exercise: emptySession(),
     });
     const w = await mountApp();
-    expect(w.findAll('.card-actions button').map((b) => b.text())).toEqual(['Annuler Retour arr.']);
+    expect(w.findAll('.card-actions button').map((b) => b.text())).toEqual(['Cancel Backspace']);
     await w.find('.item-actions .primary').trigger('click');
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('complete_exercise', { drawId: 7, exerciseId: 'squat' });
@@ -62,19 +62,19 @@ describe('session', () => {
     const w = await mountApp();
     const [done, left] = w.findAll('.items li');
     expect(done.classes()).toContain('done');
-    expect(done.text()).toContain('fait');
+    expect(done.text()).toContain('done');
     expect(done.find('button').exists()).toBe(false);
-    expect(left.findAll('button').map((b) => b.text())).toEqual(['Fait Entrée', 'Moitié H', 'Sauter J']);
-    expect(w.text()).not.toContain('Sauter la série');
+    expect(left.findAll('button').map((b) => b.text())).toEqual(['Done Enter', 'Halve H', 'Skip J']);
+    expect(w.text()).not.toContain('Skip the set');
   });
 
-  it('only offers Fait on the first remaining exercise', async () => {
+  it('only offers Done on the first remaining exercise', async () => {
     const pushUps = { exerciseId: 'push-ups', name: 'Push-ups', amount: 8, unit: 'reps', halved: false, done: false, halveCost: 1, skipCost: 2 };
     setup({ get_session: emptySession({ pending: [{ ...draw, items: [...draw.items, pushUps] }], jokers: 4 }) });
     const w = await mountApp();
     const [first, second] = w.findAll('.items li');
-    expect(first.findAll('button').map((b) => b.text())).toEqual(['Fait Entrée', 'Moitié H', 'Sauter J']);
-    expect(second.findAll('button').map((b) => b.text())).toEqual(['Moitié', 'Sauter']);
+    expect(first.findAll('button').map((b) => b.text())).toEqual(['Done Enter', 'Halve H', 'Skip J']);
+    expect(second.findAll('button').map((b) => b.text())).toEqual(['Halve', 'Skip']);
   });
 
   it('dismisses a set not started in one click', async () => {
@@ -90,7 +90,7 @@ describe('session', () => {
     setup({ get_session: emptySession({ pending: [started] }), dismiss: emptySession() });
     const w = await mountApp();
     await press('Backspace');
-    expect(w.find('.card .banner.confirm').text()).toContain('ne seront pas comptés');
+    expect(w.find('.card .banner.confirm').text()).toContain('will not count');
     await press('Escape');
     expect(w.find('.card .banner.confirm').exists()).toBe(false);
     await w.find('.card-actions .ghost').trigger('click');
@@ -110,17 +110,17 @@ describe('session', () => {
       setup({ get_session: emptySession({ pending: [both] }) });
       const w = await mountApp();
       expect(jokerButtons(w)).toHaveLength(0);
-      expect(w.text()).not.toContain('Sauter la série');
+      expect(w.text()).not.toContain('Skip the set');
     });
 
     it('halve or skip an exercise depending on available jokers', async () => {
       setup({ get_session: emptySession({ pending: [both], jokers: 1 }), halve: emptySession() });
       const w = await mountApp();
       const [half, skip] = jokerButtons(w);
-      expect([half.text(), skip.text()]).toEqual(['Moitié H', 'Sauter J']);
+      expect([half.text(), skip.text()]).toEqual(['Halve H', 'Skip J']);
       expect(half.attributes('disabled')).toBeUndefined();
       expect(skip.attributes('disabled')).toBeDefined();
-      expect(w.find('.card-actions .ghost').text()).toBe('Sauter la série (4 jokers)');
+      expect(w.find('.card-actions .ghost').text()).toBe('Skip the set (4 jokers)');
       expect(w.find('.card-actions .ghost').attributes('disabled')).toBeDefined();
       await half.trigger('click');
       expect(invoke).toHaveBeenCalledWith('halve', { drawId: 7, exerciseId: 'squat' });
@@ -137,8 +137,8 @@ describe('session', () => {
       const halved = { ...draw, items: [{ ...draw.items[0], amount: 5, halved: true, halveCost: null, skipCost: 1 }] };
       setup({ get_session: emptySession({ pending: [halved], jokers: 1 }) });
       const w = await mountApp();
-      expect(jokerButtons(w).map((b) => b.text())).toEqual(['Sauter J']);
-      expect(w.find('.card .what').text()).toContain('moitié');
+      expect(jokerButtons(w).map((b) => b.text())).toEqual(['Skip J']);
+      expect(w.find('.card .what').text()).toContain('halved');
     });
   });
 
@@ -167,7 +167,7 @@ describe('session', () => {
       const w = await completeOne();
       expect(w.find('.countdown-left').text()).toBe('1:30');
       expect(doneButtons(w).every((b) => b.element.disabled)).toBe(true);
-      await expectTip(doneButtons(w)[0], 'Récupération en cours');
+      await expectTip(doneButtons(w)[0], 'Recovery in progress');
       await press('Enter');
       expect(invoke.mock.calls.filter(([cmd]) => cmd === 'complete_exercise')).toHaveLength(1);
       await vi.advanceTimersByTimeAsync(30_000);
@@ -230,7 +230,7 @@ describe('session', () => {
   });
 
   describe('timer of a timed exercise', () => {
-    const timerButton = (w) => w.findAll('.item-actions button').find((b) => b.text() === 'Minuteur T');
+    const timerButton = (w) => w.findAll('.item-actions button').find((b) => b.text() === 'Timer T');
     const doneButton = (w) => w.find('.item-actions .primary');
     const seal = (w) => [w.find('.countdown-seal .seal-label').text(), w.find('.countdown-left').text()];
 
@@ -256,22 +256,22 @@ describe('session', () => {
     it('gets ready, sounds the start, runs, then sounds the end and marks the exercise done, which starts the recovery', async () => {
       const w = await mountTimed();
       await timerButton(w).trigger('click');
-      expect(seal(w)).toEqual(['Prêt', '0:03']);
+      expect(seal(w)).toEqual(['Ready', '0:03']);
       expect(startSignal).not.toHaveBeenCalled();
       expect(doneButton(w).element.disabled).toBe(true);
       expect(timerButton(w).element.disabled).toBe(true);
-      await expectTip(doneButton(w), 'Minuteur en cours');
+      await expectTip(doneButton(w), 'Timer running');
       await press('Enter');
       expect(invoke).not.toHaveBeenCalledWith('complete_exercise', expect.anything());
       await vi.advanceTimersByTimeAsync(3000);
-      expect(seal(w)).toEqual(['Minuteur', '0:10']);
+      expect(seal(w)).toEqual(['Timer', '0:10']);
       expect(startSignal).toHaveBeenCalledOnce();
       expect(chime).not.toHaveBeenCalled();
       await vi.advanceTimersByTimeAsync(10_000);
       await flushPromises();
       expect(chime).toHaveBeenCalledOnce();
       expect(invoke).toHaveBeenCalledWith('complete_exercise', { drawId: 7, exerciseId: 'squat' });
-      expect(seal(w)).toEqual(['Récup', '1:00']);
+      expect(seal(w)).toEqual(['Recovery', '1:00']);
     });
 
     it('holds and resumes on a click on the countdown or Space', async () => {
@@ -279,21 +279,21 @@ describe('session', () => {
       await timerButton(w).trigger('click');
       await vi.advanceTimersByTimeAsync(4000);
       await w.find('.countdown-seal').trigger('click');
-      expect(seal(w)).toEqual(['En pause', '0:06']);
-      expect(w.find('.countdown-seal kbd').text()).toBe('Espace');
+      expect(seal(w)).toEqual(['Paused', '0:06']);
+      expect(w.find('.countdown-seal kbd').text()).toBe('Space');
       await vi.advanceTimersByTimeAsync(20_000);
-      expect(seal(w)).toEqual(['En pause', '0:06']);
+      expect(seal(w)).toEqual(['Paused', '0:06']);
       await press('Space');
-      expect(seal(w)).toEqual(['Minuteur', '0:06']);
+      expect(seal(w)).toEqual(['Timer', '0:06']);
       await press('Space');
-      expect(seal(w)).toEqual(['En pause', '0:06']);
-      expect(w.find('.countdown-seal').attributes('aria-label')).toBe('Reprendre (Espace), Échap pour arrêter');
+      expect(seal(w)).toEqual(['Paused', '0:06']);
+      expect(w.find('.countdown-seal').attributes('aria-label')).toBe('Resume (Space), Esc to stop');
     });
 
     it('counts minutes and only ends silently when sound and auto done are off', async () => {
       const w = await mountTimed('minutes', { timerPrep: 0, sound: false, timerAutoDone: false }, { amount: 2 });
       await press('KeyT');
-      expect(seal(w)).toEqual(['Minuteur', '2:00']);
+      expect(seal(w)).toEqual(['Timer', '2:00']);
       await vi.advanceTimersByTimeAsync(120_000);
       await flushPromises();
       expect(startSignal).not.toHaveBeenCalled();
@@ -330,7 +330,7 @@ describe('session', () => {
       await flushPromises();
       expect(timerButton(w).element.disabled).toBe(true);
       await press('KeyT');
-      expect(seal(w)).toEqual(['Récup', '1:00']);
+      expect(seal(w)).toEqual(['Recovery', '1:00']);
     });
   });
 
@@ -340,7 +340,7 @@ describe('session', () => {
     responses.get_session = emptySession();
     await w.find('.item-actions .primary').trigger('click');
     await flushPromises();
-    expect(w.find('.banner.error').text()).toBe('Cette série n\'est plus en attente.');
+    expect(w.find('.banner.error').text()).toBe('This set is no longer pending.');
     expect(w.find('.card').exists()).toBe(false);
   });
 
@@ -393,9 +393,9 @@ describe('session', () => {
     it('explains on hover how each level scales the exercises', async () => {
       setup();
       const w = await mountApp();
-      await expectTip(levels(w)[0], 'La moitié des exercices demandés, arrondie en dessous');
-      await expectTip(levels(w)[1], 'Les exercices demandés par le programme');
-      await expectTip(levels(w)[2], 'Une fois et demie les exercices demandés, arrondie au-dessus');
+      await expectTip(levels(w)[0], 'Half the exercises requested, rounded down');
+      await expectTip(levels(w)[1], 'The exercises requested by the program');
+      await expectTip(levels(w)[2], 'One and a half times the exercises requested, rounded up');
     });
   });
 
@@ -403,11 +403,11 @@ describe('session', () => {
     setup({ get_session: emptySession() });
     let w = await mountApp();
     expect(w.find('.session-actions .primary').element.disabled).toBe(true);
-    await expectTip(w.find('.session-actions .primary'), 'Aucune série faite');
+    await expectTip(w.find('.session-actions .primary'), 'No set done');
     setup({ get_session: emptySession({ sets: 1, pending: [draw] }) });
     w = await mountApp();
     expect(w.find('.session-actions .primary').element.disabled).toBe(true);
-    await expectTip(w.find('.session-actions .primary'), 'Des séries sont encore à faire');
+    await expectTip(w.find('.session-actions .primary'), 'Sets are still to do');
   });
 
   it('waits for the start button before starting the session', async () => {
@@ -415,11 +415,11 @@ describe('session', () => {
     const w = await mountApp();
     expect(w.find('.session-actions .danger').element.disabled).toBe(true);
     const start = w.find('.session-actions .primary');
-    expect(start.text()).toBe('Démarrer la séance');
+    expect(start.text()).toBe('Start the session');
     await start.trigger('click');
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('start_session', undefined);
-    expect(w.find('.session-actions .primary').text()).toBe('Terminer la séance');
+    expect(w.find('.session-actions .primary').text()).toBe('End the session');
     expect(w.find('.session-actions .danger').element.disabled).toBe(false);
   });
 
@@ -428,7 +428,7 @@ describe('session', () => {
     const w = await mountApp();
     await w.find('.session-actions .primary').trigger('click');
     expect(invoke).not.toHaveBeenCalledWith('end_session', undefined);
-    expect(w.text()).toContain('Terminer la séance ?');
+    expect(w.text()).toContain('End the session?');
     await w.find('.confirm .ghost').trigger('click');
     expect(w.find('.confirm').exists()).toBe(false);
     await w.find('.session-actions .primary').trigger('click');
@@ -436,7 +436,7 @@ describe('session', () => {
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('end_session', undefined);
     expect(w.find('.confirm').exists()).toBe(false);
-    expect(w.find('.session-actions .primary').text()).toBe('Démarrer la séance');
+    expect(w.find('.session-actions .primary').text()).toBe('Start the session');
     expect(w.find('.event').element.disabled).toBe(false);
   });
 
@@ -446,9 +446,9 @@ describe('session', () => {
     await w.find('.session-actions .primary').trigger('click');
     await w.find('.confirm .primary').trigger('click');
     await flushPromises();
-    expect(w.find('.banner.error').text()).toContain('Des séries sont encore à faire');
+    expect(w.find('.banner.error').text()).toContain('Sets are still to do');
     expect(w.find('.farewell').exists()).toBe(false);
-    expect(w.find('.session-actions .primary').text()).toBe('Terminer la séance');
+    expect(w.find('.session-actions .primary').text()).toBe('End the session');
   });
 
   it('disables cancelling while the session is not started', async () => {
@@ -461,7 +461,7 @@ describe('session', () => {
     setup({ get_session: emptySession({ gameId: 'er' }), cancel_session: emptySession() });
     const w = await mountApp();
     await w.find('.session-actions .danger').trigger('click');
-    expect(w.text()).toContain('Annuler la séance ?');
+    expect(w.text()).toContain('Cancel the session?');
     await w.find('.confirm .ghost').trigger('click');
     expect(w.find('.confirm').exists()).toBe(false);
     expect(invoke).not.toHaveBeenCalledWith('cancel_session', undefined);

@@ -48,7 +48,7 @@ describe('keyboard shortcuts', () => {
   it('explains the joker shortcuts on the joker counter', async () => {
     setup({ get_session: emptySession({ pending: [draw], jokers: 3 }) });
     const wrapper = await mountApp();
-    await expectTip(wrapper.find('.jokers'), 'H : Moitié, J : Sauter, sur le premier exercice restant');
+    await expectTip(wrapper.find('.jokers'), 'H: Halve, J: Skip, on the first remaining exercise');
   });
 
   it('does not use a joker without enough jokers', async () => {
@@ -58,7 +58,7 @@ describe('keyboard shortcuts', () => {
     expect(invoke).not.toHaveBeenCalledWith('skip_exercise', expect.anything());
   });
 
-  it('is inactive outside the Jouer tab and after the session ends', async () => {
+  it('is inactive outside the Play tab and after the session ends', async () => {
     setup({ draw: { capped: false } });
     const w = await mountApp();
     await w.findAll('.tabs button')[2].trigger('click');

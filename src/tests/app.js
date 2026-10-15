@@ -53,8 +53,8 @@ export function setup(over = {}) {
     set_last_game: undefined,
     get_onboarding_seen: true,
     set_onboarding_seen: undefined,
-    get_language: { setting: 'system', language: 'fr' },
-    set_language: ({ setting }) => ({ setting, language: setting === 'en' ? 'en' : 'fr' }),
+    get_language: { setting: 'system', language: 'en' },
+    set_language: ({ setting }) => ({ setting, language: setting === 'fr' ? 'fr' : 'en' }),
     set_native_texts: undefined,
     ...over,
   };

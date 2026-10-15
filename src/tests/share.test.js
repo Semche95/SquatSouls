@@ -66,7 +66,7 @@ describe('game sharing', () => {
       ...['\n', '\t', '\u200B', '\u202E', '\uFEFF', '\u0085'].map((c) => shareGame({ name: 'Nioh', events: [{ name: `Death${c}`, draws: 1 }] })),
       shareGame({ name: 'Nioh', events: Array.from({ length: MAX_ITEMS + 1 }, () => ({ name: 'Death', draws: 1 })) }),
     ];
-    for (const text of invalid) expect(() => parseGame(text, 3)).toThrow('Ce texte n\'est pas un jeu partagé valide.');
+    for (const text of invalid) expect(() => parseGame(text, 3)).toThrow('This text is not a valid shared game.');
   });
 
   it('keeps only the first of two events with the same name', () => {
@@ -80,17 +80,17 @@ describe('game sharing', () => {
 
   it('refuses a pasted text or a content too large without decompressing it all', () => {
     const bomb = 'squatsouls/game:' + toBase64(deflateSync(new Uint8Array(100 * 1024 * 1024)));
-    expect(() => parseGame(bomb, 3)).toThrow('Ce texte n\'est pas un jeu partagé valide.');
-    expect(() => parseGame(shareGame(config.games[0]) + ' '.repeat(300 * 1024), 3)).toThrow('Ce texte n\'est pas un jeu partagé valide.');
+    expect(() => parseGame(bomb, 3)).toThrow('This text is not a valid shared game.');
+    expect(() => parseGame(shareGame(config.games[0]) + ' '.repeat(300 * 1024), 3)).toThrow('This text is not a valid shared game.');
   });
 
   it('tells where to import exercises pasted instead of a game', () => {
-    expect(() => parseGame(shareExercises(exercises), 3)).toThrow('Ce texte partage des exercices : l\'importer depuis l\'onglet Exercices, avec Importer.');
+    expect(() => parseGame(shareExercises(exercises), 3)).toThrow('This text shares exercises: import it from the Exercises tab, with Import.');
   });
 
   it('asks for an update for a text from an unknown format version', () => {
     const text = packed(999, shareGame(config.games[0]));
-    expect(() => parseGame(text, 3)).toThrow('Ce texte vient d\'une version plus récente de SquatSouls : la mettre à jour pour l\'importer.');
+    expect(() => parseGame(text, 3)).toThrow('This text comes from a newer version of SquatSouls: update it to import the text.');
   });
 
   it('replaces the game with the same name keeping its id, otherwise adds it', () => {
@@ -149,7 +149,7 @@ describe('exercise sharing', () => {
       shareExercises([{ name: 'Squats', unit: 'reps\u200B', min: 1, max: 5 }]),
       shareExercises(Array.from({ length: MAX_ITEMS + 1 }, (_, i) => ({ name: `Squats ${i}`, unit: 'reps', min: 1, max: 5 }))),
     ];
-    for (const text of invalid) expect(() => parseExercises(text)).toThrow('Ce texte n\'est pas une liste d\'exercices partagée valide.');
+    for (const text of invalid) expect(() => parseExercises(text)).toThrow('This text is not a valid shared exercise list.');
   });
 
   it('keeps only the first of two exercises with the same name', () => {
@@ -175,7 +175,7 @@ describe('exercise sharing', () => {
   });
 
   it('tells where to import a game pasted instead of exercises', () => {
-    expect(() => parseExercises(shareGame(config.games[0]))).toThrow('Ce texte partage un jeu : l\'importer depuis l\'onglet Jeux, avec Importer un jeu.');
+    expect(() => parseExercises(shareGame(config.games[0]))).toThrow('This text shares a game: import it from the Games tab, with Import a game.');
   });
 
   it('updates exercises with the same name, enabled or not, and adds the others, enabled, without touching the original', () => {

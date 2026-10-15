@@ -29,9 +29,9 @@ describe('onboarding', () => {
   }
 
   async function toLastStep() {
-    await go('Suivant', 'Ce n\'est pas une appli de sport');
-    await go('Suivant', 'Prends soin de toi');
-    await go('Suivant', 'Pas besoin de git gud');
+    await go('Next', 'Not a fitness app');
+    await go('Next', 'Take care of yourself');
+    await go('Next', 'No need to git gud');
   }
 
   const closed = async () => {
@@ -42,10 +42,10 @@ describe('onboarding', () => {
   it('goes through the warnings one step at a time', async () => {
     await firstLaunch();
     expect(title()).toBe('Squat Souls');
-    await go('Suivant', 'Ce n\'est pas une appli de sport');
-    expect(screen().textContent).toContain('ne sont que des exemples');
-    await go('Suivant', 'Prends soin de toi');
-    await go('Retour', 'Ce n\'est pas une appli de sport');
+    await go('Next', 'Not a fitness app');
+    expect(screen().textContent).toContain('are only examples');
+    await go('Next', 'Take care of yourself');
+    await go('Back', 'Not a fitness app');
   });
 
   it('cannot be left before its last step at the first launch', async () => {
@@ -59,7 +59,7 @@ describe('onboarding', () => {
   it('is no longer shown once finished', async () => {
     await firstLaunch();
     await toLastStep();
-    button('C\'est parti').click();
+    button('Let\'s go').click();
     await closed();
     expect(invoke).toHaveBeenCalledWith('set_onboarding_seen');
   });
@@ -73,10 +73,10 @@ describe('onboarding', () => {
   it('opens the example exercises of the program', async () => {
     const w = await firstLaunch();
     await toLastStep();
-    button('Voir le programme').click();
+    button('See the program').click();
     await closed();
-    expect(w.find('.tabs .active').text()).toBe('Programme');
-    expect(w.find('.subtabs .active').text()).toBe('Exercices');
+    expect(w.find('.tabs .active').text()).toBe('Program');
+    expect(w.find('.subtabs .active').text()).toBe('Exercises');
   });
 
 });

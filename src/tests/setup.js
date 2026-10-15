@@ -8,10 +8,10 @@ vi.mock('@tauri-apps/api/app', () => ({ getVersion: vi.fn(async () => '0.1.0') }
 vi.mock('@tauri-apps/plugin-opener', () => ({ openUrl: vi.fn(async () => {}) }));
 vi.mock('@tauri-apps/plugin-log', () => ({ error: vi.fn(async () => {}) }));
 
-// French interface following the system by default: the tests check the French texts.
+// English interface following the system by default: the tests check the English texts.
 beforeEach(() => {
   languageSetting.value = 'system';
-  return setLanguage('fr');
+  return setLanguage('en');
 });
 
 // A vue-i18n warning (missing key, scope not found...) fails the test, which would only print it.

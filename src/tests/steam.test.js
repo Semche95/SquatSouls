@@ -40,7 +40,7 @@ describe('Steam game detection', () => {
   it('offers to select the running configured game', async () => {
     setupSteam();
     const w = await mountApp();
-    expect(banner(w).text()).toContain('Elden Ring détecté.');
+    expect(banner(w).text()).toContain('Elden Ring detected.');
     await banner(w).find('button').trigger('click');
     await flushPromises();
     expect(w.find('.play select').element.value).toBe('er');
@@ -64,14 +64,14 @@ describe('Steam game detection', () => {
     const w = await mountApp();
     expect(banner(w).exists()).toBe(false);
     await openSettings(w);
-    expect(status(w)).toBe('Jeu détecté : Elden Ring.');
+    expect(status(w)).toBe('Game detected: Elden Ring.');
   });
 
   it('shows in the settings that no Steam game is running', async () => {
     setupSteam({ running_steam_app: null });
     const w = await mountApp();
     await openSettings(w);
-    expect(status(w)).toBe('Aucun jeu Steam détecté.');
+    expect(status(w)).toBe('No Steam game detected.');
   });
 
   it('reports in the settings a Steam Store rate-limiting requests', async () => {
@@ -84,7 +84,7 @@ describe('Steam game detection', () => {
     const w = await mountApp();
     expect(banner(w).exists()).toBe(false);
     await openSettings(w);
-    expect(status(w)).toContain('le Steam Store limite les requêtes');
+    expect(status(w)).toContain('the Steam Store is rate-limiting requests');
   });
 
   it('no longer reports the limit once the Steam Store is reachable again', async () => {
@@ -98,11 +98,11 @@ describe('Steam game detection', () => {
     });
     const w = await mountApp();
     await openSettings(w);
-    expect(status(w)).toContain('le Steam Store limite les requêtes');
+    expect(status(w)).toContain('the Steam Store is rate-limiting requests');
     blocked = false;
     await vi.advanceTimersByTimeAsync(10000);
     vi.useRealTimers();
-    expect(status(w)).toBe('Jeu Steam détecté, nom pas encore connu.');
+    expect(status(w)).toBe('Steam game detected, name not known yet.');
   });
 
   it('offers nothing when the session\'s game is already locked', async () => {
@@ -125,7 +125,7 @@ describe('Steam game detection', () => {
   it('recognizes a game without AppId by its name and gives it the detected one', async () => {
     setupSteam({ cfg: { ...config, steamDetection: true }, steam_game_name: 'ELDEN RING' });
     const w = await mountApp();
-    expect(banner(w).text()).toContain('Elden Ring détecté.');
+    expect(banner(w).text()).toContain('Elden Ring detected.');
     await banner(w).find('button').trigger('click');
     await flushPromises();
     expect(lastSaved().games[0].steamAppId).toBe(1245620);
@@ -140,9 +140,9 @@ describe('Steam game detection', () => {
   it('adds an unknown game with its name and AppId', async () => {
     setupSteam({ running_steam_app: 367520, steam_game_name: 'Hollow Knight' });
     const w = await mountApp();
-    expect(banner(w).text()).toContain('Hollow Knight détecté.');
+    expect(banner(w).text()).toContain('Hollow Knight detected.');
     await banner(w).find('.primary').trigger('click');
-    expect(w.find('input[aria-label="Nom du nouveau jeu"]').element.value).toBe('Hollow Knight');
+    expect(w.find('input[aria-label="Name of the new game"]').element.value).toBe('Hollow Knight');
     await w.find('form.cfg-game').trigger('submit');
     await flushPromises();
     expect(lastSaved().games.at(-1)).toMatchObject({ name: 'Hollow Knight', steamAppId: 367520 });
@@ -155,12 +155,12 @@ describe('Steam game detection', () => {
     await flushPromises();
     expect(lastSaved().ignoredGames).toEqual([{ appId: 367520, name: 'Hollow Knight' }]);
     expect(banner(w).exists()).toBe(false);
-    expect(invoke.mock.calls.filter(([cmd]) => cmd === 'steam_game_name')).toEqual([['steam_game_name', { appId: 367520, language: 'french' }]]);
+    expect(invoke.mock.calls.filter(([cmd]) => cmd === 'steam_game_name')).toEqual([['steam_game_name', { appId: 367520, language: 'english' }]]);
 
     await openSettings(w);
-    expect(status(w)).toBe('Jeu détecté : Hollow Knight (ignoré).');
+    expect(status(w)).toBe('Game detected: Hollow Knight (ignored).');
     const ignored = () => w.findAll('.ignored li');
-    expect(ignored().map((li) => li.text())).toEqual(['Hollow Knight AjouterRetirer']);
+    expect(ignored().map((li) => li.text())).toEqual(['Hollow Knight AddRemove']);
     await ignored()[0].findAll('button')[1].trigger('click');
     await flushPromises();
     expect(lastSaved().ignoredGames).toEqual([]);
@@ -183,7 +183,7 @@ describe('Steam game detection', () => {
     const w = await mountApp();
     await openSettings(w);
     expect(w.find('.setting .small').exists()).toBe(false);
-    await check(w, 'Détecter le jeu Steam en cours').setValue(true);
+    await check(w, 'Detect the running Steam game').setValue(true);
     expect(lastSaved()).toBeUndefined();
     await w.find('.cfg-actions .primary').trigger('click');
     await flushPromises();
@@ -236,9 +236,9 @@ describe('launched Steam game notification', () => {
     setupSteam({ cfg: config, running_steam_app: null });
     const w = await mountApp();
     await openSettings(w);
-    const notify = () => w.findAll('.check').filter((c) => c.text() === 'Notifier quand un jeu est lancé');
+    const notify = () => w.findAll('.check').filter((c) => c.text() === 'Notify when a game is launched');
     expect(notify()).toHaveLength(0);
-    await check(w, 'Détecter le jeu Steam en cours').setValue(true);
+    await check(w, 'Detect the running Steam game').setValue(true);
     expect(notify()).toHaveLength(1);
   });
 });
@@ -248,11 +248,11 @@ describe('notification area', () => {
     setupSteam({ cfg: config, running_steam_app: null });
     const w = await mountApp();
     await openSettings(w);
-    const hide = 'Fermer la fenêtre la masque au lieu de quitter';
+    const hide = 'Closing the window hides it instead of quitting';
     expect(w.findAll('.check').some((c) => c.text() === hide)).toBe(false);
-    await check(w, 'Afficher l\'icône dans la zone de notification').setValue(true);
+    await check(w, 'Show the icon in the notification area').setValue(true);
     await check(w, hide).setValue(true);
-    await check(w, 'Démarrer masqué').setValue(true);
+    await check(w, 'Start hidden').setValue(true);
     await w.find('.cfg-actions .primary').trigger('click');
     await flushPromises();
     expect(lastSaved()).toMatchObject({ tray: true, closeToTray: true, startHidden: true });

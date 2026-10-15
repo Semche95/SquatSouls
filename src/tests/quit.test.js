@@ -55,7 +55,7 @@ describe('quit', () => {
     setup();
     await mountApp();
     await ask();
-    expect(modal().textContent).toContain('Quitter Squat Souls ?La séance en cours s\'arrête');
+    expect(modal().textContent).toContain('Quit Squat Souls?The current session stops');
     await click('button.danger');
     expect(invoke).toHaveBeenCalledWith('quit');
   });

@@ -18,7 +18,7 @@ describe('loading', () => {
     expect(invoke).toHaveBeenCalledWith('get_config', undefined);
     const names = w.findAll('.event-name').map((e) => e.text());
     expect(names).toEqual(['Death', 'Boss defeated +2 jokers']);
-    expect(w.text()).toContain('Rien en attente');
+    expect(w.text()).toContain('Nothing pending');
   });
 
   it('restores the last chosen game', async () => {
@@ -29,7 +29,7 @@ describe('loading', () => {
   });
 
   it('asks for the game again if the remembered game no longer exists', async () => {
-    setup({ get_last_game: 'inconnu' });
+    setup({ get_last_game: 'unknown' });
     const w = await mountApp();
     // "Choose a game" is shown, not an empty choice.
     expect(w.find('select').element.selectedIndex).toBe(0);
@@ -47,13 +47,13 @@ describe('loading', () => {
   it('shows the backend error', async () => {
     setup({ get_config: rejection('internal') });
     const w = await mountApp();
-    expect(w.find('.banner.error').text()).toBe('Erreur interne, le détail est dans les journaux de l\'application.');
+    expect(w.find('.banner.error').text()).toBe('Internal error, the details are in the application logs.');
   });
 
   it('reports an invalid config outside the Program and Settings tabs', async () => {
     setup({ get_config: { config, error: { code: 'config_ignored', params: { cause: { code: 'no_game', params: {} } } } } });
     const w = await mountApp();
-    expect(w.find('.banner.error').text()).toContain('Configuration enregistrée ignorée, configuration par défaut utilisée. Aucun jeu défini.');
+    expect(w.find('.banner.error').text()).toContain('Saved configuration ignored, default configuration used. No game defined.');
     await w.find('.banner.error button').trigger('click');
     expect(w.find('.cfg-events').exists()).toBe(true);
   });

@@ -24,18 +24,18 @@ describe('about', () => {
 
   it('opens from the menu without leaving the current tab', async () => {
     const w = await openAbout();
-    expect(w.find('.tabs .active').text()).toBe('Jouer');
-    expect(modal().textContent).toContain(`v0.1.0 · par ${author}`);
+    expect(w.find('.tabs .active').text()).toBe('Play');
+    expect(modal().textContent).toContain(`v0.1.0 · by ${author}`);
   });
 
   it('states that the project is not affiliated with any game publisher', async () => {
     await openAbout();
-    expect(modal().textContent).toContain('sans lien avec aucun éditeur de jeu');
+    expect(modal().textContent).toContain('not affiliated with or endorsed by any game publisher');
   });
 
   it('shows the safety advice', async () => {
     await openAbout();
-    expect(modal().textContent).toContain('Conseils de sécurité');
+    expect(modal().textContent).toContain('Safety advice');
     expect(modal().querySelectorAll('li')).toHaveLength(5);
   });
 
