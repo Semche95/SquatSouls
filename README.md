@@ -47,7 +47,7 @@ Packages are on the [Releases](https://github.com/Semche95/SquatSouls/releases) 
 
 ### Publish a release
 
-Set the version in `package.json` and `src-tauri/Cargo.toml`, then push a `v<version>` tag: the [Build workflow](https://github.com/Semche95/SquatSouls/actions/workflows/build.yml) creates a draft release, which the app offers once published. It signs the updates with the private key of the `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` repository secrets, matching the public key of `src-tauri/tauri.conf.json`.
+Set the version in `package.json` and `src-tauri/Cargo.toml`, then push a `v<version>` tag: the [Build workflow](https://github.com/Semche95/SquatSouls/actions/workflows/build.yml) creates a draft release, which the app offers once published. Its notes list the `feat`, `fix` and `perf` commits since the previous tag (`cliff.toml`). It signs the updates with the private key of the `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` repository secrets, matching the public key of `src-tauri/tauri.conf.json`.
 
 ### Build from source
 
