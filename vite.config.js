@@ -18,5 +18,8 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['src/tests/**/*.test.js'],
     setupFiles: ['src/tests/setup.js'],
+    // One jsdom per worker instead of one per file, each file still isolated: creating it 15 times
+    // took a third of the run on the small CI runners and made the first test of a file time out.
+    pool: 'vmThreads',
   },
 });
