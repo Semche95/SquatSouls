@@ -25,12 +25,23 @@ describe('about', () => {
   it('opens from the menu without leaving the current tab', async () => {
     const w = await openAbout();
     expect(w.find('.tabs .active').text()).toBe('Jouer');
-    expect(modal().textContent).toContain(`Par ${author}Version 0.1.0`);
+    expect(modal().textContent).toContain(`v0.1.0 · par ${author}`);
+  });
+
+  it('states that the project is not affiliated with any game publisher', async () => {
+    await openAbout();
+    expect(modal().textContent).toContain('sans lien avec aucun éditeur de jeu');
+  });
+
+  it('shows the safety advice', async () => {
+    await openAbout();
+    expect(modal().textContent).toContain('Conseils de sécurité');
+    expect(modal().querySelectorAll('li')).toHaveLength(5);
   });
 
   it('opens the repository in the browser', async () => {
     await openAbout();
-    modal().querySelector('a').click();
+    modal().querySelector('.about-source').click();
     expect(openUrl).toHaveBeenCalledWith(repository.url);
   });
 

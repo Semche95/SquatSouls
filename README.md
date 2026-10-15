@@ -156,3 +156,5 @@ pnpm tauri build   # packages in src-tauri/target/release/bundle/
 ## License
 
 [MIT](LICENSE)
+
+Squat Souls is an independent project, not affiliated with or endorsed by any game publisher. Game names belong to their respective owners.

@@ -187,7 +187,8 @@ select:disabled {
   gap: 18px;
 }
 
-h2 {
+h2,
+.about-modal h4 {
   margin: 0 0 10px;
   font-size: 0.8rem;
   font-weight: 600;
@@ -1453,14 +1454,111 @@ code {
   line-height: 1.5;
   font-size: 0.92rem;
 }
+/* About: centered like a title screen, from the identity down to the fine print. */
 .confirm-modal-content.about-modal {
   position: relative;
+  gap: 14px;
+  width: min(620px, 100%);
+  padding: 26px 36px 22px;
+  text-align: center;
   border-top-color: var(--gold);
 }
-.about-modal a {
-  justify-self: start;
+.about-head {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+.about-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 6px;
+}
+.about-modal h3 {
+  font-size: 1.5rem;
+  letter-spacing: 0.12em;
+}
+.about-modal .about-meta {
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+}
+.about-modal .about-legal {
+  font-size: 0.85rem;
+}
+.about-modal .about-lore {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+/* Golden line fading at both ends, with a diamond in its middle. */
+.ornament {
+  position: relative;
+  overflow: visible;
+  width: 60%;
+  height: 1px;
+  margin: 2px auto;
+  border: none;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.ornament::after,
+.about-safety li::before {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border: 1px solid var(--gold);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.ornament::after {
+  left: 50%;
+  top: 50%;
+  background: var(--panel);
+}
+/* Plain panel rather than the gold tint, so the advice stays easy to read. */
+.about-safety {
+  padding: 14px 18px;
+  text-align: left;
+  border-color: var(--line);
+  border-left: 3px solid var(--gold);
+  background: var(--panel-2);
+}
+.about-safety h4 {
   color: var(--gold);
-  font-size: 0.92rem;
+}
+.about-safety ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.about-safety li {
+  position: relative;
+  padding-left: 18px;
+}
+.about-safety li::before {
+  left: 5px;
+  top: 0.75em;
+  background: var(--gold);
+}
+.about-foot {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+.about-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.about-source svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
 }
 .modal-close {
   position: absolute;

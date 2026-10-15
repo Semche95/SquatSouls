@@ -148,4 +148,4 @@ Button and setting names are quoted as they appear in the English interface.
 
 ## About
 
-- **About**, last entry of the menu (at the bottom of the sidebar, right above the session status), opens a window without leaving the current tab: a description of the app, its author, its version and a **Source code on GitHub** link, which opens the repository in the default browser. Its cross in the top right corner or Escape closes it.
+- **About**, last entry of the menu (at the bottom of the sidebar, right above the session status), opens a window without leaving the current tab: a description of the app, its author, its version, a notice that the project is not affiliated with any game publisher, some **Safety advice** and a **Source code on GitHub** link, which opens the repository in the default browser. Its cross in the top right corner or Escape closes it.

@@ -13,7 +13,8 @@
     "joker": "{n} joker | {n} jokers",
     "reward": "+{n} joker | +{n} jokers",
     "copyFailed": "Copy impossible: {error}",
-    "importOpen": "An import is already open"
+    "importOpen": "An import is already open",
+    "close": "Close"
   },
   "keys": {
     "enter": "Enter",
@@ -252,10 +253,19 @@
   },
   "about": {
     "description": "Squat Souls turns your games into a workout: boss down, missed jump, rage-inducing game over, you pay in bodyweight exercises before picking the controller back up. The harsher the game, the stronger you get. Prepare to squat.",
-    "author": "By {author}",
-    "version": "Version {version}",
-    "sourceCode": "Source code on GitHub",
-    "close": "Close"
+    "meta": "v{version} · by {author}",
+    "disclaimer": "Squat Souls is an independent project, not affiliated with or endorsed by any game publisher. Game names belong to their respective owners.",
+    "sourceCode": "Source code"
+  },
+  "safety": {
+    "title": "Safety advice",
+    "lines": [
+      "If in doubt about your health, ask a doctor.",
+      "Warm up before, stretch after.",
+      "A few reps done well beat many done badly.",
+      "Split long sets, respect the breaks and drink water.",
+      "Stop at the slightest pain."
+    ]
   },
   "update": {
     "ready": "Version {version} will be installed when you quit.",

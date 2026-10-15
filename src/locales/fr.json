@@ -13,7 +13,8 @@
     "joker": "{n} joker | {n} jokers",
     "reward": "+{n} joker | +{n} jokers",
     "copyFailed": "Copie impossible : {error}",
-    "importOpen": "Un import est déjà ouvert"
+    "importOpen": "Un import est déjà ouvert",
+    "close": "Fermer"
   },
   "keys": {
     "enter": "Entrée",
@@ -252,10 +253,19 @@
   },
   "about": {
     "description": "Squat Souls transforme tes parties en entraînement : boss vaincu, saut raté, game over rageant, tout se règle au poids du corps avant de reprendre la manette. Plus le jeu est impitoyable, plus tu deviens solide. Prépare-toi à transpirer.",
-    "author": "Par {author}",
-    "version": "Version {version}",
-    "sourceCode": "Code source sur GitHub",
-    "close": "Fermer"
+    "meta": "v{version} · par {author}",
+    "disclaimer": "Squat Souls est un projet indépendant, sans lien avec aucun éditeur de jeu et sans leur approbation. Les noms des jeux appartiennent à leurs ayants droit.",
+    "sourceCode": "Code source"
+  },
+  "safety": {
+    "title": "Conseils de sécurité",
+    "lines": [
+      "En cas de doute sur ta santé, demande l'avis d'un médecin.",
+      "Échauffe-toi avant, étire-toi après.",
+      "Mieux vaut peu de répétitions bien faites que beaucoup de mal faites.",
+      "Découpe les longues séries, respecte les pauses et bois de l'eau.",
+      "Arrête-toi à la moindre douleur."
+    ]
   },
   "update": {
     "ready": "La version {version} sera installée en quittant.",
