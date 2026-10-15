@@ -291,8 +291,8 @@
         "Un événement en jeu, quelques exercices au poids du corps, puis tu reprends la manette."
       ]
     },
-    "notFitness": {
-      "title": "Ce n'est pas une appli de sport",
+    "yourProgram": {
+      "title": "Fais ton build",
       "lines": [
         "C'est toi qui remplis le programme. Les exercices déjà en place ne sont que des exemples : ajuste-les à ton niveau avant de commencer."
       ]

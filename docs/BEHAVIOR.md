@@ -167,7 +167,7 @@ Button and setting names are quoted as they appear in the English interface.
 
 - At the first launch, existing databases included, the onboarding covers the whole window, in four steps shown one at a time, with **Back** and **Next**:
   - the concept of the app in one line;
-  - **Not a fitness app**: the user fills in the program, and the exercises already there are only examples to adjust before starting;
+  - **Craft your build**: the user fills in the program, and the exercises already there are only examples to adjust before starting;
   - **Take care of yourself**: a doctor's advice if in doubt, warming up and stretching, form before numbers, splitting long sets, breaks and water, stopping at the slightest pain;
   - **No need to git gud**: playing badly is not punished, doing more than planned brings nothing, taking a break is allowed.
 - It can only be left from its last step: **See the program** opens the exercises of the **Program** tab, **Let's go** stays on the current tab. It is then never shown again, and its safety advice stays in **About**.

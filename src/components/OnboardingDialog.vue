@@ -10,7 +10,7 @@ const { tab, cfgTab } = useConfig();
 // The safety advice is shared with About.
 const steps = computed(() => [
   tm('onboarding.intro'),
-  tm('onboarding.notFitness'),
+  tm('onboarding.yourProgram'),
   { title: tm('onboarding.safety'), lines: tm('safety.lines') },
   tm('onboarding.gitGud'),
 ]);

@@ -25,7 +25,7 @@ describe('onboarding', () => {
   }
 
   async function toLastStep() {
-    await go('Next', 'Not a fitness app');
+    await go('Next', 'Craft your build');
     await go('Next', 'Take care of yourself');
     await go('Next', 'No need to git gud');
   }
@@ -38,10 +38,10 @@ describe('onboarding', () => {
   it('goes through the warnings one step at a time', async () => {
     await firstLaunch();
     expect(title()).toBe('Squat Souls');
-    await go('Next', 'Not a fitness app');
+    await go('Next', 'Craft your build');
     expect(screen().textContent).toContain('are only examples');
     await go('Next', 'Take care of yourself');
-    await go('Back', 'Not a fitness app');
+    await go('Back', 'Craft your build');
   });
 
   it('cannot be left before its last step at the first launch', async () => {
