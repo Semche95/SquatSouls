@@ -78,7 +78,7 @@ const status = computed(() => {
         <CountInput v-model="draft.timerPrep" />
       </label>
     </section>
-    <section class="group setting">
+    <section v-reveal="draft.tray" class="group setting">
       <h2 class="group-title">{{ t('config.settings.tray') }}</h2>
       <div>
         <label class="check">
@@ -87,7 +87,7 @@ const status = computed(() => {
         </label>
         <p class="hint">{{ t('config.settings.trayHint') }}</p>
       </div>
-      <div v-if="draft.tray" v-reveal class="nested">
+      <div v-if="draft.tray" class="nested">
         <label class="check">
           {{ t('config.settings.closeToTray') }}
           <input v-model="draft.closeToTray" type="checkbox" />
@@ -98,7 +98,7 @@ const status = computed(() => {
         </label>
       </div>
     </section>
-    <section class="group setting">
+    <section v-reveal="draft.steamDetection" class="group setting">
       <h2 class="group-title">{{ t('config.settings.steam') }}</h2>
       <div>
         <label class="check">
@@ -107,7 +107,7 @@ const status = computed(() => {
         </label>
         <p class="hint">{{ t('config.settings.detectHint') }}</p>
       </div>
-      <div v-if="draft.steamDetection" v-reveal class="nested">
+      <div v-if="draft.steamDetection" class="nested">
         <label class="check">
           {{ t('config.settings.notify') }}
           <input v-model="draft.steamNotify" type="checkbox" />

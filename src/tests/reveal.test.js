@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { nextTick, ref } from 'vue';
 import { reveal, vReveal } from '../reveal.js';
+import { config, setup, mountApp, openSettings } from './app.js';
 
 // A block revealed when it appears and an accordion revealed when it opens, their state given by the test.
 const mountBlocks = () => {
@@ -53,5 +54,16 @@ describe('reveal', () => {
       reveal(block);
     }
     expect(scrollBy.mock.calls).toEqual([[0, 60], [0, 50]]);
+  });
+
+  it('leaves the settings at the top when they open, and reveals a section when its nested settings are turned on', async () => {
+    setup({ get_config: { config: { ...config, tray: true } } });
+    vi.spyOn(Element.prototype, 'scrollIntoView');
+    const w = await mountApp();
+    await openSettings(w);
+    expect(scrolled()).toEqual([]);
+    const steam = w.findAll('section.setting').find((s) => s.text().includes('Steam'));
+    await steam.find('input[type="checkbox"]').setValue(true);
+    expect(scrolled()).toEqual(['group setting']);
   });
 });
