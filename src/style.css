@@ -11,6 +11,7 @@
   --red: #c25b4f;
   --green: #7fa66a;
   --radius: 10px;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
   color-scheme: dark;
   font-family: "Inter", "Noto Sans", system-ui, sans-serif;
   font-size: 15px;
@@ -403,7 +404,7 @@ kbd.dark {
   z-index: 20;
   border-color: var(--green);
   background: linear-gradient(rgba(127, 166, 106, 0.12), rgba(127, 166, 106, 0.12)), var(--bg);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow);
 }
 .link {
   border: none;
@@ -1023,15 +1024,16 @@ label.check {
   flex: none;
   width: 5.5em;
 }
-/* Tooltip (floating-vue) in the app's colors, with a red border for an error. */
+/* Tooltip (floating-vue) in inverted colors, so that it does not pass for a button, with a red border for an error. */
 .v-popper--theme-tooltip .v-popper__inner {
-  background: var(--panel-2);
-  color: var(--text);
-  border: 1px solid var(--line);
-  font-size: 0.8rem;
+  background: var(--text);
+  color: var(--bg);
+  border: 1px solid var(--text);
+  box-shadow: var(--shadow);
+  font-size: 0.95rem;
 }
 .v-popper--theme-tooltip .v-popper__arrow-outer {
-  border-color: var(--line);
+  border-color: var(--text);
 }
 .v-popper--theme-tooltip.error .v-popper__inner,
 .v-popper--theme-tooltip.error .v-popper__arrow-outer {
