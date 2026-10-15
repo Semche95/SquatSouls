@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { formatDay, formatDuration, formatTime, sessionSummary } from '../format.js';
+import { daySummary, formatDay, formatDuration, formatTime, sessionSummary } from '../format.js';
 import { t } from '../i18n.js';
 import { useApi } from '../composables/useApi.js';
 import { useConfig } from '../composables/useConfig.js';
@@ -122,7 +122,12 @@ onMounted(async () => {
       <p v-if="fullHistory && !fullHistory.length" class="muted">{{ t('history.noHistory') }}</p>
       <ul class="days">
         <li v-for="d in fullHistory ?? history" :key="d.date" :class="{ off: !d.sets }">
-          <span class="day">{{ formatDay(d.date) }}</span>
+          <span class="day">
+            {{ formatDay(d.date) }}
+            <button v-if="d.sessions?.length > 1" class="link" @click="copySummary(d.date, daySummary(d))">
+              {{ t(copied === d.date ? 'history.copiedSummary' : 'history.copyDay') }}
+            </button>
+          </span>
           <span v-if="!d.sets" class="muted">{{ t('history.rest') }}</span>
           <span v-else class="day-body">
             <span v-for="se in d.sessions" :key="se.start + se.game" class="day-session">

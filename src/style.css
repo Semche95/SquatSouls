@@ -849,6 +849,11 @@ kbd.dark {
 .day::first-letter {
   text-transform: uppercase;
 }
+.day .link {
+  display: block;
+  padding: 2px 0 0;
+  font-size: 0.85rem;
+}
 .days li.off .day {
   color: var(--muted);
 }

@@ -102,6 +102,7 @@ Button and setting names are quoted as they appear in the English interface.
 - The summary stays positive: it shows what was done, never what was skipped. The history counts the days of activity since the beginning (days on which a session with sets done started), a number that only goes up: no streak of consecutive days that could be lost, and a day without a set reads "rest".
 - Once a session ends, the Play tab shows an encouragement picked at random, translated, above the session buttons, until the next session starts.
 - **Copy the summary** copies to the clipboard a text to paste in a messaging app, for the current session (once a set is done) and for each session of the history. One line per item: the game and the duration, the events triggered with their number (in the order of the game's events), the total per exercise, then the jokers earned and used. The current session lasts until the copy. The events and jokers of each session are saved in the history as the session goes; sessions saved before this was recorded leave out those two lines.
+- **Copy the day** copies in the same way a whole day of the history, once it has at least two sessions: the day, each session's summary preceded by its start time, then the day's total per exercise.
 
 ## Configuration
 

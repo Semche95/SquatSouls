@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { emptySession, setup, mountApp } from './app.js';
+import { formatDay, formatTime } from '../format.js';
 
 describe('history', () => {
   it.each([
@@ -97,6 +98,39 @@ describe('history', () => {
     await w.find('.day-games button').trigger('click');
     expect(writeText).toHaveBeenLastCalledWith('Sekiro · 10 min\nSquats 8 reps');
     vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('copies a whole day once it has several sessions', async () => {
+    const writeText = vi.fn().mockResolvedValue();
+    vi.stubGlobal('navigator', { clipboard: { writeText } });
+    const session = (start, game, amount) => ({
+      start,
+      duration: 600,
+      game,
+      sets: 1,
+      totals: [{ exercise: 'Squats', unit: 'reps', amount }, { exercise: 'Push-ups', unit: 'reps', amount: 5 }],
+      events: [],
+    });
+    setup({
+      get_history: [
+        { date: '2026-10-12', sets: 1, sessions: [session(0, 'Sekiro', 8)] },
+        { date: '2026-10-11', sets: 2, sessions: [session(0, 'Sekiro', 8), session(3600, 'Elden Ring', 10)] },
+      ],
+    });
+    const w = await mountApp();
+    await w.findAll('.tabs button')[1].trigger('click');
+    await flushPromises();
+    const days = w.findAll('.days li');
+    expect(days[0].find('.day button').exists()).toBe(false);
+    const copyDay = days[1].find('.day button');
+    await copyDay.trigger('click');
+    await flushPromises();
+    expect(writeText).toHaveBeenCalledWith(
+      `${formatDay('2026-10-11')}\n${formatTime(0)} · Sekiro · 10 min\nSquats 8 reps · Push-ups 5 reps\n\n`
+        + `${formatTime(3600)} · Elden Ring · 10 min\nSquats 10 reps · Push-ups 5 reps\n\nDay total: Squats 18 reps · Push-ups 10 reps`,
+    );
+    expect(copyDay.text()).toBe('Copied');
     vi.unstubAllGlobals();
   });
 });

@@ -24,14 +24,26 @@ export function formatDuration(seconds) {
 }
 
 // Session summary to paste in a messaging app: game and duration, events triggered, totals per
-// exercise, then jokers if they were recorded.
-export function sessionSummary({ game, duration, events, totals, jokers }) {
+// exercise, then jokers if they were recorded. The start time leads when given.
+export function sessionSummary({ game, duration, events, totals, jokers }, start) {
   return [
-    `${game} · ${formatDuration(duration)}`,
+    [start !== undefined && formatTime(start), game, formatDuration(duration)].filter(Boolean).join(' · '),
     events.map(({ event, count }) => t('history.eventCount', { event, count })).join(' · '),
     formatTotals(totals),
     jokers && t('history.jokersLine', { earned: t('history.earned', jokers.earned), spent: t('history.spent', jokers.spent) }),
   ].filter(Boolean).join('\n');
+}
+
+// Day summary: the day, each session with its start time, then the totals per exercise of the day.
+export function daySummary({ date, sessions }) {
+  const totals = [];
+  for (const total of sessions.flatMap((se) => se.totals)) {
+    const same = totals.find((x) => x.exercise === total.exercise && x.unit === total.unit);
+    if (same) same.amount += total.amount;
+    else totals.push({ ...total });
+  }
+  const body = sessions.map((se) => sessionSummary(se, se.start)).join('\n\n');
+  return `${formatDay(date)}\n${body}\n\n${t('history.dayTotal', { totals: formatTotals(totals) })}`;
 }
 
 function formatTotals(totals) {

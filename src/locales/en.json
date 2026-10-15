@@ -118,6 +118,8 @@
     "rest": "rest",
     "copy": "Copy the summary",
     "copiedSummary": "Copied",
+    "copyDay": "Copy the day",
+    "dayTotal": "Day total: {totals}",
     "eventCount": "{event} ×{count}",
     "jokersLine": "Jokers: {earned}, {spent}"
   },
