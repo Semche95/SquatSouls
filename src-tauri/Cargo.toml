@@ -1,6 +1,6 @@
 [package]
 name = "squat-souls"
-version = "0.2.1"
+version = "0.3.0"
 description = "Turns in-game events into bodyweight exercises with a random number of reps"
 edition = "2021"
 license = "MIT"
