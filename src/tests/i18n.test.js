@@ -85,8 +85,8 @@ describe('backend errors', () => {
   });
 
   it('show their cause', () => {
-    const error = { code: 'config_ignored', params: { cause: { code: 'game_no_event', params: { game: 'Sekiro' } } } };
-    expect(errorText(error)).toBe('Saved configuration ignored, default configuration used. Game "Sekiro" has no event.');
+    const error = { code: 'config_ignored', params: { cause: { code: 'game_name_duplicate', params: { name: 'Sekiro' } } } };
+    expect(errorText(error)).toBe('Saved configuration ignored, default configuration used. Two games are named "Sekiro".');
   });
 
   it('get a generic message for an unknown code or a non-coded error', () => {

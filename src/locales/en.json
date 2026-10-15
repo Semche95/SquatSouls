@@ -36,6 +36,7 @@
   "play": {
     "game": "Game",
     "gameLocked": "The game can no longer change during the session",
+    "noEvent": "{name} (no event)",
     "chooseGame": "Choose a game",
     "intensity": "Intensity",
     "intensities": {
@@ -149,6 +150,7 @@
       "noEvents": "None (one event to fill in)",
       "copyFrom": "Copy from {name}",
       "create": "Create",
+      "shareEmpty": "Add an event to share it",
       "willReplace": "{name} already exists: it will be replaced.",
       "gameName": "Name of the game",
       "rename": "Rename",
@@ -328,7 +330,6 @@
     "game_empty": "A game has an empty id or name.",
     "game_duplicate": "Game \"{id}\" is defined twice.",
     "game_name_duplicate": "Two games are named \"{name}\".",
-    "game_no_event": "Game \"{game}\" has no event.",
     "event_empty": "{game}: empty event id or name.",
     "event_duplicate": "{game}: event \"{id}\" is defined twice.",
     "event_no_draw": "{game} › {event}: at least 1 exercise is required.",

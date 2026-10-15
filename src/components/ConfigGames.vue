@@ -105,8 +105,10 @@ const activeCount = () => config.value.exercises.filter((ex) => ex.enabled).leng
 const parseShared = (text) => parseGame(text, activeCount());
 const takenName = (name) => config.value.games.some((g) => sameName(g.name, name));
 
+// The saved game is shared: without event, there is nothing to import.
+const savedEdited = computed(() => config.value.games.find((g) => g.id === editedGame.value?.id));
 function shareEdited() {
-  copy(shareGame(config.value.games.find((g) => g.id === editedGame.value.id)));
+  copy(shareGame(savedEdited.value));
 }
 
 async function importShared(game) {
@@ -150,7 +152,9 @@ function addEvent(game) {
       </select>
       <template v-if="shownGame">
         <button class="ghost" @click="openRename">{{ t('config.games.rename') }}</button>
-        <button class="ghost" @click="shareEdited">{{ t('common.share') }}</button>
+        <DisabledTip :tip="savedEdited?.events.length ? '' : t('config.games.shareEmpty')">
+          <button class="ghost" :disabled="!savedEdited?.events.length" @click="shareEdited">{{ t('common.share') }}</button>
+        </DisabledTip>
         <DisabledTip :tip="draft.games.length < 2 ? t('config.games.lastGame') : ''">
           <button class="ghost danger" :disabled="draft.games.length < 2" @click="confirmRemove = shownGame">{{ t('config.games.removeGame') }}</button>
         </DisabledTip>

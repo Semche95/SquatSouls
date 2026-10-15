@@ -68,6 +68,11 @@ fn validation_catches_mistakes() {
         AppError::new("game_name_duplicate").with("name", "ELDEN RING")
     );
 
+    // A game without event is saved, the Play tab does not offer it until it has one.
+    let mut cfg = default_config(Language::Fr);
+    cfg.games[0].events.clear();
+    cfg.validate().unwrap();
+
     // Several games can share a Steam AppId: the same game, configured for different challenges.
     let mut cfg = default_config(Language::Fr);
     cfg.games[1].steam_app_id = cfg.games[0].steam_app_id;

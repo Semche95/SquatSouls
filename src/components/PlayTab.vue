@@ -89,7 +89,9 @@ useKeydown((e) => {
         <DisabledTip class="grow" :tip="gameLocked ? t('play.gameLocked') : ''">
           <select v-select id="play-game" v-model="gameId" :disabled="gameLocked">
             <option value="" disabled>{{ t('play.chooseGame') }}</option>
-            <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id">{{ g.name }}</option>
+            <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id" :disabled="!g.events.length">
+              {{ g.events.length ? g.name : t('play.noEvent', { name: g.name }) }}
+            </option>
           </select>
         </DisabledTip>
       </div>
@@ -116,7 +118,9 @@ useKeydown((e) => {
       </i18n-t>
       <span class="row">
         <template v-if="detected.games.length">
-          <button v-for="g in detected.games" :key="g.id" class="primary" @click="selectDetected(g)">{{ g.name }}</button>
+          <DisabledTip v-for="g in detected.games" :key="g.id" :tip="g.events.length ? '' : t('play.noEvent', { name: g.name })">
+            <button class="primary" :disabled="!g.events.length" @click="selectDetected(g)">{{ g.name }}</button>
+          </DisabledTip>
         </template>
         <template v-else>
           <button class="primary" @click="addGame(detected)">{{ t('common.add') }}</button>

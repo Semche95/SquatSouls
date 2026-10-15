@@ -36,6 +36,7 @@
   "play": {
     "game": "Jeu",
     "gameLocked": "Le jeu ne peut plus changer pendant la séance",
+    "noEvent": "{name} (aucun événement)",
     "chooseGame": "Choisir un jeu",
     "intensity": "Intensité",
     "intensities": {
@@ -149,6 +150,7 @@
       "noEvents": "Aucun (un événement à remplir)",
       "copyFrom": "Copier depuis {name}",
       "create": "Créer",
+      "shareEmpty": "Ajouter un événement pour le partager",
       "willReplace": "{name} existe déjà : il sera remplacé.",
       "gameName": "Nom du jeu",
       "rename": "Renommer",
@@ -328,7 +330,6 @@
     "game_empty": "Un jeu a un identifiant ou un nom vide.",
     "game_duplicate": "Le jeu « {id} » est défini deux fois.",
     "game_name_duplicate": "Deux jeux s'appellent « {name} ».",
-    "game_no_event": "Le jeu « {game} » n'a aucun événement.",
     "event_empty": "{game} : identifiant ou nom d'événement vide.",
     "event_duplicate": "{game} : l'événement « {id} » est défini deux fois.",
     "event_no_draw": "{game} › {event} : il faut au moins 1 exercice.",

@@ -170,9 +170,6 @@ impl Config {
                 return Err(AppError::new("game_name_duplicate").with("name", game.name.trim()));
             }
             let in_game = |code| AppError::new(code).with("game", game.name.as_str());
-            if game.events.is_empty() {
-                return Err(in_game("game_no_event"));
-            }
             if game.events.len() > MAX_ITEMS {
                 return Err(in_game("too_many_events").with("max", MAX_ITEMS));
             }

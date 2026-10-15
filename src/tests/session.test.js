@@ -396,6 +396,16 @@ describe('session', () => {
     });
   });
 
+  it('greys out a game without event in the game choice, and does not keep it chosen', async () => {
+    const games = [...config.games, { id: 'nioh', name: 'Nioh', events: [] }];
+    setup({ get_config: { config: { ...config, games } }, get_last_game: 'nioh' });
+    const w = await mountApp();
+    const nioh = w.findAll('#play-game option').find((o) => o.element.value === 'nioh');
+    expect(nioh.text()).toBe('Nioh (no event)');
+    expect(nioh.element.disabled).toBe(true);
+    expect(w.find('#play-game').element.value).toBe('');
+  });
+
   it('only offers to end the session with sets done and none pending', async () => {
     setup({ get_session: emptySession() });
     let w = await mountApp();

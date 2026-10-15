@@ -322,6 +322,14 @@ describe('configuration', () => {
   describe('sharing', () => {
     const savedConfig = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)[1].config;
 
+    it('does not share a game without event', async () => {
+      setup({ get_config: { config: { ...config, games: [{ ...config.games[0], events: [] }, config.games[1]] } } });
+      const w = await openConfig();
+      const share = gameButton(w, 'Share');
+      expect(share.element.disabled).toBe(true);
+      await expectTip(share, 'Add an event to share it');
+    });
+
     it('copies the saved game and the exercises to the clipboard', async () => {
       const writeText = vi.fn();
       vi.stubGlobal('navigator', { clipboard: { writeText } });

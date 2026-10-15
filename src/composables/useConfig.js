@@ -34,10 +34,10 @@ export const [provideConfig, useConfig] = defineShared(() => {
   const game = computed(() => config.value?.games.find((g) => g.id === gameId.value) ?? null);
   const editedGame = computed(() => findOr(draft.value?.games ?? [], editedGameId.value));
 
-  // Remembered or current game removed: ask for the game again. The config is watched too, because an
+  // Remembered or current game removed, or left without event: ask for the game again. The config is watched too, because an
   // unknown remembered game leaves `game` null both before and after it loads.
   watch([config, game], ([cfg, g]) => {
-    if (cfg && !g) gameId.value = '';
+    if (cfg && !g?.events.length) gameId.value = '';
   });
   watch(gameId, (id) => {
     if (id) invoke('set_last_game', { gameId: id }).catch(() => {});
