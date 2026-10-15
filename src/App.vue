@@ -75,17 +75,19 @@ onMounted(async () => {
       </dl>
     </header>
 
-    <UpdateBanner />
-    <p v-if="error" class="banner error">{{ error }}</p>
-    <p v-if="configError && !['program', 'settings'].includes(tab)" class="banner error">
-      {{ configError }}
-      <button class="link" @click="tab = 'program'">{{ t('app.viewConfig') }}</button>
-    </p>
+    <div class="content">
+      <UpdateBanner />
+      <p v-if="error" class="banner error">{{ error }}</p>
+      <p v-if="configError && !['program', 'settings'].includes(tab)" class="banner error">
+        {{ configError }}
+        <button class="link" @click="tab = 'program'">{{ t('app.viewConfig') }}</button>
+      </p>
 
-    <PlayTab v-if="tab === 'play'" />
-    <HistoryTab v-else-if="tab === 'history'" />
-    <ProgramTab v-else-if="tab === 'program'" />
-    <ConfigFrame v-else settings><ConfigSettings /></ConfigFrame>
+      <PlayTab v-if="tab === 'play'" />
+      <HistoryTab v-else-if="tab === 'history'" />
+      <ProgramTab v-else-if="tab === 'program'" />
+      <ConfigFrame v-else settings><ConfigSettings /></ConfigFrame>
+    </div>
     <QuitDialog />
     <AboutDialog v-model="about" />
     <OnboardingDialog />
