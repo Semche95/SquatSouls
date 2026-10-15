@@ -43,6 +43,11 @@
       "normal": "Normal",
       "hard": "Hard"
     },
+    "intensityTips": {
+      "easy": "Half the exercises requested, rounded up",
+      "normal": "The exercises requested by the program",
+      "hard": "One and a half times the exercises requested, rounded up"
+    },
     "detected": "{name} detected.",
     "ignore": "Ignore",
     "recovery": "Recovery",

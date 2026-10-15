@@ -94,16 +94,16 @@ useKeydown((e) => {
       <div class="field">
         <span id="play-intensity">{{ t('play.intensity') }}</span>
         <div class="segmented" role="radiogroup" aria-labelledby="play-intensity">
-          <button
-            v-for="level in INTENSITIES"
-            :key="level"
-            role="radio"
-            :aria-checked="intensity === level"
-            :class="{ active: intensity === level }"
-            @click="intensity = level"
-          >
-            {{ t(`play.intensities.${level}`) }}
-          </button>
+          <DisabledTip v-for="level in INTENSITIES" :key="level" :tip="t(`play.intensityTips.${level}`)">
+            <button
+              role="radio"
+              :aria-checked="intensity === level"
+              :class="{ active: intensity === level }"
+              @click="intensity = level"
+            >
+              {{ t(`play.intensities.${level}`) }}
+            </button>
+          </DisabledTip>
         </div>
       </div>
     </div>

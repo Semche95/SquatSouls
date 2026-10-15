@@ -43,6 +43,11 @@
       "normal": "Normale",
       "hard": "Difficile"
     },
+    "intensityTips": {
+      "easy": "La moitié des exercices demandés, arrondie au-dessus",
+      "normal": "Les exercices demandés par le programme",
+      "hard": "Une fois et demie les exercices demandés, arrondie au-dessus"
+    },
     "detected": "{name} détecté.",
     "ignore": "Ignorer",
     "recovery": "Récup",

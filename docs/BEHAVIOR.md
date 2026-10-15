@@ -26,6 +26,7 @@ Button and setting names are quoted as they appear in the English interface.
 
 - The **Intensity** of the session is chosen in Play, next to the game: **Easy**, **Normal** or **Hard**. It scales the number of each exercise drawn, without touching the configuration: half for **Easy**, one and a half for **Hard**, rounded up (with a range of 10 to 20, **Easy** gives 5 to 10 and **Hard** 15 to 30).
 - It can change during the session and, as a changed minimum or maximum does, applies right away to the exercises to do: their number is the one drawn, halved first if it was, scaled by the new intensity (18 drawn gives 27 in **Hard** and 9 in **Easy**). Exercises already done never change.
+- Hovering a level shows its effect on the number of exercises.
 - It appears neither in the summary nor in the history, which show the numbers actually done.
 - Each launch starts at **Normal**, unless **Remember the intensity between launches** is on in Settings (off by default, part of the configuration and saved with **Save**): the chosen intensity is then kept in the database, outside the configuration, from one launch to the next.
 
