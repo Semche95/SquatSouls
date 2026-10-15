@@ -61,7 +61,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf gstreamer1.0-plugins-base gstreamer1.0-plugins-good
 
       - uses: pnpm/action-setup@v4
         with:
@@ -85,7 +85,8 @@ jobs:
       - run: pnpm test
 
       # Without a tag, tagName is empty and nothing is published. The release configuration adds the update
-      # signatures, made with the private key kept in the repository secrets.
+      # signatures, made with the private key kept in the repository secrets. Asset names carry no version, so the
+      # README download links (releases/latest/download/...) keep pointing to the latest release.
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -96,6 +97,7 @@ jobs:
           releaseName: Squat Souls ${{ github.ref_name }}
           releaseBody: ${{ needs.notes.outputs.content }}
           releaseDraft: true
+          assetNamePattern: SquatSouls_[arch][setup][ext]
           args: --config src-tauri/tauri.release.conf.json ${{ matrix.target && format('--target {0}', matrix.target) || '' }}
 
       # After the build: the backend compiles against the interface built in dist/.
