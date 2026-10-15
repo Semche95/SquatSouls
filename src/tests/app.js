@@ -117,15 +117,24 @@ export function layOutControls() {
   });
 }
 
-// Modal creating or importing a game, or importing exercises, teleported to the body outside the app's wrapper.
-export const formDialog = () => new DOMWrapper(document.querySelector('.form-dialog'));
+// Modal teleported to the body outside the app's wrapper, found by its content class.
 // Open once its focus trap holds the focus: it activates on the next frame, then focuses after a timer,
 // and closing the modal before would leave it active. Closed at the end of its closing transition.
-export async function formDialogOpen() {
-  await vi.waitFor(() => expect(document.querySelector('.form-dialog')?.contains(document.activeElement)).toBe(true));
+async function dialogOpen(selector) {
+  await vi.waitFor(() => expect(document.querySelector(selector)?.contains(document.activeElement)).toBe(true));
   await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve)));
 }
-export const formDialogClosed = () => vi.waitFor(() => expect(document.querySelector('.form-dialog')).toBeNull());
+const dialogClosed = (selector) => vi.waitFor(() => expect(document.querySelector(selector)).toBeNull());
+
+// Modal creating or importing a game, or importing exercises.
+export const formDialog = () => new DOMWrapper(document.querySelector('.form-dialog'));
+export const formDialogOpen = () => dialogOpen('.form-dialog');
+export const formDialogClosed = () => dialogClosed('.form-dialog');
+
+// Confirmation modal (ConfirmDialog): removing a game, ending or cancelling the session, quitting.
+export const confirmDialog = () => new DOMWrapper(document.querySelector('.confirm-modal-content'));
+export const confirmDialogOpen = () => dialogOpen('.confirm-modal-content');
+export const confirmDialogClosed = () => dialogClosed('.confirm-modal-content');
 
 // Hovers a control's tooltip container (DisabledTip), waits for the expected text, then leaves it.
 export async function expectTip(wrapper, text) {

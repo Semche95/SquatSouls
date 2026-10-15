@@ -2,9 +2,9 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
-import { VueFinalModal } from 'vue-final-modal';
 import { t } from '../i18n.js';
 import { useKeydown } from '../composables/useKeydown.js';
+import ConfirmDialog from './ConfirmDialog.vue';
 
 // Quitting asked during a session (shortcut, tray menu, window closed): awaits confirmation.
 const asked = ref(false);
@@ -31,18 +31,12 @@ onBeforeUnmount(() => unlisten?.());
 </script>
 
 <template>
-  <VueFinalModal
+  <ConfirmDialog
     v-model="asked"
-    class="confirm-modal"
-    content-class="confirm-modal-content"
-    overlay-transition="vfm-fade"
-    content-transition="vfm-fade"
-  >
-    <h3>{{ t('quit.title') }}</h3>
-    <p>{{ t('quit.confirm') }}</p>
-    <div class="card-actions">
-      <button class="ghost" @click="asked = false">{{ t('session.keep') }} <kbd>{{ t('keys.escape') }}</kbd></button>
-      <button class="danger" @click="invoke('quit')">{{ t('native.quit') }}</button>
-    </div>
-  </VueFinalModal>
+    :title="t('quit.title')"
+    :text="t('quit.confirm')"
+    :confirm="t('native.quit')"
+    :keep="t('session.keep')"
+    @confirm="invoke('quit')"
+  />
 </template>

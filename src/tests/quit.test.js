@@ -1,21 +1,18 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { setup, mountApp, press, emitEvent, layOutControls } from './app.js';
+import { setup, mountApp, press, emitEvent, layOutControls, confirmDialog, confirmDialogOpen, confirmDialogClosed } from './app.js';
 
 const ctrlQ = { key: 'q', ctrlKey: true };
-// Teleported to the body, outside the app's wrapper.
-const modal = () => document.querySelector('.confirm-modal');
+const modal = () => confirmDialog().element;
 const click = (selector) => {
   modal().querySelector(selector).click();
   return flushPromises();
 };
-// Removed at the end of its closing transition.
-const closed = () => vi.waitFor(() => expect(modal()).toBeNull());
-// Asked by the backend; open once its focus trap holds the focus.
+// Asked by the backend.
 async function ask() {
   await emitEvent('quit-requested');
-  await vi.waitFor(() => expect(modal().contains(document.activeElement)).toBe(true));
+  await confirmDialogOpen();
 }
 
 describe('quit', () => {
@@ -61,10 +58,10 @@ describe('quit', () => {
     await mountApp();
     await ask();
     await click('button.ghost');
-    await closed();
+    await confirmDialogClosed();
     await ask();
     modal().dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    await closed();
+    await confirmDialogClosed();
     expect(invoke).not.toHaveBeenCalledWith('quit');
   });
 

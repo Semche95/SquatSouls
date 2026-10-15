@@ -3,11 +3,11 @@ import { computed, nextTick, ref } from 'vue';
 import { byName, MAX_NAME, newId, sameName } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { shareGame } from '../share.js';
-import { vReveal } from '../reveal.js';
 import { vSelect } from '../select.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import ConfigEvent from './ConfigEvent.vue';
+import ConfirmDialog from './ConfirmDialog.vue';
 import GameDialog from './GameDialog.vue';
 import DisabledTip from './DisabledTip.vue';
 
@@ -15,8 +15,9 @@ const { config, draft, editedGameId, editedGame, newGame, copy } = useConfig();
 const { saveNow } = useSession();
 // Import of a shared game, in the same modal as creation.
 const importing = ref(false);
-// Game whose removal awaits confirmation; switching games closes it.
-const confirmRemove = ref(null);
+// Removal of the edited game awaiting confirmation, and that game: its name stays shown while the modal fades out.
+const removing = ref(false);
+const toRemove = ref(null);
 // Name being typed while renaming the edited game, null outside renaming.
 const renaming = ref(null);
 const renameInput = ref(null);
@@ -60,9 +61,13 @@ function openImport() {
   importing.value = true;
 }
 
+function askRemove() {
+  toRemove.value = editedGame.value;
+  removing.value = true;
+}
+
 // A removal confirmed by the user is saved right away, only the other draft changes wait for "Save".
 async function removeGame(game) {
-  confirmRemove.value = null;
   if (!(await saveNow({ ...config.value, games: config.value.games.filter((g) => g.id !== game.id) }))) return;
   draft.value.games = draft.value.games.filter((g) => g !== game);
   editedGameId.value = '';
@@ -110,24 +115,23 @@ function addEvent(game) {
           <button class="ghost" :disabled="!savedEdited?.events.length" @click="shareEdited">{{ t('common.share') }}</button>
         </DisabledTip>
         <DisabledTip :tip="draft.games.length < 2 ? t('config.games.lastGame') : ''">
-          <button class="ghost danger" :disabled="draft.games.length < 2" @click="confirmRemove = editedGame">{{ t('config.games.removeGame') }}</button>
+          <button class="ghost danger" :disabled="draft.games.length < 2" @click="askRemove">{{ t('config.games.removeGame') }}</button>
         </DisabledTip>
       </template>
     </div>
     <div v-if="editedGame" class="cfg-game">
-      <div v-if="confirmRemove === editedGame" v-reveal class="banner confirm">
-        <p>{{ t('config.games.confirmRemove', { name: editedGame.name || t('config.games.thisGame') }) }}</p>
-        <div class="card-actions">
-          <button class="danger" @click="removeGame(editedGame)">{{ t('common.remove') }}</button>
-          <button class="ghost" @click="confirmRemove = null">{{ t('config.games.keepGame') }}</button>
-        </div>
-      </div>
-
       <div class="cfg-events">
         <ConfigEvent v-for="(ev, i) in editedGame.events" :key="ev.id" :ev="ev" :fresh="ev.id === freshId" @remove="editedGame.events.splice(i, 1)" />
       </div>
       <button class="ghost" @click="addEvent(editedGame)">{{ t('config.games.addEvent') }}</button>
     </div>
     <GameDialog v-model:importing="importing" />
+    <ConfirmDialog
+      v-model="removing"
+      :text="t('config.games.confirmRemove', { name: toRemove?.name || t('config.games.thisGame') })"
+      :confirm="t('common.remove')"
+      :keep="t('config.games.keepGame')"
+      @confirm="removeGame(toRemove)"
+    />
   </section>
 </template>

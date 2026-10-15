@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, rejection, responses, setup, mountApp, shownTip, expectTip, openSettings, layOutControls, formDialog, formDialogOpen, formDialogClosed } from './app.js';
+import { config, emptySession, rejection, responses, setup, mountApp, shownTip, expectTip, openSettings, layOutControls, formDialog, formDialogOpen, formDialogClosed, confirmDialog, confirmDialogOpen, confirmDialogClosed } from './app.js';
 import { shareExercises, shareGame } from '../share.js';
 
 // Game shown in the select of the Program tab, and the games it offers.
@@ -180,16 +180,19 @@ describe('configuration', () => {
     const w = await openConfig();
     const remove = () => w.find('.group > .field .danger');
     await remove().trigger('click');
-    await w.find('.cfg-game .confirm .ghost').trigger('click');
-    expect(w.find('.cfg-game .confirm').exists()).toBe(false);
+    await confirmDialogOpen();
+    expect(confirmDialog().text()).toContain('Delete Elden Ring and all its events?');
+    await confirmDialog().find('.ghost').trigger('click');
+    await confirmDialogClosed();
     expect(gameNames(w)).toHaveLength(2);
     await remove().trigger('click');
-    await w.find('.cfg-game .confirm .danger').trigger('click');
+    await confirmDialogOpen();
+    await confirmDialog().find('.danger').trigger('click');
     await flushPromises();
     expect(gameNames(w)).toEqual(['Sekiro']);
     expect(invoke.mock.calls.find(([cmd]) => cmd === 'save_config')[1].config.games.map((g) => g.id)).toEqual(['sekiro']);
     expectUnchanged(w);
-    expect(w.find('.cfg-game .confirm').exists()).toBe(false);
+    await confirmDialogClosed();
   });
 
   it('asks for the game again when the session\'s game is removed', async () => {
@@ -198,7 +201,8 @@ describe('configuration', () => {
     // The backend cancels the session of the removed game.
     responses.get_session = emptySession();
     await w.find('.group > .field .danger').trigger('click');
-    await w.find('.cfg-game .confirm .danger').trigger('click');
+    await confirmDialogOpen();
+    await confirmDialog().find('.danger').trigger('click');
     await flushPromises();
     await w.findAll('.tabs button')[0].trigger('click');
     const select = w.find('select');

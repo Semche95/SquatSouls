@@ -1,13 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, draw, rejection, responses, setup, mountApp, press, expectTip } from './app.js';
+import { config, emptySession, draw, rejection, responses, setup, mountApp, press, expectTip, layOutControls, confirmDialog, confirmDialogOpen, confirmDialogClosed } from './app.js';
 import { rt, tm } from '../i18n.js';
 import { chime, recoveryEnd, startSignal } from '../sound.js';
 
 vi.mock('../sound.js', () => ({ chime: vi.fn(), recoveryEnd: vi.fn(), startSignal: vi.fn() }));
 
 describe('session', () => {
+  layOutControls();
+
   // Lets the countdown finish its leave transition before looking for it.
   async function sealShown(w) {
     await vi.advanceTimersByTimeAsync(50);
@@ -435,14 +437,16 @@ describe('session', () => {
     const w = await mountApp();
     await w.find('.session-actions .primary').trigger('click');
     expect(invoke).not.toHaveBeenCalledWith('end_session', undefined);
-    expect(w.text()).toContain('End the session?');
-    await w.find('.confirm .ghost').trigger('click');
-    expect(w.find('.confirm').exists()).toBe(false);
+    await confirmDialogOpen();
+    expect(confirmDialog().text()).toContain('End the session?');
+    await confirmDialog().find('.ghost').trigger('click');
+    await confirmDialogClosed();
     await w.find('.session-actions .primary').trigger('click');
-    await w.find('.confirm .primary').trigger('click');
+    await confirmDialogOpen();
+    await confirmDialog().find('.primary').trigger('click');
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('end_session', undefined);
-    expect(w.find('.confirm').exists()).toBe(false);
+    await confirmDialogClosed();
     expect(w.find('.session-actions .primary').text()).toBe('Start the session');
     expect(w.find('.event').element.disabled).toBe(false);
   });
@@ -451,7 +455,8 @@ describe('session', () => {
     setup({ get_session: emptySession({ sets: 1 }), end_session: rejection('end_with_pending_sets') });
     const w = await mountApp();
     await w.find('.session-actions .primary').trigger('click');
-    await w.find('.confirm .primary').trigger('click');
+    await confirmDialogOpen();
+    await confirmDialog().find('.primary').trigger('click');
     await flushPromises();
     expect(w.find('.banner.error').text()).toContain('Sets are still to do');
     expect(w.find('.farewell').exists()).toBe(false);
@@ -468,12 +473,14 @@ describe('session', () => {
     setup({ get_session: emptySession({ gameId: 'er' }), cancel_session: emptySession() });
     const w = await mountApp();
     await w.find('.session-actions .danger').trigger('click');
-    expect(w.text()).toContain('Cancel the session?');
-    await w.find('.confirm .ghost').trigger('click');
-    expect(w.find('.confirm').exists()).toBe(false);
+    await confirmDialogOpen();
+    expect(confirmDialog().text()).toContain('Cancel the session?');
+    await confirmDialog().find('.ghost').trigger('click');
+    await confirmDialogClosed();
     expect(invoke).not.toHaveBeenCalledWith('cancel_session', undefined);
     await w.find('.session-actions .danger').trigger('click');
-    await w.find('.confirm .danger').trigger('click');
+    await confirmDialogOpen();
+    await confirmDialog().find('.danger').trigger('click');
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('cancel_session', undefined);
     expect(invoke).not.toHaveBeenCalledWith('end_session', undefined);
@@ -484,7 +491,8 @@ describe('session', () => {
     const w = await mountApp();
     expect(w.find('.farewell').exists()).toBe(false);
     await w.find('.session-actions .primary').trigger('click');
-    await w.find('.confirm .primary').trigger('click');
+    await confirmDialogOpen();
+    await confirmDialog().find('.primary').trigger('click');
     await flushPromises();
     expect(tm('session.farewells').map((m) => rt(m))).toContain(w.find('.session-actions .farewell').text());
     await w.find('.session-actions .primary').trigger('click');

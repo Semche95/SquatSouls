@@ -394,9 +394,6 @@ kbd.dark {
   display: grid;
   gap: 10px;
 }
-.banner.confirm.validate {
-  border-color: var(--gold);
-}
 .banner.confirm p,
 .banner.confirm .card-actions {
   margin: 0;
@@ -1485,7 +1482,7 @@ code {
 
 }
 
-/* Quit confirmation (VueFinalModal): centered box over the darkened window, buttons at both ends. */
+/* Modals (VueFinalModal): centered box over the darkened window, buttons at both ends. */
 .confirm-modal {
   display: grid;
   place-items: center;
@@ -1506,6 +1503,10 @@ code {
   border-radius: var(--radius);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
 }
+/* Red frame for a loss, gold when nothing is lost. */
+.confirm-modal-content:is(.validate, .form-dialog, .about-modal) {
+  border-top-color: var(--gold);
+}
 .confirm-modal-content h3 {
   margin: 0;
   font-family: "Cinzel", Georgia, serif;
@@ -1525,7 +1526,6 @@ code {
   position: relative;
   gap: 16px;
   width: min(480px, 100%);
-  border-top-color: var(--gold);
 }
 .form-dialog form {
   display: grid;
@@ -1552,7 +1552,6 @@ code {
   width: min(620px, 100%);
   padding: 26px 36px 22px;
   text-align: center;
-  border-top-color: var(--gold);
 }
 .about-head {
   display: grid;
