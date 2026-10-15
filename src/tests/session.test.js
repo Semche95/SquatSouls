@@ -469,8 +469,26 @@ describe('session', () => {
     expect(w.find('.session-actions .danger').element.disabled).toBe(true);
   });
 
-  it('asks for confirmation before cancelling the session', async () => {
+  it('cancels the session without confirmation while it has no set', async () => {
     setup({ get_session: emptySession({ gameId: 'er' }), cancel_session: emptySession() });
+    const w = await mountApp();
+    await w.find('.session-actions .danger').trigger('click');
+    await flushPromises();
+    expect(document.querySelector('.confirm-modal-content')).toBeNull();
+    expect(invoke).toHaveBeenCalledWith('cancel_session', undefined);
+  });
+
+  it('asks for confirmation before cancelling a session with a set to do', async () => {
+    setup({ get_session: emptySession({ gameId: 'er', pending: [draw] }) });
+    const w = await mountApp();
+    await w.find('.session-actions .danger').trigger('click');
+    await confirmDialogOpen();
+    expect(invoke).not.toHaveBeenCalledWith('cancel_session', undefined);
+  });
+
+  it('asks for confirmation before cancelling a session with a set done', async () => {
+    const log = [{ at: 0, amount: 10, unit: 'reps', exercise: 'Squats', event: 'Death' }];
+    setup({ get_session: emptySession({ gameId: 'er', sets: 1, log }), cancel_session: emptySession() });
     const w = await mountApp();
     await w.find('.session-actions .danger').trigger('click');
     await confirmDialogOpen();

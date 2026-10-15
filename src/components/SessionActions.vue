@@ -14,6 +14,8 @@ const confirmCancel = ref(false);
 const canEnd = computed(() => session.value.sets > 0 && !session.value.pending.length);
 // Nothing to cancel until the session has started.
 const started = computed(() => !!session.value.startedAt);
+// With no set in the history nor to do, cancelling loses nothing worth a confirmation.
+const anySet = computed(() => session.value.log.length > 0 || session.value.pending.length > 0);
 const farewellText = computed(() => (farewell.value < 0 ? '' : rt(tm('session.farewells')[farewell.value])));
 </script>
 
@@ -25,7 +27,7 @@ const farewellText = computed(() => (farewell.value < 0 ? '' : rt(tm('session.fa
       <button class="primary" :disabled="!canEnd" @click="confirmEnd = true">{{ t('session.end') }}</button>
     </DisabledTip>
     <DisabledTip :tip="started ? '' : t('session.nothingToCancel')">
-      <button class="ghost danger" :disabled="!started" @click="confirmCancel = true">{{ t('session.cancel') }}</button>
+      <button class="ghost danger" :disabled="!started" @click="anySet ? (confirmCancel = true) : cancelSession()">{{ t('session.cancel') }}</button>
     </DisabledTip>
   </div>
   <ConfirmDialog
