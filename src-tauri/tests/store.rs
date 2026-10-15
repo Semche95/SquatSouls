@@ -94,7 +94,7 @@ fn recoveries_are_saved() {
 }
 
 #[test]
-fn timed_exercises_sound_and_timer_settings_are_saved() {
+fn timed_exercises_on_each_side_sound_and_timer_settings_are_saved() {
     let mut s = store();
     let mut cfg = s.config().unwrap();
     assert!(cfg.sound && cfg.timer_auto_done, "on in a new database");
@@ -103,9 +103,11 @@ fn timed_exercises_sound_and_timer_settings_are_saved() {
     cfg.timer_auto_done = false;
     cfg.timer_prep = 0;
     cfg.exercises[0].timed = Some(TimeUnit::Minutes);
+    cfg.exercises[0].each_side = true;
     s.save_config(&cfg).unwrap();
     assert_eq!(s.config().unwrap(), cfg);
     cfg.exercises[0].timed = None;
+    cfg.exercises[0].each_side = false;
     s.save_config(&cfg).unwrap();
     assert_eq!(s.config().unwrap(), cfg);
 }
@@ -185,7 +187,7 @@ fn applied_migrations_are_dated() {
     std::fs::remove_file(&path).unwrap();
     assert_eq!(
         applied.iter().map(|a| a.0).collect::<Vec<_>>(),
-        [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         "a migration is applied only once"
     );
     assert!(
@@ -228,7 +230,7 @@ fn database_migrated_before_refinery_keeps_its_data() {
         let applied = applied(&path);
         std::fs::remove_file(&path).unwrap();
         assert_eq!(history.len(), 1, "{name}");
-        assert_eq!(applied.len(), 9, "{name}");
+        assert_eq!(applied.len(), 10, "{name}");
     }
 }
 
@@ -426,7 +428,6 @@ fn history_and_sessions_are_stored() {
             sets: 2
         }
     );
-
 
     let summed = |s: &Store| {
         s.history(1, today).unwrap()[0]

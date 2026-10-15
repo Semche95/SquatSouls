@@ -3,9 +3,9 @@ import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { config, emptySession, draw, rejection, responses, setup, mountApp, press, expectTip, layOutControls, confirmDialog, confirmDialogOpen, confirmDialogClosed } from './app.js';
 import { rt, tm } from '../i18n.js';
-import { chime, recoveryEnd, startSignal } from '../sound.js';
+import { chime, recoveryEnd, sideSignal, startSignal } from '../sound.js';
 
-vi.mock('../sound.js', () => ({ chime: vi.fn(), recoveryEnd: vi.fn(), startSignal: vi.fn() }));
+vi.mock('../sound.js', () => ({ chime: vi.fn(), recoveryEnd: vi.fn(), sideSignal: vi.fn(), startSignal: vi.fn() }));
 
 describe('session', () => {
   layOutControls();
@@ -233,14 +233,16 @@ describe('session', () => {
     const doneButton = (w) => w.find('.item-actions .primary');
     const seal = (w) => [w.find('.countdown-seal .seal-label').text(), w.find('.countdown-left').text()];
 
-    // Squats timed in `timed`, with the timer settings of `settings`; the set is the only one to do.
-    async function mountTimed(timed = 'seconds', settings = {}, item = {}) {
+    // Squats timed in `timed`, with the timer settings of `settings` and the exercise settings of `exercise`;
+    // the set is the only one to do.
+    async function mountTimed(timed = 'seconds', settings = {}, item = {}, exercise = {}) {
       vi.useFakeTimers();
       vi.mocked(chime).mockClear();
+      vi.mocked(sideSignal).mockClear();
       vi.mocked(startSignal).mockClear();
       const pending = [{ ...draw, items: [{ ...draw.items[0], ...item }] }];
       setup({
-        get_config: { config: { ...config, ...settings, exercises: [{ ...config.exercises[0], timed }] } },
+        get_config: { config: { ...config, ...settings, exercises: [{ ...config.exercises[0], timed, ...exercise }] } },
         get_session: emptySession({ pending, jokers: 2 }),
         complete_exercise: emptySession(),
       });
@@ -313,6 +315,47 @@ describe('session', () => {
       expect(await sealShown(w)).toBe(false);
       await vi.advanceTimersByTimeAsync(20_000);
       expect(invoke).not.toHaveBeenCalledWith('complete_exercise', expect.anything());
+    });
+
+    it('runs each side in turn, getting ready again in between without any recovery', async () => {
+      const w = await mountTimed('seconds', {}, {}, { eachSide: true });
+      await timerButton(w).trigger('click');
+      expect(seal(w)).toEqual(['Ready', '0:03']);
+      await vi.advanceTimersByTimeAsync(3000);
+      expect(seal(w)).toEqual(['Side 1/2', '0:10']);
+      await vi.advanceTimersByTimeAsync(10_000);
+      expect(sideSignal).toHaveBeenCalledOnce();
+      expect(chime).not.toHaveBeenCalled();
+      expect(invoke).not.toHaveBeenCalledWith('complete_exercise', expect.anything());
+      expect(seal(w)).toEqual(['Other side', '0:03']);
+      await vi.advanceTimersByTimeAsync(3000);
+      expect(seal(w)).toEqual(['Side 2/2', '0:10']);
+      expect(startSignal).toHaveBeenCalledTimes(2);
+      await vi.advanceTimersByTimeAsync(10_000);
+      await flushPromises();
+      expect(sideSignal).toHaveBeenCalledOnce();
+      expect(chime).toHaveBeenCalledOnce();
+      expect(invoke).toHaveBeenCalledWith('complete_exercise', { drawId: 7, exerciseId: 'squat' });
+    });
+
+    it('resumes at the side in progress after Escape, and forgets the first side once a joker changes the exercise', async () => {
+      const w = await mountTimed('seconds', { timerPrep: 0 }, {}, { eachSide: true });
+      await timerButton(w).trigger('click');
+      await vi.advanceTimersByTimeAsync(4000);
+      await press('Escape');
+      await timerButton(w).trigger('click');
+      expect(seal(w)).toEqual(['Side 1/2', '0:10']);
+      await vi.advanceTimersByTimeAsync(12_000);
+      await press('Escape');
+      expect(await sealShown(w)).toBe(false);
+      await timerButton(w).trigger('click');
+      expect(seal(w)).toEqual(['Side 2/2', '0:10']);
+      await press('Escape');
+      responses.halve = emptySession({ pending: [{ ...draw, items: [{ ...draw.items[0], amount: 5, halved: true }] }], jokers: 1 });
+      await press('KeyH');
+      await flushPromises();
+      await timerButton(w).trigger('click');
+      expect(seal(w)).toEqual(['Side 1/2', '0:05']);
     });
 
     it('cannot start during the recovery', async () => {

@@ -69,7 +69,7 @@ impl Store {
         let exercises = self
             .conn
             .prepare(
-                "SELECT id, name, unit, min, max, recovery, enabled, timed FROM exercises ORDER BY position",
+                "SELECT id, name, unit, min, max, recovery, enabled, timed, each_side FROM exercises ORDER BY position",
             )?
             .query_map([], |r| {
                 Ok(Exercise {
@@ -83,6 +83,7 @@ impl Store {
                     timed: r
                         .get::<_, Option<String>>(7)?
                         .and_then(|t| TimeUnit::parse(&t)),
+                    each_side: r.get(8)?,
                 })
             })?
             .collect::<Result<_>>()?;
@@ -209,11 +210,11 @@ impl Store {
             &old.exercises,
             &config.exercises,
             |e| e.id.as_str(),
-            "INSERT INTO exercises (id, position, name, unit, min, max, recovery, enabled, timed) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
-             ON CONFLICT (id) DO UPDATE SET position = ?2, name = ?3, unit = ?4, min = ?5, max = ?6, recovery = ?7, enabled = ?8, timed = ?9",
+            "INSERT INTO exercises (id, position, name, unit, min, max, recovery, enabled, timed, each_side) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+             ON CONFLICT (id) DO UPDATE SET position = ?2, name = ?3, unit = ?4, min = ?5, max = ?6, recovery = ?7, enabled = ?8, timed = ?9, each_side = ?10",
             |stmt, pos, e| {
                 let timed = e.timed.map(TimeUnit::as_str);
-                stmt.execute(params![e.id, pos, e.name, e.unit, e.min, e.max, e.recovery, e.enabled, timed])
+                stmt.execute(params![e.id, pos, e.name, e.unit, e.min, e.max, e.recovery, e.enabled, timed, e.each_side])
             },
             "DELETE FROM exercises WHERE id = ?1",
             |stmt, e| stmt.execute([&e.id]),

@@ -2,13 +2,15 @@ import { computed, onScopeDispose, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { clone } from '../configDraft.js';
 import { t, tm } from '../i18n.js';
-import { chime, recoveryEnd, startSignal } from '../sound.js';
+import { chime, recoveryEnd, sideSignal, startSignal } from '../sound.js';
 import { defineShared } from './shared.js';
 
 // Refresh rate of the countdowns.
 const TICK_MS = 250;
 // Seconds in each time unit of a timed exercise.
 const UNIT_SECONDS = { seconds: 1, minutes: 60 };
+// Sides of an exercise timed on each side.
+export const SIDES = 2;
 
 // Countdown that can be held then resumed; `onEnd` runs when it reaches 0, right away for 0 s.
 function countdown() {
@@ -94,25 +96,42 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     recovery.stop();
   }
 
-  // Timer of a timed exercise: its preparation, then its duration. Like the recovery, it blocks Done.
+  // Timer of a timed exercise: its preparation, then its duration; for an exercise on each side, once per side.
+  // Like the recovery, it blocks Done.
   const timer = countdown();
   const { left: timerLeft, share: timerShare, held: timerHeld } = timer;
-  // Exercise timed, with its set and number, and whether the timer is still in its preparation.
+  // Exercise timed, with its set and number, whether the timer is still in its preparation and, on each side,
+  // the side in progress.
   const timing = ref(null);
+  // Exercise whose first side is done: once its timer is stopped, it resumes at the second side.
+  let sideDone = null;
+  const sameExercise = (a, b) => !!a && !!b && a.drawId === b.drawId && a.exerciseId === b.exerciseId && a.amount === b.amount;
 
   function startTimer(draw, item) {
     const unit = timedUnit(item);
     if (!unit || recoveryLeft.value || timing.value) return;
-    timing.value = { drawId: draw.id, exerciseId: item.exerciseId, amount: item.amount, ready: true };
+    const target = { drawId: draw.id, exerciseId: item.exerciseId, amount: item.amount };
+    const side = exerciseOf(item).eachSide ? (sameExercise(sideDone, target) ? SIDES : 1) : undefined;
+    runTimer(draw, item, target, item.amount * UNIT_SECONDS[unit], side);
+  }
+
+  function runTimer(draw, item, target, seconds, side) {
+    timing.value = { ...target, ready: true, side };
     timer.start(config.value.timerPrep, () => {
       timing.value.ready = false;
       if (config.value.sound) startSignal();
-      timer.start(item.amount * UNIT_SECONDS[unit], () => timerEnded(draw, item));
+      timer.start(seconds, () => {
+        if (!side || side === SIDES) return timerEnded(draw, item);
+        sideDone = target;
+        if (config.value.sound) sideSignal();
+        runTimer(draw, item, target, seconds, side + 1);
+      });
     });
   }
 
   function timerEnded(draw, item) {
     timing.value = null;
+    sideDone = null;
     if (config.value.sound) chime();
     if (config.value.timerAutoDone) complete(draw, item);
   }
@@ -216,13 +235,13 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   const setSkipCost = (draw) => remaining(draw).reduce((sum, it) => sum + it.skipCost, 0);
 
   // The timer stops once its exercise is no longer the one to do as it was: set dismissed or skipped,
-  // exercise halved or skipped, session cancelled.
+  // exercise halved or skipped, session cancelled. A side done is then forgotten.
   watch(session, (s) => {
-    const timed = timing.value;
-    if (!timed) return;
     const first = s.pending[0];
-    const item = first?.id === timed.drawId ? remaining(first)[0] : undefined;
-    if (item?.exerciseId !== timed.exerciseId || item.amount !== timed.amount) stopTimer();
+    const item = first && remaining(first)[0];
+    const current = item && { drawId: first.id, exerciseId: item.exerciseId, amount: item.amount };
+    if (!sameExercise(sideDone, current)) sideDone = null;
+    if (timing.value && !sameExercise(timing.value, current)) stopTimer();
   });
 
   async function complete(draw, item) {

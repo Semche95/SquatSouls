@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct Exercise {
     pub id: String,
     pub name: String,
@@ -23,6 +24,9 @@ pub struct Exercise {
     /// Time unit of the drawn number for an exercise run with the timer; otherwise, not timed.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub timed: Option<TimeUnit>,
+    /// A timed exercise done on each side: its timer runs its duration once per side.
+    #[serde(default)]
+    pub each_side: bool,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]

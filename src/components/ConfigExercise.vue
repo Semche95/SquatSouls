@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { MAX_NAME, MAX_UNIT } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { reveal, vReveal } from '../reveal.js';
@@ -25,7 +25,14 @@ onMounted(() => {
 });
 
 // Settings only visible once open, recalled in the header: the timer as an icon, the own recovery as text.
-const timedTip = computed(() => props.ex.timed && t(`config.exercises.timedSummary.${props.ex.timed}`));
+const timedTip = computed(() => props.ex.timed && t(`config.exercises.${props.ex.eachSide ? 'timedSideSummary' : 'timedSummary'}.${props.ex.timed}`));
+// Only a timed exercise is done on each side.
+watch(
+  () => props.ex.timed,
+  (timed) => {
+    if (!timed && props.ex.eachSide) props.ex.eachSide = false;
+  },
+);
 </script>
 
 <template>
@@ -73,6 +80,13 @@ const timedTip = computed(() => props.ex.timed && t(`config.exercises.timedSumma
           <span>{{ t('config.exercises.recoveryColumn') }}</span>
           <CountInput v-model="ex.recovery" optional :placeholder="String(recovery)" :aria-label="t('config.exercises.recoveryLabel')" />
         </label>
+      </div>
+      <div v-if="ex.timed">
+        <label class="check">
+          {{ t('config.exercises.eachSide') }}
+          <input v-model="ex.eachSide" type="checkbox" />
+        </label>
+        <p v-if="ex.eachSide" class="hint">{{ t('config.exercises.eachSideHint') }}</p>
       </div>
     </template>
   </div>

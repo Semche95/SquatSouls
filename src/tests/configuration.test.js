@@ -278,6 +278,29 @@ describe('configuration', () => {
     expect(sent().exercises[0]).not.toHaveProperty('timed');
   });
 
+  it('repeats a timed exercise for the other side, explained, until it is no longer timed', async () => {
+    setup({ save_config: (args) => ({ config: args.config }) });
+    const w = await openExercises();
+    const eachSide = () => w.findAll('.cfg-exercise label.check').find((l) => l.text() === 'Repeat for the other side');
+    expect(eachSide()).toBeUndefined();
+    const timed = w.find('select[aria-label="Timer"]');
+    await timed.setValue('seconds');
+    expect(w.find('.cfg-exercise .hint').exists()).toBe(false);
+    await eachSide().find('input').setValue(true);
+    expect(w.find('.cfg-exercise .hint').text()).toBe('The duration is for one side: the timer runs again for the other side.');
+    expect(w.find('.cfg-timed-icon').attributes('aria-label')).toBe('Timed in seconds, on each side');
+    await w.find('.cfg-actions .primary').trigger('click');
+    await flushPromises();
+    const sent = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)[1].config;
+    expect(sent().exercises[0]).toMatchObject({ timed: 'seconds', eachSide: true });
+    timed.element.selectedIndex = 0;
+    await timed.trigger('change');
+    expect(eachSide()).toBeUndefined();
+    await w.find('.cfg-actions .primary').trigger('click');
+    await flushPromises();
+    expect(sent().exercises[0].eachSide).toBe(false);
+  });
+
   it('clears the per-session limit to remove it', async () => {
     setup();
     const w = await openConfig();

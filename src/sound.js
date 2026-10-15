@@ -38,6 +38,9 @@ function notes(frequencies, length, { gap = 0.18, timbre = PURE } = {}) {
 // Start of the timer: a single short low note, a "go".
 export const startSignal = () => notes([523], 0.25);
 
+// End of the first side of an exercise timed on each side: two short notes on the same pitch, "switch".
+export const sideSignal = () => notes([660, 660], 0.2, { gap: 0.15 });
+
 // End of the timer: two rising notes.
 export const chime = () => notes([880, 1320], 0.5);
 

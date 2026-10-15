@@ -7,7 +7,7 @@ import { t } from './i18n.js';
 // compressed JSON; the short identifier placed in front (`squatsouls/game/sekiro:`, `squatsouls/exercises:`)
 // is only informative and the import ignores it.
 const MARK = 'squatsouls';
-const VERSION = 4;
+const VERSION = 5;
 const GAME = 'game';
 const EXERCISES = 'exercises';
 
@@ -16,11 +16,13 @@ const EXERCISES = 'exercises';
 // Version 2: a game can carry the Steam AppId used to detect it.
 // Version 3: an exercise can be timed; before, it is timed if its unit reads as a duration.
 // Version 4: an exercise's own recovery is named `recovery`; before, `pause`.
+// Version 5: a timed exercise can be done on each side (`eachSide`); before, never.
 const READERS = {
   1: (data) => withRecoveries(withUnitTimes(data)),
   2: (data) => withRecoveries(withUnitTimes(data)),
   3: (data) => withRecoveries(data),
   4: (data) => data,
+  5: (data) => data,
 };
 
 // Time units of a timed exercise, and the units read as one in texts shared before exercises could be timed
@@ -103,9 +105,13 @@ export function shareGame(game) {
 // Missing optional field (exercise-specific recovery or timer, game Steam AppId): the key is omitted.
 const withOptional = (item, key, value) => (value === undefined ? item : { ...item, [key]: value });
 
+// Settings of an exercise carried by a shared text, its optional ones omitted when missing; on each side only when true.
+const sharedSettings = ({ unit, min, max, recovery, timed, eachSide }) =>
+  withOptional(withOptional(withOptional({ unit, min, max }, 'recovery', recovery), 'timed', timed), 'eachSide', eachSide || undefined);
+
 // The global recovery and whether exercises are enabled are not shared: everyone keeps their own.
 export function shareExercises(exercises) {
-  return share(EXERCISES, { exercises: exercises.map(({ name, unit, min, max, recovery, timed }) => withOptional(withOptional({ name, unit, min, max }, 'recovery', recovery), 'timed', timed)) });
+  return share(EXERCISES, { exercises: exercises.map((ex) => ({ name: ex.name, ...sharedSettings(ex) })) });
 }
 
 const validEvent = (ev) =>
@@ -126,7 +132,7 @@ export function parseGame(text, exerciseCount) {
 }
 
 const validExercise = (ex) =>
-  isName(ex?.name) && isCleanText(ex.unit, MAX_UNIT) && isCount(ex.min, 0) && isCount(ex.max, 1) && ex.min <= ex.max && (ex.recovery === undefined || isCount(ex.recovery, 0)) && (ex.timed === undefined || TIME_UNITS.includes(ex.timed));
+  isName(ex?.name) && isCleanText(ex.unit, MAX_UNIT) && isCount(ex.min, 0) && isCount(ex.max, 1) && ex.min <= ex.max && (ex.recovery === undefined || isCount(ex.recovery, 0)) && (ex.timed === undefined || TIME_UNITS.includes(ex.timed)) && (ex.eachSide === undefined || (ex.eachSide === true && ex.timed !== undefined));
 
 export function parseExercises(text) {
   return firstByName(parse(text, EXERCISES, (d) => isList(d.exercises, validExercise)).exercises);
@@ -146,14 +152,14 @@ export function mergeExercises(exercises, imported) {
   const merged = exercises.map((ex) => ({ ...ex }));
   let added = 0;
   let updated = 0;
-  for (const { name, unit, min, max, recovery, timed } of imported) {
+  for (const { name, ...settings } of imported) {
     const i = merged.findIndex((e) => sameName(e.name, name));
     const ex = merged[i];
-    const shared = (item) => withOptional(withOptional({ ...item, unit, min, max }, 'recovery', recovery), 'timed', timed);
+    const shared = (item) => ({ ...item, ...sharedSettings(settings) });
     if (!ex) {
       merged.push(shared({ id: newId(name, merged), name: name.trim(), enabled: true }));
       added++;
-    } else if (ex.unit !== unit || ex.min !== min || ex.max !== max || ex.recovery !== recovery || ex.timed !== timed) {
+    } else if (JSON.stringify(sharedSettings(ex)) !== JSON.stringify(sharedSettings(settings))) {
       merged[i] = shared({ id: ex.id, name: ex.name, enabled: ex.enabled });
       updated++;
     }

@@ -75,6 +75,8 @@
   "timer": {
     "paused": "En pause",
     "ready": "Prêt",
+    "otherSide": "Autre côté",
+    "side": "Côté {side}/{sides}",
     "hold": "Mettre en pause ({toggle}), {stop} pour arrêter",
     "resume": "Reprendre ({toggle}), {stop} pour arrêter"
   },
@@ -199,6 +201,12 @@
         "seconds": "Chronométré en secondes",
         "minutes": "Chronométré en minutes"
       },
+      "timedSideSummary": {
+        "seconds": "Chronométré en secondes, de chaque côté",
+        "minutes": "Chronométré en minutes, de chaque côté"
+      },
+      "eachSide": "Répéter pour l'autre côté",
+      "eachSideHint": "La durée vaut pour un côté : le minuteur se relance pour l'autre côté.",
       "recoverySummary": "récup {n} s",
       "minutes": "Minutes"
     },

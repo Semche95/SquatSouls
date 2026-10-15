@@ -13,7 +13,7 @@ function packed(version, shared, data = unpack(shared).data) {
 const exercises = [
   { id: 'squat', name: 'Squats', enabled: false, unit: 'reps', min: 10, max: 15 },
   { id: 'push-ups', name: 'Push-ups', enabled: true, unit: 'reps', min: 8, max: 12, recovery: 90 },
-  { id: 'plank', name: 'Plank', enabled: true, unit: 'hold', min: 20, max: 45, timed: 'seconds' },
+  { id: 'plank', name: 'Plank', enabled: true, unit: 'hold', min: 20, max: 45, timed: 'seconds', eachSide: true },
 ];
 
 describe('game sharing', () => {
@@ -113,12 +113,13 @@ describe('game sharing', () => {
 });
 
 describe('exercise sharing', () => {
-  it('shares the exercises without ids, with their own recovery and timer, then reads them back', () => {
+  it('shares the exercises without ids, with their own recovery, timer and sides, then reads them back', () => {
     const text = shareExercises(exercises);
     expect(text).toMatch(/^squatsouls\/exercises:/);
     expect(JSON.stringify(unpack(text).data)).not.toContain('"id"');
     expect(JSON.stringify(unpack(text).data)).toContain('"recovery":90');
     expect(JSON.stringify(unpack(text).data)).toContain('"timed":"seconds"');
+    expect(JSON.stringify(unpack(shareExercises([{ ...exercises[0], eachSide: false }])).data)).not.toContain('eachSide');
     expect(parseExercises(text)).toEqual(exercises.map(({ id, enabled, ...ex }) => ex));
     // Spaces and line breaks added by a messaging app are ignored.
     const cut = text.indexOf(':') + 10;
@@ -144,6 +145,8 @@ describe('exercise sharing', () => {
       shareExercises([{ name: '', unit: 'reps', min: 1, max: 5 }]),
       shareExercises([{ name: 'Squats', unit: 'reps', min: 1, max: 5, recovery: -1 }]),
       shareExercises([{ name: 'Plank', unit: 's', min: 1, max: 5, timed: 'hours' }]),
+      shareExercises([{ name: 'Plank', unit: 's', min: 1, max: 5, eachSide: true }]),
+      packed(5, shareExercises(exercises), { exercises: [{ name: 'Plank', unit: 's', min: 1, max: 5, timed: 'seconds', eachSide: 'yes' }] }),
       shareExercises([{ name: 'S'.repeat(MAX_NAME + 1), unit: 'reps', min: 1, max: 5 }]),
       shareExercises([{ name: 'Squats', unit: 'r'.repeat(MAX_UNIT + 1), min: 1, max: 5 }]),
       shareExercises([{ name: 'Squats', unit: 'reps\u200B', min: 1, max: 5 }]),
@@ -163,6 +166,13 @@ describe('exercise sharing', () => {
     for (const version of [1, 2]) {
       const read = parseExercises(packed(version, shareExercises(exercises), old));
       expect(read.map((ex) => ex.timed)).toEqual(['seconds', 'seconds', 'minutes', undefined, undefined]);
+    }
+  });
+
+  it('reads the exercises of older versions as done once', () => {
+    const old = { exercises: [{ name: 'Plank', unit: 'hold', min: 20, max: 45, timed: 'seconds' }] };
+    for (const version of [1, 2, 3, 4]) {
+      expect(parseExercises(packed(version, shareExercises(exercises), old))[0]).not.toHaveProperty('eachSide');
     }
   });
 
@@ -196,9 +206,11 @@ describe('exercise sharing', () => {
     });
     // Without an own recovery in the import, the exercise goes back to the global recovery.
     expect(mergeExercises(exercises, [{ name: 'Push-ups', unit: 'reps', min: 8, max: 12 }]).exercises[1]).toEqual({ id: 'push-ups', name: 'Push-ups', enabled: true, unit: 'reps', min: 8, max: 12 });
-    // Likewise without a timer, the exercise is no longer timed; with one, it becomes timed.
+    // Likewise without a timer, the exercise is no longer timed; with one, it becomes timed. The same goes for the sides.
     expect(mergeExercises(exercises, [{ name: 'Plank', unit: 'hold', min: 20, max: 45 }]).exercises[2]).not.toHaveProperty('timed');
+    expect(mergeExercises(exercises, [{ name: 'Plank', unit: 'hold', min: 20, max: 45, timed: 'seconds' }]).exercises[2]).not.toHaveProperty('eachSide');
     expect(mergeExercises(exercises, [{ name: 'Squats', unit: 'reps', min: 10, max: 15, timed: 'minutes' }]).exercises[0].timed).toBe('minutes');
+    expect(mergeExercises(exercises, [{ name: 'Squats', unit: 'reps', min: 10, max: 15, timed: 'minutes', eachSide: true }]).exercises[0].eachSide).toBe(true);
     expect(exercises[0].unit).toBe('reps');
   });
 });

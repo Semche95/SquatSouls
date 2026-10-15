@@ -75,6 +75,8 @@
   "timer": {
     "paused": "Paused",
     "ready": "Ready",
+    "otherSide": "Other side",
+    "side": "Side {side}/{sides}",
     "hold": "Pause ({toggle}), {stop} to stop",
     "resume": "Resume ({toggle}), {stop} to stop"
   },
@@ -199,6 +201,12 @@
         "seconds": "Timed in seconds",
         "minutes": "Timed in minutes"
       },
+      "timedSideSummary": {
+        "seconds": "Timed in seconds, on each side",
+        "minutes": "Timed in minutes, on each side"
+      },
+      "eachSide": "Repeat for the other side",
+      "eachSideHint": "The duration is for one side: the timer runs again for the other side.",
       "recoverySummary": "recovery {n} s",
       "minutes": "Minutes"
     },

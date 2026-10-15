@@ -1018,7 +1018,12 @@ label.check {
   flex: none;
   width: 12em;
 }
-.setting .hint {
+/* In an exercise card, the switch follows its text rather than the card's edge. */
+.cfg-exercise .check {
+  justify-content: flex-start;
+}
+.setting .hint,
+.cfg-exercise .hint {
   margin: 2px 0 0;
   font-size: 0.85rem;
   color: var(--muted);

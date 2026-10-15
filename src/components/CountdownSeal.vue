@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { formatCountdown } from '../format.js';
 import { t } from '../i18n.js';
-import { useSession } from '../composables/useSession.js';
+import { SIDES, useSession } from '../composables/useSession.js';
 import { vTooltip } from '../tooltip.js';
 
 // Countdown set astride the top border of its container, which must be positioned: the ring empties clockwise.
@@ -12,9 +12,11 @@ const { recoveryLeft, recoveryShare, skipRecovery, timing, timerLeft, timerShare
 
 const seal = computed(() => {
   if (timing.value) {
-    const label = timing.value.ready ? 'timer.ready' : timerHeld.value ? 'timer.paused' : 'draw.timer';
+    const { ready, side } = timing.value;
+    const running = side ? t('timer.side', { side, sides: SIDES }) : t('draw.timer');
+    const label = timerHeld.value ? t('timer.paused') : !ready ? running : side > 1 ? t('timer.otherSide') : t('timer.ready');
     const tip = t(timerHeld.value ? 'timer.resume' : 'timer.hold', { toggle: t('keys.space'), stop: t('keys.escape') });
-    return { left: timerLeft.value, share: timerShare.value, label: t(label), tip, key: t('keys.space'), action: toggleTimer };
+    return { left: timerLeft.value, share: timerShare.value, label, tip, key: t('keys.space'), action: toggleTimer };
   }
   if (recoveryLeft.value) return { left: recoveryLeft.value, share: recoveryShare.value, label: t('play.recovery'), tip: t('play.skipRecovery'), key: t('keys.escape'), action: skipRecovery };
   return null;
