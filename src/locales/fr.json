@@ -267,6 +267,33 @@
       "Arrête-toi à la moindre douleur."
     ]
   },
+  "onboarding": {
+    "intro": {
+      "title": "Squat Souls",
+      "lines": [
+        "Un événement en jeu, quelques exercices au poids du corps, puis tu reprends la manette."
+      ]
+    },
+    "notFitness": {
+      "title": "Ce n'est pas une appli de sport",
+      "lines": [
+        "C'est toi qui remplis le programme. Les exercices déjà en place ne sont que des exemples : ajuste-les à ton niveau avant de commencer."
+      ]
+    },
+    "safety": "Prends soin de toi",
+    "gitGud": {
+      "title": "Pas besoin de git gud",
+      "lines": [
+        "Skill issue ? Pas ici. Les exercices ne punissent pas le fait de mal jouer, ils te donnent juste une bonne raison de te lever de ta chaise.",
+        "En faire plus que prévu ne débloque aucun succès. On devient plus solide en se reposant aussi.",
+        "Bloqué sur un boss ? Pas besoin de rage quit : tu as le droit de faire une pause, tu reviendras en meilleure forme."
+      ]
+    },
+    "back": "Retour",
+    "next": "Suivant",
+    "program": "Voir le programme",
+    "start": "C'est parti"
+  },
   "update": {
     "ready": "La version {version} sera installée en quittant.",
     "restart": "Redémarrer maintenant",

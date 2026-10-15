@@ -15,6 +15,7 @@ import ConfigFrame from './components/ConfigFrame.vue';
 import ConfigSettings from './components/ConfigSettings.vue';
 import QuitDialog from './components/QuitDialog.vue';
 import AboutDialog from './components/AboutDialog.vue';
+import OnboardingDialog from './components/OnboardingDialog.vue';
 import UpdateBanner from './components/UpdateBanner.vue';
 
 // Picked once at launch, shown under the title.
@@ -87,5 +88,6 @@ onMounted(async () => {
     <ConfigFrame v-else settings><ConfigSettings /></ConfigFrame>
     <QuitDialog />
     <AboutDialog v-model="about" />
+    <OnboardingDialog />
   </div>
 </template>

@@ -133,6 +133,8 @@ pub fn run() {
             commands::set_last_game,
             commands::get_intensity,
             commands::set_intensity,
+            commands::get_onboarding_seen,
+            commands::set_onboarding_seen,
             commands::get_history,
             commands::get_full_history,
             commands::count_active_days,

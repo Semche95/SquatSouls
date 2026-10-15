@@ -497,6 +497,14 @@ fn last_game_is_kept() {
 }
 
 #[test]
+fn onboarding_seen_is_kept() {
+    let s = store();
+    assert!(!s.onboarding_seen().unwrap());
+    s.set_onboarding_seen().unwrap();
+    assert!(s.onboarding_seen().unwrap());
+}
+
+#[test]
 fn last_intensity_is_kept() {
     let s = store();
     assert_eq!(s.intensity().unwrap(), Intensity::Normal);

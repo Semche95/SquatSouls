@@ -244,6 +244,22 @@ pub(crate) fn set_intensity(state: Shared, intensity: Intensity) -> Result<(), A
 }
 
 #[tauri::command]
+pub(crate) fn get_onboarding_seen(state: Shared) -> Result<bool, AppError> {
+    lock(&state)?
+        .store
+        .onboarding_seen()
+        .map_err(|e| AppError::internal("Onboarding state unreadable", e))
+}
+
+#[tauri::command]
+pub(crate) fn set_onboarding_seen(state: Shared) -> Result<(), AppError> {
+    lock(&state)?
+        .store
+        .set_onboarding_seen()
+        .map_err(|e| AppError::internal("Onboarding state not saved", e))
+}
+
+#[tauri::command]
 pub(crate) fn get_history(state: Shared, days: u32) -> Result<Vec<DayTotals>, AppError> {
     lock(&state)?
         .store

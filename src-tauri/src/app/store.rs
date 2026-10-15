@@ -28,6 +28,7 @@ const CLOSE_TO_TRAY: &str = "close_to_tray";
 const START_HIDDEN: &str = "start_hidden";
 const REMEMBER_INTENSITY: &str = "remember_intensity";
 const INTENSITY: &str = "intensity";
+const ONBOARDING_SEEN: &str = "onboarding_seen";
 const SOUND: &str = "sound";
 const TIMER_AUTO_DONE: &str = "timer_auto_done";
 const TIMER_PREP: &str = "timer_prep";
@@ -448,6 +449,15 @@ impl Store {
 
     pub fn set_intensity(&self, intensity: Intensity) -> Result<()> {
         set_setting(&self.conn, INTENSITY, intensity.as_str())
+    }
+
+    /// Whether the onboarding was closed once, false until then.
+    pub fn onboarding_seen(&self) -> Result<bool> {
+        self.parsed_setting(ONBOARDING_SEEN, false)
+    }
+
+    pub fn set_onboarding_seen(&self) -> Result<()> {
+        set_setting(&self.conn, ONBOARDING_SEEN, "true")
     }
 
     /// Language setting, `System` if missing or unknown.

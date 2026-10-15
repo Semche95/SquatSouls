@@ -1,6 +1,6 @@
 # Behavior
 
-This document describes how Squat Souls behaves: draws, intensity, limits, jokers, sessions, history, configuration, language, Steam detection, notification area and sharing.
+This document describes how Squat Souls behaves: draws, intensity, limits, jokers, sessions, history, configuration, language, Steam detection, notification area, sharing and onboarding.
 
 Squat Souls is meant to be kind and encouraging: every rule below follows from that.
 
@@ -148,4 +148,13 @@ Button and setting names are quoted as they appear in the English interface.
 
 ## About
 
-- **About**, last entry of the menu (at the bottom of the sidebar, right above the session status), opens a window without leaving the current tab: a description of the app, its author, its version, a notice that the project is not affiliated with any game publisher, some **Safety advice** and a **Source code on GitHub** link, which opens the repository in the default browser. Its cross in the top right corner or Escape closes it.
+- **About**, last entry of the menu (at the bottom of the sidebar, right above the session status), opens a window without leaving the current tab: a description of the app, its author, its version, a notice that the project is not affiliated with any game publisher, the **Safety advice** of the onboarding, and a **Source code on GitHub** link, which opens the repository in the default browser. Its cross in the top right corner or Escape closes it.
+
+## Onboarding
+
+- At the first launch, existing databases included, the onboarding covers the whole window, in four steps shown one at a time, with **Back** and **Next**:
+  - the concept of the app in one line;
+  - **Not a fitness app**: the user fills in the program, and the exercises already there are only examples to adjust before starting;
+  - **Take care of yourself**: a doctor's advice if in doubt, warming up and stretching, form before numbers, splitting long sets, breaks and water, stopping at the slightest pain;
+  - **No need to git gud**: playing badly is not punished, doing more than planned brings nothing, taking a break is allowed.
+- It can only be left from its last step: **See the program** opens the exercises of the **Program** tab, **Let's go** stays on the current tab. It is then never shown again, and its safety advice stays in **About**.

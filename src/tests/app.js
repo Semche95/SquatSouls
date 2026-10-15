@@ -51,6 +51,8 @@ export function setup(over = {}) {
     count_active_days: 0,
     get_last_game: 'er',
     set_last_game: undefined,
+    get_onboarding_seen: true,
+    set_onboarding_seen: undefined,
     get_language: { setting: 'system', language: 'fr' },
     set_language: ({ setting }) => ({ setting, language: setting === 'en' ? 'en' : 'fr' }),
     set_native_texts: undefined,

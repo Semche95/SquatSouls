@@ -267,6 +267,33 @@
       "Stop at the slightest pain."
     ]
   },
+  "onboarding": {
+    "intro": {
+      "title": "Squat Souls",
+      "lines": [
+        "Something happens in your game: a few bodyweight exercises, then back to the controller."
+      ]
+    },
+    "notFitness": {
+      "title": "Not a fitness app",
+      "lines": [
+        "You fill in the program. The exercises already there are only examples: adjust them to your level before you start."
+      ]
+    },
+    "safety": "Take care of yourself",
+    "gitGud": {
+      "title": "No need to git gud",
+      "lines": [
+        "Skill issue? Not here. The exercises don't punish playing badly, they just give you a good reason to get up from your chair.",
+        "Doing more than planned unlocks no achievement. Getting stronger means resting too.",
+        "Stuck on a boss? No need to rage quit: it's okay to take a break, you'll come back in better shape."
+      ]
+    },
+    "back": "Back",
+    "next": "Next",
+    "program": "See the program",
+    "start": "Let's go"
+  },
   "update": {
     "ready": "Version {version} will be installed when you quit.",
     "restart": "Restart now",
