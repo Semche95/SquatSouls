@@ -140,7 +140,7 @@ Button and setting names are quoted as they appear in the English interface.
 - When on, it unfolds two toggles, off by default: **Closing the window hides it instead of quitting** (the app and Steam detection keep running) and **Start hidden** (the app starts without a window). Without the icon, they have no effect: closing the window quits the app, which always starts with its window shown.
 - A click on the icon shows the window; its menu offers **Show** and **Quit** (on Linux, only the menu is available).
 - **Ctrl+Q** (**Cmd+Q** on macOS) quits the app completely, from any tab, even when closing the window only hides it.
-- During a session (started and not ended), quitting asks for confirmation in a dialog (see Confirming actions): **Ctrl+Q**, **Quit** in the icon menu (which shows the window) and closing the window when it quits the app. Its sets to do and jokers are lost, its sets done stay in the history. **Quit** or a second **Ctrl+Q** quits, **Keep the session** closes the dialog.
+- During a session (started and not ended), quitting asks for confirmation in a dialog (see Confirming actions): **Ctrl+Q**, **Quit** in the icon menu (which shows the window) and closing the window when it quits the app. Its sets to do are dropped and its unused jokers go away, its sets done stay in the history. **Quit** or a second **Ctrl+Q** quits, **Keep the session** closes the dialog.
 
 ## Sharing
 
@@ -159,7 +159,7 @@ Button and setting names are quoted as they appear in the English interface.
 
 ## About
 
-- **About**, last entry of the menu (at the bottom of the sidebar, right above the session status), opens a window without leaving the current tab: a description of the app, its author, its version, a notice that the project is not affiliated with any game publisher, the **Safety advice** of the onboarding, and a **Source code on GitHub** link, which opens the repository in the default browser. Its cross in the top right corner or Escape closes it.
+- **About**, last entry of the menu (at the bottom of the sidebar, right above the session status), opens a window without leaving the current tab: a description of the app, its author, its version, a notice that the project is not affiliated with any game publisher, the **Safety advice** of the onboarding, and a **Source code** button, which opens the repository in the default browser. Its cross in the top right corner or Escape closes it.
 
 ## Onboarding
 
