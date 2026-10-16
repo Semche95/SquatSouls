@@ -41,6 +41,10 @@ pnpm test                   # interface tests (Vitest)
 - The CI also runs the tests on Windows, which refuses to delete an open file: in the backend tests, close every connection and `Store` on a database (`drop`, or a temporary that is not kept) before removing its file.
 - Never mention in the sources (comments included) a file or folder that is not in the repository: the reference would be broken for anyone cloning the repository.
 - Follow the DRY rule everywhere (Rust, Vue, CSS, tests): factor out any duplicated logic, value or style rather than copying it.
+- One file, one responsibility: if describing a file requires "and", split it. Past about 300 lines in a source file (Rust, JS, Vue) or 400 in a test file, check before adding to it whether it holds several responsibilities, and extract them as part of the change rather than growing it further. The length is a trigger to look, not a limit in itself.
+- Split by domain, never into generic `utils`, `helpers` or `common` files: a Rust module that grows becomes a folder (`app/session/` with `mod.rs` and one file per concern), a composable that mixes concerns becomes several, and `commands.rs` is grouped by domain. Test files follow the same rule.
+- A split is its own commit: a pure move with no behavior change, tests passing before and after, never mixed with a feature or a fix.
+- The `//!` comment of a Rust `mod.rs` documents the whole folder and lists its concerns, as `app/mod.rs` does: update it in the same change as soon as a file of the folder is added, removed or changes concern.
 - Run `cargo test` after any change to the Rust code, `pnpm test` after any change to `src/`.
 - Before asking for any validation, always write the complete proposal in the chat (structure, files, choices), then ask a short question. Never put the content to validate only in an interactive question.
 - Never commit without the user's explicit agreement: accepting an operation that leads to it is not agreement; do the work locally, then ask.
