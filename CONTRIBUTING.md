@@ -22,6 +22,7 @@ src/                     Vue 3 interface
   i18n.js                vue-i18n setup, language switch, backend error messages
   share.js               share and import format, versioned
   slogans.js             slogans shown under the title, in English only
+  theme.css              palette and base text
   tests/                 interface tests (Vitest)
 src-tauri/src/           Rust backend
   lib.rs                 startup and log files

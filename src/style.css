@@ -1,26 +1,5 @@
 :root {
-  --bg: #12110f;
-  --panel: #1b1916;
-  --panel-2: #24211c;
-  --line: #3a352c;
-  --text: #e9e3d5;
-  --muted: #9a917f;
-  --gold: #c9a45c;
-  --gold-soft: rgba(201, 164, 92, 0.14);
-  --ember: #d9773b;
-  --red: #c25b4f;
-  --green: #7fa66a;
-  --radius: 10px;
-  --shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-  color-scheme: dark;
-  font-family: "Inter", "Noto Sans", system-ui, sans-serif;
   font-size: 15px;
-  color: var(--text);
-  background: var(--bg);
-}
-
-* {
-  box-sizing: border-box;
 }
 
 body {

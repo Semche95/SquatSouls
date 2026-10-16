@@ -7,6 +7,7 @@ import { unlockSound } from './sound.js';
 import 'floating-vue/dist/style.css';
 import 'tom-select/dist/css/tom-select.css';
 import 'vue-final-modal/style.css';
+import './theme.css';
 import './style.css';
 
 logUncaught();
