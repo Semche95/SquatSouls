@@ -21,5 +21,8 @@ export default defineConfig({
     // One jsdom per worker instead of one per file, each file still isolated: creating it 15 times
     // took a third of the run on the small CI runners and made the first test of a file time out.
     pool: 'vmThreads',
+    // The first mount of the app in a file still takes up to 16 s on the loaded Windows runners, against
+    // half a second locally: CI gets more time, while a test stuck locally still fails fast.
+    testTimeout: process.env.CI ? 30000 : 5000,
   },
 });
