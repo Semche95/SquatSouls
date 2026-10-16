@@ -1,7 +1,8 @@
 name: Build
 
 # Run by hand: packages as artifacts. On a v* tag: draft GitHub release with the packages, their signatures and
-# latest.json, read by the app's updater once the draft is published.
+# latest.json, read by the app's updater once the draft is published (release.yml then keeps its notes in step
+# with the release).
 on:
   workflow_dispatch:
   push:

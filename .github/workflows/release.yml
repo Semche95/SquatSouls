@@ -1,0 +1,34 @@
+name: Release
+
+# latest.json is written by the build with the draft's notes: when the release is published, then each time it is
+# edited, its notes replace them. A release event runs this file as it is at the release's tag, so for a release
+# tagged before it existed, run it by hand with that tag. Editing a draft triggers nothing: its notes are copied when
+# it is published.
+on:
+  release:
+    types: [published, edited]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag of the release whose notes to copy into its latest.json
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  notes:
+    runs-on: ubuntu-latest
+    # Two runs on the same release would replace latest.json at the same time.
+    concurrency: release-notes-${{ inputs.tag || github.event.release.tag_name }}
+    steps:
+      - name: Copy the release notes into latest.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ inputs.tag || github.event.release.tag_name }}
+        run: |
+          gh release download "$TAG" --pattern latest.json
+          jq --arg notes "$(gh release view "$TAG" --json body --jq .body)" '.notes = $notes' latest.json > latest.json.new
+          mv latest.json.new latest.json
+          gh release upload "$TAG" latest.json --clobber
