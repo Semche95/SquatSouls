@@ -85,6 +85,29 @@ export async function openSettings(w) {
   await w.findAll('.tabs button')[3].trigger('click');
 }
 
+// Program tab, third of the main tabs.
+export async function openConfig() {
+  const w = await mountApp();
+  await w.findAll('.tabs button')[2].trigger('click');
+  return w;
+}
+
+// Game shown in the select of the Program tab.
+export const shownGame = (w) => w.find('#cfg-game option:checked').text();
+export const gameButton = (w, text) => w.findAll('.group > .field button').find((b) => b.text() === text);
+// Renames the edited game with Rename then Done: the new name waits for Save.
+export async function rename(w, name) {
+  await gameButton(w, 'Rename').trigger('click');
+  await w.find('input[aria-label="Name of the game"]').setValue(name);
+  await w.find('.group > form.field').trigger('submit');
+}
+
+// Without pending changes, the save and reset buttons stay shown but disabled.
+export function expectUnchanged(w) {
+  expect(w.findAll('.cfg-actions button').map((b) => b.element.disabled)).toEqual([true, true]);
+  expect(w.find('.unsaved').exists()).toBe(false);
+}
+
 // Simulates a backend event, received by the last listener mounted.
 export function emitEvent(name, payload) {
   listen.mock.calls.findLast(([n]) => n === name)[1]({ payload });
