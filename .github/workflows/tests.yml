@@ -1,6 +1,6 @@
 name: Tests
 
-# On every branch push and pull request, and before each build: interface and backend tests on the three systems.
+# On every branch push and pull request, and before each build: interface tests on Linux, backend tests on the three systems.
 on:
   workflow_dispatch:
   workflow_call:
@@ -28,7 +28,9 @@ jobs:
 
       - uses: ./.github/actions/setup
 
+      # The interface tests run in jsdom against a mocked backend, so the system changes nothing for them.
       - run: pnpm test
+        if: runner.os == 'Linux'
 
       # The backend compiles against the interface built in dist/.
       - run: pnpm build
