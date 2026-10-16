@@ -223,7 +223,7 @@
       "startHidden": "Démarrer masqué",
       "steam": "Steam",
       "detect": "Détecter le jeu Steam en cours",
-      "detectHint": "Propose le jeu lancé dans l'onglet Jouer.",
+      "detectHint": "Propose le jeu lancé dans l'onglet Jouer. Seule la liste des programmes en cours est consultée : l'appli n'interagit pas avec le jeu.",
       "notify": "Notifier quand un jeu est lancé",
       "noGame": "Aucun jeu Steam détecté.",
       "found": "Jeu détecté : {name}.",

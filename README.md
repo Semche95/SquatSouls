@@ -15,7 +15,7 @@ Turn what happens in your games into bodyweight exercises, at your own pace.
 
 ## What is it?
 
-A small desktop app you keep open next to your game. When something happens in game (you die, beat a boss), you click that event and the app gives you a few bodyweight exercises with a random number of reps. Do them before you carry on playing.
+A small desktop app you keep open next to your game. When something happens in game (you die, beat a boss), you click that event and the app gives you a few bodyweight exercises with a random number of reps. Do them before you carry on playing. You trigger the events, the app never interacts with the game.
 
 You configure your own games, events and exercises. The defaults are only a starting point.
 
@@ -27,7 +27,7 @@ You configure your own games, events and exercises. The defaults are only a star
 - Recovery countdown between exercises.
 - A timer for planks and other timed exercises, on each side if needed, that marks the exercise done when it ends.
 - Summary of the session and of the last 7 days, plus the full history, each session copyable to paste in a messaging app.
-- Keyboard shortcuts, Steam game detection, notification area icon.
+- Keyboard shortcuts, detection of the running Steam game, notification area icon.
 - Share games and exercises with other players.
 - Interface in English and French.
 
@@ -85,7 +85,7 @@ The app forces `GDK_BACKEND=x11` and `WEBKIT_DISABLE_DMABUF_RENDERER=1`, because
 
 ## Privacy
 
-Everything stays on your computer: no account, no telemetry. The app only goes online to look for an update on GitHub at launch, and, when Steam detection is on, to ask the Steam Store for the name of a game missing from your configuration.
+Everything stays on your computer: no account, no telemetry. The app only goes online to look for an update on GitHub at launch, and, when Steam detection is on, to ask the Steam Store for the name of a game missing from your configuration. Steam detection only checks which game is running among open programs: the app never interacts with the game.
 
 ## Report a problem
 

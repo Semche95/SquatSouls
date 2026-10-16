@@ -223,7 +223,7 @@
       "startHidden": "Start hidden",
       "steam": "Steam",
       "detect": "Detect the running Steam game",
-      "detectHint": "Offers the launched game in the Play tab.",
+      "detectHint": "Offers the launched game in the Play tab. Only the list of open programs is checked: the app never interacts with the game.",
       "notify": "Notify when a game is launched",
       "noGame": "No Steam game detected.",
       "found": "Game detected: {name}.",
