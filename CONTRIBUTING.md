@@ -41,7 +41,7 @@ site/                    presentation site, published on GitHub Pages by the Sit
 1. Add `src/locales/<code>.json` with every key of `en.json`, and register it in `src/i18n.js` (with its plural rule if it differs from English).
 2. Add it to the language list in `src/components/ConfigSettings.vue` and to the Steam Store languages in `src/locale.js`.
 3. In `src-tauri/src/app/language.rs`, add it to `Language` and `LanguageSetting`, and to the system locale resolution.
-4. Add `src-tauri/src/app/seed.<code>.json` (same ids, numbers and AppIds as `seed.en.json`) and load it in `src-tauri/src/app/config.rs`.
+4. Add `src-tauri/src/app/seed.<code>.json` (same ids, numbers and AppIds as `seed.en.json`) and load it in `src-tauri/src/app/config/defaults.rs`.
 5. Update the Language section of [docs/BEHAVIOR.md](docs/BEHAVIOR.md).
 
 ## Before submitting
