@@ -1,0 +1,48 @@
+name: Site
+
+# Publishes site/ on GitHub Pages, with the theme, the slogans, the icon and the screenshots of the app. The download
+# links point to releases/latest/download/..., so a new release needs no new deployment.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - site/**
+      - docs/screenshots/**
+      - src/theme.css
+      - src/slogans.js
+      - src-tauri/icons/128x128.png
+      - .github/workflows/site.yml
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time, without cancelling the one in progress.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Assemble the site
+        run: |
+          cp -r site _site
+          cp src/theme.css src/slogans.js _site/
+          cp src-tauri/icons/128x128.png _site/icon.png
+          cp -r docs/screenshots _site/
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

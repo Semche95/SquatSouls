@@ -22,7 +22,7 @@ src/                     Vue 3 interface
   i18n.js                vue-i18n setup, language switch, backend error messages
   share.js               share and import format, versioned
   slogans.js             slogans shown under the title, in English only
-  theme.css              palette and base text
+  theme.css              palette, shared with the site
   tests/                 interface tests (Vitest)
 src-tauri/src/           Rust backend
   lib.rs                 startup and log files
@@ -32,6 +32,7 @@ src-tauri/src/           Rust backend
 src-tauri/migrations/    SQL schema migrations
 src-tauri/tests/         backend tests
 docs/                    behavior reference, data and logs
+site/                    presentation site, published on GitHub Pages by the Site workflow
 ```
 
 ## Adding a language

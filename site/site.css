@@ -1,0 +1,331 @@
+/* The palette comes from the app's theme.css. */
+:root {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  line-height: 1.55;
+}
+
+a {
+  color: var(--gold);
+}
+
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+h1,
+h2,
+h3,
+.step::before {
+  font-family: "Cinzel", "Cormorant Garamond", Georgia, serif;
+  color: var(--gold);
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+img.shot {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+/* Pill shape shared by the repository link, the language switch and the feature list. */
+.repo,
+.lang,
+.more li {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 28px 0 8px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.9rem;
+}
+
+.splash {
+  margin: 2px 0 0;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--muted);
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.repo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.repo:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.lang {
+  display: flex;
+  overflow: hidden;
+}
+
+.lang button {
+  background: none;
+  border: 0;
+  color: var(--muted);
+  padding: 6px 14px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.lang button.on {
+  background: var(--gold-soft);
+  color: var(--gold);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 48px;
+  align-items: center;
+  padding: 48px 0 64px;
+}
+
+.tagline {
+  font-size: 1.5rem;
+  line-height: 1.35;
+  margin: 0 0 28px;
+}
+
+.cta {
+  display: inline-block;
+  background: var(--gold);
+  color: var(--bg);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 14px 26px;
+  border-radius: var(--radius);
+  font-size: 1.05rem;
+}
+
+.cta:hover {
+  filter: brightness(1.1);
+}
+
+.free {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 14px 0 0;
+}
+
+.free a,
+footer a {
+  color: var(--muted);
+}
+
+section {
+  padding: 56px 0;
+  border-top: 1px solid var(--line);
+}
+
+section h2 {
+  margin: 0 0 28px;
+  font-size: 1.4rem;
+  text-align: center;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  counter-reset: step;
+}
+
+.step,
+.card,
+.os,
+details {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.step {
+  padding: 20px;
+}
+
+.step::before {
+  counter-increment: step;
+  content: counter(step);
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+  margin-bottom: 10px;
+}
+
+.step p,
+.card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.step strong {
+  display: block;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+}
+
+.card {
+  padding: 16px;
+}
+
+.card .crop {
+  height: 260px;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.card h3,
+.os h3 {
+  font-size: 1.05rem;
+}
+
+.card h3 {
+  margin: 16px 0 6px;
+}
+
+.more {
+  list-style: none;
+  padding: 0;
+  margin: 32px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.more li {
+  background: var(--panel-2);
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.dl {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.os {
+  padding: 20px;
+}
+
+/* The visitor's system, detected by site.js. */
+.os.mine {
+  border-color: var(--gold);
+  background: linear-gradient(var(--gold-soft), var(--gold-soft)), var(--panel);
+}
+
+.os h3 {
+  margin: 0 0 12px;
+}
+
+.os .btn {
+  display: block;
+  text-align: center;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  text-decoration: none;
+  border-radius: var(--radius);
+  padding: 9px;
+  margin-bottom: 8px;
+}
+
+.os .btn:hover {
+  background: var(--gold-soft);
+}
+
+.req {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin: 10px 0 0;
+}
+
+details {
+  margin-top: 24px;
+  padding: 14px 20px;
+}
+
+summary {
+  cursor: pointer;
+  color: var(--ember);
+}
+
+details ol {
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid var(--line);
+  padding: 28px 0 40px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+@media (max-width: 800px) {
+  header {
+    flex-direction: column;
+  }
+
+  .hero,
+  .cards,
+  .dl {
+    grid-template-columns: 1fr;
+  }
+
+  .steps {
+    grid-template-columns: 1fr 1fr;
+  }
+}

@@ -2,7 +2,7 @@
 
 Turn what happens in your games into bodyweight exercises, at your own pace.
 
-**[Download](#download)** for Windows, macOS and Linux.
+**[Download](#download)** for Windows, macOS and Linux, or visit the [website](https://squatsouls.semche.com/).
 
 ![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-informational)
 ![Tauri 2](https://img.shields.io/badge/Tauri-2-informational)

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Squat Souls</title>
+<meta name="description" content="Turn what happens in your games into bodyweight exercises, at your own pace. Free and open source, for Windows, macOS and Linux.">
+<!-- theme.css, slogans.js, icon.png and screenshots/ are copied from the app by the Site workflow. -->
+<link rel="icon" href="icon.png">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="site.css">
+<script type="module" src="site.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>SQUAT SOULS</h1>
+      <p class="splash" id="slogan"></p>
+    </div>
+    <div class="tools">
+      <a class="repo" href="https://github.com/Semche95/SquatSouls"><svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span data-t="repo"></span></a>
+      <div class="lang"><button data-lang="en">EN</button><button data-lang="fr">FR</button></div>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div>
+      <p class="tagline" data-t="tagline"></p>
+      <a class="cta" id="cta" href="#download"></a>
+      <p class="free"><span data-t="free"></span> <a href="#download" id="other" data-t="other"></a></p>
+    </div>
+    <img class="shot" src="screenshots/play-set-to-do.png" data-alt="altPlay">
+  </div>
+
+  <section>
+    <h2 data-t="howTitle"></h2>
+    <div class="steps">
+      <div class="step"><p><strong data-t="step1Title"></strong><span data-t="step1"></span></p></div>
+      <div class="step"><p><strong data-t="step2Title"></strong><span data-t="step2"></span></p></div>
+      <div class="step"><p><strong data-t="step3Title"></strong><span data-t="step3"></span></p></div>
+      <div class="step"><p><strong data-t="step4Title"></strong><span data-t="step4"></span></p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 data-t="featuresTitle"></h2>
+    <div class="cards">
+      <div class="card"><div class="crop"><img class="shot" src="screenshots/recovery.png" data-alt="altRecovery"></div><h3 data-t="recoveryTitle"></h3><p data-t="recovery"></p></div>
+      <div class="card"><div class="crop"><img class="shot" src="screenshots/history.png" data-alt="altHistory"></div><h3 data-t="historyTitle"></h3><p data-t="history"></p></div>
+      <div class="card"><div class="crop"><img class="shot" src="screenshots/program-games.png" data-alt="altProgram"></div><h3 data-t="programTitle"></h3><p data-t="program"></p></div>
+      <div class="card"><div class="crop"><img class="shot" src="screenshots/settings.png" data-alt="altSettings"></div><h3 data-t="settingsTitle"></h3><p data-t="settings"></p></div>
+    </div>
+    <ul class="more">
+      <li data-t="jokers"></li><li data-t="intensity"></li><li data-t="shortcuts"></li>
+      <li data-t="steam"></li><li data-t="share"></li><li data-t="languages"></li>
+    </ul>
+  </section>
+
+  <section id="download">
+    <h2 data-t="downloadTitle"></h2>
+    <div class="dl">
+      <div class="os" data-os="windows">
+        <h3>Windows</h3>
+        <a class="btn" href="https://github.com/Semche95/SquatSouls/releases/latest/download/SquatSouls_x64-setup.exe" data-t="installer"></a>
+        <p class="req" data-t="windowsRequirements"></p>
+      </div>
+      <div class="os" data-os="macos">
+        <h3>macOS</h3>
+        <a class="btn" href="https://github.com/Semche95/SquatSouls/releases/latest/download/SquatSouls_aarch64.dmg">Apple Silicon (.dmg)</a>
+        <a class="btn" href="https://github.com/Semche95/SquatSouls/releases/latest/download/SquatSouls_x64.dmg">Intel (.dmg)</a>
+        <p class="req" data-t="macosRequirements"></p>
+      </div>
+      <div class="os" data-os="linux">
+        <h3>Linux</h3>
+        <a class="btn" href="https://github.com/Semche95/SquatSouls/releases/latest/download/SquatSouls_amd64.AppImage">AppImage</a>
+        <a class="btn" href="https://github.com/Semche95/SquatSouls/releases/latest/download/SquatSouls_amd64.deb">.deb</a>
+        <a class="btn" href="https://github.com/Semche95/SquatSouls/releases/latest/download/SquatSouls_x86_64.rpm">.rpm</a>
+        <p class="req" data-t="linuxRequirements"></p>
+      </div>
+    </div>
+    <details>
+      <summary data-t="macosBlocked"></summary>
+      <ol>
+        <li data-t="macosStep1"></li>
+        <li data-t="macosStep2"></li>
+        <li data-t="macosStep3"></li>
+      </ol>
+    </details>
+  </section>
+
+  <footer>
+    <span data-t="footer"></span>
+    <a href="https://github.com/Semche95/SquatSouls">GitHub</a>
+  </footer>
+</div>
+</body>
+</html>
