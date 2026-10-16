@@ -12,7 +12,7 @@ Everything is saved in a SQLite database: configuration (including the global re
 
 The development app, started by `pnpm tauri dev`, uses `squatsouls-dev.db` in the same folder, so it never touches the database of the installed app.
 
-At each launch, the intact database is copied to `squatsouls.previous.db` before its migrations, then every hour while the app runs, through a temporary file renamed once complete. A damaged database is renamed `squatsouls.damaged-<date>-<time>.db`, with its SQLite journal files, never deleted, and replaced by this copy if it is intact (see `docs/BEHAVIOR.md`). The development app does the same with `squatsouls-dev.previous.db` and `squatsouls-dev.damaged-<date>-<time>.db`.
+At each launch, the intact database is copied to `squatsouls.previous.db` before its migrations, then every hour while the app runs, through a temporary file renamed once complete. A damaged database is renamed `squatsouls.damaged-<date>-<time>.db`, with its SQLite journal files, and replaced by this copy if it is intact. Only the 3 most recent damaged databases are kept, the older ones being deleted at the next restoration (see `docs/BEHAVIOR.md`). The development app does the same with `squatsouls-dev.previous.db` and `squatsouls-dev.damaged-<date>-<time>.db`.
 
 On save, only the modified exercises, games and events are rewritten.
 

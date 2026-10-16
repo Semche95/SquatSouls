@@ -131,3 +131,31 @@ fn copy_is_renewed_while_the_app_runs() {
 fn in_memory_database_has_nothing_to_copy() {
     assert!(store().save_copy().is_ok());
 }
+
+#[test]
+fn only_the_three_most_recent_damaged_databases_are_kept() {
+    let dir = temp_folder("pruned");
+    let path = dir.join("squatsouls.db");
+    drop(Store::launch(&path, LOCALE).unwrap());
+    let older = ["20200101-000000", "20200102-000000", "20200103-000000"];
+    for date in older {
+        std::fs::write(dir.join(format!("squatsouls.damaged-{date}.db")), "old").unwrap();
+    }
+    std::fs::write(
+        dir.join("squatsouls.damaged-20200101-000000.db-journal"),
+        "old",
+    )
+    .unwrap();
+    std::fs::write(&path, "not a database").unwrap();
+    drop(Store::launch(&path, LOCALE).unwrap());
+    let mut damaged: Vec<String> = std::fs::read_dir(&dir)
+        .unwrap()
+        .map(|f| f.unwrap().file_name().to_string_lossy().into_owned())
+        .filter(|f| f.contains(".damaged-"))
+        .collect();
+    damaged.sort();
+    std::fs::remove_dir_all(&dir).unwrap();
+    assert_eq!(damaged.len(), 3, "{damaged:?}");
+    assert_eq!(damaged[0], "squatsouls.damaged-20200102-000000.db");
+    assert_eq!(damaged[1], "squatsouls.damaged-20200103-000000.db");
+}

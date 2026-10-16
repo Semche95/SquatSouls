@@ -11,6 +11,8 @@ use std::path::{Path, PathBuf};
 
 /// Files SQLite keeps beside a database, moved with it.
 const COMPANIONS: [&str; 3] = ["-journal", "-wal", "-shm"];
+/// Damaged databases kept, the most recent ones: older ones are deleted.
+const KEPT_DAMAGED: usize = 3;
 
 /// Why the database cannot be opened, as told to the user.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -103,7 +105,7 @@ pub fn previous_path(path: &Path) -> PathBuf {
     sibling(path, "previous")
 }
 
-/// Damaged database set aside, never deleted: `squatsouls.damaged-20261017-143000.db`.
+/// Damaged database set aside: `squatsouls.damaged-20261017-143000.db`. The date orders them.
 fn damaged_path(path: &Path) -> PathBuf {
     sibling(
         path,
@@ -175,7 +177,34 @@ fn restore(path: &Path, previous: &Path) -> io::Result<()> {
             std::fs::rename(&file, with_suffix(&damaged, suffix))?;
         }
     }
-    std::fs::rename(&tmp, path)
+    std::fs::rename(&tmp, path)?;
+    prune_damaged(path);
+    Ok(())
+}
+
+/// Deletes the damaged databases beyond the most recent ones, with their companion files.
+fn prune_damaged(path: &Path) {
+    let prefix = format!(
+        "{}.damaged-",
+        path.file_stem().unwrap_or_default().to_string_lossy()
+    );
+    let Some(Ok(entries)) = path.parent().map(std::fs::read_dir) else {
+        return;
+    };
+    let mut damaged: Vec<PathBuf> = entries
+        .filter_map(|e| e.ok().map(|e| e.path()))
+        .filter(|f| {
+            let name = f.file_name().unwrap_or_default().to_string_lossy();
+            name.starts_with(&prefix) && name.ends_with(".db")
+        })
+        .collect();
+    damaged.sort();
+    let old = damaged.len().saturating_sub(KEPT_DAMAGED);
+    for file in &damaged[..old] {
+        for suffix in std::iter::once("").chain(COMPANIONS) {
+            let _ = std::fs::remove_file(with_suffix(file, suffix));
+        }
+    }
 }
 
 impl Store {
