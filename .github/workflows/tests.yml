@@ -1,0 +1,37 @@
+name: Tests
+
+# On every branch push and pull request, and before each build: interface and backend tests on the three systems.
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+# A new push on the same branch or pull request cancels the run still in progress.
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup
+
+      - run: pnpm test
+
+      # The backend compiles against the interface built in dist/.
+      - run: pnpm build
+
+      - run: cargo test
+        working-directory: src-tauri

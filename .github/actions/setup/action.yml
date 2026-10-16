@@ -1,0 +1,38 @@
+name: Setup
+description: System dependencies, pnpm, Node, Rust and the interface packages, shared by the tests and the build.
+
+inputs:
+  target:
+    description: Extra Rust target to install, for cross-compiled builds.
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: System dependencies (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-alsa gstreamer1.0-pulseaudio
+
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 11
+
+    - uses: actions/setup-node@v5
+      with:
+        node-version: lts/*
+        cache: pnpm
+
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ inputs.target }}
+
+    - uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: src-tauri
+
+    - shell: bash
+      run: pnpm install --frozen-lockfile

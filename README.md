@@ -9,6 +9,7 @@ Turn what happens in your games into bodyweight exercises, at your own pace.
 ![Vue 3](https://img.shields.io/badge/Vue-3-informational)
 [![License: MIT](https://img.shields.io/badge/license-MIT-informational)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/Semche95/SquatSouls?label=release)](https://github.com/Semche95/SquatSouls/releases/latest)
+[![Tests](https://github.com/Semche95/SquatSouls/actions/workflows/tests.yml/badge.svg)](https://github.com/Semche95/SquatSouls/actions/workflows/tests.yml)
 [![Build](https://github.com/Semche95/SquatSouls/actions/workflows/build.yml/badge.svg)](https://github.com/Semche95/SquatSouls/actions/workflows/build.yml)
 
 ![Play tab with a set to do](docs/screenshots/en/play-set-to-do.png)
