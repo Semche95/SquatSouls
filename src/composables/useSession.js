@@ -1,72 +1,15 @@
-import { computed, onScopeDispose, ref, watch } from 'vue';
+import { onScopeDispose, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { clone } from '../configDraft.js';
 import { t, tm } from '../i18n.js';
 import { chime, recoveryEnd, sideSignal, startSignal } from '../sound.js';
 import { defineShared } from './shared.js';
+import { useCountdown } from './useCountdown.js';
 
-// Refresh rate of the countdowns.
-const TICK_MS = 250;
 // Seconds in each time unit of a timed exercise.
 const UNIT_SECONDS = { seconds: 1, minutes: 60 };
 // Sides of an exercise timed on each side.
 export const SIDES = 2;
-
-// Countdown that can be held then resumed; `onEnd` runs when it reaches 0, right away for 0 s.
-function countdown() {
-  const end = ref(0);
-  const seconds = ref(0);
-  // Milliseconds left while held, 0 otherwise.
-  const heldMs = ref(0);
-  const now = ref(0);
-  let ticker;
-  let onEnd;
-  const msLeft = computed(() => heldMs.value || Math.max(0, end.value - now.value));
-  const left = computed(() => Math.ceil(msLeft.value / 1000));
-  // Share still to wait, from 1 to 0.
-  const share = computed(() => (seconds.value ? msLeft.value / (seconds.value * 1000) : 0));
-  const held = computed(() => !!heldMs.value);
-
-  function run(ms) {
-    heldMs.value = 0;
-    now.value = Date.now();
-    end.value = now.value + ms;
-    ticker = setInterval(() => {
-      now.value = Date.now();
-      if (msLeft.value) return;
-      const then = onEnd;
-      stop();
-      then?.();
-    }, TICK_MS);
-  }
-
-  function start(duration, then) {
-    stop();
-    if (!duration) return then?.();
-    seconds.value = duration;
-    onEnd = then;
-    run(duration * 1000);
-  }
-
-  function stop() {
-    clearInterval(ticker);
-    end.value = 0;
-    seconds.value = 0;
-    heldMs.value = 0;
-    onEnd = undefined;
-  }
-
-  function hold() {
-    clearInterval(ticker);
-    heldMs.value = msLeft.value;
-  }
-
-  function resume() {
-    if (heldMs.value) run(heldMs.value);
-  }
-
-  return { left, share, held, start, stop, hold, resume };
-}
 
 export const [provideSession, useSession] = defineShared(({ call }, { config, draft, game, gameId, intensity, store }) => {
   const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], jokers: 0, jokersEarned: 0, jokersSpent: 0 });
@@ -77,7 +20,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     if (started) farewell.value = -1;
   });
   // Recovery after an exercise is done: no other can be marked done before it ends.
-  const recovery = countdown();
+  const recovery = useCountdown();
   const { left: recoveryLeft, share: recoveryShare } = recovery;
 
   const exerciseOf = (item) => config.value.exercises.find((ex) => ex.id === item.exerciseId);
@@ -98,7 +41,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   // Timer of a timed exercise: its preparation, then its duration; for an exercise on each side, once per side.
   // Like the recovery, it blocks Done.
-  const timer = countdown();
+  const timer = useCountdown();
   const { left: timerLeft, share: timerShare, held: timerHeld } = timer;
   // Exercise timed, with its set and number, whether the timer is still in its preparation and, on each side,
   // the side in progress.
