@@ -96,6 +96,6 @@ describe('backend errors', () => {
 
   it('follow the language', async () => {
     await setLanguage('fr');
-    expect(errorText({ code: 'unknown_game', params: { id: 'ds4' } })).toBe('Jeu inconnu : ds4.');
+    expect(errorText({ code: 'unknown_game', params: { id: 'ds4' } })).toBe('Jeu inconnu\u00a0: ds4.');
   });
 });

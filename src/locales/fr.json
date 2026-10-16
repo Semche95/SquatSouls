@@ -12,7 +12,7 @@
     "jokers": "Jokers",
     "joker": "{n} joker | {n} jokers",
     "reward": "+{n} joker | +{n} jokers",
-    "copyFailed": "Copie impossible : {error}",
+    "copyFailed": "Copie impossible : {error}",
     "close": "Fermer"
   },
   "keys": {
@@ -53,10 +53,10 @@
     "recovery": "Récup",
     "skipRecovery": "Passer",
     "todo": "À faire",
-    "jokersTip": "H : Moitié, J : Sauter, sur le premier exercice restant",
+    "jokersTip": "H : Moitié, J : Sauter, sur le premier exercice restant",
     "jokers": "aucun joker | {n} joker | {n} jokers",
     "empty": "Rien en attente. Clique sur un événement (ou tape son numéro) quand il arrive en jeu.",
-    "capped": "{event} : limite de {max} atteinte pour la séance, pas de série."
+    "capped": "{event} : limite de {max} atteinte pour la séance, pas de série."
   },
   "draw": {
     "done": "fait",
@@ -64,7 +64,7 @@
     "halve": "Moitié",
     "skip": "Sauter",
     "stop": "Arrêter",
-    "confirmStop": "Arrêter la série ? Ses exercices déjà faits restent dans l'historique.",
+    "confirmStop": "Arrêter la série ? Ses exercices déjà faits restent dans l'historique.",
     "stopSet": "Arrêter la série",
     "keepSet": "Garder la série",
     "skipSet": "Sauter la série ({n} joker) | Sauter la série ({n} jokers)",
@@ -87,14 +87,14 @@
     "start": "Démarrer la séance",
     "end": "Terminer la séance",
     "cancel": "Annuler la séance",
-    "confirmEnd": "Terminer la séance ? La suivante repart avec compteurs (dont les limites par séance) et jokers à zéro. L'historique est conservé.",
+    "confirmEnd": "Terminer la séance ? La suivante repart avec compteurs (dont les limites par séance) et jokers à zéro. L'historique est conservé.",
     "endConfirmed": "Terminer",
-    "confirmCancel": "Annuler la séance ? Les compteurs (dont les limites par séance), les séries à faire et les séries faites seront effacés, et ses séries retirées de l'historique.",
+    "confirmCancel": "Annuler la séance ? Les compteurs (dont les limites par séance), les séries à faire et les séries faites seront effacés, et ses séries retirées de l'historique.",
     "keep": "Garder la séance",
     "farewells": [
       "Feu allumé. Repose-toi, tes jambes l'ont bien mérité.",
       "Victoire. Chaque série a compté.",
-      "Encore une séance survécue. Loué soit le soleil !",
+      "Encore une séance survécue. Loué soit le soleil !",
       "Humanité restaurée, quadriceps compris.",
       "Le mur de brume est levé. Beau combat.",
       "Souffle un peu. Le prochain boss peut attendre."
@@ -121,9 +121,9 @@
     "copy": "Copier le résumé",
     "copiedSummary": "Copié",
     "copyDay": "Copier la journée",
-    "dayTotal": "Total du jour : {totals}",
+    "dayTotal": "Total du jour : {totals}",
     "eventCount": "{event} ×{count}",
-    "jokersLine": "Jokers : {earned}, {spent}"
+    "jokersLine": "Jokers : {earned}, {spent}"
   },
   "duration": {
     "underMinute": "moins d'une minute",
@@ -153,13 +153,13 @@
       "noCopy": "Ne rien copier",
       "create": "Créer",
       "shareEmpty": "Ajouter un événement pour le partager",
-      "willReplace": "{name} existe déjà : il sera remplacé.",
+      "willReplace": "{name} existe déjà : il sera remplacé.",
       "gameName": "Nom du jeu",
       "rename": "Renommer",
       "renameDone": "Valider",
       "removeGame": "Supprimer ce jeu",
       "lastGame": "Il faut au moins un jeu",
-      "confirmRemove": "Supprimer {name} et tous ses événements ?",
+      "confirmRemove": "Supprimer {name} et tous ses événements ?",
       "thisGame": "ce jeu",
       "keepGame": "Garder le jeu",
       "addEvent": "Ajouter un événement",
@@ -178,7 +178,7 @@
     },
     "exercises": {
       "import": "Importer des exercices",
-      "imported": "Exercices importés : {added}, {updated} mis à jour.",
+      "imported": "Exercices importés : {added}, {updated} mis à jour.",
       "added": "{n} ajouté | {n} ajoutés",
       "new": "Nouvel exercice",
       "defaultUnit": "rép.",
@@ -207,7 +207,7 @@
         "minutes": "Chronométré en minutes, de chaque côté"
       },
       "eachSide": "Répéter pour l'autre côté",
-      "eachSideHint": "La durée vaut pour un côté : le minuteur se relance pour l'autre côté.",
+      "eachSideHint": "La durée vaut pour un côté : le minuteur se relance pour l'autre côté.",
       "recoverySummary": "récup {n} s",
       "minutes": "Minutes"
     },
@@ -224,12 +224,12 @@
       "startHidden": "Démarrer masqué",
       "steam": "Steam",
       "detect": "Détecter le jeu Steam en cours",
-      "detectHint": "Propose le jeu lancé dans l'onglet Jouer. Seule la liste des programmes en cours est consultée : l'appli n'interagit pas avec le jeu.",
+      "detectHint": "Propose le jeu lancé dans l'onglet Jouer. Seule la liste des programmes en cours est consultée : l'appli n'interagit pas avec le jeu.",
       "notify": "Notifier quand un jeu est lancé",
       "noGame": "Aucun jeu Steam détecté.",
-      "found": "Jeu détecté : {name}.",
-      "foundIgnored": "Jeu détecté : {name} (ignoré).",
-      "blocked": "Jeu Steam détecté, mais le Steam Store limite les requêtes : les jeux inconnus ne seront plus proposés pendant 24 h au plus.",
+      "found": "Jeu détecté : {name}.",
+      "foundIgnored": "Jeu détecté : {name} (ignoré).",
+      "blocked": "Jeu Steam détecté, mais le Steam Store limite les requêtes : les jeux inconnus ne seront plus proposés pendant 24 h au plus.",
       "unnamed": "Jeu Steam détecté, nom pas encore connu.",
       "ignored": "Jeux ignorés ({n})",
       "unignore": "Retirer",
@@ -241,7 +241,7 @@
     }
   },
   "fields": {
-    "error": "{field} : {error}.",
+    "error": "{field} : {error}.",
     "notCount": "il faut un nombre entier, 0 ou plus",
     "tooLarge": "nombre trop grand",
     "globalRecovery": "Récupération après chaque exercice",
@@ -262,17 +262,17 @@
     "placeholder": "Coller ici le texte partagé",
     "pasteFirst": "Coller d'abord un texte partagé",
     "gameInvalid": "Ce texte n'est pas un jeu partagé valide.",
-    "gameMisplaced": "Ce texte partage un jeu : l'importer depuis l'onglet Jeux, avec Importer un jeu.",
+    "gameMisplaced": "Ce texte partage un jeu : l'importer depuis l'onglet Jeux, avec Importer un jeu.",
     "exercisesInvalid": "Ce texte n'est pas une liste d'exercices partagée valide.",
-    "exercisesMisplaced": "Ce texte partage des exercices : l'importer depuis l'onglet Exercices, avec Importer.",
-    "newer": "Ce texte vient d'une version plus récente de SquatSouls : la mettre à jour pour l'importer."
+    "exercisesMisplaced": "Ce texte partage des exercices : l'importer depuis l'onglet Exercices, avec Importer.",
+    "newer": "Ce texte vient d'une version plus récente de SquatSouls : la mettre à jour pour l'importer."
   },
   "quit": {
-    "title": "Quitter Squat Souls ?",
-    "confirm": "La séance en cours s'arrête : les séries à faire sont retirées et les jokers non utilisés s'en vont, les séries faites restent dans l'historique."
+    "title": "Quitter Squat Souls ?",
+    "confirm": "La séance en cours s'arrête : les séries à faire sont retirées et les jokers non utilisés s'en vont, les séries faites restent dans l'historique."
   },
   "about": {
-    "description": "Squat Souls transforme tes parties en entraînement : boss vaincu, saut raté, game over rageant, tout se règle au poids du corps avant de reprendre la manette. Plus le jeu est impitoyable, plus tu deviens solide. Prépare-toi à transpirer.",
+    "description": "Squat Souls transforme tes parties en entraînement : boss vaincu, saut raté, game over rageant, tout se règle au poids du corps avant de reprendre la manette. Plus le jeu est impitoyable, plus tu deviens solide. Prépare-toi à transpirer.",
     "meta": "v{version} · par {author}",
     "disclaimer": "Squat Souls est un projet indépendant, sans lien avec aucun éditeur de jeu et sans leur approbation. Les noms des jeux appartiennent à leurs ayants droit.",
     "sourceCode": "Code source"
@@ -297,16 +297,16 @@
     "yourProgram": {
       "title": "Fais ton build",
       "lines": [
-        "C'est toi qui remplis le programme. Les exercices déjà en place ne sont que des exemples : ajuste-les à ton niveau avant de commencer."
+        "C'est toi qui remplis le programme. Les exercices déjà en place ne sont que des exemples : ajuste-les à ton niveau avant de commencer."
       ]
     },
     "safety": "Prends soin de toi",
     "gitGud": {
       "title": "Pas besoin de git gud",
       "lines": [
-        "Skill issue ? Pas ici. Les exercices ne punissent pas le fait de mal jouer, ils te donnent juste une bonne raison de te lever de ta chaise.",
+        "Skill issue ? Pas ici. Les exercices ne punissent pas le fait de mal jouer, ils te donnent juste une bonne raison de te lever de ta chaise.",
         "En faire plus que prévu ne débloque aucun succès. On devient plus solide en se reposant aussi.",
-        "Bloqué sur un boss ? Pas besoin de rage quit : tu as le droit de faire une pause, tu reviendras en meilleure forme."
+        "Bloqué sur un boss ? Pas besoin de rage quit : tu as le droit de faire une pause, tu reviendras en meilleure forme."
       ]
     },
     "back": "Retour",
@@ -324,37 +324,37 @@
     "quit": "Quitter",
     "launchedTitle": "{name} lancé",
     "launchedConfigured": "À sélectionner dans Jouer pour commencer la séance.",
-    "launchedUnknown": "Jeu pas encore configuré : l'ajouter depuis Jouer."
+    "launchedUnknown": "Jeu pas encore configuré : l'ajouter depuis Jouer."
   },
   "errors": {
     "unknown": "Erreur inattendue.",
     "internal": "Erreur interne, le détail est dans les journaux de l'application.",
     "config_ignored": "Configuration enregistrée ignorée, configuration par défaut utilisée. {cause}",
     "tray_unavailable": "Configuration enregistrée, zone de notification indisponible.",
-    "invalid_language": "Langue inconnue : {value}.",
+    "invalid_language": "Langue inconnue : {value}.",
     "no_exercise": "Aucun exercice défini.",
     "exercise_empty": "Un exercice a un identifiant ou un nom vide.",
-    "exercise_duplicate": "L'exercice « {id} » est défini deux fois.",
-    "exercise_range": "Plage invalide pour « {name} » ({min} à {max}).",
+    "exercise_duplicate": "L'exercice « {id} » est défini deux fois.",
+    "exercise_range": "Plage invalide pour « {name} » ({min} à {max}).",
     "no_active_exercise": "Aucun exercice proposé.",
     "no_game": "Aucun jeu défini.",
     "game_empty": "Un jeu a un identifiant ou un nom vide.",
-    "game_duplicate": "Le jeu « {id} » est défini deux fois.",
-    "game_name_duplicate": "Deux jeux s'appellent « {name} ».",
-    "event_empty": "{game} : identifiant ou nom d'événement vide.",
-    "event_duplicate": "{game} : l'événement « {id} » est défini deux fois.",
-    "event_no_draw": "{game} › {event} : il faut au moins 1 exercice.",
-    "event_too_many_draws": "{game} › {event} : {draws} exercices demandés, plus que les exercices proposés ({active}).",
-    "event_zero_limit": "{game} › {event} : la limite par séance doit être d'au moins 1 (ou vide).",
-    "name_too_long": "« {name} » : le nom doit faire {max} caractères au plus.",
-    "name_hidden_char": "« {name} » : le nom contient un caractère de contrôle ou invisible.",
-    "unit_too_long": "« {name} » : l'unité doit faire {max} caractères au plus.",
-    "unit_hidden_char": "« {name} » : l'unité contient un caractère de contrôle ou invisible.",
+    "game_duplicate": "Le jeu « {id} » est défini deux fois.",
+    "game_name_duplicate": "Deux jeux s'appellent « {name} ».",
+    "event_empty": "{game} : identifiant ou nom d'événement vide.",
+    "event_duplicate": "{game} : l'événement « {id} » est défini deux fois.",
+    "event_no_draw": "{game} › {event} : il faut au moins 1 exercice.",
+    "event_too_many_draws": "{game} › {event} : {draws} exercices demandés, plus que les exercices proposés ({active}).",
+    "event_zero_limit": "{game} › {event} : la limite par séance doit être d'au moins 1 (ou vide).",
+    "name_too_long": "« {name} » : le nom doit faire {max} caractères au plus.",
+    "name_hidden_char": "« {name} » : le nom contient un caractère de contrôle ou invisible.",
+    "unit_too_long": "« {name} » : l'unité doit faire {max} caractères au plus.",
+    "unit_hidden_char": "« {name} » : l'unité contient un caractère de contrôle ou invisible.",
     "too_many_exercises": "{max} exercices au plus.",
-    "too_many_events": "Le jeu « {game} » : {max} événements au plus.",
-    "unknown_game": "Jeu inconnu : {id}.",
-    "unknown_event": "Événement inconnu : {id}.",
-    "session_other_game": "La séance a déjà commencé sur un autre jeu : commencer une nouvelle séance pour en changer.",
+    "too_many_events": "Le jeu « {game} » : {max} événements au plus.",
+    "unknown_game": "Jeu inconnu : {id}.",
+    "unknown_event": "Événement inconnu : {id}.",
+    "session_other_game": "La séance a déjà commencé sur un autre jeu : commencer une nouvelle séance pour en changer.",
     "not_enough_jokers": "Pas assez de jokers.",
     "exercise_not_reducible": "Cet exercice ne peut plus être réduit.",
     "set_not_pending": "Cette série n'est plus en attente.",
@@ -362,7 +362,7 @@
     "exercise_already_done": "Cet exercice est déjà fait.",
     "exercise_not_next": "Cet exercice vient après ceux pas encore faits de la série.",
     "set_not_current": "Il faut d'abord finir les séries plus anciennes.",
-    "end_without_set": "Aucune série faite : rien à terminer.",
-    "end_with_pending_sets": "Des séries sont encore à faire : les finir ou les annuler avant de terminer la séance."
+    "end_without_set": "Aucune série faite : rien à terminer.",
+    "end_with_pending_sets": "Des séries sont encore à faire : les finir ou les annuler avant de terminer la séance."
   }
 }

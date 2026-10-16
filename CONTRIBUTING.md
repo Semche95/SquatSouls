@@ -6,6 +6,7 @@ Issues and pull requests are welcome. Before changing how the app behaves, read 
 
 - Code, comments, test names and documentation are in English.
 - No visible text in the code: every text goes through `t` and is added to both `src/locales/en.json` and `src/locales/fr.json`. The Rust backend returns error codes, never translated text.
+- French texts follow French typography: a no-break space (U+00A0) before `:`, a narrow no-break space (U+202F) before `?`, `!`, `;` and inside `« »`.
 - A migration in `src-tauri/migrations/` is never modified once created: every schema change adds a new `V<n+1>__<name>.sql` file.
 - Any change to the share format (`src/share.js`) increments `VERSION` and keeps the readers of the previous versions.
 - In JavaScript, strings use single quotes.

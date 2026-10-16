@@ -31,6 +31,7 @@ pnpm test                   # interface tests (Vitest)
 ## Conventions
 
 - No visible text hardcoded in the interface: every text goes through `t`, and every key is added to both `src/locales/en.json` (source language) and `src/locales/fr.json`, with named placeholders and plurals rather than concatenated pieces. Rust holds no translated text: it returns error codes with their parameters (`AppError`), and the tray and notification texts come from the interface. Code (identifiers, comments, developer logs, test names) and documentation in English.
+- French texts (`fr.json` locales, `seed.fr.json`) follow French typography: a no-break space (U+00A0) before `:`, a narrow no-break space (U+202F) before `?`, `!`, `;` and inside `« »`, never an ordinary space.
 - Never modify, rename, merge or delete a migration in `src-tauri/migrations/` once created, even uncommitted, even to fix a mistake, not even its comments (refinery checksums their content): every schema change goes through a new `V<n+1>__<name>.sql` file. Migration comments are written in English from the start, so they never need translating.
 - In JavaScript, strings in single quotes, never double, escaping the apostrophe (`'moins d\'une minute'`).
 - A disabled button must look disabled: check that `style.css` gives it a `:disabled` style (reduced opacity, no pointer cursor nor hover effect), rather than relying on the `disabled` attribute alone. The reason it is disabled is shown in a tooltip by wrapping it in `DisabledTip` (`components/DisabledTip.vue`), never with a `title`.
