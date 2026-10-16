@@ -37,7 +37,6 @@ const createBlocked = computed(() => {
   return nameTaken.value ? t('config.games.nameTaken') : '';
 });
 
-// A detected Steam game once added leaves the ignored games list.
 async function createGame() {
   const { name, source, steamAppId } = form.value;
   const model = draft.value.games.find((g) => g.id === source);
@@ -45,7 +44,6 @@ async function createGame() {
   if (steamAppId) game.steamAppId = steamAppId;
   const created = await saveChange((cfg) => {
     cfg.games.push(clone(game));
-    cfg.ignoredGames = cfg.ignoredGames.filter((g) => g.appId !== steamAppId);
   });
   if (!created) return;
   editedGameId.value = game.id;

@@ -11,7 +11,7 @@ import DisabledTip from './DisabledTip.vue';
 
 const { call } = useApi();
 const { config, draft } = useConfig();
-const { detected, storeBlocked, addGame, unignore } = useSteam();
+const { detected, storeBlocked, unignore } = useSteam();
 
 const LANGUAGES = [
   { value: 'system', label: () => t('config.settings.systemLanguage') },
@@ -141,10 +141,7 @@ const status = computed(() => {
           <ul class="ignored">
             <li v-for="g in byName(config.ignoredGames)" :key="g.appId" class="setting-row nested">
               <span class="ignored-name">{{ g.name }}</span>
-              <span class="row">
-                <button class="ghost" @click="addGame(g)">{{ t('common.add') }}</button>
-                <button class="ghost" @click="unignore(g.appId)">{{ t('config.settings.unignore') }}</button>
-              </span>
+              <button class="ghost" @click="unignore(g.appId)">{{ t('config.settings.unignore') }}</button>
             </li>
           </ul>
         </details>

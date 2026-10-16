@@ -150,7 +150,7 @@ describe('Steam game detection', () => {
     expect(lastSaved().games.at(-1)).toMatchObject({ name: 'Hollow Knight', steamAppId: 367520 });
   });
 
-  it('ignores an unknown game, lists it in the settings and can remove or add it from there', async () => {
+  it('ignores an unknown game, lists it in the settings and can remove it from there', async () => {
     setupSteam({ running_steam_app: 367520, steam_game_name: 'Hollow Knight' });
     const w = await mountApp();
     await banner(w).find('.ghost').trigger('click');
@@ -166,22 +166,10 @@ describe('Steam game detection', () => {
     expect(folded.find('summary').text()).toBe('Ignored games (1)');
     const ignored = () => w.findAll('.ignored li');
     expect(ignored().map((li) => li.find('.ignored-name').text())).toEqual(['Hollow Knight']);
-    await ignored()[0].findAll('button')[1].trigger('click');
+    await ignored()[0].find('button').trigger('click');
     await flushPromises();
     expect(lastSaved().ignoredGames).toEqual([]);
     expect(ignored()).toHaveLength(0);
-  });
-
-  it('adds an ignored game from the settings and removes it from the list', async () => {
-    setupSteam({ cfg: steamConfig({ ignoredGames: [{ appId: 367520, name: 'Hollow Knight' }] }), running_steam_app: null });
-    const w = await mountApp();
-    await openSettings(w);
-    await w.find('.ignored button').trigger('click');
-    await formDialogOpen();
-    await formDialog().find('form').trigger('submit');
-    await flushPromises();
-    expect(lastSaved().games.at(-1)).toMatchObject({ name: 'Hollow Knight', steamAppId: 367520 });
-    expect(lastSaved().ignoredGames).toEqual([]);
   });
 
   it('enables detection from the settings with Save', async () => {
