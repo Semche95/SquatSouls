@@ -403,7 +403,7 @@ kbd.dark {
 }
 .banner.warn {
   border-color: var(--ember);
-  background: rgba(217, 119, 59, 0.12);
+  background: rgba(235, 154, 99, 0.12);
 }
 .banner.info {
   border-color: var(--line);
@@ -570,10 +570,10 @@ kbd.dark {
 /* Timer of a timed exercise: ember instead of gold, its time dimmed while held. */
 .countdown-seal.timer {
   color: var(--ember);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 22px rgba(217, 119, 59, 0.2);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 22px rgba(235, 154, 99, 0.2);
 }
 .countdown-seal.timer:hover {
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 28px rgba(217, 119, 59, 0.4);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 28px rgba(235, 154, 99, 0.4);
 }
 .countdown-seal.timer .seal-ring {
   stroke: var(--ember);

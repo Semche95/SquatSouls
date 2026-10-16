@@ -1,14 +1,15 @@
-/* Palette and base text, shared by the app and the site (site/). */
+/* Palette and base text, shared by the app and the site (site/). The muted and ember texts stay at least 7:1 on the
+   panels (WCAG AAA). */
 :root {
   --bg: #12110f;
   --panel: #1b1916;
   --panel-2: #24211c;
   --line: #3a352c;
   --text: #e9e3d5;
-  --muted: #9a917f;
+  --muted: #bab29f;
   --gold: #c9a45c;
   --gold-soft: rgba(201, 164, 92, 0.14);
-  --ember: #d9773b;
+  --ember: #eb9a63;
   --red: #c25b4f;
   --green: #7fa66a;
   --radius: 10px;
