@@ -16,9 +16,11 @@ function detectOs() {
 
 const os = detectOs();
 const card = os && document.querySelector(`[data-os="${os}"]`);
+let shownTexts = {};
 
 function setLanguage(language, texts) {
   document.documentElement.lang = language;
+  shownTexts = texts;
   document.querySelectorAll('[data-t]').forEach((el) => {
     el.textContent = texts[el.dataset.t];
   });
@@ -54,6 +56,35 @@ document.querySelectorAll('.lang button').forEach((b) => b.addEventListener('cli
   localStorage.setItem(LANGUAGE_KEY, b.dataset.lang);
   loadLanguage(b.dataset.lang);
 }));
+
+// A screenshot opens full size, the arrow keys go through the others in page order, a click anywhere or Escape closes it.
+const lightbox = document.getElementById('lightbox');
+const lightboxImage = lightbox.querySelector('img');
+const lightboxTitle = lightbox.querySelector('h3');
+const lightboxText = lightbox.querySelector('p');
+const shots = [...document.querySelectorAll('img.shot')];
+let shown = 0;
+
+// The caption repeats the title and text of the screenshot's card; the hero one has no card and names its texts itself.
+function showShot(index) {
+  shown = (index + shots.length) % shots.length;
+  const shot = shots[shown];
+  const shotCard = shot.closest('.card');
+  lightboxImage.src = shot.src;
+  lightboxImage.alt = shot.alt;
+  lightboxTitle.textContent = shotCard ? shotCard.querySelector('h3').textContent : shownTexts[shot.dataset.title];
+  lightboxText.textContent = shotCard ? shotCard.querySelector('p').textContent : shownTexts[shot.dataset.text];
+}
+
+shots.forEach((shot, index) => shot.addEventListener('click', () => {
+  showShot(index);
+  lightbox.showModal();
+}));
+lightbox.addEventListener('click', () => lightbox.close());
+lightbox.addEventListener('keydown', (event) => {
+  if (event.key === 'ArrowRight') showShot(shown + 1);
+  if (event.key === 'ArrowLeft') showShot(shown - 1);
+});
 
 const browserLanguage = navigator.language.slice(0, 2);
 loadLanguage(localStorage.getItem(LANGUAGE_KEY) ?? (LANGUAGES.includes(browserLanguage) ? browserLanguage : 'en'));

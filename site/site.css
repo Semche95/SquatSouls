@@ -39,6 +39,44 @@ img.shot {
   border-radius: var(--radius);
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
+  cursor: zoom-in;
+}
+
+#lightbox {
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  max-width: 96vw;
+  max-height: 96vh;
+  cursor: zoom-out;
+}
+
+#lightbox::backdrop {
+  background: rgb(0 0 0 / 0.9);
+  backdrop-filter: blur(6px);
+}
+
+/* The caption wraps to the width of the screenshot instead of widening it. */
+#lightbox figure {
+  display: inline-grid;
+  margin: 0;
+}
+
+#lightbox img {
+  display: block;
+  max-width: 96vw;
+  max-height: 80vh;
+  border-radius: var(--radius);
+}
+
+#lightbox figcaption {
+  width: 0;
+  min-width: 100%;
+}
+
+#lightbox h3 {
+  margin: 14px 0 4px;
 }
 
 /* Pill shape shared by the repository link, the language switch and the feature list. */
@@ -195,7 +233,8 @@ details {
 }
 
 .step p,
-.card p {
+.card p,
+#lightbox p {
   margin: 0;
   color: var(--muted);
 }
@@ -223,7 +262,8 @@ details {
 }
 
 .card h3,
-.os h3 {
+.os h3,
+#lightbox h3 {
   font-size: 1.05rem;
 }
 
