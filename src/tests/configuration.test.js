@@ -33,6 +33,7 @@ describe('configuration', () => {
   // Without pending changes, the save and reset buttons stay shown but disabled.
   function expectUnchanged(w) {
     expect(w.findAll('.cfg-actions button').map((b) => b.element.disabled)).toEqual([true, true]);
+    expect(w.find('.unsaved').exists()).toBe(false);
   }
 
   it('shows the game being edited in the select and switches games with it', async () => {
@@ -511,10 +512,23 @@ describe('program and settings', () => {
     const check = (text) => w.findAll('.check').find((c) => c.text() === text).find('input');
     await check('Play sounds').setValue(false);
     await check('Mark the exercise done when the timer ends').setValue(false);
-    await check('Countdown before the timer (s)').setValue('5');
+    await w.find('#timer-prep').setValue('4');
+    await w.find('.stepper button[aria-label="More"]').trigger('click');
     await w.find('.cfg-actions .primary').trigger('click');
     await flushPromises();
     expect(sent()).toMatchObject({ sound: false, timerAutoDone: false, timerPrep: 5 });
+  });
+
+  it('steps the countdown down to 0 and says there are unsaved changes', async () => {
+    setup();
+    const w = await mountApp();
+    await openSettings(w);
+    const less = () => w.find('.stepper button[aria-label="Less"]');
+    for (let i = 0; i < 3; i++) await less().trigger('click');
+    expect(w.find('#timer-prep').element.value).toBe('0');
+    expect(less().element.disabled).toBe(true);
+    await expectTip(less(), 'Already at 0');
+    expect(w.find('.unsaved').text()).toBe('Unsaved changes');
   });
 
   it('resets only the changes of its own tab', async () => {
@@ -533,18 +547,16 @@ describe('language', () => {
     await openSettings(w);
     return w;
   }
-  const select = (w) => w.find('.cfg-settings select');
+  const choices = (w) => w.findAll('.cfg-settings [role="radio"]');
+  const chosen = (w) => w.find('.cfg-settings [aria-checked="true"]').text();
+  const choose = (w, i) => choices(w)[i].trigger('click');
 
   it('offers the system language, then English and French written in their own language', async () => {
     setup();
     const w = await mountSettings();
     expect(w.find('.cfg-settings .setting').text()).toContain('Language');
-    expect(select(w).findAll('option').map((o) => [o.element.value, o.text()])).toEqual([
-      ['system', 'System language'],
-      ['en', 'English'],
-      ['fr', 'Français'],
-    ]);
-    expect(select(w).element.value).toBe('system');
+    expect(choices(w).map((b) => b.text())).toEqual(['System language', 'English', 'Français']);
+    expect(chosen(w)).toBe('System language');
   });
 
   it('switches right away without saving nor touching the pending changes', async () => {
@@ -553,13 +565,14 @@ describe('language', () => {
     await w.findAll('.tabs button')[2].trigger('click');
     await rename(w, 'Elden Ring DLC');
     await openSettings(w);
-    await select(w).setValue('fr');
+    await choose(w, 2);
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('set_language', { setting: 'fr' });
     expect(invoke.mock.calls.some(([cmd]) => cmd === 'save_config')).toBe(false);
     expect(w.findAll('.tabs button').map((b) => b.text())).toEqual(['Jouer', 'Historique', 'Programme', 'Réglages', 'À propos']);
     expect(w.find('.cfg-settings .setting').text()).toContain('Langue');
-    expect(select(w).find('option').text()).toBe('Langue du système');
+    expect(choices(w)[0].text()).toBe('Langue du système');
+    expect(chosen(w)).toBe('Français');
     expect(document.documentElement.lang).toBe('fr');
     await w.findAll('.tabs button')[2].trigger('click');
     expect(shownGame(w)).toBe('Elden Ring DLC');
@@ -567,13 +580,13 @@ describe('language', () => {
     expect(w.find('.cfg-actions .primary').text()).toBe('Enregistrer');
   });
 
-  it('shows the error and goes back to the saved setting when the backend refuses', async () => {
+  it('shows the error and keeps the saved setting when the backend refuses', async () => {
     setup({ set_language: rejection('invalid_language', { value: 'fr' }) });
     const w = await mountSettings();
-    await select(w).setValue('fr');
+    await choose(w, 2);
     await flushPromises();
     expect(w.find('.banner.error').text()).toBe('Unknown language: fr.');
-    expect(select(w).element.value).toBe('system');
+    expect(chosen(w)).toBe('System language');
     expect(w.findAll('.tabs button')[0].text()).toBe('Play');
   });
 });

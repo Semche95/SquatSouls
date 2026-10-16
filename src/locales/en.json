@@ -138,6 +138,7 @@
     "save": "Save",
     "discard": "Reset the changes",
     "noChanges": "No pending changes.",
+    "unsaved": "Unsaved changes",
     "saved": "Configuration saved.",
     "copied": "Copied to the clipboard, ready to share.",
     "games": {
@@ -211,9 +212,9 @@
       "minutes": "Minutes"
     },
     "settings": {
+      "general": "General",
       "language": "Language",
       "systemLanguage": "System language",
-      "intensity": "Intensity",
       "rememberIntensity": "Remember the intensity between launches",
       "rememberIntensityHint": "Otherwise, each launch starts at Normal.",
       "tray": "Notification area",
@@ -230,14 +231,12 @@
       "foundIgnored": "Game detected: {name} (ignored).",
       "blocked": "Steam game detected, but the Steam Store is rate-limiting requests: unknown games will not be offered for up to 24 h.",
       "unnamed": "Steam game detected, name not known yet.",
-      "ignored": "Ignored games",
+      "ignored": "Ignored games ({n})",
       "unignore": "Remove",
-      "soundTitle": "Sound",
       "sound": "Play sounds",
       "soundHint": "At the start and end of the timer, and at the end of the recovery.",
       "timer": "Timer",
       "timerAutoDone": "Mark the exercise done when the timer ends",
-      "timerPrep": "Countdown before the timer (s)",
       "timerHint": "Offered in Play for the exercises timed in Program."
     }
   },
@@ -252,7 +251,11 @@
     "draws": "exercises required",
     "limit": "limit per session",
     "jokers": "jokers earned",
-    "timerPrep": "Countdown before the timer"
+    "timerPrep": "Countdown before the timer",
+    "secondsUnit": "s",
+    "decrease": "Less",
+    "increase": "More",
+    "atZero": "Already at 0"
   },
   "share": {
     "text": "Shared text",

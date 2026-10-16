@@ -3,26 +3,33 @@ import { computed } from 'vue';
 import { byName } from '../configDraft.js';
 import { languageSetting, setLanguage, t } from '../i18n.js';
 import { vReveal } from '../reveal.js';
-import { vSelect } from '../select.js';
 import { useApi } from '../composables/useApi.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSteam } from '../composables/useSteam.js';
 import CountInput from './CountInput.vue';
+import DisabledTip from './DisabledTip.vue';
 
 const { call } = useApi();
 const { config, draft } = useConfig();
 const { detected, storeBlocked, addGame, unignore } = useSteam();
 
-// Saved and applied right away, outside the draft. Refused, the list goes back to the saved setting.
-async function changeLanguage({ target }) {
-  try {
-    const { setting, language } = await call('set_language', { setting: target.value });
-    languageSetting.value = setting;
-    await setLanguage(language);
-  } catch {
-    target.value = languageSetting.value;
-  }
+const LANGUAGES = [
+  { value: 'system', label: () => t('config.settings.systemLanguage') },
+  { value: 'en', label: () => 'English' },
+  { value: 'fr', label: () => 'Français' },
+];
+
+// Saved and applied right away, outside the draft. Refused, the saved setting stays chosen.
+async function changeLanguage(value) {
+  const { setting, language } = await call('set_language', { setting: value }).catch(() => ({}));
+  if (!setting) return;
+  languageSetting.value = setting;
+  await setLanguage(language);
 }
+
+// Countdown buttons: an invalid field counts as 0.
+const prep = computed(() => (Number.isInteger(draft.value.timerPrep) ? draft.value.timerPrep : 0));
+const stepPrep = (delta) => (draft.value.timerPrep = Math.max(0, prep.value + delta));
 
 // Status of the saved detection, to see it works even without a banner in Jouer:
 // text and color of its badge.
@@ -36,96 +43,113 @@ const status = computed(() => {
 
 <template>
   <div class="cfg-settings">
-    <section class="group setting">
-      <div class="check">
-        <label for="language">{{ t('config.settings.language') }}</label>
-        <select v-select id="language" :value="languageSetting" @change="changeLanguage">
-          <option value="system">{{ t('config.settings.systemLanguage') }}</option>
-          <option value="en">English</option>
-          <option value="fr">Français</option>
-        </select>
+    <section class="setting">
+      <h2 class="setting-title">{{ t('config.settings.general') }}</h2>
+      <div class="setting-card">
+        <div class="setting-row check">
+          <span id="language">{{ t('config.settings.language') }}</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="language">
+            <button
+              v-for="l in LANGUAGES"
+              :key="l.value"
+              role="radio"
+              :aria-checked="languageSetting === l.value"
+              :class="{ active: languageSetting === l.value }"
+              @click="changeLanguage(l.value)"
+            >
+              {{ l.label() }}
+            </button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <label class="check">
+            {{ t('config.settings.sound') }}
+            <input v-model="draft.sound" type="checkbox" />
+          </label>
+          <p class="hint">{{ t('config.settings.soundHint') }}</p>
+        </div>
+        <div class="setting-row">
+          <label class="check">
+            {{ t('config.settings.rememberIntensity') }}
+            <input v-model="draft.rememberIntensity" type="checkbox" />
+          </label>
+          <p class="hint">{{ t('config.settings.rememberIntensityHint') }}</p>
+        </div>
       </div>
     </section>
-    <section class="group setting">
-      <h2 class="group-title">{{ t('config.settings.soundTitle') }}</h2>
-      <div>
-        <label class="check">
-          {{ t('config.settings.sound') }}
-          <input v-model="draft.sound" type="checkbox" />
-        </label>
-        <p class="hint">{{ t('config.settings.soundHint') }}</p>
+    <section class="setting">
+      <h2 class="setting-title">{{ t('config.settings.timer') }}</h2>
+      <div class="setting-card">
+        <div class="setting-row">
+          <label class="check">
+            {{ t('config.settings.timerAutoDone') }}
+            <input v-model="draft.timerAutoDone" type="checkbox" />
+          </label>
+          <p class="hint">{{ t('config.settings.timerHint') }}</p>
+        </div>
+        <div class="setting-row check">
+          <label for="timer-prep">{{ t('fields.timerPrep') }}</label>
+          <span class="stepper">
+            <DisabledTip :tip="prep > 0 ? '' : t('fields.atZero')">
+              <button :aria-label="t('fields.decrease')" :disabled="prep <= 0" @click="stepPrep(-1)">−</button>
+            </DisabledTip>
+            <CountInput id="timer-prep" v-model="draft.timerPrep" />
+            <span class="unit">{{ t('fields.secondsUnit') }}</span>
+            <button :aria-label="t('fields.increase')" @click="stepPrep(1)">+</button>
+          </span>
+        </div>
       </div>
     </section>
-    <section class="group setting">
-      <h2 class="group-title">{{ t('config.settings.intensity') }}</h2>
-      <div>
-        <label class="check">
-          {{ t('config.settings.rememberIntensity') }}
-          <input v-model="draft.rememberIntensity" type="checkbox" />
-        </label>
-        <p class="hint">{{ t('config.settings.rememberIntensityHint') }}</p>
+    <section v-reveal="draft.tray" class="setting">
+      <h2 class="setting-title">{{ t('config.settings.tray') }}</h2>
+      <div class="setting-card">
+        <div class="setting-row">
+          <label class="check">
+            {{ t('config.settings.showIcon') }}
+            <input v-model="draft.tray" type="checkbox" />
+          </label>
+          <p class="hint">{{ t('config.settings.trayHint') }}</p>
+        </div>
+        <template v-if="draft.tray">
+          <label class="setting-row nested check">
+            {{ t('config.settings.closeToTray') }}
+            <input v-model="draft.closeToTray" type="checkbox" />
+          </label>
+          <label class="setting-row nested check">
+            {{ t('config.settings.startHidden') }}
+            <input v-model="draft.startHidden" type="checkbox" />
+          </label>
+        </template>
       </div>
     </section>
-    <section class="group setting">
-      <h2 class="group-title">{{ t('config.settings.timer') }}</h2>
-      <p class="hint">{{ t('config.settings.timerHint') }}</p>
-      <label class="check">
-        {{ t('config.settings.timerAutoDone') }}
-        <input v-model="draft.timerAutoDone" type="checkbox" />
-      </label>
-      <label class="check">
-        {{ t('config.settings.timerPrep') }}
-        <CountInput v-model="draft.timerPrep" />
-      </label>
-    </section>
-    <section v-reveal="draft.tray" class="group setting">
-      <h2 class="group-title">{{ t('config.settings.tray') }}</h2>
-      <div>
-        <label class="check">
-          {{ t('config.settings.showIcon') }}
-          <input v-model="draft.tray" type="checkbox" />
-        </label>
-        <p class="hint">{{ t('config.settings.trayHint') }}</p>
-      </div>
-      <div v-if="draft.tray" class="nested">
-        <label class="check">
-          {{ t('config.settings.closeToTray') }}
-          <input v-model="draft.closeToTray" type="checkbox" />
-        </label>
-        <label class="check">
-          {{ t('config.settings.startHidden') }}
-          <input v-model="draft.startHidden" type="checkbox" />
-        </label>
-      </div>
-    </section>
-    <section v-reveal="draft.steamDetection" class="group setting">
-      <h2 class="group-title">{{ t('config.settings.steam') }}</h2>
-      <div>
-        <label class="check">
-          {{ t('config.settings.detect') }}
-          <input v-model="draft.steamDetection" type="checkbox" />
-        </label>
-        <p class="hint">{{ t('config.settings.detectHint') }}</p>
-      </div>
-      <div v-if="draft.steamDetection" class="nested">
-        <label class="check">
+    <section v-reveal="draft.steamDetection" class="setting">
+      <h2 class="setting-title">{{ t('config.settings.steam') }}</h2>
+      <div class="setting-card">
+        <div class="setting-row">
+          <label class="check">
+            {{ t('config.settings.detect') }}
+            <input v-model="draft.steamDetection" type="checkbox" />
+          </label>
+          <p class="hint">{{ t('config.settings.detectHint') }}</p>
+        </div>
+        <label v-if="draft.steamDetection" class="setting-row nested check">
           {{ t('config.settings.notify') }}
           <input v-model="draft.steamNotify" type="checkbox" />
         </label>
+        <details v-if="config.ignoredGames.length" class="ignored-games">
+          <summary class="setting-row setting-sub">{{ t('config.settings.ignored', { n: config.ignoredGames.length }) }}</summary>
+          <ul class="ignored">
+            <li v-for="g in byName(config.ignoredGames)" :key="g.appId" class="setting-row nested">
+              <span class="ignored-name">{{ g.name }}</span>
+              <span class="row">
+                <button class="ghost" @click="addGame(g)">{{ t('common.add') }}</button>
+                <button class="ghost" @click="unignore(g.appId)">{{ t('config.settings.unignore') }}</button>
+              </span>
+            </li>
+          </ul>
+        </details>
+        <p v-if="config.steamDetection" class="status" :class="status.kind">{{ status.text }}</p>
       </div>
-      <p v-if="config.steamDetection" class="status" :class="status.kind">{{ status.text }}</p>
-      <template v-if="config.ignoredGames.length">
-        <h3 class="group-title sub">{{ t('config.settings.ignored') }}</h3>
-        <ul class="ignored">
-          <li v-for="g in byName(config.ignoredGames)" :key="g.appId">
-            {{ g.name }}
-            <span class="row">
-              <button class="ghost" @click="addGame(g)">{{ t('common.add') }}</button>
-              <button class="ghost" @click="unignore(g.appId)">{{ t('config.settings.unignore') }}</button>
-            </span>
-          </li>
-        </ul>
-      </template>
     </section>
   </div>
 </template>

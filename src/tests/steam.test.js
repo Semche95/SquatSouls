@@ -161,8 +161,11 @@ describe('Steam game detection', () => {
 
     await openSettings(w);
     expect(status(w)).toBe('Game detected: Hollow Knight (ignored).');
+    const folded = w.find('.ignored-games');
+    expect(folded.element.open).toBe(false);
+    expect(folded.find('summary').text()).toBe('Ignored games (1)');
     const ignored = () => w.findAll('.ignored li');
-    expect(ignored().map((li) => li.text())).toEqual(['Hollow Knight AddRemove']);
+    expect(ignored().map((li) => li.find('.ignored-name').text())).toEqual(['Hollow Knight']);
     await ignored()[0].findAll('button')[1].trigger('click');
     await flushPromises();
     expect(lastSaved().ignoredGames).toEqual([]);

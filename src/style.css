@@ -63,8 +63,11 @@ button:active {
   outline: none;
   transition: border-color 0.12s;
 }
-/* Chosen option cut if it is too long. */
-.ts-control > .item {
+/* Texts cut on one line when too long: chosen option, exercise name and range, ignored game. */
+.ts-control > .item,
+.cfg-exercise-head strong,
+.cfg-range > .muted,
+.ignored-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -429,8 +432,7 @@ kbd.dark {
 }
 /* Actions pushed to the right of the text. */
 .banner.steam .row,
-.banner.update .row,
-.ignored .row {
+.banner.update .row {
   margin-left: auto;
 }
 /* Floating confirmation, to the right of the configuration sub-tabs, without shifting or hiding anything. */
@@ -930,19 +932,67 @@ kbd.dark {
   border-bottom-color: var(--gold);
   color: var(--text);
 }
-/* Settings: one card per topic, each option is a label followed by a switch on the right,
-   its secondary options indented under a line. */
+/* Settings: one card per topic under its gold title, one row per option (label, switch on the right),
+   its secondary options indented behind a gold line. */
 .cfg-settings {
-  max-width: 640px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 26px;
 }
-.config .group.setting {
-  gap: 12px;
-  padding: 16px 18px;
+.setting-title {
+  margin: 0 0 8px 4px;
+  color: var(--gold);
+}
+.setting-card {
   background: var(--panel);
   border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.setting-row {
+  margin: 0;
+  padding: 14px 18px;
+}
+.setting-card > * + *,
+.ignored li + li {
+  border-top: 1px solid var(--line);
+}
+.setting-row.nested {
+  position: relative;
+  padding: 10px 18px 10px 34px;
+  background: rgba(0, 0, 0, 0.14);
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+.setting-row.nested::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 18px;
+  width: 2px;
+  background: var(--gold-soft);
+}
+/* Ignored games, folded by default behind their title. */
+.setting-sub {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-block: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+}
+.setting-sub::-webkit-details-marker {
+  display: none;
+}
+.setting-sub:hover {
+  background: var(--gold-soft);
+}
+.ignored-games[open] > .setting-sub {
+  border-bottom: 1px solid var(--line);
 }
 .check {
   display: flex;
@@ -992,11 +1042,6 @@ label.check {
   outline: 2px solid var(--gold-soft);
   outline-offset: 2px;
 }
-/* Language list. */
-.config .check .ts-wrapper {
-  flex: none;
-  width: 12em;
-}
 /* In an exercise card, the switch follows its text rather than the card's edge. */
 .cfg-exercise .check {
   justify-content: flex-start;
@@ -1007,28 +1052,20 @@ label.check {
   font-size: 0.85rem;
   color: var(--muted);
 }
-.setting .nested {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 12px 0 0 16px;
-  border-top: 1px solid var(--line);
-  font-size: 0.95rem;
-  color: var(--muted);
-}
-/* Steam detection status: grey, green (named game) or orange (Steam Store blocked) badge. */
+/* Steam detection status, at the foot of its card: grey, green (named game) or orange (Steam Store blocked) dot,
+   the same as the one of the unsaved changes. */
 .status {
   display: flex;
   align-items: baseline;
   gap: 8px;
   margin: 0;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 10px 18px;
   background: var(--panel-2);
   font-size: 0.9rem;
   color: var(--muted);
 }
-.status::before {
+.status::before,
+.unsaved::before {
   content: '';
   flex: none;
   width: 8px;
@@ -1042,24 +1079,29 @@ label.check {
 .status.blocked::before {
   background: var(--ember);
 }
-.group-title.sub {
-  font-size: 1rem;
-  color: var(--muted);
-}
+/* Ignored games: one row per game, its line included, scrolling past 10 rows. */
 .ignored {
+  --ignored-row: 46px;
   list-style: none;
   margin: 0;
   padding: 0;
+  max-height: calc(10 * var(--ignored-row));
+  overflow-y: auto;
 }
 .ignored li {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--line);
+  height: var(--ignored-row);
+  padding-block: 0;
 }
-.ignored li:last-child {
-  border-bottom: none;
+/* Fixed row height: a long name is cut on one line. */
+.ignored-name {
+  flex: 1;
+}
+.ignored button {
+  padding: 3px 10px;
+  font-size: 0.85rem;
 }
 .cfg-recovery {
   align-self: flex-start;
@@ -1070,9 +1112,38 @@ label.check {
   width: 5.5em;
 }
 
-.setting .count-input {
+/* Countdown: the field between its - and + buttons, the unit inside the frame. */
+.stepper {
+  display: flex;
+  align-items: center;
   flex: none;
-  width: 5.5em;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.stepper button {
+  width: 32px;
+  padding: 5px 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+}
+.stepper button:hover:not(:disabled) {
+  background: var(--gold-soft);
+  color: var(--text);
+}
+.stepper .count-input {
+  width: calc(2ch + 12px);
+  padding: 5px 0 5px 12px;
+  border: none;
+  border-left: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+  text-align: right;
+}
+.stepper .unit {
+  padding: 0 8px 0 3px;
+  border-right: 1px solid var(--line);
+  color: var(--muted);
 }
 /* Tooltip (floating-vue) in inverted colors, so that it does not pass for a button, with a red border for an error. */
 .v-popper--theme-tooltip .v-popper__inner {
@@ -1170,7 +1241,8 @@ label.check {
   gap: 10px;
 }
 /* Chevron centered on its own box to stay aligned with the text once rotated. */
-.cfg-event-head::before {
+.cfg-event-head::before,
+.setting-sub::before {
   content: "▸";
   display: inline-flex;
   justify-content: center;
@@ -1179,7 +1251,8 @@ label.check {
   color: var(--gold);
   transition: transform 0.12s;
 }
-.cfg-event:is([open], .open) .cfg-event-head::before {
+.cfg-event:is([open], .open) .cfg-event-head::before,
+.ignored-games[open] > .setting-sub::before {
   transform: rotate(90deg);
 }
 .cfg-event-head .muted {
@@ -1213,9 +1286,6 @@ label.check {
 .cfg-exercise-head strong {
   min-width: 0;
   margin-right: auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .cfg-exercise-head .cfg-event-head .muted {
   margin-left: 0;
@@ -1249,9 +1319,6 @@ label.check {
 }
 .cfg-range > .muted {
   width: 9em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .cfg-params {
   display: grid;
@@ -1270,12 +1337,24 @@ label.check {
 }
 /* Save bar of the whole tab, set apart from the sections above it, always at the bottom of the window. */
 .cfg-actions {
+  align-items: center;
   position: sticky;
   bottom: 0;
   margin-top: auto;
   padding: 14px 0 24px;
   border-top: 1px solid var(--line);
   background: var(--bg);
+}
+.unsaved {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  font-size: 0.9rem;
+  color: var(--ember);
+}
+.unsaved::before {
+  background: var(--ember);
 }
 code {
   font-family: "JetBrains Mono", ui-monospace, monospace;

@@ -51,6 +51,7 @@ function discardChanges() {
       <DisabledTip :tip="dirty ? '' : t('config.noChanges')">
         <button class="ghost" :disabled="!dirty" @click="discardChanges">{{ t('config.discard') }}</button>
       </DisabledTip>
+      <span v-if="dirty" class="unsaved">{{ t('config.unsaved') }}</span>
     </div>
   </main>
 </template>

@@ -64,6 +64,6 @@ describe('reveal', () => {
     expect(scrolled()).toEqual([]);
     const steam = w.findAll('section.setting').find((s) => s.text().includes('Steam'));
     await steam.find('input[type="checkbox"]').setValue(true);
-    expect(scrolled()).toEqual(['group setting']);
+    expect(scrolled()).toEqual(['setting']);
   });
 });
