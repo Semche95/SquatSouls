@@ -8,6 +8,22 @@ body {
   line-height: 1.55;
 }
 
+/* Set by language.js until the texts of a language other than English are in. */
+.translating body {
+  visibility: hidden;
+}
+
+/* Without JavaScript, the screenshots have no src: their English copy in noscript takes their place. */
+@media (scripting: none) {
+  img.shot:not([src]) {
+    display: none;
+  }
+
+  noscript {
+    display: contents;
+  }
+}
+
 a {
   color: var(--gold);
 }

@@ -17,7 +17,7 @@ The business rules are described in `docs/BEHAVIOR.md`, which is the reference.
 - `src-tauri/migrations/`: SQL schema migrations, one per `V<n>__<name>.sql` file (rules in its `README.md`).
 - `src/tests/`: interface tests (Vitest), one file per tab or module; `app.js` shared data and mounting, `setup.js` Tauri backend mock.
 - `src-tauri/tests/`: backend tests (Cargo integration tests on the public API of `app`), one file per module.
-- `site/`: presentation site published on GitHub Pages by `.github/workflows/site.yml`, which adds `src/theme.css` (palette shared with the app), `src/slogans.js`, the icon and `docs/screenshots/`. Its texts are in `site/locales/en.json` and `site/locales/fr.json`.
+- `site/`: presentation site published on GitHub Pages by `.github/workflows/site.yml`, which adds `src/theme.css` (palette shared with the app), `src/slogans.js`, the icon and `docs/screenshots/`. Its texts are in `site/locales/en.json` and `site/locales/fr.json`; the workflow writes the English ones into `index.html` with `scripts/site-english.js`, so the page reads before its JavaScript runs.
 
 ## Commands
 

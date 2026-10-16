@@ -1,8 +1,5 @@
 import { pickSlogan } from './slogans.js';
 
-const LANGUAGE_KEY = 'squatsouls.siteLanguage';
-const LANGUAGES = ['en', 'fr'];
-
 // System of the visitor, matching a data-os card, or null on a phone, a tablet or an unknown system.
 function detectOs() {
   const platform = (navigator.userAgentData?.platform || navigator.platform || '').toLowerCase();
@@ -18,6 +15,12 @@ const os = detectOs();
 const card = os && document.querySelector(`[data-os="${os}"]`);
 let shownTexts = {};
 
+function showScreenshots(language) {
+  document.querySelectorAll('[data-shot]').forEach((el) => {
+    el.src = `screenshots/${language}/${el.dataset.shot}`;
+  });
+}
+
 function setLanguage(language, texts) {
   document.documentElement.lang = language;
   shownTexts = texts;
@@ -27,9 +30,7 @@ function setLanguage(language, texts) {
   document.querySelectorAll('[data-alt]').forEach((el) => {
     el.alt = texts[el.dataset.alt];
   });
-  document.querySelectorAll('[data-shot]').forEach((el) => {
-    el.src = `screenshots/${language}/${el.dataset.shot}`;
-  });
+  showScreenshots(language);
   document.getElementById('cta').textContent = card
     ? texts.cta.replace('{os}', card.querySelector('h3').textContent)
     : texts.ctaAny;
@@ -86,5 +87,10 @@ lightbox.addEventListener('keydown', (event) => {
   if (event.key === 'ArrowLeft') showShot(shown - 1);
 });
 
-const browserLanguage = navigator.language.slice(0, 2);
-loadLanguage(localStorage.getItem(LANGUAGE_KEY) ?? (LANGUAGES.includes(browserLanguage) ? browserLanguage : 'en'));
+// LANGUAGE_KEY and the language come from language.js. The screenshots start loading without waiting for the texts;
+// if these cannot be loaded, the page shows up again in English, as written.
+const language = document.documentElement.dataset.language;
+showScreenshots(language);
+loadLanguage(language)
+  .catch(() => showScreenshots('en'))
+  .finally(() => document.documentElement.classList.remove('translating'));

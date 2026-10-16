@@ -12,6 +12,7 @@ on:
       - src/theme.css
       - src/slogans.js
       - src-tauri/icons/128x128.png
+      - scripts/site-english.js
       - .github/workflows/site.yml
 
 permissions:
@@ -39,6 +40,7 @@ jobs:
           cp src/theme.css src/slogans.js _site/
           cp src-tauri/icons/128x128.png _site/icon.png
           cp -r docs/screenshots _site/
+          node scripts/site-english.js _site
 
       - uses: actions/upload-pages-artifact@v4
         with:
