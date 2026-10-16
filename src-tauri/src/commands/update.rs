@@ -1,13 +1,13 @@
-//! Downloaded update: its version and its installation.
+//! Automatic update: where it stands and its installation.
 
 use crate::app::AppError;
-use crate::update::{self, PendingUpdate};
+use crate::update::{self, PendingUpdate, UpdateView};
 use tauri::{AppHandle, State};
 
-/// Version of the downloaded update waiting to be installed, if any.
+/// Update found, being downloaded or waiting to be installed, if any.
 #[tauri::command]
-pub(crate) fn get_update(pending: State<'_, PendingUpdate>) -> Option<String> {
-    pending.version()
+pub(crate) fn get_update(pending: State<'_, PendingUpdate>) -> Option<UpdateView> {
+    pending.view()
 }
 
 /// Installs the downloaded update right away and restarts the app.

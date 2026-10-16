@@ -235,6 +235,8 @@
       "unignore": "Retirer",
       "sound": "Jouer les sons",
       "soundHint": "Au départ et à la fin du minuteur, et à la fin de la récupération.",
+      "updateCheck": "Rechercher les mises à jour",
+      "updateCheckHint": "Cherche une nouvelle version au lancement et la télécharge en arrière-plan.",
       "timer": "Minuteur",
       "timerAutoDone": "Marquer l'exercice fait à la fin du minuteur",
       "timerHint": "Proposé dans Jouer pour les exercices chronométrés dans Programme."
@@ -315,7 +317,12 @@
     "start": "C'est parti"
   },
   "update": {
-    "ready": "La version {version} sera installée en quittant.",
+    "available": "La version {version} est disponible",
+    "downloadingHint": "Téléchargement en arrière-plan…",
+    "ready": "La version {version} est prête",
+    "readyHint": "Elle sera installée en quittant.",
+    "manualHint": "Télécharge le nouveau paquet pour l'installer.",
+    "download": "Télécharger",
     "restart": "Redémarrer maintenant",
     "restartLocked": "Disponible une fois la séance terminée"
   },

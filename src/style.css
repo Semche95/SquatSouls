@@ -418,11 +418,6 @@ kbd.dark {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-.banner.update {
-  margin-bottom: 12px;
-}
-.banner.steam {
   border-color: var(--gold);
   border-left-width: 4px;
   background: var(--gold-soft);
@@ -434,6 +429,76 @@ kbd.dark {
 .banner.steam .row,
 .banner.update .row {
   margin-left: auto;
+}
+/* Update: its progress bar runs along the bottom edge, which it clips. */
+.banner.update {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 12px;
+  animation: update-in 0.35s ease-out;
+}
+@keyframes update-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.update-icon {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 6px;
+  border-radius: 50%;
+  background: var(--gold-soft);
+  border: 1px solid var(--gold);
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.update-text {
+  display: grid;
+  gap: 2px;
+}
+.update-text strong {
+  color: var(--gold);
+}
+.update-text span {
+  color: var(--muted);
+}
+.update-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--gold-soft);
+}
+.update-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  transition: width 0.3s ease-out;
+}
+/* Unknown size: a short segment sweeps along the bar. */
+.update-progress.unknown > span {
+  width: 30%;
+  animation: update-sweep 1.4s ease-in-out infinite;
+}
+@keyframes update-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(340%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .banner.update,
+  .update-progress.unknown > span {
+    animation: none;
+  }
 }
 /* Floating confirmation, to the right of the configuration sub-tabs, without shifting or hiding anything. */
 .config {

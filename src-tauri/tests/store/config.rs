@@ -57,6 +57,16 @@ fn timed_exercises_on_each_side_sound_and_timer_settings_are_saved() {
 }
 
 #[test]
+fn update_check_is_on_by_default_and_saved() {
+    let mut s = store();
+    let mut cfg = s.config().unwrap();
+    assert!(cfg.update_check, "on in a new database");
+    cfg.update_check = false;
+    s.save_config(&cfg).unwrap();
+    assert_eq!(s.config().unwrap(), cfg);
+}
+
+#[test]
 fn steam_tray_and_intensity_settings_are_saved() {
     let mut s = store();
     let mut cfg = default_config(Language::Fr);

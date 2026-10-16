@@ -16,6 +16,7 @@ const CLOSE_TO_TRAY: &str = "close_to_tray";
 const START_HIDDEN: &str = "start_hidden";
 const REMEMBER_INTENSITY: &str = "remember_intensity";
 const SOUND: &str = "sound";
+const UPDATE_CHECK: &str = "update_check";
 const TIMER_AUTO_DONE: &str = "timer_auto_done";
 const TIMER_PREP: &str = "timer_prep";
 
@@ -91,6 +92,7 @@ impl Store {
             sound: self.parsed_setting(SOUND, true)?,
             timer_auto_done: self.parsed_setting(TIMER_AUTO_DONE, true)?,
             timer_prep: self.parsed_setting(TIMER_PREP, DEFAULT_TIMER_PREP)?,
+            update_check: self.parsed_setting(UPDATE_CHECK, true)?,
             ignored_games,
             exercises,
             games,
@@ -143,6 +145,11 @@ impl Store {
                 TIMER_PREP,
                 old.timer_prep.to_string(),
                 config.timer_prep.to_string(),
+            ),
+            (
+                UPDATE_CHECK,
+                old.update_check.to_string(),
+                config.update_check.to_string(),
             ),
         ];
         for (key, old, new) in settings {

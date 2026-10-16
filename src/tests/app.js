@@ -16,6 +16,7 @@ export const config = {
   sound: true,
   timerAutoDone: true,
   timerPrep: 3,
+  updateCheck: true,
   ignoredGames: [],
   exercises: [{ id: 'squat', name: 'Squats', enabled: true, unit: 'reps', min: 10, max: 15 }],
   games: [

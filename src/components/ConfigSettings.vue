@@ -63,6 +63,13 @@ const status = computed(() => {
         </div>
         <div class="setting-row">
           <label class="check">
+            {{ t('config.settings.updateCheck') }}
+            <input v-model="draft.updateCheck" type="checkbox" />
+          </label>
+          <p class="hint">{{ t('config.settings.updateCheckHint') }}</p>
+        </div>
+        <div class="setting-row">
+          <label class="check">
             {{ t('config.settings.sound') }}
             <input v-model="draft.sound" type="checkbox" />
           </label>

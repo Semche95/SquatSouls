@@ -235,6 +235,8 @@
       "unignore": "Remove",
       "sound": "Play sounds",
       "soundHint": "At the start and end of the timer, and at the end of the recovery.",
+      "updateCheck": "Check for updates",
+      "updateCheckHint": "Looks for a new version at launch and downloads it in the background.",
       "timer": "Timer",
       "timerAutoDone": "Mark the exercise done when the timer ends",
       "timerHint": "Offered in Play for the exercises timed in Program."
@@ -315,7 +317,12 @@
     "start": "Let's go"
   },
   "update": {
-    "ready": "Version {version} will be installed when you quit.",
+    "available": "Version {version} is available",
+    "downloadingHint": "Downloading in the background…",
+    "ready": "Version {version} is ready",
+    "readyHint": "It will be installed when you quit.",
+    "manualHint": "Download the new package to install it.",
+    "download": "Download",
     "restart": "Restart now",
     "restartLocked": "Available once the session is over"
   },

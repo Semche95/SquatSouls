@@ -2,7 +2,7 @@
 
 use crate::app::{AppError, Config};
 use crate::state::{lock, ConfigView, Shared};
-use crate::tray;
+use crate::{tray, update};
 use tauri::AppHandle;
 
 #[tauri::command]
@@ -18,7 +18,12 @@ pub(crate) fn save_config(
 ) -> Result<ConfigView, AppError> {
     config.validate()?;
     let mut s = lock(&state)?;
+    let update_check = config.update_check;
+    let update_changed = update_check != s.config.update_check;
     let view = s.store_config(config)?;
+    if update_changed {
+        update::apply(&app, update_check);
+    }
     tray::apply(&app, &s).map_err(|e| {
         AppError::logged(
             "tray_unavailable",

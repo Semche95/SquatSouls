@@ -1,22 +1,30 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
+import { openUrl } from '@tauri-apps/plugin-opener';
 import { t } from '../i18n.js';
+import { releaseUrl } from '../repository.js';
 import { useApi } from '../composables/useApi.js';
-import { useSession } from '../composables/useSession.js';
 import DisabledTip from './DisabledTip.vue';
 
-// Version downloaded in the background, installed on quitting.
-const version = ref(null);
+// During a session, the app is not restarted.
+defineProps({ locked: Boolean });
+
+// Update announced as soon as found, downloaded in the background and installed on quitting, or, for the
+// packages that cannot install it, downloaded by the user. Shared with the parent that binds it.
+const update = defineModel({ type: Object, default: null });
 const { call } = useApi();
-const { session } = useSession();
+
+const stage = computed(() => update.value?.stage);
+// Unknown size: the bar sweeps instead of filling.
+const width = computed(() => (update.value?.progress == null ? null : `${update.value.progress * 100}%`));
 
 let unlisten = null;
 onMounted(async () => {
-  unlisten = await listen('update-ready', (e) => (version.value = e.payload));
-  // Downloaded before the interface listened.
-  version.value ??= await invoke('get_update').catch(() => null);
+  unlisten = await listen('update-changed', (e) => (update.value = e.payload));
+  // Found before the interface listened.
+  update.value ??= await invoke('get_update').catch(() => null);
 });
 onBeforeUnmount(() => unlisten?.());
 
@@ -26,12 +34,23 @@ function restart() {
 </script>
 
 <template>
-  <p v-if="version" class="banner info update">
-    <span>{{ t('update.ready', { version }) }}</span>
-    <span class="row">
-      <DisabledTip :tip="session.startedAt ? t('update.restartLocked') : ''">
-        <button class="primary" :disabled="!!session.startedAt" @click="restart">{{ t('update.restart') }}</button>
+  <div v-if="update" class="banner update">
+    <svg class="update-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path v-if="stage === 'ready'" d="M5 12.5l4.5 4.5L19 7.5" />
+      <path v-else d="M12 4v12m-5-5l5 5 5-5M5 20h14" />
+    </svg>
+    <div class="update-text">
+      <strong>{{ t(stage === 'ready' ? 'update.ready' : 'update.available', { version: update.version }) }}</strong>
+      <span>{{ t(`update.${stage}Hint`) }}</span>
+    </div>
+    <span v-if="stage === 'ready'" class="row">
+      <DisabledTip :tip="locked ? t('update.restartLocked') : ''">
+        <button class="primary" :disabled="locked" @click="restart">{{ t('update.restart') }}</button>
       </DisabledTip>
     </span>
-  </p>
+    <span v-else-if="stage === 'manual'" class="row">
+      <button class="primary" @click="openUrl(releaseUrl)">{{ t('update.download') }}</button>
+    </span>
+    <span v-else class="update-progress" :class="{ unknown: !width }"><span :style="{ width }" /></span>
+  </div>
 </template>

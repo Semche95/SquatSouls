@@ -1,65 +1,159 @@
-//! Automatic update: checked and downloaded in the background at launch, installed on quitting or on request.
+//! Automatic update: checked at launch when enabled, announced as soon as found, downloaded in the
+//! background, installed on quitting or on request. The `.deb` and `.rpm` packages are only told.
 
 use crate::app::AppError;
-use std::sync::Mutex;
+use serde::Serialize;
+use std::sync::{Mutex, MutexGuard};
+use tauri::async_runtime::JoinHandle;
 use tauri::utils::config::BundleType;
 use tauri::utils::platform::bundle_type;
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_updater::{Update, UpdaterExt};
 
-/// Event telling the interface that an update is downloaded, with its version.
-const UPDATE_READY: &str = "update-ready";
+/// Event telling the interface where the update stands, with its `UpdateView` (`null` once dropped).
+const UPDATE_CHANGED: &str = "update-changed";
 
-/// Downloaded update, waiting to be installed.
+#[derive(Clone, Copy, Serialize)]
+#[serde(rename_all = "lowercase")]
+enum Stage {
+    Downloading,
+    Ready,
+    /// To be downloaded by the user, from the release page.
+    Manual,
+}
+
+/// Update as the interface shows it.
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct UpdateView {
+    version: String,
+    /// Share downloaded, from 0 to 1, unknown while the size is.
+    progress: Option<f64>,
+    stage: Stage,
+}
+
 #[derive(Default)]
-pub(crate) struct PendingUpdate(Mutex<Option<(Update, Vec<u8>)>>);
+struct Pending {
+    /// Bumped by each `apply`, so that a check dropped in the meantime changes nothing.
+    generation: u64,
+    check: Option<JoinHandle<()>>,
+    view: Option<UpdateView>,
+    downloaded: Option<(Update, Vec<u8>)>,
+}
+
+/// Update found, being downloaded or waiting to be installed.
+#[derive(Default)]
+pub(crate) struct PendingUpdate(Mutex<Pending>);
 
 impl PendingUpdate {
-    pub(crate) fn version(&self) -> Option<String> {
-        let pending = self.0.lock().ok()?;
-        pending.as_ref().map(|(update, _)| update.version.clone())
+    fn lock(&self) -> MutexGuard<'_, Pending> {
+        self.0.lock().unwrap_or_else(|e| e.into_inner())
     }
 
-    fn set(&self, update: Update, bytes: Vec<u8>) {
-        if let Ok(mut pending) = self.0.lock() {
-            *pending = Some((update, bytes));
-        }
+    pub(crate) fn view(&self) -> Option<UpdateView> {
+        self.lock().view.clone()
     }
 
     /// Taken out so that it is installed only once.
     fn take(&self) -> Option<(Update, Vec<u8>)> {
-        self.0.lock().ok()?.take()
+        self.lock().downloaded.take()
     }
 }
 
-/// The development build is never updated, nor the Linux packages other than the AppImage, which are
-/// updated by their package manager.
-fn updatable() -> bool {
-    !cfg!(debug_assertions)
-        && (!cfg!(target_os = "linux") || bundle_type() == Some(BundleType::AppImage))
+/// The Linux packages other than the AppImage would need the system password to be installed: the
+/// user installs them from the release page.
+fn installable() -> bool {
+    !cfg!(target_os = "linux") || bundle_type() == Some(BundleType::AppImage)
 }
 
-/// Looks for a newer version and downloads it. Offline or on failure, only a warning in the log.
-pub(crate) fn check(app: &AppHandle) {
-    if !updatable() {
+/// Enabled, looks for a newer version and downloads it; disabled, drops the check, the download and
+/// the downloaded update. Offline or on failure, only a warning in the log.
+/// The development build never looks for one.
+pub(crate) fn apply(app: &AppHandle, enabled: bool) {
+    if cfg!(debug_assertions) {
         return;
     }
-    let app = app.clone();
-    tauri::async_runtime::spawn(async move {
-        if let Err(e) = download(&app).await {
-            log::warn!("Update not downloaded: {e}");
-        }
-    });
+    let state = app.state::<PendingUpdate>();
+    let mut pending = state.lock();
+    if let Some(check) = pending.check.take() {
+        check.abort();
+    }
+    let generation = pending.generation + 1;
+    *pending = Pending {
+        generation,
+        ..Pending::default()
+    };
+    if enabled {
+        let app = app.clone();
+        pending.check = Some(tauri::async_runtime::spawn(async move {
+            if let Err(e) = download(&app, generation).await {
+                log::warn!("Update not downloaded: {e}");
+                set_view(&app, generation, None);
+            }
+        }));
+    } else {
+        drop(pending);
+        let _ = app.emit(UPDATE_CHANGED, None::<UpdateView>);
+    }
 }
 
-async fn download(app: &AppHandle) -> tauri_plugin_updater::Result<()> {
+/// Runs `change` and tells the interface, unless the check was dropped in the meantime.
+fn update_pending(app: &AppHandle, generation: u64, change: impl FnOnce(&mut Pending)) {
+    let state = app.state::<PendingUpdate>();
+    let mut pending = state.lock();
+    if pending.generation != generation {
+        return;
+    }
+    change(&mut pending);
+    let _ = app.emit(UPDATE_CHANGED, pending.view.clone());
+}
+
+fn set_view(app: &AppHandle, generation: u64, view: Option<UpdateView>) {
+    update_pending(app, generation, |pending| pending.view = view);
+}
+
+async fn download(app: &AppHandle, generation: u64) -> tauri_plugin_updater::Result<()> {
     let Some(update) = app.updater()?.check().await? else {
         return Ok(());
     };
-    let bytes = update.download(|_, _| {}, || {}).await?;
     let version = update.version.clone();
-    app.state::<PendingUpdate>().set(update, bytes);
-    let _ = app.emit(UPDATE_READY, version);
+    let view = |progress, stage| UpdateView {
+        version: version.clone(),
+        progress,
+        stage,
+    };
+    if !installable() {
+        set_view(app, generation, Some(view(None, Stage::Manual)));
+        return Ok(());
+    }
+    set_view(app, generation, Some(view(None, Stage::Downloading)));
+    let mut received = 0u64;
+    // Announced at each whole percent only, so that the interface is not flooded.
+    let mut percent = 0;
+    let bytes = update
+        .download(
+            |chunk, total| {
+                received += chunk as u64;
+                let Some(total) = total.filter(|&t| t > 0) else {
+                    return;
+                };
+                let now = (received * 100 / total).min(100);
+                if now != percent {
+                    percent = now;
+                    set_view(
+                        app,
+                        generation,
+                        Some(view(Some(now as f64 / 100.0), Stage::Downloading)),
+                    );
+                }
+            },
+            || {},
+        )
+        .await?;
+    update_pending(app, generation, |pending| {
+        pending.downloaded = Some((update, bytes));
+        pending.view = Some(view(Some(1.0), Stage::Ready));
+    });
     Ok(())
 }
 

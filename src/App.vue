@@ -77,7 +77,7 @@ onMounted(async () => {
     </header>
 
     <div class="content">
-      <UpdateBanner />
+      <UpdateBanner :locked="!!session.startedAt" />
       <p v-if="error" v-reveal class="banner error">{{ error }}</p>
       <p v-if="configError && !['program', 'settings'].includes(tab)" class="banner error">
         {{ configError }}

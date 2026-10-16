@@ -102,9 +102,10 @@ pub fn run() {
             if !(state.config.tray && state.config.start_hidden) {
                 tray::show_main(app.handle());
             }
+            let update_check = state.config.update_check;
             app.manage(Mutex::new(state));
             app.manage(PendingUpdate::default());
-            update::check(app.handle());
+            update::apply(app.handle(), update_check);
             Ok(())
         })
         .on_window_event(tray::on_window_event)

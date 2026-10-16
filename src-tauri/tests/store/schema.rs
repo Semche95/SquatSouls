@@ -40,6 +40,10 @@ fn renamed_settings_keep_their_value_once_migrated() {
     let cfg = Store::open(&path, LOCALE).unwrap().config().unwrap();
     std::fs::remove_file(&path).unwrap();
     assert!(!cfg.sound);
+    assert!(
+        cfg.update_check,
+        "on in a database saved before the setting"
+    );
     assert_eq!(cfg.recovery, 90);
     assert_eq!(cfg.exercises[0].recovery, Some(45));
 }
