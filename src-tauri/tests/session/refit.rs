@@ -1,0 +1,166 @@
+use super::*;
+use std::collections::HashSet;
+
+#[test]
+fn removed_game_is_detected() {
+    let mut cfg = default_config(Language::Fr);
+    let mut s = Session::default();
+    assert!(!s.game_removed(&cfg), "session not started yet");
+    s.draw(&cfg, "ds1", "mort", &mut rng()).unwrap();
+    assert!(!s.game_removed(&cfg));
+    cfg.games.retain(|g| g.id != "ds2");
+    assert!(!s.game_removed(&cfg), "another removed game does not count");
+    cfg.games.retain(|g| g.id != "ds1");
+    assert!(s.game_removed(&cfg));
+}
+
+#[test]
+fn a_saved_configuration_keeps_the_sets_to_do() {
+    let mut cfg = default_config(Language::Fr);
+    let mut s = Session::default();
+    let mut r = rng();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    event_mut(&mut cfg, "ds3", "boss").name = "Boss defeated".into();
+    cfg.recovery = 30;
+    s.apply_config(&cfg, &mut r);
+    let kept = pending(&s, boss.id).expect("the set remains to do");
+    assert_eq!(kept.items, boss.items, "same exercises, same numbers");
+    assert_eq!(kept.event_name, "Boss defeated");
+}
+
+#[test]
+fn changing_the_draws_adjusts_the_sets_to_do() {
+    let mut cfg = default_config(Language::Fr);
+    let mut s = Session::default();
+    let mut r = rng();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    event_mut(&mut cfg, "ds3", "boss").draws = 4;
+    s.apply_config(&cfg, &mut r);
+    let more = pending(&s, boss.id).unwrap();
+    assert_eq!(more.items.len(), 4);
+    assert_eq!(
+        more.items[..2],
+        boss.items[..],
+        "the drawn exercises remain"
+    );
+    let ids: HashSet<_> = more.items.iter().map(|it| &it.exercise_id).collect();
+    assert_eq!(ids.len(), 4, "the added exercises are distinct");
+
+    s.complete_exercise(boss.id, &more.items[0].exercise_id, 1)
+        .unwrap();
+    event_mut(&mut cfg, "ds3", "boss").draws = 2;
+    s.apply_config(&cfg, &mut r);
+    let fewer = pending(&s, boss.id).unwrap();
+    assert_eq!(fewer.items.len(), 2);
+    assert!(
+        fewer.items.iter().any(|it| it.done),
+        "the done exercise remains"
+    );
+
+    event_mut(&mut cfg, "ds3", "boss").draws = 1;
+    s.apply_config(&cfg, &mut r);
+    assert!(
+        pending(&s, boss.id).is_none(),
+        "nothing left to do: the set is finished"
+    );
+}
+
+#[test]
+fn new_bounds_clamp_the_amounts_to_do() {
+    let mut cfg = default_config(Language::Fr);
+    let mut s = Session::default();
+    let mut r = rng();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let id = boss.items[0].exercise_id.clone();
+    let ex = cfg.exercises.iter_mut().find(|ex| ex.id == id).unwrap();
+    ex.min = 100;
+    ex.max = 200;
+    s.apply_config(&cfg, &mut r);
+    assert_eq!(pending(&s, boss.id).unwrap().items[0].amount, 100);
+    let ex = cfg.exercises.iter_mut().find(|ex| ex.id == id).unwrap();
+    ex.min = 1;
+    ex.max = 1;
+    s.apply_config(&cfg, &mut r);
+    let item = &pending(&s, boss.id).unwrap().items[0];
+    assert_eq!(item.amount, 1);
+    assert_eq!(item.halve_cost, None, "a single one cannot be halved");
+    assert_eq!(item.skip_cost, SKIP_COST - HALVE_COST);
+}
+
+#[test]
+fn new_bounds_clamp_the_amounts_to_do_at_the_session_intensity() {
+    let mut cfg = default_config(Language::Fr);
+    let mut s = Session::default();
+    let mut r = rng();
+    s.set_intensity(Intensity::Hard);
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let id = boss.items[0].exercise_id.clone();
+    let ex = cfg.exercises.iter_mut().find(|ex| ex.id == id).unwrap();
+    ex.min = 100;
+    ex.max = 200;
+    s.apply_config(&cfg, &mut r);
+    assert_eq!(pending(&s, boss.id).unwrap().items[0].amount, 150);
+}
+
+#[test]
+fn a_removed_exercise_is_replaced_in_the_sets_to_do() {
+    let mut cfg = default_config(Language::Fr);
+    let mut s = Session::default();
+    let mut r = rng();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let removed = boss.items[0].exercise_id.clone();
+    cfg.exercises.retain(|ex| ex.id != removed);
+    s.apply_config(&cfg, &mut r);
+    let draw = pending(&s, boss.id).unwrap();
+    assert_eq!(draw.items.len(), 2);
+    assert_eq!(draw.items[1], boss.items[1]);
+    assert!(draw.items.iter().all(|it| it.exercise_id != removed));
+    assert_ne!(draw.items[0].exercise_id, draw.items[1].exercise_id);
+}
+
+#[test]
+fn a_disabled_exercise_is_replaced_in_the_sets_to_do() {
+    let mut cfg = default_config(Language::Fr);
+    let mut s = Session::default();
+    let mut r = rng();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let disabled = boss.items[0].exercise_id.clone();
+    cfg.exercises
+        .iter_mut()
+        .find(|ex| ex.id == disabled)
+        .unwrap()
+        .enabled = false;
+    s.apply_config(&cfg, &mut r);
+    let draw = pending(&s, boss.id).unwrap();
+    assert_eq!(draw.items.len(), 2);
+    assert_eq!(draw.items[1], boss.items[1]);
+    assert!(draw.items.iter().all(|it| it.exercise_id != disabled));
+}
+
+#[test]
+fn removed_events_and_new_jokers_apply_to_the_sets_to_do() {
+    let mut cfg = default_config(Language::Fr);
+    let mut s = Session::default();
+    let mut r = rng();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let first = s.draw(&cfg, "ds3", "boss-premier", &mut r).unwrap();
+    event_mut(&mut cfg, "ds3", "boss-premier").jokers = 3;
+    let ds3 = cfg.games.iter_mut().find(|g| g.id == "ds3").unwrap();
+    ds3.events.retain(|e| e.id != "boss");
+    s.apply_config(&cfg, &mut r);
+    assert!(
+        pending(&s, boss.id).is_none(),
+        "the removed event takes its set along"
+    );
+    assert_eq!(pending(&s, first.id).unwrap().jokers, 3);
+}
+
+#[test]
+fn a_set_with_spent_jokers_still_earns_nothing() {
+    let (mut s, boss) = session_with_jokers();
+    let mut cfg = default_config(Language::Fr);
+    s.halve(boss.id, &boss.items[0].exercise_id).unwrap();
+    event_mut(&mut cfg, "ds3", "boss").jokers = 2;
+    s.apply_config(&cfg, &mut rng());
+    assert_eq!(pending(&s, boss.id).unwrap().jokers, 0);
+}
