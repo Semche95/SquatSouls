@@ -11,7 +11,7 @@ Turn what happens in your games into bodyweight exercises, at your own pace.
 [![Latest release](https://img.shields.io/github/v/release/Semche95/SquatSouls?label=release)](https://github.com/Semche95/SquatSouls/releases/latest)
 [![Build](https://github.com/Semche95/SquatSouls/actions/workflows/build.yml/badge.svg)](https://github.com/Semche95/SquatSouls/actions/workflows/build.yml)
 
-![Play tab with a set to do](docs/screenshots/play-set-to-do.png)
+![Play tab with a set to do](docs/screenshots/en/play-set-to-do.png)
 
 ## What is it?
 
@@ -33,11 +33,11 @@ You configure your own games, events and exercises. The defaults are only a star
 
 | Recovery | History | Settings |
 | --- | --- | --- |
-| ![Recovery between two exercises](docs/screenshots/recovery.png) | ![History tab](docs/screenshots/history.png) | ![Settings tab](docs/screenshots/settings.png) |
+| ![Recovery between two exercises](docs/screenshots/en/recovery.png) | ![History tab](docs/screenshots/en/history.png) | ![Settings tab](docs/screenshots/en/settings.png) |
 
 | Program: games | Program: exercises |
 | --- | --- |
-| ![Games of the Program tab](docs/screenshots/program-games.png) | ![Exercises of the Program tab](docs/screenshots/program-exercises.png) |
+| ![Games of the Program tab](docs/screenshots/en/program-games.png) | ![Exercises of the Program tab](docs/screenshots/en/program-exercises.png) |
 
 ## Download
 

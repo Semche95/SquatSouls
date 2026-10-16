@@ -25,6 +25,9 @@ function setLanguage(language, texts) {
   document.querySelectorAll('[data-alt]').forEach((el) => {
     el.alt = texts[el.dataset.alt];
   });
+  document.querySelectorAll('[data-shot]').forEach((el) => {
+    el.src = `screenshots/${language}/${el.dataset.shot}`;
+  });
   document.getElementById('cta').textContent = card
     ? texts.cta.replace('{os}', card.querySelector('h3').textContent)
     : texts.ctaAny;
