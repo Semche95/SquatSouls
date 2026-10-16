@@ -101,6 +101,26 @@ pub fn count_days(sessions: &[i64]) -> usize {
         .len()
 }
 
+/// Starts of the first and last sessions (included) of the `limit` most recent days before
+/// `before` (all days if `None`) on which `sessions` started, `None` if there is none.
+pub fn days_range(sessions: &[i64], before: Option<NaiveDate>, limit: usize) -> Option<(i64, i64)> {
+    let mut days: BTreeMap<NaiveDate, (i64, i64)> = BTreeMap::new();
+    for &at in sessions {
+        if let Some(d) = local_day(at) {
+            let (first, last) = days.entry(d).or_insert((at, at));
+            *first = (*first).min(at);
+            *last = (*last).max(at);
+        }
+    }
+    let page: Vec<_> = days
+        .range(..before.unwrap_or(NaiveDate::MAX))
+        .rev()
+        .take(limit)
+        .map(|(_, range)| *range)
+        .collect();
+    Some((page.last()?.0, page.first()?.1))
+}
+
 fn day_totals(date: NaiveDate, entries: &[LogEntry], records: &SessionRecords) -> DayTotals {
     DayTotals {
         date: date.format("%Y-%m-%d").to_string(),

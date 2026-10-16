@@ -7,7 +7,7 @@ use crate::app::{
 use crate::state::{lock, now, AppState, ConfigView, LanguageView, NativeTexts, Shared};
 use crate::tray;
 use crate::update::{self, PendingUpdate};
-use chrono::Local;
+use chrono::{Local, NaiveDate};
 use std::sync::Mutex;
 use std::time::Duration;
 use sysinfo::{ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind};
@@ -265,10 +265,18 @@ pub(crate) fn get_history(state: Shared, days: u32) -> Result<Vec<DayTotals>, Ap
 }
 
 #[tauri::command]
-pub(crate) fn get_full_history(state: Shared) -> Result<Vec<DayTotals>, AppError> {
+pub(crate) fn get_full_history(
+    state: Shared,
+    before: Option<String>,
+    days: usize,
+) -> Result<Vec<DayTotals>, AppError> {
+    let before = before
+        .map(|d| NaiveDate::parse_from_str(&d, "%Y-%m-%d"))
+        .transpose()
+        .map_err(|e| AppError::internal(HISTORY_UNREADABLE, e))?;
     lock(&state)?
         .store
-        .full_history()
+        .full_history(before, days)
         .map_err(|e| AppError::internal(HISTORY_UNREADABLE, e))
 }
 

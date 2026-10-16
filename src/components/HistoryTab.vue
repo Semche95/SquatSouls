@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { daySummary, formatDay, formatDuration, formatTime, sessionSummary } from '../format.js';
 import { t } from '../i18n.js';
 import { useApi } from '../composables/useApi.js';
@@ -9,6 +9,8 @@ import { useKeydown } from '../composables/useKeydown.js';
 
 // How long a copy button reads "Copied".
 const COPIED_MS = 2000;
+// Days of the full history loaded at a time.
+const FULL_HISTORY_DAYS = 60;
 
 const { error, call } = useApi();
 const { config } = useConfig();
@@ -17,6 +19,13 @@ const { session } = useSession();
 const history = ref([]);
 // Full history, shown large over the History tab (null when closed).
 const fullHistory = ref(null);
+// End of the full history: the older days load once it comes into view.
+const fullEnd = ref(null);
+// Page of days being loaded, null when none is.
+let loading = null;
+const observer = new IntersectionObserver(([entry]) => {
+  if (entry.isIntersecting && !loading) loadDays();
+});
 // Days with at least one set, ever: a count that only goes up.
 const activeDays = ref(0);
 // Game set on the session's first event, absent before.
@@ -52,17 +61,38 @@ async function copySummary(key, text) {
   }
 }
 
-async function openFullHistory() {
+// Opens the full history, or loads the days older than those shown.
+async function loadDays() {
+  const shown = fullHistory.value ?? [];
+  const page = call('get_full_history', { before: shown.at(-1)?.date ?? null, days: FULL_HISTORY_DAYS });
+  loading = page;
   try {
-    fullHistory.value = await call('get_full_history');
+    const days = await page;
+    // Closed or reopened meanwhile.
+    if (loading !== page) return;
+    fullHistory.value = [...shown, ...days];
+    await nextTick();
+    // Observing again checks right away whether the end is still in view.
+    observer.disconnect();
+    if (days.length === FULL_HISTORY_DAYS) observer.observe(fullEnd.value);
   } catch {
     /* error already shown */
+  } finally {
+    if (loading === page) loading = null;
   }
 }
 
+function closeFullHistory() {
+  fullHistory.value = null;
+  loading = null;
+  observer.disconnect();
+}
+
 useKeydown((e) => {
-  if (fullHistory.value && e.code === 'Escape') fullHistory.value = null;
+  if (fullHistory.value && e.code === 'Escape') closeFullHistory();
 });
+
+onUnmounted(() => observer.disconnect());
 
 onMounted(async () => {
   try {
@@ -116,8 +146,8 @@ onMounted(async () => {
       <header class="group-head">
         <h2 class="group-title">{{ t(fullHistory ? 'history.fullHistory' : 'history.lastDays') }}</h2>
         <span class="muted"><template v-if="!fullHistory">{{ t('history.bySession') }} · </template>{{ t('history.activeDays', activeDays) }}</span>
-        <button v-if="fullHistory" class="ghost" @click="fullHistory = null">{{ t('history.close') }}</button>
-        <button v-else class="ghost" @click="openFullHistory">{{ t('history.seeAll') }}</button>
+        <button v-if="fullHistory" class="ghost" @click="closeFullHistory">{{ t('history.close') }}</button>
+        <button v-else class="ghost" @click="loadDays">{{ t('history.seeAll') }}</button>
       </header>
       <p v-if="fullHistory && !fullHistory.length" class="muted">{{ t('history.noHistory') }}</p>
       <ul class="days">
@@ -146,6 +176,7 @@ onMounted(async () => {
           </span>
         </li>
       </ul>
+      <div v-if="fullHistory" ref="fullEnd"></div>
     </section>
   </main>
 </template>

@@ -97,6 +97,32 @@ fn days_window_and_active_days() {
 }
 
 #[test]
+fn days_range_covers_whole_days() {
+    let at = |day, hour| {
+        NaiveDate::from_ymd_opt(2026, 3, day)
+            .unwrap()
+            .and_hms_opt(hour, 0, 0)
+            .unwrap()
+            .and_local_timezone(Local)
+            .unwrap()
+            .timestamp()
+    };
+    let sessions = [at(9, 20), at(2, 8), at(5, 21), at(5, 9), at(9, 7)];
+    let before = |day| NaiveDate::from_ymd_opt(2026, 3, day);
+    assert_eq!(
+        days_range(&sessions, None, 2),
+        Some((at(5, 9), at(9, 20))),
+        "from the first session of the oldest day to the last of the most recent"
+    );
+    assert_eq!(
+        days_range(&sessions, before(9), 5),
+        Some((at(2, 8), at(5, 21)))
+    );
+    assert_eq!(days_range(&sessions, before(2), 5), None, "nothing before");
+    assert_eq!(days_range(&[], None, 5), None);
+}
+
+#[test]
 fn window_starts_at_local_midnight() {
     let today = NaiveDate::from_ymd_opt(2026, 3, 10).unwrap();
     let start = window_start(3, today);

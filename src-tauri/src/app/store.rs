@@ -1,8 +1,8 @@
 //! SQLite storage: configuration, history and settings, written row by row.
 
 use super::{
-    active_days, clean_name, count_days, default_config, last_days, window_start, Config,
-    DayTotals, EventCount, Exercise, Game, GameEvent, IgnoredGame, Intensity, Jokers,
+    active_days, clean_name, count_days, days_range, default_config, last_days, window_start,
+    Config, DayTotals, EventCount, Exercise, Game, GameEvent, IgnoredGame, Intensity, Jokers,
     LanguageSetting, LogEntry, SessionRecords, SteamName, SteamNames, TimeUnit, DEFAULT_RECOVERY,
     DEFAULT_STEAM_NOTIFY, DEFAULT_TIMER_PREP,
 };
@@ -328,35 +328,43 @@ impl Store {
 
     /// Totals of the last `days` days (today included), most recent first.
     pub fn history(&self, days: u32, today: NaiveDate) -> Result<Vec<DayTotals>> {
-        let (entries, records) = self.sets_since(window_start(days, today))?;
+        let (entries, records) = self.sets_between(window_start(days, today), i64::MAX)?;
         Ok(last_days(&entries, &records, days, today))
     }
 
-    /// Every day on which a session with sets done started, most recent first.
-    pub fn full_history(&self) -> Result<Vec<DayTotals>> {
-        let (entries, records) = self.sets_since(i64::MIN)?;
+    /// Up to `days` days on which a session with sets done started, before `before` (from the
+    /// most recent if `None`), most recent first.
+    pub fn full_history(&self, before: Option<NaiveDate>, days: usize) -> Result<Vec<DayTotals>> {
+        let Some((from, to)) = days_range(&self.session_starts()?, before, days) else {
+            return Ok(Vec::new());
+        };
+        let (entries, records) = self.sets_between(from, to)?;
         Ok(active_days(&entries, &records))
     }
 
     /// Number of days on which a session with sets done started.
     pub fn active_day_count(&self) -> Result<usize> {
-        let sessions: Vec<i64> = self
-            .conn
-            .prepare("SELECT DISTINCT session FROM sets")?
-            .query_map([], |r| r.get(0))?
-            .collect::<Result<_>>()?;
-        Ok(count_days(&sessions))
+        Ok(count_days(&self.session_starts()?))
     }
 
-    /// Sets of the sessions started since `from`, and what is kept of those sessions.
-    fn sets_since(&self, from: i64) -> Result<(Vec<LogEntry>, SessionRecords)> {
+    /// Starts of the sessions with sets done.
+    fn session_starts(&self) -> Result<Vec<i64>> {
+        self.conn
+            .prepare("SELECT DISTINCT session FROM sets")?
+            .query_map([], |r| r.get(0))?
+            .collect()
+    }
+
+    /// Sets of the sessions started between `from` and `to` (included), and what is kept of
+    /// those sessions.
+    fn sets_between(&self, from: i64, to: i64) -> Result<(Vec<LogEntry>, SessionRecords)> {
         let entries = self
             .conn
             .prepare(
                 "SELECT at, session, game, event, exercise, unit, amount FROM sets
-                 WHERE session >= ?1 ORDER BY at, id",
+                 WHERE session BETWEEN ?1 AND ?2 ORDER BY at, id",
             )?
-            .query_map([from], |r| {
+            .query_map([from, to], |r| {
                 Ok(LogEntry {
                     at: r.get(0)?,
                     session: r.get(1)?,
@@ -368,13 +376,14 @@ impl Store {
                 })
             })?
             .collect::<Result<_>>()?;
-        let ends = self.session_rows("SELECT session, ended FROM session_ends", from, |r| {
+        let ends = self.session_rows("SELECT session, ended FROM session_ends", from, to, |r| {
             r.get(1)
         })?;
         let mut events: HashMap<i64, Vec<EventCount>> = HashMap::new();
         for (session, event) in self.session_rows(
             "SELECT session, event, count FROM session_events",
             from,
+            to,
             |r| {
                 Ok(EventCount {
                     event: r.get(1)?,
@@ -387,6 +396,7 @@ impl Store {
         let jokers = self.session_rows(
             "SELECT session, earned, spent FROM session_jokers",
             from,
+            to,
             |r| {
                 Ok(Jokers {
                     earned: r.get(1)?,
@@ -402,17 +412,20 @@ impl Store {
         Ok((entries, records))
     }
 
-    /// Rows of `select` (whose first column is the session) for sessions started since `from`,
-    /// in their saved order.
+    /// Rows of `select` (whose first column is the session) for sessions started between `from`
+    /// and `to` (included), in their saved order.
     fn session_rows<T>(
         &self,
         select: &str,
         from: i64,
+        to: i64,
         value: impl Fn(&Row) -> Result<T>,
     ) -> Result<Vec<(i64, T)>> {
         self.conn
-            .prepare(&format!("{select} WHERE session >= ?1 ORDER BY rowid"))?
-            .query_map([from], |r| Ok((r.get(0)?, value(r)?)))?
+            .prepare(&format!(
+                "{select} WHERE session BETWEEN ?1 AND ?2 ORDER BY rowid"
+            ))?
+            .query_map([from, to], |r| Ok((r.get(0)?, value(r)?)))?
             .collect()
     }
 

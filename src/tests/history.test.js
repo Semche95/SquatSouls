@@ -3,6 +3,7 @@ import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { emptySession, setup, mountApp } from './app.js';
 import { formatDay, formatTime } from '../format.js';
+import { intersect } from './setup.js';
 
 describe('history', () => {
   it.each([
@@ -50,6 +51,40 @@ describe('history', () => {
     expect(days[1].text()).toContain('Squats 10 reps');
     expect(days[1].text()).toContain('Elden Ring');
     expect(days[1].text()).toContain('1 h 05');
+  });
+
+  it('loads the full history by pages of days, older ones as its end comes into view', async () => {
+    // Active days, most recent first, from 2026-10-10.
+    const days = (from, count) =>
+      Array.from({ length: count }, (_, i) => ({
+        date: new Date(Date.UTC(2026, 9, 10 - from - i)).toISOString().slice(0, 10),
+        sets: 1,
+        sessions: [],
+      }));
+    const pages = { null: days(0, 60), '2026-08-12': days(60, 1) };
+    setup({ get_full_history: ({ before }) => pages[before] });
+    const w = await mountApp();
+    await w.findAll('.tabs button')[1].trigger('click');
+    await flushPromises();
+    await w.find('.group:not(.current) .group-head button').trigger('click');
+    await flushPromises();
+    expect(invoke).toHaveBeenCalledWith('get_full_history', { before: null, days: 60 });
+    expect(w.find('.full .group-title').text()).toBe('Full history');
+    expect(w.findAll('.full .days li')).toHaveLength(60);
+
+    intersect();
+    await flushPromises();
+    expect(invoke).toHaveBeenCalledWith('get_full_history', { before: '2026-08-12', days: 60 });
+    expect(w.findAll('.full .days li')).toHaveLength(61);
+    expect(w.findAll('.full .days li')[60].text()).toContain(formatDay('2026-08-11'));
+
+    invoke.mockClear();
+    intersect();
+    await flushPromises();
+    expect(invoke).not.toHaveBeenCalledWith('get_full_history', expect.anything());
+
+    await w.find('.full .group-head button').trigger('click');
+    expect(w.find('.full').exists()).toBe(false);
   });
 
   it('counts jokers without listing what they removed', async () => {

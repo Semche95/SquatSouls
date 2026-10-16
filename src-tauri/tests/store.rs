@@ -1,4 +1,4 @@
-use chrono::Local;
+use chrono::{Local, NaiveDate};
 use squat_souls_lib::app::*;
 
 /// System locale of the tests: new databases receive the French default configuration.
@@ -225,7 +225,10 @@ fn legacy_db(name: &str, version: usize) -> std::path::PathBuf {
 fn database_migrated_before_refinery_keeps_its_data() {
     for (name, version) in [("legacy-current", 3), ("legacy-behind", 2)] {
         let path = legacy_db(name, version);
-        let history = Store::open(&path, LOCALE).unwrap().full_history().unwrap();
+        let history = Store::open(&path, LOCALE)
+            .unwrap()
+            .full_history(None, usize::MAX)
+            .unwrap();
         Store::open(&path, LOCALE).unwrap().steam_names().unwrap();
         let applied = applied(&path);
         std::fs::remove_file(&path).unwrap();
@@ -388,21 +391,24 @@ fn removed_game_takes_its_events_along() {
     assert_eq!(s.config().unwrap(), cfg);
 }
 
+fn entry(at: i64, session: i64, exercise: &str, amount: u32) -> LogEntry {
+    LogEntry {
+        at,
+        session,
+        game: "Dark Souls".into(),
+        event: "Death".into(),
+        exercise: exercise.into(),
+        unit: "reps".into(),
+        amount,
+    }
+}
+
 #[test]
 fn history_and_sessions_are_stored() {
     let mut s = store();
     let now = Local::now();
     let today = now.date_naive();
     let t = now.timestamp();
-    let entry = |at: i64, session: i64, ex: &str, amount| LogEntry {
-        at,
-        session,
-        game: "Dark Souls".into(),
-        event: "Death".into(),
-        exercise: ex.into(),
-        unit: "reps".into(),
-        amount,
-    };
     s.append_history(&[
         entry(t, t - 60, "Squats", 12),
         entry(t, t - 60, "Squats", 15),
@@ -471,13 +477,58 @@ fn history_and_sessions_are_stored() {
         "last session deleted"
     );
     s.remove_session(t - 60).unwrap();
-    assert_eq!(s.full_history().unwrap().len(), 1);
+    assert_eq!(s.full_history(None, usize::MAX).unwrap().len(), 1);
     assert_eq!(s.active_day_count().unwrap(), 1);
     s.append_history(&[entry(t, t - 60, "Squats", 12)]).unwrap();
     let again = s.history(1, today).unwrap()[0].sessions[0].clone();
     assert!(
         again.events.is_empty() && again.jokers.is_none(),
         "events and jokers removed with the session"
+    );
+}
+
+#[test]
+fn full_history_is_read_by_pages() {
+    let mut s = store();
+    let noon = |day: u32| {
+        NaiveDate::from_ymd_opt(2026, 3, day)
+            .unwrap()
+            .and_hms_opt(12, 0, 0)
+            .unwrap()
+            .and_local_timezone(Local)
+            .unwrap()
+            .timestamp()
+    };
+    for day in [2, 5, 6, 9] {
+        s.append_history(&[entry(noon(day), noon(day), "Squats", 10)])
+            .unwrap();
+    }
+    s.append_history(&[entry(noon(6) + 60, noon(6) + 60, "Squats", 12)])
+        .unwrap();
+    s.end_session(noon(6) + 60, noon(6) + 600).unwrap();
+    let dates = |before: Option<u32>, days| {
+        s.full_history(
+            before.map(|day| NaiveDate::from_ymd_opt(2026, 3, day).unwrap()),
+            days,
+        )
+        .unwrap()
+        .iter()
+        .map(|d| (d.date.clone(), d.sets))
+        .collect::<Vec<_>>()
+    };
+    let day = |day: u32, sets| (format!("2026-03-{day:02}"), sets);
+    assert_eq!(dates(None, 2), vec![day(9, 1), day(6, 2)], "most recent");
+    assert_eq!(
+        dates(Some(6), 2),
+        vec![day(5, 1), day(2, 1)],
+        "before the last one shown"
+    );
+    assert_eq!(dates(Some(2), 2), vec![], "nothing older");
+    let page = s.full_history(Some(NaiveDate::from_ymd_opt(2026, 3, 9).unwrap()), 1);
+    assert_eq!(
+        page.unwrap()[0].sessions[0].duration,
+        540,
+        "with what is kept of its sessions"
     );
 }
 

@@ -100,6 +100,7 @@ Button and setting names are quoted as they appear in the English interface.
 
 - Each exercise done is written to the history (one entry per exercise), with the time, the session, the game, the event, the exercise and the amount. It is kept from one launch to the next.
 - The summary groups sets by session, under the local day the session started (a session past midnight stays whole on that day), then by game, with totals per exercise (cumulated amount and number of sets). Each session shows its start time.
+- The History tab shows the last 7 days, rest days included. **See all** opens the full history over the whole window: only the days with sets, most recent first, loaded 60 days at a time, the older ones as its end comes into view, so it opens right away however long the history is.
 - A session's duration goes from its start to its end time if it was ended, otherwise to its last set.
 - The summary stays positive: it shows what was done, never what was skipped. The history counts the days of activity since the beginning (days on which a session with sets done started), a number that only goes up: no streak of consecutive days that could be lost, and a day without a set reads "rest".
 - Once a session ends, the Play tab shows an encouragement picked at random, translated, above the session buttons, until the next session starts.

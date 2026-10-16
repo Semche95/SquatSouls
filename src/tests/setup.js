@@ -26,3 +26,27 @@ beforeEach(() => {
 
 // jsdom does not lay out pages, so it has no scrolling.
 Element.prototype.scrollIntoView = () => {};
+
+// Nor does it show anything: an observed element only comes into view through `intersect`.
+const observers = new Set();
+globalThis.IntersectionObserver = class {
+  constructor(callback) {
+    this.callback = callback;
+    this.targets = new Set();
+    observers.add(this);
+  }
+  observe(target) {
+    this.targets.add(target);
+  }
+  disconnect() {
+    this.targets.clear();
+  }
+};
+beforeEach(() => observers.clear());
+
+// Brings every observed element into view.
+export function intersect() {
+  for (const o of observers) {
+    if (o.targets.size) o.callback([...o.targets].map((target) => ({ target, isIntersecting: true })));
+  }
+}
