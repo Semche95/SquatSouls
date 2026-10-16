@@ -56,7 +56,16 @@ pub fn run() {
         log::error!("{info}");
         report(info);
     }));
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    // A second launch, the window being hidden in the notification area for instance, shows the one
+    // already running instead of fighting it for the database. Registered first, so that it quits before
+    // anything else starts. Not in the development build, which shares the installed app's identifier:
+    // both can run side by side.
+    #[cfg(not(debug_assertions))]
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _, _| {
+        tray::show_main(app)
+    }));
+    builder
         // Warnings and errors, on the terminal and in the app's log folder. The development build has
         // its own file, like its database.
         .plugin(

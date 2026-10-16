@@ -162,6 +162,10 @@ Button and setting names are quoted as they appear in the English interface.
 - Quitting the app (whatever the way) installs the downloaded update, without restarting it. An update never interrupts a session.
 - The database is kept from one version to the next: the new version applies its missing migrations at launch.
 
+## Launch
+
+- The app runs only once: launching it again, with its window hidden in the notification area for instance, shows the window already open. The development app is apart and can run beside the installed one.
+
 ## About
 
 - **About**, last entry of the menu (at the bottom of the sidebar, right above the session status), opens a window without leaving the current tab: a description of the app, its author, its version, a notice that the project is not affiliated with any game publisher, the **Safety advice** of the onboarding, and a **Source code** button, which opens the repository in the default browser. Its cross in the top right corner or Escape closes it.
