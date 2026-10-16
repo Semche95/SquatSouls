@@ -27,7 +27,7 @@ src/                     Vue 3 interface
   tests/                 interface tests (Vitest)
 src-tauri/src/           Rust backend
   lib.rs                 startup and log files
-  commands.rs            Tauri commands
+  commands/              Tauri commands, by domain
   tray.rs                notification area icon
   app/                   business logic, default configuration (seed.en.json, seed.fr.json)
 src-tauri/migrations/    SQL schema migrations
