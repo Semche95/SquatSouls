@@ -1,9 +1,5 @@
 # Squat Souls
 
-Turn what happens in your games into bodyweight exercises, at your own pace.
-
-**[Download](#download)** for Windows, macOS and Linux, or visit the [website](https://squatsouls.semche.com/).
-
 ![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-informational)
 ![Tauri 2](https://img.shields.io/badge/Tauri-2-informational)
 ![Vue 3](https://img.shields.io/badge/Vue-3-informational)
@@ -11,6 +7,10 @@ Turn what happens in your games into bodyweight exercises, at your own pace.
 [![Latest release](https://img.shields.io/github/v/release/Semche95/SquatSouls?label=release)](https://github.com/Semche95/SquatSouls/releases/latest)
 [![Tests](https://github.com/Semche95/SquatSouls/actions/workflows/tests.yml/badge.svg)](https://github.com/Semche95/SquatSouls/actions/workflows/tests.yml)
 [![Build](https://github.com/Semche95/SquatSouls/actions/workflows/build.yml/badge.svg)](https://github.com/Semche95/SquatSouls/actions/workflows/build.yml)
+
+Turn what happens in your games into bodyweight exercises, at your own pace.
+
+**[Download](#download)** for Windows, macOS and Linux, or visit the [website](https://squatsouls.semche.com/).
 
 ![Play tab with a set to do](docs/screenshots/en/play-set-to-do.png)
 
