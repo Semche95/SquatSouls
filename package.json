@@ -2,8 +2,10 @@
   "name": "squat-souls",
   "private": true,
   "version": "0.3.1",
+  "description": "Turns in-game events into bodyweight exercises with a random number of reps",
   "license": "MIT",
   "author": "Semche95",
+  "homepage": "https://squatsouls.semche.com/",
   "repository": {
     "type": "git",
     "url": "https://github.com/Semche95/SquatSouls"
