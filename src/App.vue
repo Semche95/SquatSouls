@@ -23,6 +23,8 @@ import UpdateBanner from './components/UpdateBanner.vue';
 const slogan = pickSlogan();
 
 const about = ref(false);
+// The damaged database was replaced by the copy of the previous launch: told until closed.
+const restored = ref(false);
 
 const api = provideApi();
 const { error, call } = api;
@@ -32,6 +34,7 @@ const { session, saveChange } = provideSession(api, cfg);
 provideSteam(cfg, { saveChange });
 
 onMounted(async () => {
+  restored.value = await invoke('was_restored').catch(() => false);
   try {
     // Read before the config: an unknown game is then reset to empty.
     gameId.value = await invoke('get_last_game').catch(() => '');
@@ -78,6 +81,10 @@ onMounted(async () => {
 
     <div class="content">
       <UpdateBanner :locked="!!session.startedAt" />
+      <p v-if="restored" class="banner warn closable">
+        {{ t('app.restored') }}
+        <button class="modal-close" :aria-label="t('common.close')" @click="restored = false">×</button>
+      </p>
       <p v-if="error" v-reveal class="banner error">{{ error }}</p>
       <p v-if="configError && !['program', 'settings'].includes(tab)" class="banner error">
         {{ configError }}

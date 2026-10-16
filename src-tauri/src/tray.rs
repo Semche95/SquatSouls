@@ -23,10 +23,10 @@ pub(crate) fn show_main(app: &AppHandle) {
     }
 }
 
+/// Without state (minimal mode at launch), never.
 fn in_session(app: &AppHandle) -> bool {
-    let state = app.state::<Mutex<AppState>>();
-    let in_session = state.lock().is_ok_and(|s| s.session.started_at.is_some());
-    in_session
+    app.try_state::<Mutex<AppState>>()
+        .is_some_and(|state| state.lock().is_ok_and(|s| s.session.started_at.is_some()))
 }
 
 /// Shows the window with the quit confirmation.
@@ -126,10 +126,11 @@ pub(crate) fn on_window_event(window: &Window, event: &WindowEvent) {
     let WindowEvent::CloseRequested { api, .. } = event else {
         return;
     };
-    let state = window.state::<Mutex<AppState>>();
-    let hide = state
-        .lock()
-        .is_ok_and(|s| s.config.tray && s.config.close_to_tray);
+    let hide = window.try_state::<Mutex<AppState>>().is_some_and(|state| {
+        state
+            .lock()
+            .is_ok_and(|s| s.config.tray && s.config.close_to_tray)
+    });
     if hide {
         api.prevent_close();
         let _ = window.hide();

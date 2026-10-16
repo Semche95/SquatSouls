@@ -18,8 +18,16 @@ pub(super) fn migrate(conn: &mut Connection) -> Result<()> {
             .run(conn)
             .map(drop)
             .map_err(|e| {
+                // The SQLite code is kept, so that a full disk or a read-only file is told apart.
+                let code = std::error::Error::source(&e)
+                    .and_then(|s| s.downcast_ref::<rusqlite::Error>())
+                    .and_then(|s| match s {
+                        rusqlite::Error::SqliteFailure(code, _) => Some(*code),
+                        _ => None,
+                    })
+                    .unwrap_or_else(|| rusqlite::ffi::Error::new(rusqlite::ffi::SQLITE_ERROR));
                 rusqlite::Error::SqliteFailure(
-                    rusqlite::ffi::Error::new(rusqlite::ffi::SQLITE_ERROR),
+                    code,
                     Some(format!("database schema not updated: {e}")),
                 )
             })

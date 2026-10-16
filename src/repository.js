@@ -4,3 +4,4 @@ import { repository } from '../package.json';
 
 export const repositoryUrl = repository.url;
 export const releaseUrl = `${repository.url}/releases/latest`;
+export const issuesUrl = `${repository.url}/issues/new`;

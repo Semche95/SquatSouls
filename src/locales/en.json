@@ -30,7 +30,8 @@
     },
     "about": "About",
     "sessionSince": "Session since",
-    "viewConfig": "View the program"
+    "viewConfig": "View the program",
+    "restored": "A problem prevented reading the data. The copy saved at the previous launch was restored, so the latest changes may be missing."
   },
   "play": {
     "game": "Game",
@@ -333,8 +334,18 @@
     "launchedConfigured": "Select it in Play to start the session.",
     "launchedUnknown": "Game not configured yet: add it from Play."
   },
+  "startup": {
+    "title": "The data could not be opened",
+    "report": "Report the problem on GitHub",
+    "retry": "Try again",
+    "download": "Get the latest version on GitHub"
+  },
   "errors": {
     "unknown": "Unexpected error.",
+    "database_not_prepared": "This version of Squat Souls could not prepare the data. Nothing was changed in it, and a fix will come with an update.",
+    "database_damaged": "The data file is damaged and cannot be read. It was left as it is.",
+    "database_denied": "Squat Souls cannot write its data. Check that its folder allows it and that no other program is using it, then try again.",
+    "database_full": "The disk is full. Free some space, then try again.",
     "internal": "Internal error, the details are in the application logs.",
     "config_ignored": "Saved configuration ignored, default configuration used. {cause}",
     "tray_unavailable": "Configuration saved, notification area unavailable.",

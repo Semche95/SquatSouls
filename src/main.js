@@ -1,7 +1,9 @@
-import { createApp } from 'vue';
+import { createApp, h } from 'vue';
 import { createVfm } from 'vue-final-modal';
+import { invoke } from '@tauri-apps/api/core';
 import App from './App.vue';
-import { i18n, loadLanguage } from './i18n.js';
+import StartupFailure from './components/StartupFailure.vue';
+import { i18n, loadLanguage, showLanguage } from './i18n.js';
 import { logError, logUncaught } from './log.js';
 import { unlockSound } from './sound.js';
 import 'floating-vue/dist/style.css';
@@ -18,9 +20,17 @@ if (!import.meta.env.DEV) {
     if (!e.target.closest('input, textarea')) e.preventDefault();
   });
 }
-// Language known before mounting: no flash in the wrong language.
-loadLanguage().then(() => {
-  const app = createApp(App);
+// Database unusable at launch: the minimal mode, in the system language, the saved one being in the database.
+// Otherwise, the language known before mounting: no flash in the wrong language.
+async function root() {
+  const failure = await invoke('get_startup_failure').catch(() => null);
+  if (!failure) return loadLanguage().then(() => App);
+  showLanguage(failure.language);
+  return { render: () => h(StartupFailure, { error: failure.error }) };
+}
+
+root().then((component) => {
+  const app = createApp(component);
   app.config.errorHandler = (e, _, info) => logError(`Vue error (${info})`, e);
   app.use(i18n).use(createVfm()).mount('#app');
 });

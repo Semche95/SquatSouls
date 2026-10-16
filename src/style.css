@@ -143,6 +143,7 @@ button:active {
   margin-bottom: 16px;
 }
 .top h1,
+.startup h1,
 .onboarding-step h2 {
   margin: 0;
   font-family: "Cinzel", "Cormorant Garamond", Georgia, serif;
@@ -499,6 +500,29 @@ kbd.dark {
   .update-progress.unknown > span {
     animation: none;
   }
+}
+/* Closed by its cross, in the top right corner. */
+.banner.closable {
+  position: relative;
+  padding-right: 36px;
+  margin-bottom: 12px;
+}
+/* Minimal mode at launch: the title, why the data could not be opened, then the update. */
+.startup {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+}
+.startup .banner.update {
+  margin-bottom: 0;
+}
+.card.startup-failure {
+  border-left: 4px solid var(--red);
+}
+.startup-failure p {
+  margin: 0;
 }
 /* Floating confirmation, to the right of the configuration sub-tabs, without shifting or hiding anything. */
 .config {

@@ -30,10 +30,15 @@ export const languageSetting = ref('system');
 const NATIVE_KEYS = ['show', 'quit', 'launchedTitle', 'launchedConfigured', 'launchedUnknown'];
 export const nativeTexts = () => Object.fromEntries(NATIVE_KEYS.map((key) => [key, t(`native.${key}`, { name: '{name}' })]));
 
-// Switches the interface, then the tray menu and notifications, to `lang`.
-export async function setLanguage(lang) {
+// Switches the interface only to `lang`.
+export function showLanguage(lang) {
   language.value = lang;
   document.documentElement.lang = lang;
+}
+
+// Switches the interface, then the tray menu and notifications, to `lang`.
+export async function setLanguage(lang) {
+  showLanguage(lang);
   try {
     await invoke('set_native_texts', { texts: nativeTexts() });
   } catch (e) {

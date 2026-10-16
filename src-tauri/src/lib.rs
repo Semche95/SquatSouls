@@ -1,12 +1,11 @@
 pub mod app;
 mod commands;
+mod startup;
 mod state;
 mod tray;
 mod update;
 
-use app::Store;
 use state::AppState;
-use std::fs;
 #[cfg(target_os = "linux")]
 use std::path::PathBuf;
 use std::sync::Mutex;
@@ -94,17 +93,11 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
-            let dir = app.path().app_config_dir()?;
-            fs::create_dir_all(&dir)?;
-            // The development build has its own database so it never touches real data
-            let db = if cfg!(debug_assertions) {
-                "squatsouls-dev.db"
-            } else {
-                "squatsouls.db"
-            };
             let system_locale = sys_locale::get_locale();
-            let store = Store::open(&dir.join(db), system_locale.as_deref())
-                .inspect_err(|e| log::error!("Database unusable: {e}"))?;
+            app.manage(PendingUpdate::default());
+            let Some(store) = startup::open(app.handle(), system_locale.as_deref()) else {
+                return Ok(());
+            };
             app.manage(Mutex::new(store.steam_names()?));
             // The tray icon waits for the interface's texts (`set_native_texts`).
             let state = AppState::new(store, system_locale);
@@ -113,7 +106,7 @@ pub fn run() {
             }
             let update_check = state.config.update_check;
             app.manage(Mutex::new(state));
-            app.manage(PendingUpdate::default());
+            startup::copy_regularly(app.handle());
             update::apply(app.handle(), update_check);
             Ok(())
         })
@@ -126,6 +119,9 @@ pub fn run() {
             commands::set_native_texts,
             commands::request_quit,
             commands::quit,
+            commands::get_startup_failure,
+            commands::was_restored,
+            commands::relaunch,
             commands::get_update,
             commands::restart_to_update,
             commands::draw,

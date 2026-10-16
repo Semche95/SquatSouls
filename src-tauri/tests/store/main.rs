@@ -1,5 +1,6 @@
 mod config;
 mod history;
+mod launch;
 mod schema;
 mod settings;
 mod steam;

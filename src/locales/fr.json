@@ -30,7 +30,8 @@
     },
     "about": "À propos",
     "sessionSince": "Séance depuis",
-    "viewConfig": "Voir le programme"
+    "viewConfig": "Voir le programme",
+    "restored": "Un problème a empêché de lire les données. La copie enregistrée au lancement précédent a été restaurée, les dernières modifications peuvent donc manquer."
   },
   "play": {
     "game": "Jeu",
@@ -333,8 +334,18 @@
     "launchedConfigured": "À sélectionner dans Jouer pour commencer la séance.",
     "launchedUnknown": "Jeu pas encore configuré : l'ajouter depuis Jouer."
   },
+  "startup": {
+    "title": "Les données n'ont pas pu être ouvertes",
+    "report": "Signaler le problème sur GitHub",
+    "retry": "Réessayer",
+    "download": "Récupérer la dernière version sur GitHub"
+  },
   "errors": {
     "unknown": "Erreur inattendue.",
+    "database_not_prepared": "Cette version de Squat Souls n'a pas pu préparer les données. Rien n'y a été modifié, et une correction arrivera avec une mise à jour.",
+    "database_damaged": "Le fichier des données est abîmé et ne peut pas être lu. Il a été laissé tel quel.",
+    "database_denied": "Squat Souls ne peut pas écrire ses données. Vérifier que son dossier le permet et qu'aucun autre programme ne les utilise, puis réessayer.",
+    "database_full": "Le disque est plein. Libérer de la place, puis réessayer.",
     "internal": "Erreur interne, le détail est dans les journaux de l'application.",
     "config_ignored": "Configuration enregistrée ignorée, configuration par défaut utilisée. {cause}",
     "tray_unavailable": "Configuration enregistrée, zone de notification indisponible.",

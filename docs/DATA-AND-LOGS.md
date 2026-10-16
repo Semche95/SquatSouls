@@ -12,11 +12,13 @@ Everything is saved in a SQLite database: configuration (including the global re
 
 The development app, started by `pnpm tauri dev`, uses `squatsouls-dev.db` in the same folder, so it never touches the database of the installed app.
 
+At each launch, the intact database is copied to `squatsouls.previous.db` before its migrations, then every hour while the app runs, through a temporary file renamed once complete. A damaged database is renamed `squatsouls.damaged-<date>-<time>.db`, with its SQLite journal files, never deleted, and replaced by this copy if it is intact (see `docs/BEHAVIOR.md`). The development app does the same with `squatsouls-dev.previous.db` and `squatsouls-dev.damaged-<date>-<time>.db`.
+
 On save, only the modified exercises, games and events are rewritten.
 
 ## Migrations
 
-The schema lives in `src-tauri/migrations/`, one `V<n>__<name>.sql` file per migration. At launch, the database receives the schema migrations it is missing, each dated when applied. A migration is never modified once created: every schema change adds a new one. A database created by a newer version of the app is refused. Updates and reinstalls never touch the database folder, so the data is kept from one version to the next.
+The schema lives in `src-tauri/migrations/`, one `V<n>__<name>.sql` file per migration. At launch, the database receives the schema migrations it is missing, each dated when applied. A migration is never modified once created: every schema change adds a new one. A database created by a newer version of the app is refused: the app then opens a minimal window that looks for the update (see `docs/BEHAVIOR.md`). Updates and reinstalls never touch the database folder, so the data is kept from one version to the next.
 
 ## Logs
 

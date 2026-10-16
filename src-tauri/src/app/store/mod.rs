@@ -1,11 +1,14 @@
-//! SQLite storage, written row by row: configuration, history, settings, Steam Store names and schema migrations.
+//! SQLite storage, written row by row: configuration, history, settings, Steam Store names, schema migrations
+//! and the opening of the file at launch, with its copy from the previous launch.
 
 mod config;
 mod history;
+mod launch;
 mod schema;
 mod settings;
 mod steam;
 
+pub use launch::{previous_path, LaunchError, Launched, OpenFailure};
 pub use schema::PRE_TRANSLATION_CHECKSUMS;
 
 use super::default_config;
