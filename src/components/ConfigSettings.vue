@@ -6,8 +6,7 @@ import { vReveal } from '../reveal.js';
 import { useApi } from '../composables/useApi.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSteam } from '../composables/useSteam.js';
-import CountInput from './CountInput.vue';
-import DisabledTip from './DisabledTip.vue';
+import CountStepper from './CountStepper.vue';
 
 const { call } = useApi();
 const { config, draft } = useConfig();
@@ -26,10 +25,6 @@ async function changeLanguage(value) {
   languageSetting.value = setting;
   await setLanguage(language);
 }
-
-// Countdown buttons: an invalid field counts as 0.
-const prep = computed(() => (Number.isInteger(draft.value.timerPrep) ? draft.value.timerPrep : 0));
-const stepPrep = (delta) => (draft.value.timerPrep = Math.max(0, prep.value + delta));
 
 // Status of the saved detection, to see it works even without a banner in Jouer:
 // text and color of its badge.
@@ -96,14 +91,7 @@ const status = computed(() => {
         </div>
         <div class="setting-row check">
           <label for="timer-prep">{{ t('fields.timerPrep') }}</label>
-          <span class="stepper">
-            <DisabledTip :tip="prep > 0 ? '' : t('fields.atZero')">
-              <button :aria-label="t('fields.decrease')" :disabled="prep <= 0" @click="stepPrep(-1)">−</button>
-            </DisabledTip>
-            <CountInput id="timer-prep" v-model="draft.timerPrep" />
-            <span class="unit">{{ t('fields.secondsUnit') }}</span>
-            <button :aria-label="t('fields.increase')" @click="stepPrep(1)">+</button>
-          </span>
+          <CountStepper id="timer-prep" v-model="draft.timerPrep" :unit="t('fields.secondsUnit')" />
         </div>
       </div>
     </section>

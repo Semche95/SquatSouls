@@ -188,11 +188,10 @@
       "added": "{n} added | {n} added",
       "new": "New exercise",
       "defaultUnit": "reps",
-      "recovery": "Recovery after each exercise (s)",
+      "recovery": "Recovery after each exercise",
       "unit": "Unit",
       "min": "Min",
       "max": "Max",
-      "recoveryColumn": "Recovery (s)",
       "enabled": "Include this exercise",
       "name": "Name of the exercise",
       "unitPlaceholder": "reps, s…",
@@ -274,7 +273,8 @@
     "exerciseName": "exercise name",
     "eventName": "event name",
     "empty": "it cannot be empty",
-    "atZero": "Already at 0"
+    "atMin": "Already at {n}",
+    "alreadyEmpty": "Already empty"
   },
   "share": {
     "text": "Shared text",

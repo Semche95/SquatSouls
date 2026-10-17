@@ -188,11 +188,10 @@
       "added": "{n} ajouté | {n} ajoutés",
       "new": "Nouvel exercice",
       "defaultUnit": "rép.",
-      "recovery": "Récupération après chaque exercice (s)",
+      "recovery": "Récupération après chaque exercice",
       "unit": "Unité",
       "min": "Min",
       "max": "Max",
-      "recoveryColumn": "Récup (s)",
       "enabled": "Proposer cet exercice",
       "name": "Nom de l'exercice",
       "unitPlaceholder": "rép., s…",
@@ -274,7 +273,8 @@
     "exerciseName": "nom de l'exercice",
     "eventName": "nom de l'événement",
     "empty": "il ne peut pas être vide",
-    "atZero": "Déjà à 0"
+    "atMin": "Déjà à {n}",
+    "alreadyEmpty": "Déjà vide"
   },
   "share": {
     "text": "Texte partagé",

@@ -8,7 +8,7 @@ import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import { useEditDialog } from '../composables/useEditDialog.js';
 import ConfigExercise from './ConfigExercise.vue';
-import CountInput from './CountInput.vue';
+import CountStepper from './CountStepper.vue';
 import EditRow from './EditRow.vue';
 import ExerciseDialog from './ExerciseDialog.vue';
 import ShareImport from './ShareImport.vue';
@@ -57,7 +57,7 @@ function addExercise() {
     </VueFinalModal>
     <div class="setting-card">
       <EditRow :label="t('config.exercises.recovery')" :hint="t('config.exercises.recoveryHint')" for-id="cfg-recovery">
-        <CountInput id="cfg-recovery" v-model="draft.recovery" />
+        <CountStepper id="cfg-recovery" v-model="draft.recovery" :unit="t('fields.secondsUnit')" />
       </EditRow>
     </div>
     <div class="tiles">

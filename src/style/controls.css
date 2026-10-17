@@ -189,6 +189,16 @@ label.check {
   border-right: 1px solid var(--line);
   color: var(--muted);
 }
+/* Without a unit, the number is centered between the buttons; a placeholder word ("none") gets more room. */
+.stepper .count-input.alone {
+  width: calc(4ch + 16px);
+  padding-inline: 8px;
+  border-right: 1px solid var(--line);
+  text-align: center;
+}
+.stepper .count-input.alone[placeholder] {
+  width: calc(7ch + 16px);
+}
 /* Tooltip (floating-vue) in inverted colors, so that it does not pass for a button, with a red border for an error. */
 .v-popper--theme-tooltip .v-popper__inner {
   background: var(--text);

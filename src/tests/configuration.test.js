@@ -245,13 +245,14 @@ describe('configuration', () => {
     expect(remove.element.disabled).toBe(true);
     await expectTip(remove, 'At least one exercise is needed');
     await editDialog().find('input[aria-label="Maximum"]').setValue('');
-    expect(w.find('.tile-slot .tile-foot').text()).toBe('10–0 reps');
+    await editDialog().findAll('button[aria-label="More"]')[0].trigger('click');
+    expect(w.find('.tile-slot .tile-foot').text()).toBe('11–0 reps');
     await closeDialog();
     responses.save_config = (args) => ({ config: args.config });
     await save(w).trigger('click');
     await flushPromises();
     const sent = invoke.mock.calls.find(([cmd]) => cmd === 'save_config')[1].config;
-    expect(sent.exercises[0]).toMatchObject({ min: 10, max: 0 });
+    expect(sent.exercises[0]).toMatchObject({ min: 11, max: 0 });
   });
 
   it('disables an exercise from its tile or its dialog to keep it out of the draw without removing it', async () => {
@@ -290,6 +291,9 @@ describe('configuration', () => {
     await own().setValue('');
     await saveAndReopen(w, tile);
     expect(sent().exercises[0]).not.toHaveProperty('recovery');
+    // Empty, + starts from the global recovery.
+    await editDialog().findAll('button[aria-label="More"]').at(-1).trigger('click');
+    expect(own().element.value).toBe('46');
   });
 
   it('times an exercise in seconds or minutes, or no longer', async () => {
@@ -330,7 +334,7 @@ describe('configuration', () => {
     expect(sent().exercises[0].eachSide).toBe(false);
   });
 
-  it('clears the per-session limit to remove it', async () => {
+  it('clears the per-session limit to remove it, with the field or its - button', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
     const sent = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)[1].config.games[0].events;
@@ -338,10 +342,16 @@ describe('configuration', () => {
     expect(w.find('.cfg-events .tile').text()).toContain('15 times max per session');
     await editDialog().find('#ev-limit').setValue('');
     expect(w.find('.cfg-events .tile').text()).not.toContain('max per session');
-    await closeDialog();
-    await save(w).trigger('click');
-    await flushPromises();
+    // Below 1, - removes the limit, here of the second event.
+    await saveAndReopen(w, () => w.findAll('.cfg-events .tile')[1]);
     expect(sent()[0]).not.toHaveProperty('maxPerSession');
+    const less = () => editDialog().findAll('button[aria-label="Less"]')[1];
+    await editDialog().findAll('button[aria-label="More"]')[1].trigger('click');
+    expect(editDialog().find('#ev-limit').element.value).toBe('1');
+    await less().trigger('click');
+    expect(editDialog().find('#ev-limit').element.value).toBe('');
+    expect(less().element.disabled).toBe(true);
+    await expectTip(less(), 'Already empty');
   });
 
   it('resets unsaved changes', async () => {

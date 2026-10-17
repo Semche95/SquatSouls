@@ -51,11 +51,6 @@
   flex: none;
   width: 12em;
 }
-/* Number fields keep the width of a few digits, the placeholder word ("none") included. */
-:is(.edit-dialog, .setting-card) .count-input {
-  flex: none;
-  width: 5.5em;
-}
 .edit-foot {
   display: flex;
   justify-content: space-between;

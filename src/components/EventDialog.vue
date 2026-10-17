@@ -1,6 +1,6 @@
 <script setup>
 import { t } from '../i18n.js';
-import CountInput from './CountInput.vue';
+import CountStepper from './CountStepper.vue';
 import EditDialog from './EditDialog.vue';
 import EditRow from './EditRow.vue';
 
@@ -22,13 +22,13 @@ const open = defineModel({ type: Boolean, required: true });
     @remove="$emit('remove')"
   >
     <EditRow :label="t('config.event.draws')" :hint="t('config.event.drawsHint')" for-id="ev-draws">
-      <CountInput id="ev-draws" v-model="ev.draws" />
+      <CountStepper id="ev-draws" v-model="ev.draws" :min="1" />
     </EditRow>
     <EditRow :label="t('config.event.limit')" :hint="t('config.event.limitHint')" for-id="ev-limit">
-      <CountInput id="ev-limit" v-model="ev.maxPerSession" optional :placeholder="t('config.event.noLimit')" />
+      <CountStepper id="ev-limit" v-model="ev.maxPerSession" optional :min="1" :placeholder="t('config.event.noLimit')" />
     </EditRow>
     <EditRow :label="t('config.event.jokers')" :hint="t('config.event.jokersHint')" for-id="ev-jokers">
-      <CountInput id="ev-jokers" v-model="ev.jokers" />
+      <CountStepper id="ev-jokers" v-model="ev.jokers" />
     </EditRow>
   </EditDialog>
 </template>

@@ -1,7 +1,7 @@
 <script setup>
 import { MAX_UNIT } from '../configDraft.js';
 import { t } from '../i18n.js';
-import CountInput from './CountInput.vue';
+import CountStepper from './CountStepper.vue';
 import EditDialog from './EditDialog.vue';
 import EditRow from './EditRow.vue';
 
@@ -46,9 +46,9 @@ function setTimed(value) {
     <EditRow :label="t('config.exercises.range')">
       <span class="edit-range">
         <span class="muted">{{ t('config.exercises.min') }}</span>
-        <CountInput v-model="ex.min" :aria-label="t('config.exercises.minimum')" />
+        <CountStepper v-model="ex.min" :aria-label="t('config.exercises.minimum')" />
         <span class="muted">{{ t('config.exercises.max') }}</span>
-        <CountInput v-model="ex.max" :aria-label="t('config.exercises.maximum')" />
+        <CountStepper v-model="ex.max" :aria-label="t('config.exercises.maximum')" />
       </span>
     </EditRow>
     <EditRow :label="t('config.exercises.unit')" for-id="ex-unit">
@@ -61,8 +61,8 @@ function setTimed(value) {
         </button>
       </div>
     </EditRow>
-    <EditRow :label="t('config.exercises.recoveryColumn')" :hint="t('config.exercises.ownRecoveryHint')" for-id="ex-recovery">
-      <CountInput id="ex-recovery" v-model="ex.recovery" optional :placeholder="String(recovery)" />
+    <EditRow :label="t('config.exercises.recoveryLabel')" :hint="t('config.exercises.ownRecoveryHint')" for-id="ex-recovery">
+      <CountStepper id="ex-recovery" v-model="ex.recovery" optional :base="+recovery || 0" :placeholder="String(recovery)" :unit="t('fields.secondsUnit')" />
     </EditRow>
     <EditRow v-if="ex.timed" :label="t('config.exercises.eachSide')" :hint="t('config.exercises.eachSideHint')" for-id="ex-each-side">
       <input id="ex-each-side" v-model="ex.eachSide" type="checkbox" />
