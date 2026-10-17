@@ -12,10 +12,17 @@
   --ember: #eb9a63;
   --red: #c25b4f;
   --green: #7fa66a;
+  --on-gold: #1a160f;
+  --red-text: #f0b2a9;
+  --shade: rgba(0, 0, 0, 0.6);
   --radius: 10px;
   --shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --font-body: "Inter", "Noto Sans", system-ui, sans-serif;
+  --font-title: "Cinzel", "Cormorant Garamond", Georgia, serif;
+  --font-lore: "Cormorant Garamond", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
   color-scheme: dark;
-  font-family: "Inter", "Noto Sans", system-ui, sans-serif;
+  font-family: var(--font-body);
   color: var(--text);
   background: var(--bg);
 }

@@ -38,7 +38,7 @@ h1,
 h2,
 h3,
 .step::before {
-  font-family: "Cinzel", "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-title);
   color: var(--gold);
 }
 
@@ -118,7 +118,7 @@ header h1 {
 
 .splash {
   margin: 2px 0 0;
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-lore);
   font-style: italic;
   font-size: 1.15rem;
   color: var(--muted);

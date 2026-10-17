@@ -24,7 +24,7 @@ src/                     Vue 3 interface
   share.js               share and import format, versioned
   slogans.js             slogans shown under the title, in English only
   style/                 styles by domain, imported in cascade order by index.css
-  theme.css              palette, shared with the site
+  theme.css              palette and fonts, shared with the site
   tests/                 interface tests (Vitest)
 src-tauri/src/           Rust backend
   lib.rs                 startup and log files

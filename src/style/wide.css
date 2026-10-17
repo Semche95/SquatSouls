@@ -17,6 +17,8 @@
   /* Only the configuration fills the window height, for its save bar: the other tabs keep their height. */
   .panel {
     flex: none;
+    padding-bottom: var(--edge);
+    gap: 24px;
   }
   .panel.config {
     flex: 1;
@@ -84,15 +86,11 @@
   }
   .hud dd {
     margin: 0;
-    font-family: "Cinzel", Georgia, serif;
+    font-family: var(--font-title);
     font-size: 1.8rem;
     line-height: 1;
     color: var(--gold);
     font-variant-numeric: tabular-nums;
-  }
-  .panel {
-    padding-bottom: var(--edge);
-    gap: 24px;
   }
 
   /* Jouer: larger event tiles, current set large and queue beside it. */

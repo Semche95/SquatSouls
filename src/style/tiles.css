@@ -52,7 +52,7 @@
   white-space: nowrap;
 }
 .tile-count {
-  font-family: "Cinzel", Georgia, serif;
+  font-family: var(--font-title);
   font-size: 1.3rem;
   line-height: 1.2;
   color: var(--gold);

@@ -13,44 +13,31 @@
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 8px;
 }
+/* Action button: warm raised face with a gold edge, lit up on hover and pressed on click. */
 .event {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   gap: 10px;
   text-align: left;
   padding: 12px;
-  background: var(--panel);
   min-height: 56px;
-}
-/* Action button: warm raised face with a gold edge, lit up on hover and pressed on click. */
-.event {
   background: linear-gradient(180deg, #2c2720, #221f19);
   border-color: rgba(201, 164, 92, 0.4);
   border-radius: 12px;
   box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.06), 0 6px 16px -8px rgba(0, 0, 0, 0.8);
 }
-.event:hover:not(:disabled) {
+.event:hover {
   border-color: var(--gold);
   background: linear-gradient(180deg, #352e23, #28231b);
   box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.08), 0 0 0 3px var(--gold-soft);
 }
-.event {
-  position: relative;
-  overflow: hidden;
-}
 /* Gauge of the per-session limit, at the bottom of the tile. */
 .gauge {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 3px;
   background: var(--line);
 }
 .gauge > span {
-  display: block;
-  height: 100%;
-  background: var(--gold);
   transition: width 0.2s;
 }
 .stage,
@@ -93,8 +80,3 @@
   color: var(--gold);
 }
 
-.event:disabled {
-  opacity: 0.45;
-  cursor: default;
-  transform: none;
-}

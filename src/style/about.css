@@ -30,7 +30,7 @@
   font-size: 0.85rem;
 }
 .about-modal .about-lore {
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-lore);
   font-style: italic;
   font-size: 1.1rem;
   line-height: 1.45;

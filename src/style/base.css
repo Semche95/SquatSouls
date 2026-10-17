@@ -45,6 +45,12 @@ button:hover {
 button:active {
   transform: translateY(1px);
 }
+/* A disabled button looks disabled: dimmed, without pointer cursor nor press effect. */
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+  transform: none;
+}
 
 h2,
 .about-modal h4 {
@@ -59,14 +65,9 @@ h2,
 .muted {
   color: var(--muted);
 }
-.small {
-  font-size: 0.85rem;
-  line-height: 1.5;
-  margin: 0;
-}
 
 kbd {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 0.75rem;
   border: 1px solid var(--line);
   border-bottom-width: 2px;
@@ -80,6 +81,19 @@ kbd.dark {
   border-color: rgba(0, 0, 0, 0.35);
   color: #2a2113;
 }
+/* Progress bar along the bottom edge of its container (gauge of an event, update download). */
+.edge-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+}
+.edge-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}
 .link {
   border: none;
   background: none;
@@ -88,7 +102,7 @@ kbd.dark {
   text-decoration: underline;
 }
 code {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 0.85em;
   color: var(--text);
   word-break: break-all;

@@ -51,6 +51,6 @@ function restart() {
     <span v-else-if="stage === 'manual'" class="row">
       <button class="primary" @click="openUrl(releaseUrl)">{{ t('update.download') }}</button>
     </span>
-    <span v-else class="update-progress" :class="{ unknown: !width }"><span :style="{ width }" /></span>
+    <span v-else class="edge-bar update-progress" :class="{ unknown: !width }"><span :style="{ width }" /></span>
   </div>
 </template>

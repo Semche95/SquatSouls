@@ -140,7 +140,7 @@ useKeydown((e) => {
           <template v-if="ev.maxPerSession">{{ Math.min(triggerCount(ev.id), ev.maxPerSession) }} / {{ ev.maxPerSession }}</template>
           <template v-else>×{{ triggerCount(ev.id) }}</template>
         </span>
-        <span v-if="ev.maxPerSession" class="gauge">
+        <span v-if="ev.maxPerSession" class="edge-bar gauge">
           <span :style="{ width: `${Math.min(100, (100 * triggerCount(ev.id)) / ev.maxPerSession)}%` }"></span>
         </span>
       </button>

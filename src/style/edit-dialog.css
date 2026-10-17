@@ -40,7 +40,7 @@
 .edit-dialog .field-error {
   margin: 0;
   font-size: 0.85rem;
-  color: #f0b2a9;
+  color: var(--red-text);
 }
 .edit-range {
   display: flex;

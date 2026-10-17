@@ -19,7 +19,7 @@
   border: 1px solid var(--line);
   border-top: 3px solid var(--red);
   border-radius: var(--radius);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 12px 40px var(--shade);
 }
 /* Red frame for a loss, gold when nothing is lost. */
 .confirm-modal-content:is(.validate, .form-dialog, .about-modal, .edit-dialog) {
@@ -27,7 +27,7 @@
 }
 .confirm-modal-content h3 {
   margin: 0;
-  font-family: "Cinzel", Georgia, serif;
+  font-family: var(--font-title);
   font-weight: 600;
   letter-spacing: 0.06em;
   font-size: 1.15rem;

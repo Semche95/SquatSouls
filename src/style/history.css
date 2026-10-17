@@ -7,7 +7,7 @@
   z-index: 10;
   overflow-y: auto;
   font-size: 1.15rem;
-  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 0 100vmax var(--shade);
 }
 .group.full .group-head {
   position: sticky;
@@ -76,14 +76,14 @@
   border-radius: var(--radius);
 }
 .total-amount {
-  font-family: "Cinzel", Georgia, serif;
+  font-family: var(--font-title);
   font-size: 2rem;
   line-height: 1.1;
   color: var(--gold);
   font-variant-numeric: tabular-nums;
 }
 .total-amount small {
-  font-family: "Inter", "Noto Sans", system-ui, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.8rem;
   color: var(--muted);
 }

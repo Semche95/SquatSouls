@@ -19,7 +19,7 @@
   color: var(--muted);
 }
 .tabs button:hover:not(.active),
-.segmented button:hover:not(.active, :disabled) {
+.segmented button:hover:not(.active) {
   background: var(--gold-soft);
   color: var(--text);
 }
@@ -29,15 +29,8 @@
 }
 .segmented button.active {
   background: var(--gold);
-  color: #1a160f;
+  color: var(--on-gold);
   font-weight: 600;
-}
-.segmented button:disabled {
-  cursor: default;
-  transform: none;
-}
-.segmented button:disabled:not(.active) {
-  opacity: 0.5;
 }
 .badge {
   display: inline-block;
@@ -46,7 +39,7 @@
   padding: 0 6px;
   border-radius: 999px;
   background: var(--gold);
-  color: #1a160f;
+  color: var(--on-gold);
   font-size: 0.75rem;
   font-weight: 700;
 }
