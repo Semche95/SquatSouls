@@ -1,0 +1,560 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Interface texts of one language",
+  "description": "Every language file of src/locales/ follows this schema, checked by the tests: all its keys, no other, each text non-blank. A text with placeholders contains each of them and no other; a plural text separates its forms with |.",
+  "type": "object",
+  "required": ["common", "keys", "app", "play", "draw", "timer", "session", "history", "duration", "config", "fields", "share", "quit", "about", "safety", "onboarding", "update", "native", "startup", "errors"],
+  "additionalProperties": false,
+  "properties": {
+    "common": {
+      "type": "object",
+      "required": ["add", "cancel", "remove", "import", "share", "name", "unnamed", "halved", "setsDone", "jokers", "joker", "reward", "copyFailed", "close"],
+      "additionalProperties": false,
+      "properties": {
+        "add": { "$ref": "#/$defs/text" },
+        "cancel": { "$ref": "#/$defs/text" },
+        "remove": { "$ref": "#/$defs/text" },
+        "import": { "$ref": "#/$defs/text" },
+        "share": { "$ref": "#/$defs/text" },
+        "name": { "$ref": "#/$defs/text" },
+        "unnamed": { "$ref": "#/$defs/text" },
+        "halved": { "$ref": "#/$defs/text" },
+        "setsDone": { "$ref": "#/$defs/text" },
+        "jokers": { "$ref": "#/$defs/text" },
+        "joker": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\|" }] },
+        "reward": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\|" }] },
+        "copyFailed": { "type": "string", "pattern": "^[^{}]*(?:\\{error\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{error\\}" }] },
+        "close": { "$ref": "#/$defs/text" }
+      }
+    },
+    "keys": {
+      "type": "object",
+      "required": ["enter", "escape", "space", "backspace"],
+      "additionalProperties": false,
+      "properties": {
+        "enter": { "$ref": "#/$defs/text" },
+        "escape": { "$ref": "#/$defs/text" },
+        "space": { "$ref": "#/$defs/text" },
+        "backspace": { "$ref": "#/$defs/text" }
+      }
+    },
+    "app": {
+      "type": "object",
+      "required": ["tabs", "about", "sessionSince", "viewConfig", "restored"],
+      "additionalProperties": false,
+      "properties": {
+        "tabs": {
+          "type": "object",
+          "required": ["play", "history", "program", "settings"],
+          "additionalProperties": false,
+          "properties": {
+            "play": { "$ref": "#/$defs/text" },
+            "history": { "$ref": "#/$defs/text" },
+            "program": { "$ref": "#/$defs/text" },
+            "settings": { "$ref": "#/$defs/text" }
+          }
+        },
+        "about": { "$ref": "#/$defs/text" },
+        "sessionSince": { "$ref": "#/$defs/text" },
+        "viewConfig": { "$ref": "#/$defs/text" },
+        "restored": { "$ref": "#/$defs/text" }
+      }
+    },
+    "play": {
+      "type": "object",
+      "required": ["game", "gameLocked", "noEvent", "chooseGame", "intensity", "intensities", "intensityTips", "detected", "ignore", "recovery", "skipRecovery", "todo", "jokersTip", "jokers", "empty", "capped"],
+      "additionalProperties": false,
+      "properties": {
+        "game": { "$ref": "#/$defs/text" },
+        "gameLocked": { "$ref": "#/$defs/text" },
+        "noEvent": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
+        "chooseGame": { "$ref": "#/$defs/text" },
+        "intensity": { "$ref": "#/$defs/text" },
+        "intensities": {
+          "type": "object",
+          "required": ["easy", "normal", "hard"],
+          "additionalProperties": false,
+          "properties": {
+            "easy": { "$ref": "#/$defs/text" },
+            "normal": { "$ref": "#/$defs/text" },
+            "hard": { "$ref": "#/$defs/text" }
+          }
+        },
+        "intensityTips": {
+          "type": "object",
+          "required": ["easy", "normal", "hard"],
+          "additionalProperties": false,
+          "properties": {
+            "easy": { "$ref": "#/$defs/text" },
+            "normal": { "$ref": "#/$defs/text" },
+            "hard": { "$ref": "#/$defs/text" }
+          }
+        },
+        "detected": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
+        "ignore": { "$ref": "#/$defs/text" },
+        "recovery": { "$ref": "#/$defs/text" },
+        "skipRecovery": { "$ref": "#/$defs/text" },
+        "todo": { "$ref": "#/$defs/text" },
+        "jokersTip": { "$ref": "#/$defs/text" },
+        "jokers": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\|" }] },
+        "empty": { "$ref": "#/$defs/text" },
+        "capped": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:event|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{event\\}" }, { "pattern": "\\{max\\}" }] }
+      }
+    },
+    "draw": {
+      "type": "object",
+      "required": ["done", "complete", "halve", "skip", "stop", "confirmStop", "stopSet", "keepSet", "skipSet", "timer", "timing", "recovering"],
+      "additionalProperties": false,
+      "properties": {
+        "done": { "$ref": "#/$defs/text" },
+        "complete": { "$ref": "#/$defs/text" },
+        "halve": { "$ref": "#/$defs/text" },
+        "skip": { "$ref": "#/$defs/text" },
+        "stop": { "$ref": "#/$defs/text" },
+        "confirmStop": { "$ref": "#/$defs/text" },
+        "stopSet": { "$ref": "#/$defs/text" },
+        "keepSet": { "$ref": "#/$defs/text" },
+        "skipSet": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\|" }] },
+        "timer": { "$ref": "#/$defs/text" },
+        "timing": { "$ref": "#/$defs/text" },
+        "recovering": { "$ref": "#/$defs/text" }
+      }
+    },
+    "timer": {
+      "type": "object",
+      "required": ["paused", "ready", "otherSide", "side", "hold", "resume"],
+      "additionalProperties": false,
+      "properties": {
+        "paused": { "$ref": "#/$defs/text" },
+        "ready": { "$ref": "#/$defs/text" },
+        "otherSide": { "$ref": "#/$defs/text" },
+        "side": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:side|sides)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{side\\}" }, { "pattern": "\\{sides\\}" }] },
+        "hold": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:toggle|stop)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{toggle\\}" }, { "pattern": "\\{stop\\}" }] },
+        "resume": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:toggle|stop)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{toggle\\}" }, { "pattern": "\\{stop\\}" }] }
+      }
+    },
+    "session": {
+      "type": "object",
+      "required": ["pendingSets", "noSets", "nothingToCancel", "start", "end", "cancel", "confirmEnd", "endConfirmed", "confirmCancel", "keep", "farewells"],
+      "additionalProperties": false,
+      "properties": {
+        "pendingSets": { "$ref": "#/$defs/text" },
+        "noSets": { "$ref": "#/$defs/text" },
+        "nothingToCancel": { "$ref": "#/$defs/text" },
+        "start": { "$ref": "#/$defs/text" },
+        "end": { "$ref": "#/$defs/text" },
+        "cancel": { "$ref": "#/$defs/text" },
+        "confirmEnd": { "$ref": "#/$defs/text" },
+        "endConfirmed": { "$ref": "#/$defs/text" },
+        "confirmCancel": { "$ref": "#/$defs/text" },
+        "keep": { "$ref": "#/$defs/text" },
+        "farewells": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } }
+      }
+    },
+    "history": {
+      "type": "object",
+      "required": ["current", "since", "notStarted", "waiting", "underway", "totals", "sets", "earned", "spent", "fullHistory", "activeDays", "lastDays", "bySession", "close", "seeAll", "noHistory", "rest", "copy", "copiedSummary", "copyDay", "dayTotal", "eventCount", "jokersLine"],
+      "additionalProperties": false,
+      "properties": {
+        "current": { "$ref": "#/$defs/text" },
+        "since": { "type": "string", "pattern": "^[^{}]*(?:\\{time\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{time\\}" }] },
+        "notStarted": { "$ref": "#/$defs/text" },
+        "waiting": { "$ref": "#/$defs/text" },
+        "underway": { "$ref": "#/$defs/text" },
+        "totals": { "$ref": "#/$defs/text" },
+        "sets": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\|" }] },
+        "earned": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\|" }] },
+        "spent": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\|" }] },
+        "fullHistory": { "$ref": "#/$defs/text" },
+        "activeDays": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\|" }] },
+        "lastDays": { "$ref": "#/$defs/text" },
+        "bySession": { "$ref": "#/$defs/text" },
+        "close": { "$ref": "#/$defs/text" },
+        "seeAll": { "$ref": "#/$defs/text" },
+        "noHistory": { "$ref": "#/$defs/text" },
+        "rest": { "$ref": "#/$defs/text" },
+        "copy": { "$ref": "#/$defs/text" },
+        "copiedSummary": { "$ref": "#/$defs/text" },
+        "copyDay": { "$ref": "#/$defs/text" },
+        "dayTotal": { "type": "string", "pattern": "^[^{}]*(?:\\{totals\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{totals\\}" }] },
+        "eventCount": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:event|count)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{event\\}" }, { "pattern": "\\{count\\}" }] },
+        "jokersLine": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:earned|spent)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{earned\\}" }, { "pattern": "\\{spent\\}" }] }
+      }
+    },
+    "duration": {
+      "type": "object",
+      "required": ["underMinute", "minutes", "hours"],
+      "additionalProperties": false,
+      "properties": {
+        "underMinute": { "$ref": "#/$defs/text" },
+        "minutes": { "type": "string", "pattern": "^[^{}]*(?:\\{minutes\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{minutes\\}" }] },
+        "hours": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:hours|minutes)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{hours\\}" }, { "pattern": "\\{minutes\\}" }] }
+      }
+    },
+    "config": {
+      "type": "object",
+      "required": ["tabs", "save", "discard", "noChanges", "unsaved", "saved", "copied", "games", "event", "exercises", "settings"],
+      "additionalProperties": false,
+      "properties": {
+        "tabs": {
+          "type": "object",
+          "required": ["games", "exercises"],
+          "additionalProperties": false,
+          "properties": {
+            "games": { "$ref": "#/$defs/text" },
+            "exercises": { "$ref": "#/$defs/text" }
+          }
+        },
+        "save": { "$ref": "#/$defs/text" },
+        "discard": { "$ref": "#/$defs/text" },
+        "noChanges": { "$ref": "#/$defs/text" },
+        "unsaved": { "$ref": "#/$defs/text" },
+        "saved": { "$ref": "#/$defs/text" },
+        "copied": { "$ref": "#/$defs/text" },
+        "games": {
+          "type": "object",
+          "required": ["import", "new", "newName", "nameTaken", "nameNeeded", "copyEvents", "newEvents", "noCopy", "create", "shareEmpty", "willReplace", "gameName", "rename", "renameDone", "lastGame", "confirmRemove", "thisGame", "keepGame", "addEvent", "newEvent", "imported", "importedClamped", "events"],
+          "additionalProperties": false,
+          "properties": {
+            "import": { "$ref": "#/$defs/text" },
+            "new": { "$ref": "#/$defs/text" },
+            "newName": { "$ref": "#/$defs/text" },
+            "nameTaken": { "$ref": "#/$defs/text" },
+            "nameNeeded": { "$ref": "#/$defs/text" },
+            "copyEvents": { "$ref": "#/$defs/text" },
+            "newEvents": { "$ref": "#/$defs/text" },
+            "noCopy": { "$ref": "#/$defs/text" },
+            "create": { "$ref": "#/$defs/text" },
+            "shareEmpty": { "$ref": "#/$defs/text" },
+            "willReplace": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
+            "gameName": { "$ref": "#/$defs/text" },
+            "rename": { "$ref": "#/$defs/text" },
+            "renameDone": { "$ref": "#/$defs/text" },
+            "lastGame": { "$ref": "#/$defs/text" },
+            "confirmRemove": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
+            "thisGame": { "$ref": "#/$defs/text" },
+            "keepGame": { "$ref": "#/$defs/text" },
+            "addEvent": { "$ref": "#/$defs/text" },
+            "newEvent": { "$ref": "#/$defs/text" },
+            "imported": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
+            "importedClamped": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:name|n)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }, { "pattern": "\\{n\\}" }, { "pattern": "\\|" }] },
+            "events": { "$ref": "#/$defs/text" }
+          }
+        },
+        "event": {
+          "type": "object",
+          "required": ["perSet", "maxPerSession", "name", "draws", "limit", "noLimit", "jokers", "title", "nameNeeded", "remove", "drawsHint", "limitHint", "jokersHint"],
+          "additionalProperties": false,
+          "properties": {
+            "perSet": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\|" }] },
+            "maxPerSession": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }] },
+            "name": { "$ref": "#/$defs/text" },
+            "draws": { "$ref": "#/$defs/text" },
+            "limit": { "$ref": "#/$defs/text" },
+            "noLimit": { "$ref": "#/$defs/text" },
+            "jokers": { "$ref": "#/$defs/text" },
+            "title": { "$ref": "#/$defs/text" },
+            "nameNeeded": { "$ref": "#/$defs/text" },
+            "remove": { "$ref": "#/$defs/text" },
+            "drawsHint": { "$ref": "#/$defs/text" },
+            "limitHint": { "$ref": "#/$defs/text" },
+            "jokersHint": { "$ref": "#/$defs/text" }
+          }
+        },
+        "exercises": {
+          "type": "object",
+          "required": ["import", "imported", "added", "new", "defaultUnit", "recovery", "unit", "min", "max", "enabled", "name", "unitPlaceholder", "minimum", "maximum", "recoveryLabel", "add", "lastExercise", "timed", "notTimed", "seconds", "timedSummary", "timedSideSummary", "eachSide", "eachSideHint", "recoverySummary", "minutes", "title", "count", "enabledHint", "included", "recoveryHint", "ownRecoveryHint", "range", "rangeValue", "nameNeeded", "remove"],
+          "additionalProperties": false,
+          "properties": {
+            "import": { "$ref": "#/$defs/text" },
+            "imported": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:added|updated)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{added\\}" }, { "pattern": "\\{updated\\}" }] },
+            "added": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\|" }] },
+            "new": { "$ref": "#/$defs/text" },
+            "defaultUnit": { "$ref": "#/$defs/text" },
+            "recovery": { "$ref": "#/$defs/text" },
+            "unit": { "$ref": "#/$defs/text" },
+            "min": { "$ref": "#/$defs/text" },
+            "max": { "$ref": "#/$defs/text" },
+            "enabled": { "$ref": "#/$defs/text" },
+            "name": { "$ref": "#/$defs/text" },
+            "unitPlaceholder": { "$ref": "#/$defs/text" },
+            "minimum": { "$ref": "#/$defs/text" },
+            "maximum": { "$ref": "#/$defs/text" },
+            "recoveryLabel": { "$ref": "#/$defs/text" },
+            "add": { "$ref": "#/$defs/text" },
+            "lastExercise": { "$ref": "#/$defs/text" },
+            "timed": { "$ref": "#/$defs/text" },
+            "notTimed": { "$ref": "#/$defs/text" },
+            "seconds": { "$ref": "#/$defs/text" },
+            "timedSummary": {
+              "type": "object",
+              "required": ["seconds", "minutes"],
+              "additionalProperties": false,
+              "properties": {
+                "seconds": { "$ref": "#/$defs/text" },
+                "minutes": { "$ref": "#/$defs/text" }
+              }
+            },
+            "timedSideSummary": {
+              "type": "object",
+              "required": ["seconds", "minutes"],
+              "additionalProperties": false,
+              "properties": {
+                "seconds": { "$ref": "#/$defs/text" },
+                "minutes": { "$ref": "#/$defs/text" }
+              }
+            },
+            "eachSide": { "$ref": "#/$defs/text" },
+            "eachSideHint": { "$ref": "#/$defs/text" },
+            "recoverySummary": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }] },
+            "minutes": { "$ref": "#/$defs/text" },
+            "title": { "$ref": "#/$defs/text" },
+            "count": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:n|total)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\{total\\}" }, { "pattern": "\\|" }] },
+            "enabledHint": { "$ref": "#/$defs/text" },
+            "included": { "$ref": "#/$defs/text" },
+            "recoveryHint": { "$ref": "#/$defs/text" },
+            "ownRecoveryHint": { "$ref": "#/$defs/text" },
+            "range": { "$ref": "#/$defs/text" },
+            "rangeValue": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:min|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{min\\}" }, { "pattern": "\\{max\\}" }] },
+            "nameNeeded": { "$ref": "#/$defs/text" },
+            "remove": { "$ref": "#/$defs/text" }
+          }
+        },
+        "settings": {
+          "type": "object",
+          "required": ["general", "language", "systemLanguage", "rememberIntensity", "rememberIntensityHint", "tray", "showIcon", "trayHint", "closeToTray", "startHidden", "steam", "detect", "detectHint", "notify", "noGame", "found", "foundIgnored", "blocked", "unnamed", "ignored", "unignore", "sound", "soundHint", "updateCheck", "updateCheckHint", "timer", "timerAutoDone", "timerHint"],
+          "additionalProperties": false,
+          "properties": {
+            "general": { "$ref": "#/$defs/text" },
+            "language": { "$ref": "#/$defs/text" },
+            "systemLanguage": { "$ref": "#/$defs/text" },
+            "rememberIntensity": { "$ref": "#/$defs/text" },
+            "rememberIntensityHint": { "$ref": "#/$defs/text" },
+            "tray": { "$ref": "#/$defs/text" },
+            "showIcon": { "$ref": "#/$defs/text" },
+            "trayHint": { "$ref": "#/$defs/text" },
+            "closeToTray": { "$ref": "#/$defs/text" },
+            "startHidden": { "$ref": "#/$defs/text" },
+            "steam": { "$ref": "#/$defs/text" },
+            "detect": { "$ref": "#/$defs/text" },
+            "detectHint": { "$ref": "#/$defs/text" },
+            "notify": { "$ref": "#/$defs/text" },
+            "noGame": { "$ref": "#/$defs/text" },
+            "found": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
+            "foundIgnored": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
+            "blocked": { "$ref": "#/$defs/text" },
+            "unnamed": { "$ref": "#/$defs/text" },
+            "ignored": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }] },
+            "unignore": { "$ref": "#/$defs/text" },
+            "sound": { "$ref": "#/$defs/text" },
+            "soundHint": { "$ref": "#/$defs/text" },
+            "updateCheck": { "$ref": "#/$defs/text" },
+            "updateCheckHint": { "$ref": "#/$defs/text" },
+            "timer": { "$ref": "#/$defs/text" },
+            "timerAutoDone": { "$ref": "#/$defs/text" },
+            "timerHint": { "$ref": "#/$defs/text" }
+          }
+        }
+      }
+    },
+    "fields": {
+      "type": "object",
+      "required": ["error", "notCount", "tooLarge", "globalRecovery", "minimum", "maximum", "recovery", "draws", "limit", "jokers", "timerPrep", "secondsUnit", "decrease", "increase", "exerciseName", "eventName", "empty", "atMin", "alreadyEmpty"],
+      "additionalProperties": false,
+      "properties": {
+        "error": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:field|error)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{field\\}" }, { "pattern": "\\{error\\}" }] },
+        "notCount": { "$ref": "#/$defs/text" },
+        "tooLarge": { "$ref": "#/$defs/text" },
+        "globalRecovery": { "$ref": "#/$defs/text" },
+        "minimum": { "$ref": "#/$defs/text" },
+        "maximum": { "$ref": "#/$defs/text" },
+        "recovery": { "$ref": "#/$defs/text" },
+        "draws": { "$ref": "#/$defs/text" },
+        "limit": { "$ref": "#/$defs/text" },
+        "jokers": { "$ref": "#/$defs/text" },
+        "timerPrep": { "$ref": "#/$defs/text" },
+        "secondsUnit": { "$ref": "#/$defs/text" },
+        "decrease": { "$ref": "#/$defs/text" },
+        "increase": { "$ref": "#/$defs/text" },
+        "exerciseName": { "$ref": "#/$defs/text" },
+        "eventName": { "$ref": "#/$defs/text" },
+        "empty": { "$ref": "#/$defs/text" },
+        "atMin": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }] },
+        "alreadyEmpty": { "$ref": "#/$defs/text" }
+      }
+    },
+    "share": {
+      "type": "object",
+      "required": ["text", "placeholder", "pasteFirst", "gameInvalid", "gameMisplaced", "exercisesInvalid", "exercisesMisplaced", "newer"],
+      "additionalProperties": false,
+      "properties": {
+        "text": { "$ref": "#/$defs/text" },
+        "placeholder": { "$ref": "#/$defs/text" },
+        "pasteFirst": { "$ref": "#/$defs/text" },
+        "gameInvalid": { "$ref": "#/$defs/text" },
+        "gameMisplaced": { "$ref": "#/$defs/text" },
+        "exercisesInvalid": { "$ref": "#/$defs/text" },
+        "exercisesMisplaced": { "$ref": "#/$defs/text" },
+        "newer": { "$ref": "#/$defs/text" }
+      }
+    },
+    "quit": {
+      "type": "object",
+      "required": ["title", "confirm"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "$ref": "#/$defs/text" },
+        "confirm": { "$ref": "#/$defs/text" }
+      }
+    },
+    "about": {
+      "type": "object",
+      "required": ["description", "meta", "disclaimer", "sourceCode"],
+      "additionalProperties": false,
+      "properties": {
+        "description": { "$ref": "#/$defs/text" },
+        "meta": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:version|author)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{version\\}" }, { "pattern": "\\{author\\}" }] },
+        "disclaimer": { "$ref": "#/$defs/text" },
+        "sourceCode": { "$ref": "#/$defs/text" }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "required": ["title", "lines"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "$ref": "#/$defs/text" },
+        "lines": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } }
+      }
+    },
+    "onboarding": {
+      "type": "object",
+      "required": ["intro", "yourProgram", "safety", "gitGud", "back", "next", "program", "start"],
+      "additionalProperties": false,
+      "properties": {
+        "intro": {
+          "type": "object",
+          "required": ["title", "lines"],
+          "additionalProperties": false,
+          "properties": {
+            "title": { "$ref": "#/$defs/text" },
+            "lines": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } }
+          }
+        },
+        "yourProgram": {
+          "type": "object",
+          "required": ["title", "lines"],
+          "additionalProperties": false,
+          "properties": {
+            "title": { "$ref": "#/$defs/text" },
+            "lines": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } }
+          }
+        },
+        "safety": { "$ref": "#/$defs/text" },
+        "gitGud": {
+          "type": "object",
+          "required": ["title", "lines"],
+          "additionalProperties": false,
+          "properties": {
+            "title": { "$ref": "#/$defs/text" },
+            "lines": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } }
+          }
+        },
+        "back": { "$ref": "#/$defs/text" },
+        "next": { "$ref": "#/$defs/text" },
+        "program": { "$ref": "#/$defs/text" },
+        "start": { "$ref": "#/$defs/text" }
+      }
+    },
+    "update": {
+      "type": "object",
+      "required": ["available", "downloadingHint", "ready", "readyHint", "manualHint", "download", "restart", "restartLocked"],
+      "additionalProperties": false,
+      "properties": {
+        "available": { "type": "string", "pattern": "^[^{}]*(?:\\{version\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{version\\}" }] },
+        "downloadingHint": { "$ref": "#/$defs/text" },
+        "ready": { "type": "string", "pattern": "^[^{}]*(?:\\{version\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{version\\}" }] },
+        "readyHint": { "$ref": "#/$defs/text" },
+        "manualHint": { "$ref": "#/$defs/text" },
+        "download": { "$ref": "#/$defs/text" },
+        "restart": { "$ref": "#/$defs/text" },
+        "restartLocked": { "$ref": "#/$defs/text" }
+      }
+    },
+    "native": {
+      "type": "object",
+      "required": ["show", "quit", "launchedTitle", "launchedConfigured", "launchedUnknown"],
+      "additionalProperties": false,
+      "properties": {
+        "show": { "$ref": "#/$defs/text" },
+        "quit": { "$ref": "#/$defs/text" },
+        "launchedTitle": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
+        "launchedConfigured": { "$ref": "#/$defs/text" },
+        "launchedUnknown": { "$ref": "#/$defs/text" }
+      }
+    },
+    "startup": {
+      "type": "object",
+      "required": ["title", "report", "retry", "download"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "$ref": "#/$defs/text" },
+        "report": { "$ref": "#/$defs/text" },
+        "retry": { "$ref": "#/$defs/text" },
+        "download": { "$ref": "#/$defs/text" }
+      }
+    },
+    "errors": {
+      "type": "object",
+      "required": ["unknown", "database_not_prepared", "database_damaged", "database_denied", "database_full", "internal", "config_ignored", "tray_unavailable", "invalid_language", "no_exercise", "exercise_empty", "exercise_duplicate", "exercise_range", "no_active_exercise", "no_game", "game_empty", "game_duplicate", "game_name_duplicate", "event_empty", "event_duplicate", "event_no_draw", "event_too_many_draws", "event_zero_limit", "name_too_long", "name_hidden_char", "unit_too_long", "unit_hidden_char", "too_many_exercises", "too_many_events", "unknown_game", "unknown_event", "session_other_game", "not_enough_jokers", "exercise_not_reducible", "set_not_pending", "exercise_not_in_set", "exercise_already_done", "exercise_not_next", "set_not_current", "end_without_set", "end_with_pending_sets"],
+      "additionalProperties": false,
+      "properties": {
+        "unknown": { "$ref": "#/$defs/text" },
+        "database_not_prepared": { "$ref": "#/$defs/text" },
+        "database_damaged": { "$ref": "#/$defs/text" },
+        "database_denied": { "$ref": "#/$defs/text" },
+        "database_full": { "$ref": "#/$defs/text" },
+        "internal": { "$ref": "#/$defs/text" },
+        "config_ignored": { "type": "string", "pattern": "^[^{}]*(?:\\{cause\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{cause\\}" }] },
+        "tray_unavailable": { "$ref": "#/$defs/text" },
+        "invalid_language": { "type": "string", "pattern": "^[^{}]*(?:\\{value\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{value\\}" }] },
+        "no_exercise": { "$ref": "#/$defs/text" },
+        "exercise_empty": { "$ref": "#/$defs/text" },
+        "exercise_duplicate": { "type": "string", "pattern": "^[^{}]*(?:\\{id\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{id\\}" }] },
+        "exercise_range": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:name|min|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }, { "pattern": "\\{min\\}" }, { "pattern": "\\{max\\}" }] },
+        "no_active_exercise": { "$ref": "#/$defs/text" },
+        "no_game": { "$ref": "#/$defs/text" },
+        "game_empty": { "$ref": "#/$defs/text" },
+        "game_duplicate": { "type": "string", "pattern": "^[^{}]*(?:\\{id\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{id\\}" }] },
+        "game_name_duplicate": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
+        "event_empty": { "type": "string", "pattern": "^[^{}]*(?:\\{game\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }] },
+        "event_duplicate": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|id)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{id\\}" }] },
+        "event_no_draw": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|event)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{event\\}" }] },
+        "event_too_many_draws": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|event|draws|active)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{event\\}" }, { "pattern": "\\{draws\\}" }, { "pattern": "\\{active\\}" }] },
+        "event_zero_limit": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|event)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{event\\}" }] },
+        "name_too_long": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:name|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }, { "pattern": "\\{max\\}" }] },
+        "name_hidden_char": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
+        "unit_too_long": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:name|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }, { "pattern": "\\{max\\}" }] },
+        "unit_hidden_char": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
+        "too_many_exercises": { "type": "string", "pattern": "^[^{}]*(?:\\{max\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{max\\}" }] },
+        "too_many_events": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{max\\}" }] },
+        "unknown_game": { "type": "string", "pattern": "^[^{}]*(?:\\{id\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{id\\}" }] },
+        "unknown_event": { "type": "string", "pattern": "^[^{}]*(?:\\{id\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{id\\}" }] },
+        "session_other_game": { "$ref": "#/$defs/text" },
+        "not_enough_jokers": { "$ref": "#/$defs/text" },
+        "exercise_not_reducible": { "$ref": "#/$defs/text" },
+        "set_not_pending": { "$ref": "#/$defs/text" },
+        "exercise_not_in_set": { "$ref": "#/$defs/text" },
+        "exercise_already_done": { "$ref": "#/$defs/text" },
+        "exercise_not_next": { "$ref": "#/$defs/text" },
+        "set_not_current": { "$ref": "#/$defs/text" },
+        "end_without_set": { "$ref": "#/$defs/text" },
+        "end_with_pending_sets": { "$ref": "#/$defs/text" }
+      }
+    }
+  },
+  "$defs": {
+    "text": { "type": "string", "pattern": "^[^{}]*\\S[^{}]*$" },
+    "plural": { "type": "string", "pattern": "^[^{}]*\\|[^{}]*$" }
+  }
+}

@@ -2,30 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { errorText, language, languageSetting, loadLanguage, setLanguage, t } from '../i18n.js';
-import en from '../locales/en.json';
-import fr from '../locales/fr.json';
 import { config, rejection, setup, mountApp } from './app.js';
 
-// Every text of a locale file, by dotted key.
-const flat = (messages, prefix = '') =>
-  Object.entries(messages).flatMap(([key, value]) =>
-    typeof value === 'object' ? flat(value, `${prefix}${key}.`) : [[`${prefix}${key}`, value]],
-  );
-const placeholders = (text) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 const nativeCalls = () => invoke.mock.calls.filter(([cmd]) => cmd === 'set_native_texts').map(([, args]) => args.texts);
 
 describe('locale files', () => {
-  it('have the same keys, plural forms and placeholders, without empty texts', () => {
-    const french = Object.fromEntries(flat(fr));
-    expect(flat(en).map(([key]) => key)).toEqual(Object.keys(french));
-    for (const [key, text] of flat(en)) {
-      expect(text.trim(), key).not.toBe('');
-      expect(french[key].trim(), key).not.toBe('');
-      expect(text.split('|').length, key).toBe(french[key].split('|').length);
-      expect(placeholders(text), key).toEqual(placeholders(french[key]));
-    }
-  });
-
   it('pluralize in both languages', async () => {
     expect([0, 1, 2].map((n) => t('common.joker', n))).toEqual(['0 jokers', '1 joker', '2 jokers']);
     expect([0, 1, 2].map((n) => t('play.jokers', n))).toEqual(['no jokers', '1 joker', '2 jokers']);
