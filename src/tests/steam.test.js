@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, setup, mountApp, openSettings, layOutControls, formDialog, formDialogOpen } from './app.js';
+import { config, emptySession, setup, mountApp, openSettings, layOutControls, formDialog, formDialogOpen, save, savedConfig } from './app.js';
 
 // Configuration with detection enabled, Elden Ring carrying its Steam AppId.
 const steamConfig = (extra = {}) => ({
@@ -27,7 +27,6 @@ const status = (w) => w.find('.status').text();
 // Settings checkbox, by its label.
 const check = (w, label) => w.findAll('.check').find((c) => c.text() === label).find('input');
 const notifications = () => invoke.mock.calls.filter(([cmd]) => cmd === 'notify').map(([, n]) => n);
-const lastSaved = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)?.[1].config;
 
 describe('Steam game detection', () => {
   layOutControls();
@@ -46,7 +45,7 @@ describe('Steam game detection', () => {
     await flushPromises();
     expect(w.find('.play select').element.value).toBe('er');
     expect(banner(w).exists()).toBe(false);
-    expect(lastSaved()).toBeUndefined();
+    expect(savedConfig()).toBeUndefined();
   });
 
   it('offers each of the games carrying the detected AppId', async () => {
@@ -120,7 +119,7 @@ describe('Steam game detection', () => {
     await banner(w).findAll('button')[1].trigger('click');
     await flushPromises();
     expect(w.find('.play select').element.value).toBe('er-2');
-    expect(lastSaved().games.find((g) => g.id === 'er-2').steamAppId).toBe(1245620);
+    expect(savedConfig().games.find((g) => g.id === 'er-2').steamAppId).toBe(1245620);
   });
 
   it('recognizes a game without AppId by its name and gives it the detected one', async () => {
@@ -129,7 +128,7 @@ describe('Steam game detection', () => {
     expect(banner(w).text()).toContain('Elden Ring detected.');
     await banner(w).find('button').trigger('click');
     await flushPromises();
-    expect(lastSaved().games[0].steamAppId).toBe(1245620);
+    expect(savedConfig().games[0].steamAppId).toBe(1245620);
   });
 
   it('offers nothing when the Steam Store does not answer', async () => {
@@ -147,7 +146,7 @@ describe('Steam game detection', () => {
     expect(formDialog().find('input[aria-label="Name of the new game"]').element.value).toBe('Hollow Knight');
     await formDialog().find('form').trigger('submit');
     await flushPromises();
-    expect(lastSaved().games.at(-1)).toMatchObject({ name: 'Hollow Knight', steamAppId: 367520 });
+    expect(savedConfig().games.at(-1)).toMatchObject({ name: 'Hollow Knight', steamAppId: 367520 });
   });
 
   it('ignores an unknown game, lists it in the settings and can remove it from there', async () => {
@@ -155,7 +154,7 @@ describe('Steam game detection', () => {
     const w = await mountApp();
     await banner(w).find('.ghost').trigger('click');
     await flushPromises();
-    expect(lastSaved().ignoredGames).toEqual([{ appId: 367520, name: 'Hollow Knight' }]);
+    expect(savedConfig().ignoredGames).toEqual([{ appId: 367520, name: 'Hollow Knight' }]);
     expect(banner(w).exists()).toBe(false);
     expect(invoke.mock.calls.filter(([cmd]) => cmd === 'steam_game_name')).toEqual([['steam_game_name', { appId: 367520, language: 'english' }]]);
 
@@ -168,7 +167,7 @@ describe('Steam game detection', () => {
     expect(ignored().map((li) => li.find('.ignored-name').text())).toEqual(['Hollow Knight']);
     await ignored()[0].find('button').trigger('click');
     await flushPromises();
-    expect(lastSaved().ignoredGames).toEqual([]);
+    expect(savedConfig().ignoredGames).toEqual([]);
     expect(ignored()).toHaveLength(0);
   });
 
@@ -178,10 +177,10 @@ describe('Steam game detection', () => {
     await openSettings(w);
     expect(w.find('.setting .small').exists()).toBe(false);
     await check(w, 'Detect the running Steam game').setValue(true);
-    expect(lastSaved()).toBeUndefined();
-    await w.find('.cfg-actions .primary').trigger('click');
+    expect(savedConfig()).toBeUndefined();
+    await save(w).trigger('click');
     await flushPromises();
-    expect(lastSaved().steamDetection).toBe(true);
+    expect(savedConfig().steamDetection).toBe(true);
     expect(invoke.mock.calls.some(([cmd]) => cmd === 'running_steam_app')).toBe(true);
   });
 });
@@ -247,8 +246,8 @@ describe('notification area', () => {
     await check(w, 'Show the icon in the notification area').setValue(true);
     await check(w, hide).setValue(true);
     await check(w, 'Start hidden').setValue(true);
-    await w.find('.cfg-actions .primary').trigger('click');
+    await save(w).trigger('click');
     await flushPromises();
-    expect(lastSaved()).toMatchObject({ tray: true, closeToTray: true, startHidden: true });
+    expect(savedConfig()).toMatchObject({ tray: true, closeToTray: true, startHidden: true });
   });
 });

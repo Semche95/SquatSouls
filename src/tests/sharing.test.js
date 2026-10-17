@@ -1,12 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
-import { invoke } from '@tauri-apps/api/core';
-import { config, setup, openConfig, shownGame, gameButton, rename, expectUnchanged, expectTip, layOutControls, formDialog, formDialogOpen, formDialogClosed } from './app.js';
+import { config, setup, openConfig, expectUnchanged, expectTip, layOutControls, formDialog, formDialogOpen, formDialogClosed, save, savedConfig } from './app.js';
+import { shownGame, gameButton, rename } from './program.js';
 import { shareExercises, shareGame } from '../share.js';
 
 describe('sharing', () => {
   layOutControls();
-  const savedConfig = () => invoke.mock.calls.filter(([cmd]) => cmd === 'save_config').at(-1)[1].config;
 
   it('does not share a game without event', async () => {
     setup({ get_config: { config: { ...config, games: [{ ...config.games[0], events: [] }, config.games[1]] } } });
@@ -91,7 +90,7 @@ describe('sharing', () => {
     expect(savedConfig().games[0].name).toBe('Elden Ring');
     expect(w.find('.banner.ok').text()).toBe('Exercises imported: 1 added, 1 updated.');
     expect(w.findAll('.cfg-exercises .tile-slot')).toHaveLength(2);
-    await w.find('.cfg-actions .primary').trigger('click');
+    await save(w).trigger('click');
     await flushPromises();
     expect(savedConfig().games[0].name).toBe('Elden Ring DLC');
     expect(savedConfig().exercises).toHaveLength(2);

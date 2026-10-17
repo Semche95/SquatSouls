@@ -93,15 +93,11 @@ export async function openConfig() {
   return w;
 }
 
-// Game shown in the select of the Program tab.
-export const shownGame = (w) => w.find('#cfg-game option:checked').text();
-export const gameButton = (w, text) => w.findAll('.cfg-game-bar .field button').find((b) => b.text() === text);
-// Renames the edited game with Rename then Done: the new name waits for Save.
-export async function rename(w, name) {
-  await gameButton(w, 'Rename').trigger('click');
-  await w.find('input[aria-label="Name of the game"]').setValue(name);
-  await w.find('.cfg-game-bar form').trigger('submit');
-}
+// Save and reset buttons of the bar shared by the Program and Settings tabs.
+export const save = (w) => w.find('.cfg-actions .primary');
+export const discard = (w) => w.find('.cfg-actions .ghost');
+// Configuration sent by the last save, undefined without any save.
+export const savedConfig = () => invoke.mock.calls.findLast(([cmd]) => cmd === 'save_config')?.[1].config;
 
 // Without pending changes, the save and reset buttons stay shown but disabled.
 export function expectUnchanged(w) {

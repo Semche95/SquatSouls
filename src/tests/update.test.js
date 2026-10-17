@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { setup, mountApp, emitEvent, emptySession, expectTip, openSettings } from './app.js';
+import { setup, mountApp, emitEvent, emptySession, expectTip, openSettings, save, savedConfig } from './app.js';
 
 const banner = (w) => w.find('.banner.update');
 const downloading = (progress = null) => ({ version: '0.2.0', progress, stage: 'downloading' });
@@ -75,10 +75,9 @@ describe('update', () => {
       const w = await mountApp();
       await openSettings(w);
       await check(w).find('input').setValue(false);
-      await w.find('.cfg-actions .primary').trigger('click');
+      await save(w).trigger('click');
       await flushPromises();
-      const sent = invoke.mock.calls.find(([cmd]) => cmd === 'save_config')[1].config;
-      expect(sent.updateCheck).toBe(false);
+      expect(savedConfig().updateCheck).toBe(false);
     });
   });
 });
