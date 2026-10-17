@@ -2,6 +2,8 @@
 
 Tauri 2 (Rust) + Vue 3 (Vite) desktop app. See `README.md` for usage, `docs/BEHAVIOR.md` for behavior and `docs/DATA-AND-LOGS.md` for storage and logs.
 
+Keep this file up to date in the same change as soon as a change makes it inaccurate or incomplete: structure, commands, conventions or file names it mentions.
+
 ## Business rules
 
 The business rules are described in `docs/BEHAVIOR.md`, which is the reference.
