@@ -66,8 +66,8 @@ fn launch(app: &AppHandle, system_locale: Option<&str>) -> Result<Launched, Laun
     Store::launch(&dir.join(db), system_locale)
 }
 
-/// Enters the minimal mode. The database is left as it is. The update setting is in it too: the
-/// update is looked for as when the setting is on, its default.
+/// Enters the minimal mode. The database is left as it is. The update settings are in it too: the
+/// update is looked for and downloaded as when they are on, their default.
 fn fail(app: &AppHandle, e: &LaunchError, system_locale: Option<&str>) {
     log::error!("Database unusable: {e}");
     app.manage(StartupFailure {
@@ -81,7 +81,7 @@ fn fail(app: &AppHandle, e: &LaunchError, system_locale: Option<&str>) {
         let _ = window.center();
     }
     tray::show_main(app);
-    update::apply(app, true);
+    update::apply(app, true, true);
 }
 
 /// Renews the copy of the database at regular intervals, for as long as the app runs.

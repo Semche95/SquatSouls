@@ -18,11 +18,11 @@ pub(crate) fn save_config(
 ) -> Result<ConfigView, AppError> {
     config.validate()?;
     let mut s = lock(&state)?;
-    let update_check = config.update_check;
-    let update_changed = update_check != s.config.update_check;
+    let update = (config.update_check, config.update_auto);
+    let update_changed = update != (s.config.update_check, s.config.update_auto);
     let view = s.store_config(config)?;
     if update_changed {
-        update::apply(&app, update_check);
+        update::apply(&app, update.0, update.1);
     }
     tray::apply(&app, &s).map_err(|e| {
         AppError::logged(

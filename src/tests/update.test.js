@@ -57,6 +57,16 @@ describe('update', () => {
     await expectTip(button, 'Available once the session is over');
   });
 
+  it('downloads the update found on request when it is not automatic', async () => {
+    setup({ get_update: { version: '0.2.0', progress: null, stage: 'available' }, download_update: undefined });
+    const w = await mountApp();
+    expect(banner(w).text()).toContain('Version 0.2.0 is available');
+    expect(banner(w).text()).toContain('Ready to download. It installs when the app quits.');
+    expect(banner(w).find('.update-progress').exists()).toBe(false);
+    await banner(w).find('button').trigger('click');
+    expect(invoke).toHaveBeenCalledWith('download_update', undefined);
+  });
+
   it('downloads the update again on request when the download fails', async () => {
     setup({ get_update: downloading(0.42), download_update: undefined });
     const w = await mountApp();
@@ -79,17 +89,25 @@ describe('update', () => {
     expect(openUrl).toHaveBeenCalledWith('https://github.com/Semche95/SquatSouls/releases/latest');
   });
 
-  describe('setting', () => {
-    const check = (w) => w.findAll('.check').find((c) => c.text() === 'Check for updates');
+  describe('settings', () => {
+    const check = (w, label) => w.findAll('.check').find((c) => c.text() === label);
 
-    it('is saved with the Settings tab', async () => {
+    it('are saved with the Settings tab', async () => {
       setup({ save_config: (args) => ({ config: args.config }) });
       const w = await mountApp();
       await openSettings(w);
-      await check(w).find('input').setValue(false);
+      await check(w, 'Update without asking').find('input').setValue(false);
       await save(w).trigger('click');
       await flushPromises();
-      expect(savedConfig().updateCheck).toBe(false);
+      expect(savedConfig()).toMatchObject({ updateCheck: true, updateAuto: false });
+    });
+
+    it('only offer to update without asking while updates are checked', async () => {
+      setup();
+      const w = await mountApp();
+      await openSettings(w);
+      await check(w, 'Check for updates').find('input').setValue(false);
+      expect(check(w, 'Update without asking')).toBeUndefined();
     });
   });
 });

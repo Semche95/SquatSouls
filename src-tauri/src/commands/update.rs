@@ -1,4 +1,4 @@
-//! Update: where it stands, its download again on request and its installation.
+//! Update: where it stands, its download on request and its installation.
 
 use crate::app::AppError;
 use crate::update::{self, PendingUpdate, UpdateView};
@@ -10,7 +10,7 @@ pub(crate) fn get_update(pending: State<'_, PendingUpdate>) -> Option<UpdateView
     pending.view()
 }
 
-/// Downloads the update again after a failed download.
+/// Downloads the update found, when it is not automatic.
 #[tauri::command]
 pub(crate) fn download_update(app: AppHandle) {
     update::download_found(&app);

@@ -41,8 +41,8 @@ fn renamed_settings_keep_their_value_once_migrated() {
     std::fs::remove_file(&path).unwrap();
     assert!(!cfg.sound);
     assert!(
-        cfg.update_check,
-        "on in a database saved before the setting"
+        cfg.update_check && cfg.update_auto,
+        "on in a database saved before the settings"
     );
     assert_eq!(cfg.recovery, 90);
     assert_eq!(cfg.exercises[0].recovery, Some(45));

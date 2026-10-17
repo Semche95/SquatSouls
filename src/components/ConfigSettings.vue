@@ -146,6 +146,10 @@ const status = computed(() => {
           </label>
           <p class="hint">{{ t('config.settings.updateCheckHint') }}</p>
         </div>
+        <label v-if="draft.updateCheck" class="setting-row nested check">
+          {{ t('config.settings.updateAuto') }}
+          <input v-model="draft.updateAuto" type="checkbox" />
+        </label>
       </div>
     </section>
   </div>

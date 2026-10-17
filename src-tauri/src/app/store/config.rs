@@ -17,6 +17,7 @@ const START_HIDDEN: &str = "start_hidden";
 const REMEMBER_INTENSITY: &str = "remember_intensity";
 const SOUND: &str = "sound";
 const UPDATE_CHECK: &str = "update_check";
+const UPDATE_AUTO: &str = "update_auto";
 const TIMER_AUTO_DONE: &str = "timer_auto_done";
 const TIMER_PREP: &str = "timer_prep";
 
@@ -93,6 +94,7 @@ impl Store {
             timer_auto_done: self.parsed_setting(TIMER_AUTO_DONE, true)?,
             timer_prep: self.parsed_setting(TIMER_PREP, DEFAULT_TIMER_PREP)?,
             update_check: self.parsed_setting(UPDATE_CHECK, true)?,
+            update_auto: self.parsed_setting(UPDATE_AUTO, true)?,
             ignored_games,
             exercises,
             games,
@@ -150,6 +152,11 @@ impl Store {
                 UPDATE_CHECK,
                 old.update_check.to_string(),
                 config.update_check.to_string(),
+            ),
+            (
+                UPDATE_AUTO,
+                old.update_auto.to_string(),
+                config.update_auto.to_string(),
             ),
         ];
         for (key, old, new) in settings {

@@ -252,7 +252,8 @@
       "soundHint": "At the start and end of the timer, and at the end of the recovery.",
       "updates": "Updates",
       "updateCheck": "Check for updates",
-      "updateCheckHint": "Looks for a new version at launch and downloads it in the background.",
+      "updateCheckHint": "Looks for a new version at launch.",
+      "updateAuto": "Update without asking",
       "timer": "Timer",
       "timerAutoDone": "Mark the exercise done when the timer ends",
       "timerHint": "Offered in Play for the exercises timed in Program."
@@ -338,12 +339,14 @@
   },
   "update": {
     "available": "Version {version} is available",
+    "availableHint": "Ready to download. It installs when the app quits.",
     "downloadingHint": "Downloading in the background…",
     "failedHint": "The download failed. Check the connection, then try again.",
     "ready": "Version {version} is ready",
     "readyHint": "It will be installed when you quit.",
     "manualHint": "Download the new package to install it.",
     "download": "Download",
+    "update": "Update",
     "restart": "Restart now",
     "restartLocked": "Available once the session is over"
   },

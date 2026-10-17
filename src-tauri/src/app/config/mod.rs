@@ -124,9 +124,12 @@ pub struct Config {
     /// Countdown before the timer starts, in seconds.
     #[serde(default = "default_timer_prep")]
     pub timer_prep: u32,
-    /// Looks for a new version at launch and downloads it in the background.
+    /// Looks for a new version at launch.
     #[serde(default = "default_true")]
     pub update_check: bool,
+    /// Downloads the new version found in the background without asking.
+    #[serde(default = "default_true")]
+    pub update_auto: bool,
     #[serde(default)]
     pub ignored_games: Vec<IgnoredGame>,
     pub exercises: Vec<Exercise>,

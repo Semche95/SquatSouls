@@ -1,5 +1,6 @@
-//! Update: checked at launch when enabled, announced as soon as found, downloaded in the background,
-//! downloaded again on request after a failure, installed on quitting or on request. The `.deb` and `.rpm` packages are only told.
+//! Update: checked at launch when enabled, announced as soon as found, downloaded in the background
+//! right away when automatic or else on request, downloaded again on request after a failure,
+//! installed on quitting or on request. The `.deb` and `.rpm` packages are only told.
 
 use crate::app::AppError;
 use serde::Serialize;
@@ -16,6 +17,8 @@ const UPDATE_CHANGED: &str = "update-changed";
 #[derive(Clone, Copy, Serialize)]
 #[serde(rename_all = "lowercase")]
 enum Stage {
+    /// Found, downloaded only if the user asks for it.
+    Available,
     Downloading,
     /// Download failed, downloaded again only if the user asks for it.
     Failed,
@@ -50,7 +53,7 @@ struct Pending {
     generation: u64,
     check: Option<JoinHandle<()>>,
     view: Option<UpdateView>,
-    /// Failed to download, waiting for the user to ask for its download.
+    /// Found or failed to download, waiting for the user to ask for its download.
     found: Option<Update>,
     downloaded: Option<(Update, Vec<u8>)>,
 }
@@ -80,10 +83,10 @@ fn installable() -> bool {
     !cfg!(target_os = "linux") || bundle_type() == Some(BundleType::AppImage)
 }
 
-/// Enabled, looks for a newer version and downloads it; disabled, drops the check, the download and
-/// the downloaded update. Offline or on failure of the check, only a warning in the log.
+/// Enabled, looks for a newer version and, automatic, downloads it; disabled, drops the check, the
+/// download and the downloaded update. Offline or on failure of the check, only a warning in the log.
 /// The development build never looks for one.
-pub(crate) fn apply(app: &AppHandle, enabled: bool) {
+pub(crate) fn apply(app: &AppHandle, enabled: bool, automatic: bool) {
     if cfg!(debug_assertions) {
         return;
     }
@@ -100,7 +103,7 @@ pub(crate) fn apply(app: &AppHandle, enabled: bool) {
     if enabled {
         let app = app.clone();
         pending.check = Some(tauri::async_runtime::spawn(async move {
-            if let Err(e) = check(&app, generation).await {
+            if let Err(e) = check(&app, generation, automatic).await {
                 log::warn!("Update not checked: {e}");
                 set_view(&app, generation, None);
             }
@@ -111,7 +114,7 @@ pub(crate) fn apply(app: &AppHandle, enabled: bool) {
     }
 }
 
-/// Downloads the update again after a failure, at the user's request.
+/// Downloads the update found, or downloads it again after a failure, at the user's request.
 pub(crate) fn download_found(app: &AppHandle) {
     let state = app.state::<PendingUpdate>();
     let mut pending = state.lock();
@@ -140,7 +143,11 @@ fn set_view(app: &AppHandle, generation: u64, view: Option<UpdateView>) {
     update_pending(app, generation, |pending| pending.view = view);
 }
 
-async fn check(app: &AppHandle, generation: u64) -> tauri_plugin_updater::Result<()> {
+async fn check(
+    app: &AppHandle,
+    generation: u64,
+    automatic: bool,
+) -> tauri_plugin_updater::Result<()> {
     let Some(update) = app.updater()?.check().await? else {
         return Ok(());
     };
@@ -150,8 +157,13 @@ async fn check(app: &AppHandle, generation: u64) -> tauri_plugin_updater::Result
             generation,
             Some(UpdateView::new(&update, None, Stage::Manual)),
         );
-    } else {
+    } else if automatic {
         download(app, generation, update).await;
+    } else {
+        update_pending(app, generation, |pending| {
+            pending.view = Some(UpdateView::new(&update, None, Stage::Available));
+            pending.found = Some(update);
+        });
     }
     Ok(())
 }

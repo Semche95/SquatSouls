@@ -322,7 +322,7 @@
         },
         "settings": {
           "type": "object",
-          "required": ["general", "language", "systemLanguage", "rememberIntensity", "rememberIntensityHint", "tray", "showIcon", "trayHint", "closeToTray", "startHidden", "steam", "detect", "detectHint", "notify", "noGame", "found", "foundIgnored", "blocked", "unnamed", "ignored", "unignore", "sound", "soundHint", "updates", "updateCheck", "updateCheckHint", "timer", "timerAutoDone", "timerHint"],
+          "required": ["general", "language", "systemLanguage", "rememberIntensity", "rememberIntensityHint", "tray", "showIcon", "trayHint", "closeToTray", "startHidden", "steam", "detect", "detectHint", "notify", "noGame", "found", "foundIgnored", "blocked", "unnamed", "ignored", "unignore", "sound", "soundHint", "updates", "updateCheck", "updateCheckHint", "updateAuto", "timer", "timerAutoDone", "timerHint"],
           "additionalProperties": false,
           "properties": {
             "general": { "$ref": "#/$defs/text" },
@@ -351,6 +351,7 @@
             "updates": { "$ref": "#/$defs/text" },
             "updateCheck": { "$ref": "#/$defs/text" },
             "updateCheckHint": { "$ref": "#/$defs/text" },
+            "updateAuto": { "$ref": "#/$defs/text" },
             "timer": { "$ref": "#/$defs/text" },
             "timerAutoDone": { "$ref": "#/$defs/text" },
             "timerHint": { "$ref": "#/$defs/text" }
@@ -469,16 +470,18 @@
     },
     "update": {
       "type": "object",
-      "required": ["available", "downloadingHint", "failedHint", "ready", "readyHint", "manualHint", "download", "restart", "restartLocked"],
+      "required": ["available", "availableHint", "downloadingHint", "failedHint", "ready", "readyHint", "manualHint", "download", "update", "restart", "restartLocked"],
       "additionalProperties": false,
       "properties": {
         "available": { "type": "string", "pattern": "^[^{}]*(?:\\{version\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{version\\}" }] },
+        "availableHint": { "$ref": "#/$defs/text" },
         "downloadingHint": { "$ref": "#/$defs/text" },
         "failedHint": { "$ref": "#/$defs/text" },
         "ready": { "type": "string", "pattern": "^[^{}]*(?:\\{version\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{version\\}" }] },
         "readyHint": { "$ref": "#/$defs/text" },
         "manualHint": { "$ref": "#/$defs/text" },
         "download": { "$ref": "#/$defs/text" },
+        "update": { "$ref": "#/$defs/text" },
         "restart": { "$ref": "#/$defs/text" },
         "restartLocked": { "$ref": "#/$defs/text" }
       }
