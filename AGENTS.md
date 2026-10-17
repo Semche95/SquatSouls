@@ -47,7 +47,7 @@ pnpm test                   # interface tests (Vitest)
 - Never mention in the sources (comments included) a file or folder that is not in the repository: the reference would be broken for anyone cloning the repository.
 - Follow the DRY rule everywhere (Rust, Vue, CSS, tests): factor out any duplicated logic, value or style rather than copying it.
 - One file, one responsibility: if describing a file requires "and", split it. Past about 300 lines in a source file (Rust, JS, Vue) or 400 in a test file, check before adding to it whether it holds several responsibilities, and extract them as part of the change rather than growing it further. The length is a trigger to look, not a limit in itself.
-- Split by domain, never into generic `utils`, `helpers` or `common` files: a Rust module that grows becomes a folder (`app/session/` with `mod.rs` and one file per concern), a composable that mixes concerns becomes several, and `commands.rs` is grouped by domain. Test files follow the same rule.
+- Split by domain, never into generic `utils`, `helpers` or `common` files: a Rust module that grows becomes a folder (`app/session/` with `mod.rs` and one file per concern), a composable that mixes concerns becomes several, and `commands/` is grouped by domain. Test files follow the same rule.
 - A split is its own commit: a pure move with no behavior change, tests passing before and after, never mixed with a feature or a fix.
 - The `//!` comment of a Rust `mod.rs` documents the whole folder and lists its concerns, as `app/mod.rs` does: update it in the same change as soon as a file of the folder is added, removed or changes concern.
 - Run `cargo test` after any change to the Rust code, `pnpm test` after any change to `src/`.
@@ -60,7 +60,7 @@ pnpm test                   # interface tests (Vitest)
 
 ## Token economy
 
-- Do not read `node_modules/`, `src-tauri/target/`, `src-tauri/gen/`, `dist/` or lock files (`package-lock.json`, `Cargo.lock`).
+- Do not read `node_modules/`, `src-tauri/target/`, `src-tauri/gen/`, `dist/` or lock files (`pnpm-lock.yaml`, `Cargo.lock`).
 - Search with `grep` before opening a file, and only read the useful part of large files.
 - Hand broad searches or verbose tasks (exploring several files, analyzing logs) to a subagent when only the conclusion matters: it keeps the details in its own context.
 - Filter long outputs (`cargo test 2>&1 | tail`, `cargo build -q`).
