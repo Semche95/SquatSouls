@@ -63,8 +63,8 @@
   transform: none;
 }
 
-:is(.config, .form-dialog) input,
-:is(.config, .form-dialog) textarea {
+:is(.config, .form-dialog, .edit-dialog) input,
+:is(.config, .form-dialog, .edit-dialog) textarea {
   font: inherit;
   color: inherit;
   width: 100%;
@@ -74,18 +74,18 @@
   padding-block: 6px;
   padding-left: 8px;
 }
-:is(.config, .form-dialog) :is(input, textarea) {
+:is(.config, .form-dialog, .edit-dialog) :is(input, textarea) {
   padding-right: 8px;
 }
-:is(.config, .form-dialog) .ts-wrapper {
+:is(.config, .form-dialog, .edit-dialog) .ts-wrapper {
   --select-bg: var(--panel-2);
 }
-:is(.config, .form-dialog) .ts-control {
+:is(.config, .form-dialog, .edit-dialog) .ts-control {
   padding-block: 6px;
   padding-left: 8px;
 }
-:is(.config, .form-dialog) input:focus,
-:is(.config, .form-dialog) textarea:focus {
+:is(.config, .form-dialog, .edit-dialog) input:focus,
+:is(.config, .form-dialog, .edit-dialog) textarea:focus {
   outline: none;
   border-color: var(--gold);
 }
@@ -95,7 +95,7 @@
 .config .field button {
   flex: none;
 }
-:is(.config, .form-dialog) button:disabled {
+:is(.config, .form-dialog, .edit-dialog) button:disabled {
   opacity: 0.4;
   cursor: default;
   transform: none;
@@ -113,7 +113,7 @@ label.check {
   cursor: pointer;
 }
 /* Every configuration checkbox is a switch, in Settings as in the exercise list. */
-.config input[type='checkbox'] {
+:is(.config, .edit-dialog) input[type='checkbox'] {
   appearance: none;
   flex: none;
   position: relative;
@@ -128,7 +128,7 @@ label.check {
   transition: background 0.15s, border-color 0.15s;
   vertical-align: middle;
 }
-.config input[type='checkbox']::before {
+:is(.config, .edit-dialog) input[type='checkbox']::before {
   content: '';
   position: absolute;
   top: 2px;
@@ -139,29 +139,23 @@ label.check {
   background: var(--muted);
   transition: transform 0.15s, background 0.15s;
 }
-.config input[type='checkbox']:checked {
+:is(.config, .edit-dialog) input[type='checkbox']:checked {
   background: var(--gold);
   border-color: var(--gold);
 }
-.config input[type='checkbox']:checked::before {
+:is(.config, .edit-dialog) input[type='checkbox']:checked::before {
   transform: translateX(16px);
   background: var(--bg);
 }
-.config input[type='checkbox']:focus-visible {
+:is(.config, .edit-dialog) input[type='checkbox']:focus-visible {
   outline: 2px solid var(--gold-soft);
   outline-offset: 2px;
 }
-/* In an exercise card, the switch follows its text rather than the card's edge. */
-.cfg-exercise .check {
-  justify-content: flex-start;
-}
-.setting .hint,
-.cfg-exercise .hint {
+:is(.setting, .config, .edit-dialog) .hint {
   margin: 2px 0 0;
   font-size: 0.85rem;
   color: var(--muted);
 }
-
 /* Countdown: the field between its - and + buttons, the unit inside the frame. */
 .stepper {
   display: flex;
@@ -213,6 +207,6 @@ label.check {
 .v-popper--theme-tooltip .v-popper__inner::first-letter {
   text-transform: uppercase;
 }
-:is(.config, .form-dialog) :is(input, textarea)[aria-invalid='true'] {
+:is(.config, .form-dialog, .edit-dialog) :is(input, textarea)[aria-invalid='true'] {
   border-color: var(--red);
 }

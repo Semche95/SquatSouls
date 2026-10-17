@@ -143,7 +143,6 @@
     "saved": "Configuration enregistrée.",
     "copied": "Copié dans le presse-papiers, prêt à partager.",
     "games": {
-      "add": "+ Ajouter un jeu",
       "import": "Importer un jeu",
       "new": "Nouveau jeu",
       "newName": "Nom du nouveau jeu",
@@ -158,15 +157,15 @@
       "gameName": "Nom du jeu",
       "rename": "Renommer",
       "renameDone": "Valider",
-      "removeGame": "Supprimer ce jeu",
       "lastGame": "Il faut au moins un jeu",
       "confirmRemove": "Supprimer {name} et tous ses événements ?",
       "thisGame": "ce jeu",
       "keepGame": "Garder le jeu",
-      "addEvent": "Ajouter un événement",
+      "addEvent": "+ Nouvel événement",
       "newEvent": "Nouvel événement",
       "imported": "{name} importé.",
-      "importedClamped": "{name} importé, limité à {n} exercice par événement. | {name} importé, limité à {n} exercices par événement."
+      "importedClamped": "{name} importé, limité à {n} exercice par événement. | {name} importé, limité à {n} exercices par événement.",
+      "events": "Événements"
     },
     "event": {
       "perSet": "{n} exercice par série | {n} exercices par série",
@@ -175,7 +174,13 @@
       "draws": "Exercices demandés",
       "limit": "Limite par séance",
       "noLimit": "aucune",
-      "jokers": "Jokers gagnés"
+      "jokers": "Jokers gagnés",
+      "title": "Événement",
+      "nameNeeded": "Donner un nom à l'événement",
+      "remove": "Supprimer l'événement",
+      "drawsHint": "Différents à chaque fois, parmi les exercices proposés.",
+      "limitHint": "Au-delà, l'événement ne demande plus rien jusqu'à la prochaine séance.",
+      "jokersHint": "Une fois tous les exercices de la série faits."
     },
     "exercises": {
       "import": "Importer des exercices",
@@ -194,7 +199,7 @@
       "minimum": "Minimum",
       "maximum": "Maximum",
       "recoveryLabel": "Récupération",
-      "add": "Ajouter un exercice",
+      "add": "+ Nouvel exercice",
       "lastExercise": "Il faut au moins un exercice",
       "timed": "Minuteur",
       "notTimed": "Non chronométré",
@@ -210,7 +215,15 @@
       "eachSide": "Répéter pour l'autre côté",
       "eachSideHint": "La durée vaut pour un côté : le minuteur se relance pour l'autre côté.",
       "recoverySummary": "récup {n} s",
-      "minutes": "Minutes"
+      "minutes": "Minutes",
+      "title": "Exercice",
+      "included": "Proposé",
+      "recoveryHint": "Un exercice peut avoir la sienne.",
+      "ownRecoveryHint": "Vide, c'est celle de tous les exercices.",
+      "range": "Plage",
+      "rangeValue": "{min}–{max}",
+      "nameNeeded": "Donner un nom à l'exercice",
+      "remove": "Supprimer l'exercice"
     },
     "settings": {
       "general": "Général",
@@ -258,6 +271,9 @@
     "secondsUnit": "s",
     "decrease": "Moins",
     "increase": "Plus",
+    "exerciseName": "nom de l'exercice",
+    "eventName": "nom de l'événement",
+    "empty": "il ne peut pas être vide",
     "atZero": "Déjà à 0"
   },
   "share": {

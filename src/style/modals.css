@@ -22,7 +22,7 @@
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
 }
 /* Red frame for a loss, gold when nothing is lost. */
-.confirm-modal-content:is(.validate, .form-dialog, .about-modal) {
+.confirm-modal-content:is(.validate, .form-dialog, .about-modal, .edit-dialog) {
   border-top-color: var(--gold);
 }
 .confirm-modal-content h3 {

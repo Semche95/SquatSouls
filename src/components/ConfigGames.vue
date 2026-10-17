@@ -6,8 +6,10 @@ import { shareGame } from '../share.js';
 import { vSelect } from '../select.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
+import { useEditDialog } from '../composables/useEditDialog.js';
 import ConfigEvent from './ConfigEvent.vue';
 import ConfirmDialog from './ConfirmDialog.vue';
+import EventDialog from './EventDialog.vue';
 import GameDialog from './GameDialog.vue';
 import DisabledTip from './DisabledTip.vue';
 
@@ -21,8 +23,8 @@ const toRemove = ref(null);
 // Name being typed while renaming the edited game, null outside renaming.
 const renaming = ref(null);
 const renameInput = ref(null);
-// Event just added, revealed as soon as it appears.
-const freshId = ref(null);
+// Event in its edit dialog.
+const { item: editing, open: editOpen, fresh, edit: editEvent, remove: removeEvent } = useEditDialog(() => editedGame.value.events);
 // Why the renamed game cannot take this name, '' when it can: it only has to differ from the other games.
 const renameBlocked = computed(() => {
   if (!renaming.value.trim()) return t('config.games.nameNeeded');
@@ -33,7 +35,6 @@ const renameBlocked = computed(() => {
 function selectGame(id) {
   editedGameId.value = id;
   renaming.value = null;
-  freshId.value = null;
 }
 
 // The caret goes to the end of the name, to complete it rather than retype it.
@@ -82,49 +83,47 @@ function shareEdited() {
 // Event added to fill in: one exercise per set, no joker.
 function addEvent(game) {
   const name = t('config.games.newEvent');
-  const id = newId(name, game.events);
-  game.events.push({ id, name, draws: 1, jokers: 0 });
-  freshId.value = id;
+  game.events.push({ id: newId(name, game.events), name, draws: 1, jokers: 0 });
+  editEvent(game.events.at(-1), true);
 }
 </script>
 
 <template>
   <section class="group">
-    <header class="group-head">
-      <h2 class="group-title">{{ t('config.tabs.games') }}</h2>
-      <button class="primary" @click="openNewGame">{{ t('config.games.add') }}</button>
-      <button class="ghost" @click="openImport">{{ t('config.games.import') }}</button>
-    </header>
-    <form v-if="renaming !== null" class="field" @submit.prevent="applyRename" @keydown.esc="renaming = null">
-      <label for="cfg-game">{{ t('play.game') }}</label>
-      <input id="cfg-game" ref="renameInput" v-model="renaming" :maxlength="MAX_NAME" :aria-label="t('config.games.gameName')" />
-      <DisabledTip :tip="renameBlocked">
-        <button class="primary" :disabled="!!renameBlocked">{{ t('config.games.renameDone') }}</button>
-      </DisabledTip>
-      <button type="button" class="ghost" @click="renaming = null">{{ t('common.cancel') }}</button>
-    </form>
-    <div v-else class="field">
-      <label for="cfg-game">{{ t('play.game') }}</label>
-      <select v-select id="cfg-game" :value="editedGame?.id ?? ''" @change="selectGame($event.target.value)">
-        <option v-if="!editedGame" value="" disabled>{{ t('play.chooseGame') }}</option>
-        <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">{{ g.name }}</option>
-      </select>
-      <template v-if="editedGame">
-        <button class="ghost" @click="openRename">{{ t('config.games.rename') }}</button>
-        <DisabledTip :tip="savedEdited?.events.length ? '' : t('config.games.shareEmpty')">
-          <button class="ghost" :disabled="!savedEdited?.events.length" @click="shareEdited">{{ t('common.share') }}</button>
+    <header class="row cfg-game-bar">
+      <form v-if="renaming !== null" class="field" @submit.prevent="applyRename" @keydown.esc="renaming = null">
+        <input id="cfg-game" ref="renameInput" v-model="renaming" :maxlength="MAX_NAME" :aria-label="t('config.games.gameName')" />
+        <DisabledTip :tip="renameBlocked">
+          <button class="primary" :disabled="!!renameBlocked">{{ t('config.games.renameDone') }}</button>
         </DisabledTip>
-        <DisabledTip :tip="draft.games.length < 2 ? t('config.games.lastGame') : ''">
-          <button class="ghost danger" :disabled="draft.games.length < 2" @click="askRemove">{{ t('config.games.removeGame') }}</button>
-        </DisabledTip>
-      </template>
-    </div>
-    <div v-if="editedGame" class="cfg-game">
-      <div class="cfg-events">
-        <ConfigEvent v-for="(ev, i) in editedGame.events" :key="ev.id" :ev="ev" :fresh="ev.id === freshId" @remove="editedGame.events.splice(i, 1)" />
+        <button type="button" class="ghost" @click="renaming = null">{{ t('common.cancel') }}</button>
+      </form>
+      <div v-else class="field">
+        <select v-select id="cfg-game" :value="editedGame?.id ?? ''" :aria-label="t('play.game')" @change="selectGame($event.target.value)">
+          <option v-if="!editedGame" value="" disabled>{{ t('play.chooseGame') }}</option>
+          <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">{{ g.name }}</option>
+        </select>
+        <template v-if="editedGame">
+          <button class="ghost" @click="openRename">{{ t('config.games.rename') }}</button>
+          <DisabledTip :tip="savedEdited?.events.length ? '' : t('config.games.shareEmpty')">
+            <button class="ghost" :disabled="!savedEdited?.events.length" @click="shareEdited">{{ t('common.share') }}</button>
+          </DisabledTip>
+          <DisabledTip :tip="draft.games.length < 2 ? t('config.games.lastGame') : ''">
+            <button class="ghost danger" :disabled="draft.games.length < 2" @click="askRemove">{{ t('common.remove') }}</button>
+          </DisabledTip>
+        </template>
       </div>
-      <button class="ghost" @click="addEvent(editedGame)">{{ t('config.games.addEvent') }}</button>
-    </div>
+      <button class="primary" @click="openNewGame">{{ t('config.games.new') }}</button>
+      <button @click="openImport">{{ t('common.import') }}</button>
+    </header>
+    <template v-if="editedGame">
+      <h2 class="setting-title">{{ t('config.games.events') }}</h2>
+      <div class="tiles cfg-events">
+        <ConfigEvent v-for="ev in editedGame.events" :key="ev.id" :ev="ev" @click="editEvent(ev)" />
+        <button class="tile tile-new" @click="addEvent(editedGame)">{{ t('config.games.addEvent') }}</button>
+      </div>
+    </template>
+    <EventDialog v-if="editing" v-model="editOpen" :ev="editing" :fresh="fresh" @remove="removeEvent" />
     <GameDialog v-model:importing="importing" />
     <ConfirmDialog
       v-model="removing"

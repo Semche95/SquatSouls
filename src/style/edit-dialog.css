@@ -1,0 +1,65 @@
+/* Edit dialog of an event or an exercise. */
+
+/* Edit dialog of an event or an exercise: its name under the kind of item, one row per setting, then a footer
+   with the removal on the left and Close on the right. */
+.confirm-modal-content.edit-dialog {
+  gap: 0;
+  width: min(500px, 100%);
+  padding: 0;
+}
+.edit-dialog > * + * {
+  border-top: 1px solid var(--line);
+}
+.edit-head {
+  display: grid;
+  gap: 10px;
+  padding: 18px 18px 16px;
+}
+.edit-head .setting-title {
+  margin: 0;
+}
+.edit-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.edit-dialog .edit-name {
+  flex: 1;
+  padding: 7px 10px;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.edit-dialog .edit-name:hover {
+  border-color: var(--gold);
+}
+.edit-aside {
+  flex: none;
+  gap: 10px;
+  color: var(--muted);
+}
+.edit-dialog .field-error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #f0b2a9;
+}
+.edit-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.edit-dialog .edit-unit {
+  flex: none;
+  width: 12em;
+}
+/* Number fields keep the width of a few digits, the placeholder word ("none") included. */
+:is(.edit-dialog, .setting-card) .count-input {
+  flex: none;
+  width: 5.5em;
+}
+.edit-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--panel-2);
+  border-radius: 0 0 var(--radius) var(--radius);
+}

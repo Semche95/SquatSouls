@@ -6,15 +6,18 @@ import { t } from '../i18n.js';
 import { mergeExercises, parseExercises, shareExercises } from '../share.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
+import { useEditDialog } from '../composables/useEditDialog.js';
 import ConfigExercise from './ConfigExercise.vue';
 import CountInput from './CountInput.vue';
+import EditRow from './EditRow.vue';
+import ExerciseDialog from './ExerciseDialog.vue';
 import ShareImport from './ShareImport.vue';
 
 const { config, draft, notify, copy } = useConfig();
 const { saveNow } = useSession();
 const importing = ref(false);
-// Exercise just added, opened to type its name.
-const freshId = ref(null);
+// Exercise in its edit dialog.
+const { item: editing, open: editOpen, fresh, edit: editExercise, remove: removeExercise } = useEditDialog(() => draft.value.exercises);
 
 // The confirmed import is saved right away; the draft receives it without losing its other changes.
 async function importShared(imported) {
@@ -28,9 +31,8 @@ async function importShared(imported) {
 function addExercise() {
   const list = draft.value.exercises;
   const name = t('config.exercises.new');
-  const id = newId(name, list);
-  list.push({ id, name, enabled: true, unit: t('config.exercises.defaultUnit'), min: 5, max: 10 });
-  freshId.value = id;
+  list.push({ id: newId(name, list), name, enabled: true, unit: t('config.exercises.defaultUnit'), min: 5, max: 10 });
+  editExercise(list.at(-1), true);
 }
 </script>
 
@@ -39,7 +41,7 @@ function addExercise() {
     <header class="group-head">
       <h2 class="group-title">{{ t('config.tabs.exercises') }}</h2>
       <button class="ghost" @click="copy(shareExercises(config.exercises))">{{ t('common.share') }}</button>
-      <button class="ghost" @click="importing = true">{{ t('common.import') }}</button>
+      <button @click="importing = true">{{ t('common.import') }}</button>
     </header>
     <VueFinalModal
       v-model="importing"
@@ -53,21 +55,23 @@ function addExercise() {
       <h3>{{ t('config.exercises.import') }}</h3>
       <ShareImport :parse="parseExercises" @import="importShared" @cancel="importing = false" />
     </VueFinalModal>
-    <label class="field cfg-recovery">
-      <span>{{ t('config.exercises.recovery') }}</span>
-      <CountInput v-model="draft.recovery" />
-    </label>
-    <div>
-      <ConfigExercise
-        v-for="(ex, i) in draft.exercises"
-        :key="ex.id"
-        :ex="ex"
-        :recovery="draft.recovery"
-        :removable="draft.exercises.length > 1"
-        :fresh="ex.id === freshId"
-        @remove="draft.exercises.splice(i, 1)"
-      />
+    <div class="setting-card">
+      <EditRow :label="t('config.exercises.recovery')" :hint="t('config.exercises.recoveryHint')" for-id="cfg-recovery">
+        <CountInput id="cfg-recovery" v-model="draft.recovery" />
+      </EditRow>
     </div>
-    <button class="ghost" @click="addExercise">{{ t('config.exercises.add') }}</button>
+    <div class="tiles">
+      <ConfigExercise v-for="ex in draft.exercises" :key="ex.id" :ex="ex" @edit="editExercise(ex)" />
+      <button class="tile tile-new" @click="addExercise">{{ t('config.exercises.add') }}</button>
+    </div>
+    <ExerciseDialog
+      v-if="editing"
+      v-model="editOpen"
+      :ex="editing"
+      :recovery="draft.recovery"
+      :removable="draft.exercises.length > 1"
+      :fresh="fresh"
+      @remove="removeExercise"
+    />
   </section>
 </template>

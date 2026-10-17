@@ -1,7 +1,7 @@
 <script setup>
 // Frame of the Program and Settings tabs: banners and save bar, limited to the fields of the tab.
 import { computed, onBeforeUnmount } from 'vue';
-import { normalized, numberError, withTabDraft } from '../configDraft.js';
+import { normalized, fieldError, withTabDraft } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
@@ -17,7 +17,7 @@ onBeforeUnmount(() => notify(''));
 const pending = computed(() => draft.value && withTabDraft(config.value, draft.value, props.settings));
 const dirty = computed(() => !!pending.value && JSON.stringify(pending.value) !== JSON.stringify(config.value));
 // First badly filled field of the tab, which blocks "Save" (empty if everything is valid).
-const draftError = computed(() => (pending.value ? numberError(normalized(pending.value)) : ''));
+const draftError = computed(() => (pending.value ? fieldError(normalized(pending.value)) : ''));
 
 // Back to the saved values for this tab's fields only.
 function resetTab() {

@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import { byName, clone, normalized, numberError } from '../configDraft.js';
+import { byName, clone, normalized, fieldError } from '../configDraft.js';
 import { errorText, t } from '../i18n.js';
 import { defineShared } from './shared.js';
 
@@ -60,7 +60,7 @@ export const [provideConfig, useConfig] = defineShared(() => {
   // Saves `cfg` without touching the draft; returns false if the backend refuses.
   async function store(cfg) {
     const clean = normalized(cfg);
-    configError.value = numberError(clean);
+    configError.value = fieldError(clean);
     if (configError.value) return false;
     try {
       config.value = (await invoke('save_config', { config: clean })).config;

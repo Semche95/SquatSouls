@@ -95,12 +95,12 @@ export async function openConfig() {
 
 // Game shown in the select of the Program tab.
 export const shownGame = (w) => w.find('#cfg-game option:checked').text();
-export const gameButton = (w, text) => w.findAll('.group > .field button').find((b) => b.text() === text);
+export const gameButton = (w, text) => w.findAll('.cfg-game-bar .field button').find((b) => b.text() === text);
 // Renames the edited game with Rename then Done: the new name waits for Save.
 export async function rename(w, name) {
   await gameButton(w, 'Rename').trigger('click');
   await w.find('input[aria-label="Name of the game"]').setValue(name);
-  await w.find('.group > form.field').trigger('submit');
+  await w.find('.cfg-game-bar form').trigger('submit');
 }
 
 // Without pending changes, the save and reset buttons stay shown but disabled.
@@ -154,6 +154,11 @@ const dialogClosed = (selector) => vi.waitFor(() => expect(document.querySelecto
 export const formDialog = () => new DOMWrapper(document.querySelector('.form-dialog'));
 export const formDialogOpen = () => dialogOpen('.form-dialog');
 export const formDialogClosed = () => dialogClosed('.form-dialog');
+
+// Edit dialog of an event or an exercise.
+export const editDialog = () => new DOMWrapper(document.querySelector('.edit-dialog'));
+export const editDialogOpen = () => dialogOpen('.edit-dialog');
+export const editDialogClosed = () => dialogClosed('.edit-dialog');
 
 // Confirmation modal (ConfirmDialog): removing a game, ending or cancelling the session, quitting.
 export const confirmDialog = () => new DOMWrapper(document.querySelector('.confirm-modal-content'));

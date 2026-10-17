@@ -114,7 +114,6 @@
   font-size: 0.85rem;
 }
 /* Chevron centered on its own box to stay aligned with the text once rotated. */
-.cfg-event-head::before,
 .setting-sub::before {
   content: "▸";
   display: inline-flex;
@@ -124,7 +123,6 @@
   color: var(--gold);
   transition: transform 0.12s;
 }
-.cfg-event:is([open], .open) .cfg-event-head::before,
 .ignored-games[open] > .setting-sub::before {
   transform: rotate(90deg);
 }

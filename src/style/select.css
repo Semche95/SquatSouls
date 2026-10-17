@@ -20,10 +20,8 @@
   outline: none;
   transition: border-color 0.12s;
 }
-/* Texts cut on one line when too long: chosen option, exercise name and range, ignored game. */
+/* Texts cut on one line when too long: chosen option, ignored game. */
 .ts-control > .item,
-.cfg-exercise-head strong,
-.cfg-range > .muted,
 .ignored-name {
   overflow: hidden;
   text-overflow: ellipsis;

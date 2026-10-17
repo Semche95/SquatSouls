@@ -35,7 +35,7 @@ describe('sharing', () => {
   it('imports a shared game in a modal, replaces the one with the same name and saves it right away', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
-    const open = () => w.find('.group-head .ghost');
+    const open = () => w.findAll('.cfg-game-bar > button').find((b) => b.text() === 'Import');
     await open().trigger('click');
     await formDialogOpen();
     const text = formDialog().find('textarea[aria-label="Shared text"]');
@@ -71,7 +71,7 @@ describe('sharing', () => {
     const w = await openConfig();
     await rename(w, 'Elden Ring DLC');
     await w.findAll('.subtabs button')[1].trigger('click');
-    await w.findAll('.cfg-exercises .group-head .ghost')[1].trigger('click');
+    await w.findAll('.cfg-exercises .group-head button')[1].trigger('click');
     await formDialogOpen();
     expect(formDialog().find('h3').text()).toBe('Import exercises');
     expect(document.activeElement).toBe(formDialog().find('textarea').element);
@@ -90,7 +90,7 @@ describe('sharing', () => {
     ]);
     expect(savedConfig().games[0].name).toBe('Elden Ring');
     expect(w.find('.banner.ok').text()).toBe('Exercises imported: 1 added, 1 updated.');
-    expect(w.findAll('.cfg-exercise')).toHaveLength(2);
+    expect(w.findAll('.cfg-exercises .tile-slot')).toHaveLength(2);
     await w.find('.cfg-actions .primary').trigger('click');
     await flushPromises();
     expect(savedConfig().games[0].name).toBe('Elden Ring DLC');

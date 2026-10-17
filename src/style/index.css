@@ -12,7 +12,9 @@
 @import './history.css';
 @import './settings.css';
 @import './config.css';
+@import './tiles.css';
 @import './modals.css';
 @import './about.css';
 @import './onboarding.css';
+@import './edit-dialog.css';
 @import './wide.css';

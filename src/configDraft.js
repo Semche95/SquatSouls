@@ -70,10 +70,15 @@ export function countError(value) {
   return t(Number.isInteger(value) && value > MAX_COUNT ? 'fields.tooLarge' : 'fields.notCount');
 }
 
-// First invalid number field of the configuration, '' if there is none.
-export function numberError(cfg) {
+// First badly filled field of the configuration, '' if there is none: an empty event or exercise name,
+// then an invalid number.
+export function fieldError(cfg) {
   // Field path: names from the data, then the translated field name.
   const at = (...path) => path.slice(0, -1).concat(t(`fields.${path.at(-1)}`)).join(' › ');
+  const names = cfg.exercises.map((ex) => [ex.name, at('exerciseName')]);
+  for (const g of cfg.games) names.push(...g.events.map((ev) => [ev.name, at(g.name, 'eventName')]));
+  const unnamed = names.find(([name]) => !name.trim());
+  if (unnamed) return t('fields.error', { field: unnamed[1], error: t('fields.empty') });
   const fields = [[cfg.recovery, at('globalRecovery')], [cfg.timerPrep, at('timerPrep')]];
   for (const ex of cfg.exercises) {
     fields.push([ex.min, at(ex.name, 'minimum')], [ex.max, at(ex.name, 'maximum')], [ex.recovery, at(ex.name, 'recovery')]);
@@ -91,7 +96,7 @@ export function numberError(cfg) {
 }
 
 // A cleared required field is "": bring it back to 0 so the backend refuses it cleanly.
-// An invalid text is kept so numberError reports it.
+// An invalid text is kept so fieldError reports it.
 const orZero = (v) => (v === '' || v === undefined ? 0 : v);
 
 export function normalized(cfg) {
