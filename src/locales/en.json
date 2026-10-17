@@ -12,7 +12,7 @@
     "jokers": "Jokers",
     "joker": "{n} joker | {n} jokers",
     "reward": "+{n} joker | +{n} jokers",
-    "copyFailed": "Copy impossible: {error}",
+    "copyFailed": "Copy failed: {error}",
     "close": "Close"
   },
   "keys": {
@@ -29,13 +29,13 @@
       "settings": "Settings"
     },
     "about": "About",
-    "sessionSince": "Session since",
+    "sessionSince": "Session started",
     "viewConfig": "View the program",
     "restored": "A problem prevented reading the data. The copy saved at the previous launch was restored, so the latest changes may be missing."
   },
   "play": {
     "game": "Game",
-    "gameLocked": "The game can no longer change during the session",
+    "gameLocked": "The game can't be changed during a session",
     "noEvent": "{name} (no event)",
     "chooseGame": "Choose a game",
     "intensity": "Intensity",
@@ -65,7 +65,7 @@
     "halve": "Halve",
     "skip": "Skip",
     "stop": "Stop",
-    "confirmStop": "Stop the set? Its exercises already done stay in the history.",
+    "confirmStop": "Stop the set? The exercises already done stay in the history.",
     "stopSet": "Stop the set",
     "keepSet": "Keep the set",
     "skipSet": "Skip the set ({n} joker) | Skip the set ({n} jokers)",
@@ -82,13 +82,13 @@
     "resume": "Resume ({toggle}), {stop} to stop"
   },
   "session": {
-    "pendingSets": "Sets are still to do",
+    "pendingSets": "There are sets left to do",
     "noSets": "No set done",
     "nothingToCancel": "Nothing to cancel",
     "start": "Start the session",
     "end": "End the session",
     "cancel": "Cancel the session",
-    "confirmEnd": "End the session? The next one starts with counters (including the per-session limits) and jokers at zero. The history is kept.",
+    "confirmEnd": "End the session? The next one starts with the counters (per-session limits included) and the jokers back at zero. The history is kept.",
     "endConfirmed": "End",
     "confirmCancel": "Cancel the session? The counters (including the per-session limits), the sets to do and the sets done will be cleared, and its sets removed from the history.",
     "keep": "Keep the session",
@@ -137,7 +137,7 @@
       "exercises": "Exercises"
     },
     "save": "Save",
-    "discard": "Reset the changes",
+    "discard": "Discard the changes",
     "noChanges": "No pending changes.",
     "unsaved": "Unsaved changes",
     "saved": "Configuration saved.",
@@ -152,7 +152,7 @@
       "newEvents": "Events of the new game",
       "noCopy": "Copy nothing",
       "create": "Create",
-      "shareEmpty": "Add an event to share it",
+      "shareEmpty": "Add an event before sharing this game",
       "willReplace": "{name} already exists: it will be replaced.",
       "gameName": "Name of the game",
       "rename": "Rename",
@@ -171,16 +171,16 @@
       "perSet": "{n} exercise per set | {n} exercises per set",
       "maxPerSession": "{n} times max per session",
       "name": "Name of the event",
-      "draws": "Exercises required",
+      "draws": "Exercises requested",
       "limit": "Limit per session",
       "noLimit": "none",
       "jokers": "Jokers earned",
       "title": "Event",
       "nameNeeded": "Give the event a name",
       "remove": "Delete the event",
-      "drawsHint": "Different each time, among the included exercises.",
+      "drawsHint": "All different, picked from the included exercises.",
       "limitHint": "Beyond it, the event asks for nothing more until the next session.",
-      "jokersHint": "Once all the exercises of the set are done."
+      "jokersHint": "Once every exercise in the set is done."
     },
     "exercises": {
       "import": "Import exercises",
@@ -217,10 +217,10 @@
       "minutes": "Minutes",
       "title": "Exercise",
       "count": "Exercises · {n} included out of {total} | Exercises · {n} included out of {total}",
-      "enabledHint": "Turn an exercise off with its switch so it is no longer asked for, without deleting it.",
+      "enabledHint": "Switch an exercise off to stop it being asked for, without deleting it.",
       "included": "Included",
       "recoveryHint": "An exercise can have its own.",
-      "ownRecoveryHint": "Left empty, it is the one of all exercises.",
+      "ownRecoveryHint": "Leave blank to use the general recovery.",
       "range": "Range",
       "rangeValue": "{min}–{max}",
       "nameNeeded": "Give the exercise a name",
@@ -265,7 +265,7 @@
     "minimum": "minimum",
     "maximum": "maximum",
     "recovery": "recovery",
-    "draws": "exercises required",
+    "draws": "exercises requested",
     "limit": "limit per session",
     "jokers": "jokers earned",
     "timerPrep": "Countdown before the timer",
@@ -290,7 +290,7 @@
   },
   "quit": {
     "title": "Quit Squat Souls?",
-    "confirm": "The current session stops: the sets to do are dropped and unused jokers go away, the sets done stay in the history."
+    "confirm": "The current session stops: the sets to do are dropped and unused jokers are lost, the sets done stay in the history."
   },
   "about": {
     "description": "Squat Souls turns your games into a workout: boss down, missed jump, rage-inducing game over, you pay in bodyweight exercises before picking the controller back up. The harsher the game, the stronger you get. Prepare to squat.",
@@ -379,8 +379,8 @@
     "game_name_duplicate": "Two games are named \"{name}\".",
     "event_empty": "{game}: empty event id or name.",
     "event_duplicate": "{game}: event \"{id}\" is defined twice.",
-    "event_no_draw": "{game} › {event}: at least 1 exercise is required.",
-    "event_too_many_draws": "{game} › {event}: {draws} exercises required, more than the included exercises ({active}).",
+    "event_no_draw": "{game} › {event}: at least 1 exercise is requested.",
+    "event_too_many_draws": "{game} › {event}: {draws} exercises requested, more than the included exercises ({active}).",
     "event_zero_limit": "{game} › {event}: the per-session limit must be at least 1 (or empty).",
     "name_too_long": "\"{name}\": the name must be {max} characters or less.",
     "name_hidden_char": "\"{name}\": the name contains a control or invisible character.",
@@ -396,9 +396,9 @@
     "set_not_pending": "This set is no longer pending.",
     "exercise_not_in_set": "This exercise is no longer in the set.",
     "exercise_already_done": "This exercise is already done.",
-    "exercise_not_next": "This exercise comes after those not done yet in the set.",
+    "exercise_not_next": "Do the earlier exercises of the set first.",
     "set_not_current": "Finish the older sets first.",
     "end_without_set": "No set done: nothing to end.",
-    "end_with_pending_sets": "Sets are still to do: finish or cancel them before ending the session."
+    "end_with_pending_sets": "There are sets left to do: finish or cancel them before ending the session."
   }
 }

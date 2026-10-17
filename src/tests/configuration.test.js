@@ -261,7 +261,7 @@ describe('configuration', () => {
     const tile = w.find('.tile-slot');
     const title = () => w.find('.cfg-exercises .group-head').text();
     expect(title()).toContain('Exercises · 1 included out of 1');
-    expect(title()).toContain('Turn an exercise off with its switch so it is no longer asked for, without deleting it.');
+    expect(title()).toContain('Switch an exercise off to stop it being asked for, without deleting it.');
     expect(tile.classes()).not.toContain('cfg-off');
     await w.find('input[aria-label="Include this exercise"]').setValue(false);
     expect(tile.classes()).toContain('cfg-off');

@@ -13,7 +13,7 @@ describe('sharing', () => {
     const w = await openConfig();
     const share = gameButton(w, 'Share');
     expect(share.element.disabled).toBe(true);
-    await expectTip(share, 'Add an event to share it');
+    await expectTip(share, 'Add an event before sharing this game');
   });
 
   it('copies the saved game and the exercises to the clipboard', async () => {

@@ -45,14 +45,14 @@
     },
     {
       "id": "extensions-jambes",
-      "name": "Extensions de jambes assis",
+      "name": "Extensions de jambes sur une chaise",
       "unit": "rép. par jambe",
       "min": 10,
       "max": 15
     },
     {
       "id": "montees-genoux",
-      "name": "Montées de genoux assis",
+      "name": "Montées de genoux sur une chaise",
       "unit": "rép. par jambe",
       "min": 10,
       "max": 15
@@ -89,7 +89,7 @@
     },
     {
       "id": "montees-bassin",
-      "name": "Montées de bassin allongé",
+      "name": "Pont fessier",
       "unit": "rép.",
       "min": 12,
       "max": 18
@@ -548,7 +548,7 @@
         },
         {
           "id": "laisse",
-          "name": "Laissé dans la grotte à l'extraction",
+          "name": "Extraction manquée",
           "draws": 2,
           "maxPerSession": 5,
           "jokers": 0

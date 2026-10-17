@@ -223,7 +223,7 @@ describe('session', () => {
     setup({ get_session: emptySession({ sets: 1, pending: [draw] }) });
     w = await mountApp();
     expect(w.find('.session-actions .primary').element.disabled).toBe(true);
-    await expectTip(w.find('.session-actions .primary'), 'Sets are still to do');
+    await expectTip(w.find('.session-actions .primary'), 'There are sets left to do');
   });
 
   it('waits for the start button before starting the session', async () => {
@@ -265,7 +265,7 @@ describe('session', () => {
     await confirmDialogOpen();
     await confirmDialog().find('.primary').trigger('click');
     await flushPromises();
-    expect(w.find('.banner.error').text()).toContain('Sets are still to do');
+    expect(w.find('.banner.error').text()).toContain('There are sets left to do');
     expect(w.find('.farewell').exists()).toBe(false);
     expect(w.find('.session-actions .primary').text()).toBe('End the session');
   });

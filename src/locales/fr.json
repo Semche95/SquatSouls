@@ -7,7 +7,7 @@
     "share": "Partager",
     "name": "Nom",
     "unnamed": "(sans nom)",
-    "halved": "moitié",
+    "halved": "divisé par deux",
     "setsDone": "Séries faites",
     "jokers": "Jokers",
     "joker": "{n} joker | {n} jokers",
@@ -35,7 +35,7 @@
   },
   "play": {
     "game": "Jeu",
-    "gameLocked": "Le jeu ne peut plus changer pendant la séance",
+    "gameLocked": "On ne peut plus changer de jeu pendant la séance",
     "noEvent": "{name} (aucun événement)",
     "chooseGame": "Choisir un jeu",
     "intensity": "Intensité",
@@ -65,7 +65,7 @@
     "halve": "Moitié",
     "skip": "Sauter",
     "stop": "Arrêter",
-    "confirmStop": "Arrêter la série ? Ses exercices déjà faits restent dans l'historique.",
+    "confirmStop": "Arrêter la série ? Les exercices déjà faits restent dans l'historique.",
     "stopSet": "Arrêter la série",
     "keepSet": "Garder la série",
     "skipSet": "Sauter la série ({n} joker) | Sauter la série ({n} jokers)",
@@ -75,7 +75,7 @@
   },
   "timer": {
     "paused": "En pause",
-    "ready": "Prêt",
+    "ready": "Prépare-toi",
     "otherSide": "Autre côté",
     "side": "Côté {side}/{sides}",
     "hold": "Mettre en pause ({toggle}), {stop} pour arrêter",
@@ -88,14 +88,14 @@
     "start": "Démarrer la séance",
     "end": "Terminer la séance",
     "cancel": "Annuler la séance",
-    "confirmEnd": "Terminer la séance ? La suivante repart avec compteurs (dont les limites par séance) et jokers à zéro. L'historique est conservé.",
+    "confirmEnd": "Terminer la séance ? La suivante repart avec les compteurs (limites par séance comprises) et les jokers à zéro. L'historique est conservé.",
     "endConfirmed": "Terminer",
     "confirmCancel": "Annuler la séance ? Les compteurs (dont les limites par séance), les séries à faire et les séries faites seront effacés, et ses séries retirées de l'historique.",
     "keep": "Garder la séance",
     "farewells": [
       "Feu allumé. Repose-toi, tes jambes l'ont bien mérité.",
       "Victoire. Chaque série a compté.",
-      "Encore une séance survécue. Loué soit le soleil !",
+      "Tu as survécu à une séance de plus. Loué soit le soleil !",
       "Humanité restaurée, quadriceps compris.",
       "Le mur de brume est levé. Beau combat.",
       "Souffle un peu. Le prochain boss peut attendre."
@@ -137,7 +137,7 @@
       "exercises": "Exercices"
     },
     "save": "Enregistrer",
-    "discard": "Réinitialiser les modifications",
+    "discard": "Annuler les modifications",
     "noChanges": "Aucune modification en cours.",
     "unsaved": "Modifications non enregistrées",
     "saved": "Configuration enregistrée.",
@@ -152,7 +152,7 @@
       "newEvents": "Événements du nouveau jeu",
       "noCopy": "Ne rien copier",
       "create": "Créer",
-      "shareEmpty": "Ajouter un événement pour le partager",
+      "shareEmpty": "Ajouter un événement pour pouvoir partager ce jeu",
       "willReplace": "{name} existe déjà : il sera remplacé.",
       "gameName": "Nom du jeu",
       "rename": "Renommer",
@@ -178,7 +178,7 @@
       "title": "Événement",
       "nameNeeded": "Donner un nom à l'événement",
       "remove": "Supprimer l'événement",
-      "drawsHint": "Différents à chaque fois, parmi les exercices proposés.",
+      "drawsHint": "Tous différents, choisis parmi les exercices proposés.",
       "limitHint": "Au-delà, l'événement ne demande plus rien jusqu'à la prochaine séance.",
       "jokersHint": "Une fois tous les exercices de la série faits."
     },
@@ -220,8 +220,8 @@
       "enabledHint": "Désactive un exercice avec son interrupteur pour qu'il ne soit plus demandé, sans le supprimer.",
       "included": "Proposé",
       "recoveryHint": "Un exercice peut avoir la sienne.",
-      "ownRecoveryHint": "Vide, c'est celle de tous les exercices.",
-      "range": "Plage",
+      "ownRecoveryHint": "Par défaut, celle de tous les exercices.",
+      "range": "Fourchette",
       "rangeValue": "{min}–{max}",
       "nameNeeded": "Donner un nom à l'exercice",
       "remove": "Supprimer l'exercice"
@@ -231,15 +231,15 @@
       "language": "Langue",
       "systemLanguage": "Langue du système",
       "rememberIntensity": "Garder l'intensité d'un lancement à l'autre",
-      "rememberIntensityHint": "Sinon, chaque lancement repart en Normale.",
+      "rememberIntensityHint": "Sinon, l'intensité revient à Normale à chaque lancement.",
       "tray": "Zone de notification",
       "showIcon": "Afficher l'icône dans la zone de notification",
-      "trayHint": "Garde l'appli accessible depuis la barre système.",
+      "trayHint": "L'appli reste accessible depuis la barre système.",
       "closeToTray": "Fermer la fenêtre la masque au lieu de quitter",
       "startHidden": "Démarrer masqué",
       "steam": "Steam",
       "detect": "Détecter le jeu Steam en cours",
-      "detectHint": "Propose le jeu lancé dans l'onglet Jouer. Seule la liste des programmes en cours est consultée : l'appli n'interagit pas avec le jeu.",
+      "detectHint": "Le jeu lancé est proposé dans l'onglet Jouer. Seule la liste des programmes en cours est consultée : l'appli n'interagit pas avec le jeu.",
       "notify": "Notifier quand un jeu est lancé",
       "noGame": "Aucun jeu Steam détecté.",
       "found": "Jeu détecté : {name}.",
@@ -248,10 +248,10 @@
       "unnamed": "Jeu Steam détecté, nom pas encore connu.",
       "ignored": "Jeux ignorés ({n})",
       "unignore": "Retirer",
-      "sound": "Jouer les sons",
+      "sound": "Activer les sons",
       "soundHint": "Au départ et à la fin du minuteur, et à la fin de la récupération.",
       "updateCheck": "Rechercher les mises à jour",
-      "updateCheckHint": "Cherche une nouvelle version au lancement et la télécharge en arrière-plan.",
+      "updateCheckHint": "L'appli cherche une nouvelle version au lancement et la télécharge en arrière-plan.",
       "timer": "Minuteur",
       "timerAutoDone": "Marquer l'exercice fait à la fin du minuteur",
       "timerHint": "Proposé dans Jouer pour les exercices chronométrés dans Programme."
@@ -290,12 +290,12 @@
   },
   "quit": {
     "title": "Quitter Squat Souls ?",
-    "confirm": "La séance en cours s'arrête : les séries à faire sont retirées et les jokers non utilisés s'en vont, les séries faites restent dans l'historique."
+    "confirm": "La séance en cours s'arrête : les séries à faire sont retirées et les jokers non utilisés sont perdus, les séries faites restent dans l'historique."
   },
   "about": {
     "description": "Squat Souls transforme tes parties en entraînement : boss vaincu, saut raté, game over rageant, tout se règle au poids du corps avant de reprendre la manette. Plus le jeu est impitoyable, plus tu deviens solide. Prépare-toi à transpirer.",
     "meta": "v{version} · par {author}",
-    "disclaimer": "Squat Souls est un projet indépendant, sans lien avec aucun éditeur de jeu et sans leur approbation. Les noms des jeux appartiennent à leurs ayants droit.",
+    "disclaimer": "Squat Souls est un projet indépendant, qui n'est lié à aucun éditeur de jeu ni approuvé par l'un d'eux. Les noms des jeux appartiennent à leurs ayants droit.",
     "sourceCode": "Code source"
   },
   "safety": {
@@ -327,7 +327,7 @@
       "lines": [
         "Skill issue ? Pas ici. Les exercices ne punissent pas le fait de mal jouer, ils te donnent juste une bonne raison de te lever de ta chaise.",
         "En faire plus que prévu ne débloque aucun succès. On devient plus solide en se reposant aussi.",
-        "Bloqué sur un boss ? Pas besoin de rage quit : tu as le droit de faire une pause, tu reviendras en meilleure forme."
+        "Un boss te mène la vie dure ? Pas besoin de rage quit : tu as le droit de faire une pause, tu reviendras en meilleure forme."
       ]
     },
     "back": "Retour",
@@ -339,7 +339,7 @@
     "available": "La version {version} est disponible",
     "downloadingHint": "Téléchargement en arrière-plan…",
     "ready": "La version {version} est prête",
-    "readyHint": "Elle sera installée en quittant.",
+    "readyHint": "Elle s'installera à la fermeture de l'appli.",
     "manualHint": "Télécharge le nouveau paquet pour l'installer.",
     "download": "Télécharger",
     "restart": "Redémarrer maintenant",
@@ -396,7 +396,7 @@
     "set_not_pending": "Cette série n'est plus en attente.",
     "exercise_not_in_set": "Cet exercice n'est plus dans la série.",
     "exercise_already_done": "Cet exercice est déjà fait.",
-    "exercise_not_next": "Cet exercice vient après ceux pas encore faits de la série.",
+    "exercise_not_next": "Il faut d'abord faire les exercices précédents de la série.",
     "set_not_current": "Il faut d'abord finir les séries plus anciennes.",
     "end_without_set": "Aucune série faite : rien à terminer.",
     "end_with_pending_sets": "Des séries sont encore à faire : les finir ou les annuler avant de terminer la séance."

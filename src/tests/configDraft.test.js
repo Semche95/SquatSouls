@@ -73,6 +73,6 @@ describe('fieldError', () => {
     expect(fieldError(cfg({ ex: { recovery: -3 } }))).toBe('Squats › recovery: a whole number is needed, 0 or more.');
     expect(fieldError(cfg({ ev: { maxPerSession: 2.5 } }))).toBe('Elden Ring › Death › limit per session: a whole number is needed, 0 or more.');
     expect(fieldError(cfg({ ev: { jokers: 1e10 } }))).toBe('Elden Ring › Death › jokers earned: number too large.');
-    expect(fieldError(cfg({ ev: { draws: 'two' } }))).toBe('Elden Ring › Death › exercises required: a whole number is needed, 0 or more.');
+    expect(fieldError(cfg({ ev: { draws: 'two' } }))).toBe('Elden Ring › Death › exercises requested: a whole number is needed, 0 or more.');
   });
 });
