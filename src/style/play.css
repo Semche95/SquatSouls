@@ -22,8 +22,17 @@
   background: var(--panel);
   min-height: 56px;
 }
-.event:hover {
-  background: var(--gold-soft);
+/* Action button: warm raised face with a gold edge, lit up on hover and pressed on click. */
+.event {
+  background: linear-gradient(180deg, #2c2720, #221f19);
+  border-color: rgba(201, 164, 92, 0.4);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.06), 0 6px 16px -8px rgba(0, 0, 0, 0.8);
+}
+.event:hover:not(:disabled) {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, #352e23, #28231b);
+  box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.08), 0 0 0 3px var(--gold-soft);
 }
 .event {
   position: relative;
@@ -87,5 +96,5 @@
 .event:disabled {
   opacity: 0.45;
   cursor: default;
-  background: var(--panel);
+  transform: none;
 }
