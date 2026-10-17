@@ -250,6 +250,7 @@
       "unignore": "Remove",
       "sound": "Play sounds",
       "soundHint": "At the start and end of the timer, and at the end of the recovery.",
+      "updates": "Updates",
       "updateCheck": "Check for updates",
       "updateCheckHint": "Looks for a new version at launch and downloads it in the background.",
       "timer": "Timer",

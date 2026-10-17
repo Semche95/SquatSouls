@@ -322,7 +322,7 @@
         },
         "settings": {
           "type": "object",
-          "required": ["general", "language", "systemLanguage", "rememberIntensity", "rememberIntensityHint", "tray", "showIcon", "trayHint", "closeToTray", "startHidden", "steam", "detect", "detectHint", "notify", "noGame", "found", "foundIgnored", "blocked", "unnamed", "ignored", "unignore", "sound", "soundHint", "updateCheck", "updateCheckHint", "timer", "timerAutoDone", "timerHint"],
+          "required": ["general", "language", "systemLanguage", "rememberIntensity", "rememberIntensityHint", "tray", "showIcon", "trayHint", "closeToTray", "startHidden", "steam", "detect", "detectHint", "notify", "noGame", "found", "foundIgnored", "blocked", "unnamed", "ignored", "unignore", "sound", "soundHint", "updates", "updateCheck", "updateCheckHint", "timer", "timerAutoDone", "timerHint"],
           "additionalProperties": false,
           "properties": {
             "general": { "$ref": "#/$defs/text" },
@@ -348,6 +348,7 @@
             "unignore": { "$ref": "#/$defs/text" },
             "sound": { "$ref": "#/$defs/text" },
             "soundHint": { "$ref": "#/$defs/text" },
+            "updates": { "$ref": "#/$defs/text" },
             "updateCheck": { "$ref": "#/$defs/text" },
             "updateCheckHint": { "$ref": "#/$defs/text" },
             "timer": { "$ref": "#/$defs/text" },

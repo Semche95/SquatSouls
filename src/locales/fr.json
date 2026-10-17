@@ -250,6 +250,7 @@
       "unignore": "Retirer",
       "sound": "Activer les sons",
       "soundHint": "Au départ et à la fin du minuteur, et à la fin de la récupération.",
+      "updates": "Mises à jour",
       "updateCheck": "Rechercher les mises à jour",
       "updateCheckHint": "L'appli cherche une nouvelle version au lancement et la télécharge en arrière-plan.",
       "timer": "Minuteur",

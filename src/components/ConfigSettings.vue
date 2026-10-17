@@ -58,13 +58,6 @@ const status = computed(() => {
         </div>
         <div class="setting-row">
           <label class="check">
-            {{ t('config.settings.updateCheck') }}
-            <input v-model="draft.updateCheck" type="checkbox" />
-          </label>
-          <p class="hint">{{ t('config.settings.updateCheckHint') }}</p>
-        </div>
-        <div class="setting-row">
-          <label class="check">
             {{ t('config.settings.sound') }}
             <input v-model="draft.sound" type="checkbox" />
           </label>
@@ -95,28 +88,6 @@ const status = computed(() => {
         </div>
       </div>
     </section>
-    <section v-reveal="draft.tray" class="setting">
-      <h2 class="setting-title">{{ t('config.settings.tray') }}</h2>
-      <div class="setting-card">
-        <div class="setting-row">
-          <label class="check">
-            {{ t('config.settings.showIcon') }}
-            <input v-model="draft.tray" type="checkbox" />
-          </label>
-          <p class="hint">{{ t('config.settings.trayHint') }}</p>
-        </div>
-        <template v-if="draft.tray">
-          <label class="setting-row nested check">
-            {{ t('config.settings.closeToTray') }}
-            <input v-model="draft.closeToTray" type="checkbox" />
-          </label>
-          <label class="setting-row nested check">
-            {{ t('config.settings.startHidden') }}
-            <input v-model="draft.startHidden" type="checkbox" />
-          </label>
-        </template>
-      </div>
-    </section>
     <section v-reveal="draft.steamDetection" class="setting">
       <h2 class="setting-title">{{ t('config.settings.steam') }}</h2>
       <div class="setting-card">
@@ -141,6 +112,40 @@ const status = computed(() => {
           </ul>
         </details>
         <p v-if="config.steamDetection" class="status" :class="status.kind">{{ status.text }}</p>
+      </div>
+    </section>
+    <section v-reveal="draft.tray" class="setting">
+      <h2 class="setting-title">{{ t('config.settings.tray') }}</h2>
+      <div class="setting-card">
+        <div class="setting-row">
+          <label class="check">
+            {{ t('config.settings.showIcon') }}
+            <input v-model="draft.tray" type="checkbox" />
+          </label>
+          <p class="hint">{{ t('config.settings.trayHint') }}</p>
+        </div>
+        <template v-if="draft.tray">
+          <label class="setting-row nested check">
+            {{ t('config.settings.closeToTray') }}
+            <input v-model="draft.closeToTray" type="checkbox" />
+          </label>
+          <label class="setting-row nested check">
+            {{ t('config.settings.startHidden') }}
+            <input v-model="draft.startHidden" type="checkbox" />
+          </label>
+        </template>
+      </div>
+    </section>
+    <section v-reveal="draft.updateCheck" class="setting">
+      <h2 class="setting-title">{{ t('config.settings.updates') }}</h2>
+      <div class="setting-card">
+        <div class="setting-row">
+          <label class="check">
+            {{ t('config.settings.updateCheck') }}
+            <input v-model="draft.updateCheck" type="checkbox" />
+          </label>
+          <p class="hint">{{ t('config.settings.updateCheckHint') }}</p>
+        </div>
       </div>
     </section>
   </div>
