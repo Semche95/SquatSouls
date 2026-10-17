@@ -3720,7 +3720,7 @@ dependencies = [
 
 [[package]]
 name = "squat-souls"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "chrono",
  "log",
