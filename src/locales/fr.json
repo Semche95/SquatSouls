@@ -339,6 +339,7 @@
   "update": {
     "available": "La version {version} est disponible",
     "downloadingHint": "Téléchargement en arrière-plan…",
+    "failedHint": "Le téléchargement a échoué. Vérifier la connexion, puis réessayer.",
     "ready": "La version {version} est prête",
     "readyHint": "Elle s'installera à la fermeture de l'appli.",
     "manualHint": "Télécharge le nouveau paquet pour l'installer.",

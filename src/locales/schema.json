@@ -469,11 +469,12 @@
     },
     "update": {
       "type": "object",
-      "required": ["available", "downloadingHint", "ready", "readyHint", "manualHint", "download", "restart", "restartLocked"],
+      "required": ["available", "downloadingHint", "failedHint", "ready", "readyHint", "manualHint", "download", "restart", "restartLocked"],
       "additionalProperties": false,
       "properties": {
         "available": { "type": "string", "pattern": "^[^{}]*(?:\\{version\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{version\\}" }] },
         "downloadingHint": { "$ref": "#/$defs/text" },
+        "failedHint": { "$ref": "#/$defs/text" },
         "ready": { "type": "string", "pattern": "^[^{}]*(?:\\{version\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{version\\}" }] },
         "readyHint": { "$ref": "#/$defs/text" },
         "manualHint": { "$ref": "#/$defs/text" },

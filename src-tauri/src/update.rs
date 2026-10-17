@@ -1,5 +1,5 @@
-//! Automatic update: checked at launch when enabled, announced as soon as found, downloaded in the
-//! background, installed on quitting or on request. The `.deb` and `.rpm` packages are only told.
+//! Update: checked at launch when enabled, announced as soon as found, downloaded in the background,
+//! downloaded again on request after a failure, installed on quitting or on request. The `.deb` and `.rpm` packages are only told.
 
 use crate::app::AppError;
 use serde::Serialize;
@@ -17,6 +17,8 @@ const UPDATE_CHANGED: &str = "update-changed";
 #[serde(rename_all = "lowercase")]
 enum Stage {
     Downloading,
+    /// Download failed, downloaded again only if the user asks for it.
+    Failed,
     Ready,
     /// To be downloaded by the user, from the release page.
     Manual,
@@ -32,12 +34,24 @@ pub(crate) struct UpdateView {
     stage: Stage,
 }
 
+impl UpdateView {
+    fn new(update: &Update, progress: Option<f64>, stage: Stage) -> Self {
+        Self {
+            version: update.version.clone(),
+            progress,
+            stage,
+        }
+    }
+}
+
 #[derive(Default)]
 struct Pending {
     /// Bumped by each `apply`, so that a check dropped in the meantime changes nothing.
     generation: u64,
     check: Option<JoinHandle<()>>,
     view: Option<UpdateView>,
+    /// Failed to download, waiting for the user to ask for its download.
+    found: Option<Update>,
     downloaded: Option<(Update, Vec<u8>)>,
 }
 
@@ -67,7 +81,7 @@ fn installable() -> bool {
 }
 
 /// Enabled, looks for a newer version and downloads it; disabled, drops the check, the download and
-/// the downloaded update. Offline or on failure, only a warning in the log.
+/// the downloaded update. Offline or on failure of the check, only a warning in the log.
 /// The development build never looks for one.
 pub(crate) fn apply(app: &AppHandle, enabled: bool) {
     if cfg!(debug_assertions) {
@@ -86,8 +100,8 @@ pub(crate) fn apply(app: &AppHandle, enabled: bool) {
     if enabled {
         let app = app.clone();
         pending.check = Some(tauri::async_runtime::spawn(async move {
-            if let Err(e) = download(&app, generation).await {
-                log::warn!("Update not downloaded: {e}");
+            if let Err(e) = check(&app, generation).await {
+                log::warn!("Update not checked: {e}");
                 set_view(&app, generation, None);
             }
         }));
@@ -95,6 +109,20 @@ pub(crate) fn apply(app: &AppHandle, enabled: bool) {
         drop(pending);
         let _ = app.emit(UPDATE_CHANGED, None::<UpdateView>);
     }
+}
+
+/// Downloads the update again after a failure, at the user's request.
+pub(crate) fn download_found(app: &AppHandle) {
+    let state = app.state::<PendingUpdate>();
+    let mut pending = state.lock();
+    let Some(update) = pending.found.take() else {
+        return;
+    };
+    let generation = pending.generation;
+    let app = app.clone();
+    pending.check = Some(tauri::async_runtime::spawn(async move {
+        download(&app, generation, update).await
+    }));
 }
 
 /// Runs `change` and tells the interface, unless the check was dropped in the meantime.
@@ -112,25 +140,30 @@ fn set_view(app: &AppHandle, generation: u64, view: Option<UpdateView>) {
     update_pending(app, generation, |pending| pending.view = view);
 }
 
-async fn download(app: &AppHandle, generation: u64) -> tauri_plugin_updater::Result<()> {
+async fn check(app: &AppHandle, generation: u64) -> tauri_plugin_updater::Result<()> {
     let Some(update) = app.updater()?.check().await? else {
         return Ok(());
     };
-    let version = update.version.clone();
-    let view = |progress, stage| UpdateView {
-        version: version.clone(),
-        progress,
-        stage,
-    };
     if !installable() {
-        set_view(app, generation, Some(view(None, Stage::Manual)));
-        return Ok(());
+        set_view(
+            app,
+            generation,
+            Some(UpdateView::new(&update, None, Stage::Manual)),
+        );
+    } else {
+        download(app, generation, update).await;
     }
-    set_view(app, generation, Some(view(None, Stage::Downloading)));
+    Ok(())
+}
+
+/// On failure, a warning in the log, and the update waits for the user to ask for it again.
+async fn download(app: &AppHandle, generation: u64, update: Update) {
+    let view = |progress, stage| Some(UpdateView::new(&update, progress, stage));
+    set_view(app, generation, view(None, Stage::Downloading));
     let mut received = 0u64;
     // Announced at each whole percent only, so that the interface is not flooded.
     let mut percent = 0;
-    let bytes = update
+    let downloaded = update
         .download(
             |chunk, total| {
                 received += chunk as u64;
@@ -143,18 +176,30 @@ async fn download(app: &AppHandle, generation: u64) -> tauri_plugin_updater::Res
                     set_view(
                         app,
                         generation,
-                        Some(view(Some(now as f64 / 100.0), Stage::Downloading)),
+                        view(Some(now as f64 / 100.0), Stage::Downloading),
                     );
                 }
             },
             || {},
         )
-        .await?;
-    update_pending(app, generation, |pending| {
-        pending.downloaded = Some((update, bytes));
-        pending.view = Some(view(Some(1.0), Stage::Ready));
-    });
-    Ok(())
+        .await;
+    match downloaded {
+        Ok(bytes) => {
+            let ready = view(Some(1.0), Stage::Ready);
+            update_pending(app, generation, |pending| {
+                pending.downloaded = Some((update, bytes));
+                pending.view = ready;
+            });
+        }
+        Err(e) => {
+            log::warn!("Update not downloaded: {e}");
+            let failed = view(None, Stage::Failed);
+            update_pending(app, generation, |pending| {
+                pending.found = Some(update);
+                pending.view = failed;
+            });
+        }
+    }
 }
 
 /// On quitting: installs the downloaded update without restarting the app.

@@ -11,8 +11,8 @@ import DisabledTip from './DisabledTip.vue';
 // During a session, the app is not restarted.
 defineProps({ locked: Boolean });
 
-// Update announced as soon as found, downloaded in the background and installed on quitting, or, for the
-// packages that cannot install it, downloaded by the user. Shared with the parent that binds it.
+// Update announced as soon as found, downloaded in the background, again on request after a failure, and installed
+// on quitting, or, for the packages that cannot install it, downloaded by the user. Shared with the parent that binds it.
 const update = defineModel({ type: Object, default: null });
 const { call } = useApi();
 
@@ -27,6 +27,10 @@ onMounted(async () => {
   update.value ??= await invoke('get_update').catch(() => null);
 });
 onBeforeUnmount(() => unlisten?.());
+
+function download() {
+  call('download_update').catch(() => {});
+}
 
 function restart() {
   call('restart_to_update').catch(() => {});
@@ -47,6 +51,9 @@ function restart() {
       <DisabledTip :tip="locked ? t('update.restartLocked') : ''">
         <button class="primary" :disabled="locked" @click="restart">{{ t('update.restart') }}</button>
       </DisabledTip>
+    </span>
+    <span v-else-if="stage === 'failed'" class="row">
+      <button class="primary" @click="download">{{ t('startup.retry') }}</button>
     </span>
     <span v-else-if="stage === 'manual'" class="row">
       <button class="primary" @click="openUrl(releaseUrl)">{{ t('update.download') }}</button>

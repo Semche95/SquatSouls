@@ -339,6 +339,7 @@
   "update": {
     "available": "Version {version} is available",
     "downloadingHint": "Downloading in the background…",
+    "failedHint": "The download failed. Check the connection, then try again.",
     "ready": "Version {version} is ready",
     "readyHint": "It will be installed when you quit.",
     "manualHint": "Download the new package to install it.",

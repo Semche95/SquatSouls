@@ -123,6 +123,7 @@ pub fn run() {
             commands::was_restored,
             commands::relaunch,
             commands::get_update,
+            commands::download_update,
             commands::restart_to_update,
             commands::draw,
             commands::set_session_intensity,

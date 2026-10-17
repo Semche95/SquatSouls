@@ -31,7 +31,7 @@ describe('update', () => {
     expect(banner(w).find('.update-progress > span').attributes('style')).toContain('width: 42%');
   });
 
-  it('drops the banner when the download fails', async () => {
+  it('drops the banner when the check fails', async () => {
     setup({ get_update: downloading() });
     const w = await mountApp();
     await emitEvent('update-changed', null);
@@ -55,6 +55,18 @@ describe('update', () => {
     const button = banner(w).find('button');
     expect(button.element.disabled).toBe(true);
     await expectTip(button, 'Available once the session is over');
+  });
+
+  it('downloads the update again on request when the download fails', async () => {
+    setup({ get_update: downloading(0.42), download_update: undefined });
+    const w = await mountApp();
+    await emitEvent('update-changed', { version: '0.2.0', progress: null, stage: 'failed' });
+    expect(banner(w).text()).toContain('The download failed. Check the connection, then try again.');
+    expect(banner(w).find('.update-progress').exists()).toBe(false);
+    const button = banner(w).find('button');
+    expect(button.text()).toBe('Try again');
+    await button.trigger('click');
+    expect(invoke).toHaveBeenCalledWith('download_update', undefined);
   });
 
   it('sends the packages that cannot install it to the release page', async () => {

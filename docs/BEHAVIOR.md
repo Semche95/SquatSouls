@@ -158,9 +158,9 @@ Button and setting names are quoted as they appear in the English interface.
 
 ## Update
 
-- At launch, the installed app looks for a newer version among the published releases and downloads it in the background. Offline or on failure, nothing is shown, and a banner already shown goes away: only a warning is logged. The development app never looks for one.
+- At launch, the installed app looks for a newer version among the published releases and downloads it in the background. Offline or when the check fails, nothing is shown, and a banner already shown goes away: only a warning is logged. The development app never looks for one.
 - **Check for updates**, alone in the **Updates** group, last in Settings (on by default, also shown in the development app, where it changes nothing), turned off, the app no longer looks for one: the check, the download and the downloaded update are dropped, and nothing is installed on quitting. Turned back on, the app looks for one right away. It is saved with **Save**.
-- As soon as a newer version is found, a banner at the top of the window announces it, with a bar that follows the download. Once downloaded, the banner says the version will be installed on quitting, with a **Restart now** button that installs it and restarts the app. During a session, the button is disabled, and its tooltip says it is available once the session is over.
+- As soon as a newer version is found, a banner at the top of the window announces it, with a bar that follows the download. When the download fails, the banner stays: it says so, with a **Try again** button that downloads it again. Once downloaded, the banner says the version will be installed on quitting, with a **Restart now** button that installs it and restarts the app. During a session, the button is disabled, and its tooltip says it is available once the session is over.
 - On Linux, the `.deb` and `.rpm` packages, whose installation would ask for the system password, are only told: the banner announces the version with a **Download** button that opens the page of the latest release, and nothing is downloaded.
 - Quitting the app (whatever the way) installs the downloaded update, without restarting it. An update never interrupts a session.
 - The database is kept from one version to the next: the new version applies its missing migrations at launch.
