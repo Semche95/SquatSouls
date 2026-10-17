@@ -93,7 +93,7 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Jouer: larger event tiles, current set large and queue beside it. */
+  /* Play: larger event tiles, current set large and queue beside it. */
   .play-head {
     max-width: 600px;
   }

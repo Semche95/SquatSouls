@@ -60,7 +60,7 @@
   font-size: 0.85rem;
   white-space: nowrap;
 }
-/* Pushed to the bottom of the window, under the content of the Jouer tab. */
+/* Pushed to the bottom of the window, under the content of the Play tab. */
 .session-actions {
   margin-top: auto;
   display: flex;

@@ -35,7 +35,7 @@
   gap: 14px;
   min-width: 0;
 }
-/* Import: shared text to paste, then Importer. */
+/* Import: shared text to paste, then Import. */
 .cfg-import textarea {
   resize: vertical;
   word-break: break-all;

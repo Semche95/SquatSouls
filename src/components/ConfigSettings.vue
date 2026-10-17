@@ -26,7 +26,7 @@ async function changeLanguage(value) {
   await setLanguage(language);
 }
 
-// Status of the saved detection, to see it works even without a banner in Jouer:
+// Status of the saved detection, to see it works even without a banner in Play:
 // text and color of its badge.
 const status = computed(() => {
   const d = detected.value;
