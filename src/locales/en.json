@@ -216,6 +216,8 @@
       "recoverySummary": "recovery {n} s",
       "minutes": "Minutes",
       "title": "Exercise",
+      "count": "Exercises · {n} included out of {total} | Exercises · {n} included out of {total}",
+      "enabledHint": "Turn an exercise off with its switch so it is no longer asked for, without deleting it.",
       "included": "Included",
       "recoveryHint": "An exercise can have its own.",
       "ownRecoveryHint": "Left empty, it is the one of all exercises.",

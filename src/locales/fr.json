@@ -216,6 +216,8 @@
       "recoverySummary": "récup {n} s",
       "minutes": "Minutes",
       "title": "Exercice",
+      "count": "Exercices · {n} proposé sur {total} | Exercices · {n} proposés sur {total}",
+      "enabledHint": "Désactive un exercice avec son interrupteur pour qu'il ne soit plus demandé, sans le supprimer.",
       "included": "Proposé",
       "recoveryHint": "Un exercice peut avoir la sienne.",
       "ownRecoveryHint": "Vide, c'est celle de tous les exercices.",

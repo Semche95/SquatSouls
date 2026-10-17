@@ -259,9 +259,13 @@ describe('configuration', () => {
     setup();
     const w = await openExercises({ dialog: false });
     const tile = w.find('.tile-slot');
+    const title = () => w.find('.cfg-exercises .group-head').text();
+    expect(title()).toContain('Exercises · 1 included out of 1');
+    expect(title()).toContain('Turn an exercise off with its switch so it is no longer asked for, without deleting it.');
     expect(tile.classes()).not.toContain('cfg-off');
     await w.find('input[aria-label="Include this exercise"]').setValue(false);
     expect(tile.classes()).toContain('cfg-off');
+    expect(title()).toContain('Exercises · 0 included out of 1');
     await openTile(tile.find('.tile'));
     const included = editDialog().find('.edit-aside input');
     expect(included.element.checked).toBe(false);

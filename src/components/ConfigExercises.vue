@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { VueFinalModal } from 'vue-final-modal';
 import { newId } from '../configDraft.js';
 import { t } from '../i18n.js';
@@ -18,6 +18,8 @@ const { saveNow } = useSession();
 const importing = ref(false);
 // Exercise in its edit dialog.
 const { item: editing, open: editOpen, fresh, edit: editExercise, remove: removeExercise } = useEditDialog(() => draft.value.exercises);
+// Exercises asked for in Play, out of all those defined.
+const included = computed(() => draft.value.exercises.filter((ex) => ex.enabled).length);
 
 // The confirmed import is saved right away; the draft receives it without losing its other changes.
 async function importShared(imported) {
@@ -39,7 +41,10 @@ function addExercise() {
 <template>
   <section class="group cfg-exercises">
     <header class="group-head">
-      <h2 class="group-title">{{ t('config.tabs.exercises') }}</h2>
+      <div class="cfg-head-text">
+        <h2 class="setting-title">{{ t('config.exercises.count', { n: included, total: draft.exercises.length }, included) }}</h2>
+        <p class="hint">{{ t('config.exercises.enabledHint') }}</p>
+      </div>
       <button class="ghost" @click="copy(shareExercises(config.exercises))">{{ t('common.share') }}</button>
       <button @click="importing = true">{{ t('common.import') }}</button>
     </header>

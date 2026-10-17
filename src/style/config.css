@@ -21,6 +21,13 @@
 }
 .config .group-head {
   justify-content: flex-start;
+  align-items: center;
+}
+.cfg-head-text {
+  flex: 1;
+}
+.cfg-head-text .setting-title {
+  margin: 0;
 }
 .cfg-import {
   display: flex;

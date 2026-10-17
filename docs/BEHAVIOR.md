@@ -26,7 +26,7 @@ Button and setting names are quoted as they appear in the English interface.
 - Each game offers a list of events. Triggering an event draws `draws` distinct exercises among the enabled exercises, each with a whole number picked at random between its `min` and its `max` (inclusive).
 - Exercises come out in rounds: within a session, each exercise comes out once before any of them can come back. When a round runs out, a new one starts; it does not immediately pick again an exercise of the previous set, nor an exercise already drawn in the same draw (unless it is the only one left to draw, for the first case). A saved configuration restarts the round.
 - The range belongs to the exercise: it is the same whatever the event.
-- An exercise switched off in the configuration (switch in the corner of its tile, or **Included** in its dialog) stays defined but is no longer drawn, until it is switched on again. The toggle is saved with **Save**, is not carried by exercise sharing, and an imported exercise arrives enabled (or keeps its state if it already existed).
+- An exercise switched off in the configuration (switch in the corner of its tile, or **Included** in its dialog; a hint under the title of the Exercises tab says so, and the title counts the included exercises out of all of them) stays defined but is no longer drawn, until it is switched on again. The toggle is saved with **Save**, is not carried by exercise sharing, and an imported exercise arrives enabled (or keeps its state if it already existed).
 - A draw becomes a set "to do". Sets to do are handled from the oldest to the most recent.
 
 ## Intensity
