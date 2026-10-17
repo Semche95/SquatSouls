@@ -1,0 +1,116 @@
+/* Sets to do: cards, exercises and their actions, jokers. */
+
+.empty {
+  margin: 0;
+  color: var(--muted);
+  padding: 18px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.pending {
+  --seal: 112px;
+  --seal-inset: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* The countdown sticks out above the set by half its size, the heading and the gap above leave about 44px. */
+  padding-top: calc(var(--seal) / 2 - 44px);
+}
+.pending h2 {
+  margin-bottom: 0;
+}
+.jokers {
+  margin-left: 8px;
+  color: var(--gold);
+  font-size: 0.85rem;
+  font-weight: normal;
+}
+.jokers.none {
+  color: var(--muted);
+}
+.reward-tag {
+  display: block;
+  color: var(--gold);
+  font-size: 0.8rem;
+}
+.reward {
+  margin: 0;
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 1.6rem;
+  color: var(--gold);
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.card.current {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold-soft), 0 8px 30px rgba(201, 164, 92, 0.08);
+}
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.items li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 14px;
+}
+.amount {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 2.4rem;
+  line-height: 1;
+  color: var(--gold);
+  min-width: 2.2ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.card:not(.current) .amount {
+  font-size: 1.6rem;
+  color: var(--text);
+}
+.what {
+  display: flex;
+  flex-direction: column;
+}
+.what strong {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.items li.done {
+  opacity: 0.45;
+}
+.items li.done strong {
+  text-decoration: line-through;
+}
+.item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+}
+.item-actions button {
+  padding: 4px 10px;
+  font-size: 0.85rem;
+}
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}

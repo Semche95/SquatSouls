@@ -1,0 +1,125 @@
+/* Banners: errors, warnings, Steam detection and update. */
+
+.banner {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid;
+  font-size: 0.9rem;
+}
+.banner.confirm {
+  border-color: var(--red);
+  display: grid;
+  gap: 10px;
+}
+.banner.confirm p,
+.banner.confirm .card-actions {
+  margin: 0;
+}
+.banner.error {
+  border-color: var(--red);
+  background: rgba(194, 91, 79, 0.12);
+  margin-bottom: 12px;
+}
+.banner.warn {
+  border-color: var(--ember);
+  background: rgba(235, 154, 99, 0.12);
+}
+.banner.info {
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--muted);
+}
+.banner.steam,
+.banner.update {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-color: var(--gold);
+  border-left-width: 4px;
+  background: var(--gold-soft);
+}
+.banner.steam strong {
+  color: var(--gold);
+}
+/* Actions pushed to the right of the text. */
+.banner.steam .row,
+.banner.update .row {
+  margin-left: auto;
+}
+/* Update: its progress bar runs along the bottom edge, which it clips. */
+.banner.update {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 12px;
+  animation: update-in 0.35s ease-out;
+}
+@keyframes update-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.update-icon {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 6px;
+  border-radius: 50%;
+  background: var(--gold-soft);
+  border: 1px solid var(--gold);
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.update-text {
+  display: grid;
+  gap: 2px;
+}
+.update-text strong {
+  color: var(--gold);
+}
+.update-text span {
+  color: var(--muted);
+}
+.update-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--gold-soft);
+}
+.update-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  transition: width 0.3s ease-out;
+}
+/* Unknown size: a short segment sweeps along the bar. */
+.update-progress.unknown > span {
+  width: 30%;
+  animation: update-sweep 1.4s ease-in-out infinite;
+}
+@keyframes update-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(340%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .banner.update,
+  .update-progress.unknown > span {
+    animation: none;
+  }
+}
+/* Closed by its cross, in the top right corner. */
+.banner.closable {
+  position: relative;
+  padding-right: 36px;
+  margin-bottom: 12px;
+}

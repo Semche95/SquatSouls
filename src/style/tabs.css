@@ -1,0 +1,75 @@
+/* Tabs, sub-tabs and segmented controls. */
+
+/* Tabs and segmented control choosing a value (Play intensity): the chosen value
+   stands out in gold. */
+.tabs,
+.segmented {
+  display: flex;
+  gap: 4px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 3px;
+}
+.tabs button,
+.segmented button {
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  color: var(--muted);
+}
+.tabs button:hover:not(.active),
+.segmented button:hover:not(.active, :disabled) {
+  background: var(--gold-soft);
+  color: var(--text);
+}
+.tabs button.active {
+  background: var(--panel-2);
+  color: var(--text);
+}
+.segmented button.active {
+  background: var(--gold);
+  color: #1a160f;
+  font-weight: 600;
+}
+.segmented button:disabled {
+  cursor: default;
+  transform: none;
+}
+.segmented button:disabled:not(.active) {
+  opacity: 0.5;
+}
+.badge {
+  display: inline-block;
+  min-width: 20px;
+  margin-left: 4px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #1a160f;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+/* Configuration: games and exercises on separate sub-tabs, underlined so as not to look like a segmented control. */
+.subtabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+}
+.subtabs button {
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  margin-bottom: -1px;
+  background: transparent;
+  /* No top padding: the labels line up with the top edge of the content, like the sidebar title. */
+  padding: 0 12px 6px;
+  color: var(--muted);
+}
+.subtabs button:hover:not(.active) {
+  color: var(--text);
+}
+.subtabs button.active {
+  border-bottom-color: var(--gold);
+  color: var(--text);
+}

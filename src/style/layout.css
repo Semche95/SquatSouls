@@ -1,0 +1,70 @@
+/* Frame of the window: title, slogan and tab content. */
+
+.app {
+  max-width: 1280px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Column of the tab, filling the window height so the save bar can sit at the bottom. */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.top h1,
+.startup h1,
+.onboarding-step h2 {
+  margin: 0;
+  font-family: "Cinzel", "Cormorant Garamond", Georgia, serif;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  font-size: 1.45rem;
+  color: var(--gold);
+}
+
+/* Takes the space left by the tabs: a long slogan wraps instead of pushing them. */
+.brand {
+  flex: 1 1 0;
+  min-width: 12rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.splash {
+  margin: 0;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--muted);
+  animation: splash-in 0.8s ease-out;
+}
+@keyframes splash-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .splash {
+    animation: none;
+  }
+}
+
+.panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}

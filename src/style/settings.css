@@ -1,0 +1,130 @@
+/* Settings tab. */
+
+/* Settings: one card per topic under its gold title, one row per option (label, switch on the right),
+   its secondary options indented behind a gold line. */
+.cfg-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.setting-title {
+  margin: 0 0 8px 4px;
+  color: var(--gold);
+}
+.setting-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.setting-row {
+  margin: 0;
+  padding: 14px 18px;
+}
+.setting-card > * + *,
+.ignored li + li {
+  border-top: 1px solid var(--line);
+}
+.setting-row.nested {
+  position: relative;
+  padding: 10px 18px 10px 34px;
+  background: rgba(0, 0, 0, 0.14);
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+.setting-row.nested::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 18px;
+  width: 2px;
+  background: var(--gold-soft);
+}
+/* Ignored games, folded by default behind their title. */
+.setting-sub {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-block: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+}
+.setting-sub::-webkit-details-marker {
+  display: none;
+}
+.setting-sub:hover {
+  background: var(--gold-soft);
+}
+.ignored-games[open] > .setting-sub {
+  border-bottom: 1px solid var(--line);
+}
+/* Steam detection status, at the foot of its card: grey, green (named game) or orange (Steam Store blocked) dot,
+   the same as the one of the unsaved changes. */
+.status {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 18px;
+  background: var(--panel-2);
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.status::before,
+.unsaved::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.status.found::before {
+  background: var(--green);
+}
+.status.blocked::before {
+  background: var(--ember);
+}
+/* Ignored games: one row per game, its line included, scrolling past 10 rows. */
+.ignored {
+  --ignored-row: 46px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: calc(10 * var(--ignored-row));
+  overflow-y: auto;
+}
+.ignored li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--ignored-row);
+  padding-block: 0;
+}
+/* Fixed row height: a long name is cut on one line. */
+.ignored-name {
+  flex: 1;
+}
+.ignored button {
+  padding: 3px 10px;
+  font-size: 0.85rem;
+}
+/* Chevron centered on its own box to stay aligned with the text once rotated. */
+.cfg-event-head::before,
+.setting-sub::before {
+  content: "▸";
+  display: inline-flex;
+  justify-content: center;
+  width: 1em;
+  line-height: 1;
+  color: var(--gold);
+  transition: transform 0.12s;
+}
+.cfg-event:is([open], .open) .cfg-event-head::before,
+.ignored-games[open] > .setting-sub::before {
+  transform: rotate(90deg);
+}

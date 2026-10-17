@@ -1,0 +1,176 @@
+/* Wide window layout, last so that it overrides the rules above. */
+
+/* Wide window: sidebar (title, tabs, session status) and full-width content. */
+@media (min-width: 900px) {
+  .app {
+    max-width: 1440px;
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+    /* Margin around the window edges and between the sidebar and the content, the same everywhere. */
+    --edge: 20px;
+    column-gap: var(--edge);
+    padding: 0 var(--edge) 0 0;
+  }
+  .content {
+    margin-top: var(--edge);
+  }
+  /* Only the configuration fills the window height, for its save bar: the other tabs keep their height. */
+  .panel {
+    flex: none;
+  }
+  .panel.config {
+    flex: 1;
+    padding-bottom: 0;
+  }
+  .cfg-actions {
+    padding-bottom: var(--edge);
+  }
+  .top {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: var(--edge);
+    margin: 0;
+    padding: var(--edge);
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+  }
+  .brand {
+    flex: none;
+    min-width: 0;
+  }
+  .top h1 {
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+  .tabs {
+    flex: 1;
+    flex-direction: column;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .tabs button {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border-left: 2px solid transparent;
+    border-radius: 0 8px 8px 0;
+  }
+  .tabs button.active {
+    border-left-color: var(--gold);
+  }
+  /* About sits at the bottom of the sidebar, right above the session status. */
+  .tabs .about {
+    margin-top: auto;
+  }
+  .hud {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    /* Close to About, above it: cancels most of the sidebar gap. */
+    margin: calc(12px - var(--edge)) 0 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+  .hud dt {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+  .hud dd {
+    margin: 0;
+    font-family: "Cinzel", Georgia, serif;
+    font-size: 1.8rem;
+    line-height: 1;
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
+  }
+  .panel {
+    padding-bottom: var(--edge);
+    gap: 24px;
+  }
+
+  /* Jouer: larger event tiles, current set large and queue beside it. */
+  .play-head {
+    max-width: 600px;
+  }
+  .events {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .event {
+    min-height: 76px;
+    padding: 14px 16px;
+    font-size: 1.05rem;
+  }
+  .stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 14px;
+  }
+  .card.current {
+    padding: 22px 26px;
+  }
+  .card.current .card-head {
+    font-size: 1rem;
+  }
+  .card.current .items {
+    gap: 14px;
+    margin: 6px 0 4px;
+  }
+  .card.current .amount {
+    font-size: 4.5rem;
+  }
+  .card.current .what strong {
+    font-size: 1.5rem;
+  }
+  .card.current .card-actions {
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .card.current .card-actions button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    padding: 11px 16px;
+    font-size: 1.05rem;
+  }
+  .queue .card {
+    padding: 10px 14px;
+  }
+  .queue .card-head {
+    margin-bottom: 4px;
+  }
+  .queue .reward {
+    font-size: 1.1rem;
+  }
+  .queue .card-actions {
+    margin-top: 8px;
+  }
+  .queue .card-actions button {
+    padding: 5px 12px;
+    font-size: 0.9rem;
+  }
+
+  /* Summary: totals as tiles beside the log. */
+  .session-detail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 24px;
+  }
+  .totals {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  }
+  .group-head button {
+    white-space: nowrap;
+  }
+
+}

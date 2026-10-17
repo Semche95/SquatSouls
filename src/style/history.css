@@ -1,0 +1,159 @@
+/* History tab. */
+
+/* Full history: the card fills the whole window, larger. */
+.group.full {
+  position: fixed;
+  inset: 16px;
+  z-index: 10;
+  overflow-y: auto;
+  font-size: 1.15rem;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.6);
+}
+.group.full .group-head {
+  position: sticky;
+  top: -14px;
+  margin: -14px -14px 0;
+  padding: 14px;
+  background: var(--panel);
+}
+.group.full .chip {
+  font-size: 0.95rem;
+}
+.group.full .day-games {
+  font-size: 1rem;
+}
+/* Summary: each block is a card, the current session is highlighted. */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.group.current {
+  border-color: var(--gold);
+  box-shadow: inset 4px 0 0 var(--gold);
+}
+.group-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+.group.current .group-title {
+  color: var(--gold);
+}
+.group .log li:last-child,
+.group .days li:last-child {
+  border-bottom: none;
+}
+.group-title {
+  margin: 0;
+  font-size: 1.15rem;
+  text-transform: none;
+  letter-spacing: 0;
+  color: inherit;
+}
+
+/* Session totals: one tile per exercise. */
+.totals {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.totals li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.total-amount {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 2rem;
+  line-height: 1.1;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+.total-amount small {
+  font-family: "Inter", "Noto Sans", system-ui, sans-serif;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.totals .muted {
+  font-size: 0.8rem;
+}
+
+.log,
+.days {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.log li {
+  display: grid;
+  grid-template-columns: 3.5em 1fr auto;
+  gap: 10px;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+.days li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.day {
+  display: inline-block;
+  width: 7.5em;
+  flex-shrink: 0;
+}
+.day::first-letter {
+  text-transform: uppercase;
+}
+.day .link {
+  display: block;
+  padding: 2px 0 0;
+  font-size: 0.85rem;
+}
+.days li.off .day {
+  color: var(--muted);
+}
+.day-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.day-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.day-session {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.day-games {
+  color: var(--gold);
+  font-size: 0.85rem;
+}
+.chip {
+  background: var(--gold-soft);
+  border: 1px solid rgba(201, 164, 92, 0.3);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+}

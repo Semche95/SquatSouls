@@ -1,0 +1,100 @@
+/* Base elements and text styles shared by every screen. */
+
+:root {
+  font-size: 15px;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  min-height: 100vh;
+  /* A desktop app, not a web page: text is neither selectable nor pointed at with the text cursor, and images
+     cannot be dragged out, except in the text fields. */
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+img {
+  -webkit-user-drag: none;
+}
+input:not([type='checkbox']),
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  border-radius: 8px;
+  padding: 8px 14px;
+  transition: border-color 0.12s, background 0.12s, transform 0.06s;
+}
+button:hover {
+  border-color: var(--gold);
+}
+button:active {
+  transform: translateY(1px);
+}
+
+h2,
+.about-modal h4 {
+  margin: 0 0 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+kbd {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.75rem;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 1px 6px;
+  color: var(--muted);
+  background: var(--bg);
+}
+kbd.dark {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(0, 0, 0, 0.35);
+  color: #2a2113;
+}
+.link {
+  border: none;
+  background: none;
+  padding: 0 0 0 6px;
+  color: var(--gold);
+  text-decoration: underline;
+}
+code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.85em;
+  color: var(--text);
+  word-break: break-all;
+}
+.row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}

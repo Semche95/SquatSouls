@@ -1,0 +1,103 @@
+/* Recovery countdown and exercise timer. */
+
+/* Recovery countdown astride the top border of the current set, or of the empty block. */
+.card.current,
+.empty {
+  position: relative;
+}
+.countdown-seal {
+  position: absolute;
+  top: calc(var(--seal) / -2);
+  right: var(--seal-inset);
+  z-index: 5;
+  width: var(--seal);
+  height: var(--seal);
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--panel-2) 55%, var(--bg));
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 22px rgba(201, 164, 92, 0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  color: var(--gold);
+}
+.countdown-seal:hover {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 28px rgba(201, 164, 92, 0.35);
+}
+.countdown-seal svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+.countdown-seal circle {
+  fill: none;
+  stroke-width: 4;
+}
+.seal-track {
+  stroke: var(--line);
+}
+.seal-ring {
+  stroke: var(--gold);
+  stroke-dasharray: 1 1;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.25s linear;
+}
+.seal-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.countdown-left {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 1.8rem;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.countdown-seal kbd {
+  font-size: 0.7rem;
+  padding: 0 4px;
+}
+/* Timer of a timed exercise: ember instead of gold, its time dimmed while held. */
+.countdown-seal.timer {
+  color: var(--ember);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 22px rgba(235, 154, 99, 0.2);
+}
+.countdown-seal.timer:hover {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 28px rgba(235, 154, 99, 0.4);
+}
+.countdown-seal.timer .seal-ring {
+  stroke: var(--ember);
+}
+.countdown-seal.held .countdown-left {
+  opacity: 0.5;
+}
+/* Keeps the event name clear of the countdown. */
+.card:has(> .countdown-seal) .card-head {
+  padding-right: calc(var(--seal) + 12px);
+}
+/* Keeps the centered empty text clear of the countdown on both sides. */
+.empty:has(> .countdown-seal) {
+  padding-inline: calc(var(--seal-inset) + var(--seal) + 12px);
+}
+.seal-enter-active,
+.seal-leave-active {
+  transition: opacity 0.3s, transform 0.3s;
+}
+.seal-enter-from,
+.seal-leave-to {
+  opacity: 0;
+  transform: scale(0.7);
+}
+@media (prefers-reduced-motion: reduce) {
+  .seal-enter-active,
+  .seal-leave-active,
+  .step-enter-active,
+  .step-leave-active,
+  .seal-ring {
+    transition: none;
+  }
+}

@@ -1,0 +1,76 @@
+/* Selects drawn by Tom Select. */
+
+/* Selects are drawn by Tom Select (select.js), its theme replaced by the app's colors. The background comes
+   from --select-bg, set by the context, and stays when the select has the focus. */
+.ts-dropdown,
+.ts-control {
+  font: inherit;
+  color: inherit;
+}
+.ts-control,
+.full .ts-control,
+.ts-wrapper.single.input-active .ts-control,
+.disabled .ts-control {
+  background: var(--select-bg, var(--panel));
+  cursor: pointer;
+}
+.ts-control {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.12s;
+}
+/* Texts cut on one line when too long: chosen option, exercise name and range, ignored game. */
+.ts-control > .item,
+.cfg-exercise-head strong,
+.cfg-range > .muted,
+.ignored-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ts-wrapper:not(.disabled):hover .ts-control,
+.ts-wrapper.focus .ts-control {
+  border-color: var(--gold);
+}
+/* Arrow made of two gradient triangles, turned over while the list is open. */
+.ts-wrapper.single {
+  --ts-pr-caret: 32px;
+}
+.ts-wrapper.single .ts-control::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  width: 10px;
+  height: 5px;
+  translate: 0 -50%;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: left, right;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  transition: rotate 0.12s;
+}
+.ts-wrapper.dropdown-active .ts-control::after {
+  rotate: 180deg;
+}
+.ts-dropdown {
+  margin-top: 4px;
+  overflow: hidden;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+.ts-dropdown .option {
+  padding: 6px 10px;
+}
+.ts-dropdown .selected {
+  color: var(--gold);
+}
+.ts-dropdown .active {
+  background: var(--gold-soft);
+  color: var(--text);
+}

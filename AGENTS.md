@@ -12,7 +12,7 @@ The business rules are described in `docs/BEHAVIOR.md`, which is the reference.
 
 ## Structure
 
-- `src/`: Vue interface, one component per tab in `components/`, shared state in `composables/` (provide/inject). `ConfigFrame.vue` is the frame shared by the Program and Settings tabs. `locales/en.json` is the source and fallback language.
+- `src/`: Vue interface, one component per tab in `components/`, shared state in `composables/` (provide/inject). `ConfigFrame.vue` is the frame shared by the Program and Settings tabs. `locales/en.json` is the source and fallback language. `style/`: styles, one file per domain, imported in cascade order by `style/index.css` (`wide.css`, the wide window layout, last).
 - `src-tauri/src/`: Rust backend. The business logic lives in `app/`, the default configuration in `app/seed.en.json` and `app/seed.fr.json`.
 - `src-tauri/migrations/`: SQL schema migrations, one per `V<n>__<name>.sql` file (rules in its `README.md`).
 - `src/tests/`: interface tests (Vitest), one file per tab or module; `app.js` shared data and mounting, `setup.js` Tauri backend mock.
@@ -34,7 +34,7 @@ pnpm test                   # interface tests (Vitest)
 - French texts (`fr.json` locales, `seed.fr.json`) follow French typography: a no-break space (U+00A0) before `:`, a narrow no-break space (U+202F) before `?`, `!`, `;` and inside `« »`, never an ordinary space.
 - Never modify, rename, merge or delete a migration in `src-tauri/migrations/` once created, even uncommitted, even to fix a mistake, not even its comments (refinery checksums their content): every schema change goes through a new `V<n+1>__<name>.sql` file. Migration comments are written in English from the start, so they never need translating.
 - In JavaScript, strings in single quotes, never double, escaping the apostrophe (`'moins d\'une minute'`).
-- A disabled button must look disabled: check that `style.css` gives it a `:disabled` style (reduced opacity, no pointer cursor nor hover effect), rather than relying on the `disabled` attribute alone. The reason it is disabled is shown in a tooltip by wrapping it in `DisabledTip` (`components/DisabledTip.vue`), never with a `title`.
+- A disabled button must look disabled: check that `style/controls.css` gives it a `:disabled` style (reduced opacity, no pointer cursor nor hover effect), rather than relying on the `disabled` attribute alone. The reason it is disabled is shown in a tooltip by wrapping it in `DisabledTip` (`components/DisabledTip.vue`), never with a `title`.
 - Any change to the share/import format (`share.js`) is versioned: increment `VERSION`, add the new version's reader to `READERS` while keeping those of the previous ones, and test importing texts from the old versions.
 - Tests only live in `src/tests/` (interface) and `src-tauri/tests/` (backend): no `*.test.js` file elsewhere in `src/`, no `#[cfg(test)]` module in `src-tauri/src/`.
 - The interface tests run in English and check the English texts, test data included. French only appears where the test is about French itself: switching the language, French plurals or formatting, French input the app must recognize.

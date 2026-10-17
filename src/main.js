@@ -10,7 +10,7 @@ import 'floating-vue/dist/style.css';
 import 'tom-select/dist/css/tom-select.css';
 import 'vue-final-modal/style.css';
 import './theme.css';
-import './style.css';
+import './style/index.css';
 
 logUncaught();
 for (const type of ['pointerdown', 'keydown']) window.addEventListener(type, unlockSound, { capture: true });

@@ -1,0 +1,202 @@
+/* Program tab: games, import and save bar. */
+
+/* Floating confirmation, to the right of the configuration sub-tabs, without shifting or hiding anything. */
+.config {
+  position: relative;
+}
+.banner.ok {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 20;
+  border-color: var(--green);
+  background: linear-gradient(rgba(127, 166, 106, 0.12), rgba(127, 166, 106, 0.12)), var(--bg);
+  box-shadow: var(--shadow);
+}
+/* Disabled exercise: kept in the list but out of the draw. */
+.cfg-off :is(input:not([type='checkbox']), .ts-control, .cfg-event-head) {
+  opacity: 0.5;
+}
+.cfg-recovery {
+  align-self: flex-start;
+}
+
+.config .cfg-recovery input {
+  flex: none;
+  width: 5.5em;
+}
+/* Configuration: flat sections and events, without a card frame. */
+.config .group {
+  padding: 0;
+  background: none;
+  border: none;
+}
+.config .group > button,
+.cfg-game > button {
+  align-self: flex-start;
+}
+.config .group-head {
+  justify-content: flex-start;
+}
+.cfg-game,
+.cfg-import {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+/* Import: shared text to paste, then Importer. */
+.cfg-import textarea {
+  resize: vertical;
+  word-break: break-all;
+}
+/* The spacing between blocks already comes from the form. */
+.cfg-import .banner.error {
+  margin-bottom: 0;
+}
+/* Event as an accordion: one card per event, header and content on the same background. The header is
+   rounded rather than the card clipped, which would cut a select's list. */
+.cfg-event {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.cfg-event + .cfg-event {
+  margin-top: 8px;
+}
+.cfg-event:is([open], .open) {
+  border-color: var(--gold);
+}
+.cfg-event > :not(summary, .cfg-exercise-head) {
+  margin: 12px;
+}
+.cfg-event summary,
+.cfg-exercise-head {
+  border-radius: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.cfg-event summary::-webkit-details-marker {
+  display: none;
+}
+.cfg-event:not([open]) summary:hover,
+.cfg-exercise:not(.open) .cfg-exercise-head:has(> .cfg-event-head:hover) {
+  background: var(--gold-soft);
+}
+/* Fields darker than the card to stand out from it. */
+.config .cfg-event input {
+  background: var(--panel);
+}
+.config .cfg-event .ts-wrapper {
+  --select-bg: var(--panel);
+}
+.cfg-event-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cfg-event-head .muted {
+  margin-left: auto;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+/* Exercise: the switch, then the name that opens the card, then the range always at hand.
+   The range keeps a fixed width so that it lines up from one card to the next. */
+.cfg-exercise-head {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  cursor: default;
+  gap: 12px;
+  padding-block: 6px;
+}
+.cfg-exercise-head .cfg-event-head {
+  flex: 1 1 10em;
+  min-width: 0;
+  align-self: stretch;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+}
+.cfg-exercise-head .cfg-event-head:active {
+  transform: none;
+}
+/* The name gives way first: the recovery and the timer icon stay against the range. */
+.cfg-exercise-head strong {
+  min-width: 0;
+  margin-right: auto;
+}
+.cfg-exercise-head .cfg-event-head .muted {
+  margin-left: 0;
+}
+/* Ember, like the timer seal in play. */
+.cfg-timed-icon {
+  flex: none;
+  color: var(--ember);
+  font-size: 2rem;
+  line-height: 1;
+}
+.cfg-range {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cfg-range label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.cfg-range input {
+  color: var(--text);
+}
+/* Narrower than the other counts, to leave the unit as much room as possible. */
+.cfg-range .count-input {
+  flex: none;
+  width: 3.5em;
+}
+.cfg-range > .muted {
+  width: 9em;
+}
+.cfg-params {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.cfg-params label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.cfg-params input {
+  color: var(--text);
+}
+/* Save bar of the whole tab, set apart from the sections above it, always at the bottom of the window. */
+.cfg-actions {
+  align-items: center;
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding: 14px 0 24px;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+}
+.unsaved {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  font-size: 0.9rem;
+  color: var(--ember);
+}
+.unsaved::before {
+  background: var(--ember);
+}

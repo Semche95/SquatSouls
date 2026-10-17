@@ -1,0 +1,82 @@
+/* Modals and their forms. */
+
+/* Modals (VueFinalModal): centered box over the darkened window, buttons at both ends. */
+.confirm-modal {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.confirm-modal .vfm__overlay {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(2px);
+}
+.confirm-modal-content {
+  display: grid;
+  gap: 10px;
+  width: min(440px, 100%);
+  padding: 22px 24px 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--red);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+/* Red frame for a loss, gold when nothing is lost. */
+.confirm-modal-content:is(.validate, .form-dialog, .about-modal) {
+  border-top-color: var(--gold);
+}
+.confirm-modal-content h3 {
+  margin: 0;
+  font-family: "Cinzel", Georgia, serif;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  font-size: 1.15rem;
+  color: var(--gold);
+}
+.confirm-modal-content p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 0.92rem;
+}
+/* Creation or import of a game, import of exercises: gold like About, nothing is at stake; labels in a column, fields aligned. */
+.confirm-modal-content.form-dialog {
+  position: relative;
+  gap: 16px;
+  width: min(480px, 100%);
+}
+.form-dialog form {
+  display: grid;
+  gap: 16px;
+}
+.game-fields {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: center;
+  gap: 12px;
+}
+.game-fields span {
+  color: var(--muted);
+}
+/* Import: Cancel on the left and Import on the right, like the other modals. */
+.cfg-import .row {
+  flex-direction: row-reverse;
+  justify-content: space-between;
+}
+.modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: none;
+  background: none;
+  padding: 2px 8px;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--muted);
+}
+.modal-close:hover {
+  color: var(--text);
+}
+.confirm-modal-content .card-actions {
+  justify-content: space-between;
+}

@@ -1,0 +1,91 @@
+/* Play tab: game, event tiles and session actions. */
+
+/* Game then intensity, which drops below the game when the window narrows. */
+.play-head {
+  flex-wrap: wrap;
+}
+.play-head > :first-child {
+  flex: 1 1 240px;
+}
+
+.events {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+}
+.event {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 12px;
+  background: var(--panel);
+  min-height: 56px;
+}
+.event:hover {
+  background: var(--gold-soft);
+}
+.event {
+  position: relative;
+  overflow: hidden;
+}
+/* Gauge of the per-session limit, at the bottom of the tile. */
+.gauge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--line);
+}
+.gauge > span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  transition: width 0.2s;
+}
+.stage,
+.stage-current,
+.queue {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hud {
+  display: none;
+}
+.event-name {
+  flex: 1;
+  line-height: 1.25;
+}
+.count {
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+/* Pushed to the bottom of the window, under the content of the Jouer tab. */
+.session-actions {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.session-actions > *,
+.session-actions .tip > button {
+  flex: 1;
+}
+/* Encouragement after the session ends, on its own line above the buttons. */
+.session-actions > .farewell {
+  flex-basis: 100%;
+  margin: 0;
+  text-align: center;
+  font-style: italic;
+  color: var(--gold);
+}
+
+.event:disabled {
+  opacity: 0.45;
+  cursor: default;
+  background: var(--panel);
+}
