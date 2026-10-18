@@ -46,6 +46,20 @@ describe('configuration', () => {
     expect(w.find('.banner.error').text()).toBe('Invalid range for "Squats" (20 to 15): from 1 to 9999, the minimum not above the maximum.');
   });
 
+  it('drops the save error once the changes are edited or discarded', async () => {
+    setup({ save_config: rejection('exercise_range', { name: 'Squats', min: 20, max: 15, limit: 9999 }) });
+    const w = await openConfig();
+    await rename(w, 'Other');
+    await save(w).trigger('click');
+    await flushPromises();
+    await rename(w, 'Another');
+    expect(w.find('.banner.error').exists()).toBe(false);
+    await save(w).trigger('click');
+    await flushPromises();
+    await discard(w).trigger('click');
+    expect(w.find('.banner.error').exists()).toBe(false);
+  });
+
   it('disables saving while a field is badly filled and gives the reason', async () => {
     setup();
     const w = await openExercises();

@@ -15,7 +15,14 @@ export const [provideConfig, useConfig] = defineShared(() => {
   const config = ref(null);
   // Working copy edited in the Program and Settings tabs, each tab saving only its own fields.
   const draft = ref(null);
+  // Error of the saved configuration, kept until closed, or of an action.
   const configError = ref('');
+  // Draft when an action failed: its error no longer applies once the draft changes (edited or discarded).
+  let failedDraft = null;
+  function fail(msg) {
+    failedDraft = msg ? JSON.stringify(draft.value) : null;
+    configError.value = msg;
+  }
   // Transient confirmation (save, copy, import).
   const configMsg = ref('');
   let configMsgTimer;
@@ -46,6 +53,7 @@ export const [provideConfig, useConfig] = defineShared(() => {
   watch([intensity, () => config.value?.rememberIntensity], ([value, remember]) => {
     if (remember) invoke('set_intensity', { intensity: value }).catch(() => {});
   });
+  watch(draft, (d) => failedDraft !== null && JSON.stringify(d) !== failedDraft && fail(''), { deep: true });
   // Keeps the Program game select on the game actually edited (the first by name until one is chosen).
   watch(editedGame, (g) => {
     if (g && g.id !== editedGameId.value) editedGameId.value = g.id;
@@ -54,20 +62,21 @@ export const [provideConfig, useConfig] = defineShared(() => {
   function applyConfigView(view) {
     config.value = view.config;
     draft.value = clone(view.config);
+    fail('');
     configError.value = view.error ? errorText(view.error) : '';
   }
 
   // Saves `cfg` without touching the draft; returns false if the backend refuses.
   async function store(cfg) {
     const clean = normalized(cfg);
-    configError.value = fieldError(clean);
+    fail(fieldError(clean));
     if (configError.value) return false;
     try {
       config.value = (await invoke('save_config', { config: clean })).config;
-      configError.value = '';
+      fail('');
       return true;
     } catch (e) {
-      configError.value = errorText(e);
+      fail(errorText(e));
       return false;
     }
   }
@@ -84,7 +93,7 @@ export const [provideConfig, useConfig] = defineShared(() => {
       await navigator.clipboard.writeText(text);
       notify(t('config.copied'));
     } catch (e) {
-      configError.value = t('common.copyFailed', { error: String(e) });
+      fail(t('common.copyFailed', { error: String(e) }));
     }
   }
 
