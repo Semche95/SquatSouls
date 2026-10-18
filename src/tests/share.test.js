@@ -1,7 +1,7 @@
 import { deflateSync, strToU8 } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { MAX_ITEMS, MAX_NAME, MAX_UNIT } from '../configDraft.js';
-import { importGame, mergeExercises, parseExercises, parseGame, shareExercises, shareGame, toBase64, unpack } from '../share.js';
+import { importGame, mergeExercises, parseExercises, parseGame, shareExercise, shareExercises, shareGame, toBase64, unpack } from '../share.js';
 import { config } from './app.js';
 
 // Shared text written in a given format version, with the content of `shared`.
@@ -123,6 +123,12 @@ describe('game sharing', () => {
 });
 
 describe('exercise sharing', () => {
+  it('shares a single exercise as a list of one, named in its identifier', () => {
+    const text = shareExercise(exercises[0]);
+    expect(text).toMatch(/^squatsouls\/exercise\/squats:/);
+    expect(parseExercises(text)).toEqual(parseExercises(shareExercises([exercises[0]])));
+  });
+
   it('shares the exercises without ids, with their own recovery, timer and sides, then reads them back', () => {
     const text = shareExercises(exercises);
     expect(text).toMatch(/^squatsouls\/exercises:/);

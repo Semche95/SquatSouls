@@ -80,9 +80,10 @@ const MAX_SIZE = 256 * 1024;
 export const toBase64 = (bytes) => btoa(Array.from(bytes, (b) => String.fromCharCode(b)).join(''));
 const fromBase64 = (text) => Uint8Array.from(atob(text), (c) => c.charCodeAt(0));
 
-function share(kind, data, id) {
+// `label`, only informative, follows the mark: the type, or what is shared and its name.
+function share(kind, data, label = kind) {
   const payload = JSON.stringify({ version: VERSION, kind, ...data });
-  return `${MARK}/${id ? `${kind}/${id}` : kind}:` + toBase64(deflateSync(strToU8(payload)));
+  return `${MARK}/${label}:` + toBase64(deflateSync(strToU8(payload)));
 }
 
 // Version, type and content of a shared text (content absent if the version is unknown); throws an
@@ -119,7 +120,7 @@ function parse(text, kind, valid) {
 
 export function shareGame(game) {
   const events = game.events.map(({ name, draws, maxPerSession, jokers }) => ({ name, draws, maxPerSession, jokers }));
-  return share(GAME, { name: game.name, steamAppId: game.steamAppId, events }, newId(game.name, []));
+  return share(GAME, { name: game.name, steamAppId: game.steamAppId, events }, `game/${newId(game.name, [])}`);
 }
 
 // Missing optional field (exercise-specific recovery or timer, game Steam AppId): the key is omitted.
@@ -130,9 +131,12 @@ const sharedSettings = ({ unit, min, max, recovery, timed, eachSide }) =>
   withOptional(withOptional(withOptional({ unit, min, max }, 'recovery', recovery), 'timed', timed), 'eachSide', eachSide || undefined);
 
 // The global recovery and whether exercises are enabled are not shared: everyone keeps their own.
-export function shareExercises(exercises) {
-  return share(EXERCISES, { exercises: exercises.map((ex) => ({ name: ex.name, ...sharedSettings(ex) })) });
+export function shareExercises(exercises, label) {
+  return share(EXERCISES, { exercises: exercises.map((ex) => ({ name: ex.name, ...sharedSettings(ex) })) }, label);
 }
+
+// A single exercise is a list of one, named in the label.
+export const shareExercise = (ex) => shareExercises([ex], `exercise/${newId(ex.name, [])}`);
 
 const validEvent = (ev) =>
   isName(ev?.name) && isCount(ev.draws, BOUNDS.positive) && (ev.maxPerSession === undefined || isCount(ev.maxPerSession, BOUNDS.amount)) && (ev.jokers === undefined || isCount(ev.jokers, BOUNDS.jokers));

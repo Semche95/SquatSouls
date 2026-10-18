@@ -2,12 +2,15 @@
 import { computed } from 'vue';
 import { BOUNDS, MAX_UNIT, rangeBounds } from '../configDraft.js';
 import { t } from '../i18n.js';
+import { shareExercise } from '../share.js';
+import { useConfig } from '../composables/useConfig.js';
 import CountStepper from './CountStepper.vue';
+import DisabledTip from './DisabledTip.vue';
 import EditDialog from './EditDialog.vue';
 import EditRow from './EditRow.vue';
 
 // Edit dialog of an exercise of the draft: included or not, range, unit, timer, own recovery and,
-// when timed, the other side. `recovery` is the one of all exercises.
+// when timed, the other side, and Share. `recovery` is the one of all exercises.
 const props = defineProps({ ex: { type: Object, required: true }, recovery: Number, fresh: Boolean });
 defineEmits(['remove']);
 const open = defineModel({ type: Boolean, required: true });
@@ -20,6 +23,10 @@ const TIMERS = [
 ];
 
 const range = computed(() => rangeBounds(props.ex));
+
+// The saved exercise is shared: a new one has nothing to share before Save.
+const { config, copy } = useConfig();
+const saved = computed(() => config.value.exercises.find((ex) => ex.id === props.ex.id));
 
 // Only a timed exercise is done on each side.
 function setTimed(value) {
@@ -44,6 +51,11 @@ function setTimed(value) {
         {{ t('config.exercises.included') }}
         <input v-model="ex.enabled" type="checkbox" />
       </label>
+    </template>
+    <template #actions>
+      <DisabledTip :tip="saved ? '' : t('config.exercises.shareUnsaved')">
+        <button class="ghost" :disabled="!saved" @click="copy(shareExercise(saved))">{{ t('common.share') }}</button>
+      </DisabledTip>
     </template>
     <EditRow :label="t('config.exercises.range')">
       <span class="edit-range">

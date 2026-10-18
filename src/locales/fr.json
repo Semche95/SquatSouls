@@ -207,6 +207,7 @@
       "maximum": "Maximum",
       "recoveryLabel": "Récupération",
       "add": "+ Nouvel exercice",
+      "shareUnsaved": "Enregistrer l'exercice avant de le partager",
       "timed": "Minuteur",
       "notTimed": "Non chronométré",
       "seconds": "Secondes",

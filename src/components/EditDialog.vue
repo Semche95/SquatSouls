@@ -5,7 +5,7 @@ import { t } from '../i18n.js';
 import { vReveal } from '../reveal.js';
 
 // Edit dialog of an event or an exercise: its name under the kind of item, its settings in rows (EditRow), then its
-// removal and Close. `item` belongs to the draft and is edited in place: the changes wait for Save.
+// removal, its own actions (slot `actions`) and Close. `item` belongs to the draft and is edited in place: the changes wait for Save.
 // A fresh item opens with its name selected, the others on Close.
 defineProps({
   item: { type: Object, required: true },
@@ -39,7 +39,10 @@ const open = defineModel({ type: Boolean, required: true });
     <slot />
     <div class="edit-foot">
       <button class="ghost danger" @click="$emit('remove')">{{ remove }}</button>
-      <button class="primary" @click="open = false">{{ t('common.close') }}</button>
+      <span class="edit-foot-end">
+        <slot name="actions" />
+        <button class="primary" @click="open = false">{{ t('common.close') }}</button>
+      </span>
     </div>
   </VueFinalModal>
 </template>

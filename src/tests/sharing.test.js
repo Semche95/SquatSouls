@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
-import { config, setup, openConfig, expectUnchanged, expectTip, layOutControls, formDialog, formDialogOpen, formDialogClosed, save, savedConfig } from './app.js';
-import { shownGame, gameButton, rename } from './program.js';
-import { shareExercises, shareGame } from '../share.js';
+import { config, setup, openConfig, expectUnchanged, expectTip, layOutControls, editDialog, formDialog, formDialogOpen, formDialogClosed, save, savedConfig } from './app.js';
+import { shownGame, gameButton, rename, openExercises, openTile, closeDialog } from './program.js';
+import { shareExercise, shareExercises, shareGame } from '../share.js';
 
 describe('sharing', () => {
   layOutControls();
@@ -28,6 +28,22 @@ describe('sharing', () => {
     await w.findAll('.subtabs button')[1].trigger('click');
     await w.find('.cfg-exercises .group-head .ghost').trigger('click');
     expect(writeText).toHaveBeenLastCalledWith(shareExercises(config.exercises));
+    vi.unstubAllGlobals();
+  });
+
+  it('copies the saved exercise from its dialog, not before it is saved', async () => {
+    const writeText = vi.fn();
+    vi.stubGlobal('navigator', { clipboard: { writeText } });
+    setup();
+    const w = await openExercises();
+    const share = () => editDialog().findAll('.edit-foot button').find((b) => b.text() === 'Share');
+    await editDialog().find('input[aria-label="Name of the exercise"]').setValue('Unsaved');
+    await share().trigger('click');
+    expect(writeText).toHaveBeenLastCalledWith(shareExercise(config.exercises[0]));
+    await closeDialog();
+    await openTile(w.find('.cfg-exercises .tile-new'));
+    expect(share().element.disabled).toBe(true);
+    await expectTip(share(), 'Save this exercise before sharing it');
     vi.unstubAllGlobals();
   });
 

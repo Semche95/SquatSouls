@@ -273,7 +273,7 @@
         },
         "exercises": {
           "type": "object",
-          "required": ["import", "imported", "added", "new", "defaultUnit", "recovery", "unit", "min", "max", "enabled", "name", "unitPlaceholder", "minimum", "maximum", "recoveryLabel", "add", "timed", "notTimed", "seconds", "timedSummary", "timedSideSummary", "eachSide", "eachSideHint", "recoverySummary", "minutes", "title", "count", "enabledHint", "included", "recoveryHint", "ownRecoveryHint", "range", "rangeValue", "nameNeeded", "remove"],
+          "required": ["import", "imported", "added", "new", "defaultUnit", "recovery", "unit", "min", "max", "enabled", "name", "unitPlaceholder", "minimum", "maximum", "recoveryLabel", "add", "shareUnsaved", "timed", "notTimed", "seconds", "timedSummary", "timedSideSummary", "eachSide", "eachSideHint", "recoverySummary", "minutes", "title", "count", "enabledHint", "included", "recoveryHint", "ownRecoveryHint", "range", "rangeValue", "nameNeeded", "remove"],
           "additionalProperties": false,
           "properties": {
             "import": { "$ref": "#/$defs/text" },
@@ -292,6 +292,7 @@
             "maximum": { "$ref": "#/$defs/text" },
             "recoveryLabel": { "$ref": "#/$defs/text" },
             "add": { "$ref": "#/$defs/text" },
+            "shareUnsaved": { "$ref": "#/$defs/text" },
             "timed": { "$ref": "#/$defs/text" },
             "notTimed": { "$ref": "#/$defs/text" },
             "seconds": { "$ref": "#/$defs/text" },
