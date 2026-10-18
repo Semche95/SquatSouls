@@ -20,6 +20,8 @@
   min-height: 104px;
   padding: 14px;
   background: var(--panel);
+  /* Lighter than the usual line, so that the tile stands out from the page (3:1 against the background). */
+  border-color: color-mix(in srgb, var(--muted) 35%, var(--line));
   border-radius: var(--radius);
   text-align: left;
   /* Long names and numbers wrap inside the tile rather than widening its column. */
@@ -82,15 +84,8 @@
   color: var(--gold);
   background: var(--gold-soft);
 }
-/* Included exercise: raised, with a gold edge that the hover brightens. */
-.tile-slot:not(.cfg-off) .tile {
-  background: var(--panel-2);
-  border-color: color-mix(in srgb, var(--gold) 45%, transparent);
-}
-.tile-slot:not(.cfg-off) .tile:hover {
-  border-color: var(--gold);
-}
-/* Excluded exercise: kept in the list but no longer asked for, sunk and grayed; its switch and pen stay bright. */
+/* Excluded exercise: kept in the list but no longer asked for, sunk and grayed; its switch and pen stay bright.
+   An included one looks like an event tile, so that it does not look like the action buttons of Play. */
 .cfg-off .tile {
   background: var(--bg);
 }
