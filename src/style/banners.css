@@ -36,7 +36,6 @@
   align-items: center;
   gap: 12px;
   border-color: var(--gold);
-  border-left-width: 4px;
   background: var(--gold-soft);
 }
 .banner.steam strong {

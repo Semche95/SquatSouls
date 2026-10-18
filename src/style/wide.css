@@ -59,11 +59,12 @@
     text-align: left;
     padding: 10px 12px;
     font-size: 1rem;
-    border-left: 2px solid transparent;
-    border-radius: 0 8px 8px 0;
+    border-radius: 8px;
   }
+  /* The current tab reads in gold, on the raised background of the narrow window's tabs. */
   .tabs button.active {
-    border-left-color: var(--gold);
+    color: var(--gold);
+    font-weight: 600;
   }
   /* About sits at the bottom of the sidebar, right above the session status. */
   .tabs .about {

@@ -11,9 +11,6 @@
 .startup .banner.update {
   margin-bottom: 0;
 }
-.card.startup-failure {
-  border-left: 4px solid var(--red);
-}
 .startup-failure p {
   margin: 0;
 }
