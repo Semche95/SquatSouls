@@ -2,7 +2,7 @@
 
 This document describes how Squat Souls behaves: draws, intensity, limits, jokers, sessions, history, configuration, language, Steam detection, notification area, sharing and onboarding.
 
-Squat Souls is meant to be kind and encouraging, and to frame without imposing: it gives a structure (draws, limits, jokers, rest), but each user stays free to adjust it and responsible for their training. Every rule below follows from that.
+Squat Souls is meant to be kind and encouraging, and to frame without imposing: it gives a structure (draws, limits, jokers, rest), but each user stays free to adjust it and responsible for their training. Every rule below follows from that. This framing is about the people who train, not about the configuration: a technical constraint is not a structure given to someone, and is kept only where the app needs it to work.
 
 It is the reference: any change in the app's behavior must be reflected here, in the same change.
 
