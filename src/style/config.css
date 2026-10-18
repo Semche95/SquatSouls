@@ -48,8 +48,9 @@
 .cfg-game-bar {
   align-items: center;
 }
+/* The game's actions go to the next line rather than out of the window when it is narrow. */
 .cfg-game-bar .field {
-  flex: 1;
+  flex: 1 1 auto;
   flex-wrap: wrap;
 }
 .config .cfg-game-bar :is(.ts-wrapper, input) {
