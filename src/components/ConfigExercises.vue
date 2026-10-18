@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, shallowRef, watch } from 'vue';
 import { VueFinalModal } from 'vue-final-modal';
 import { BOUNDS, clone, newId } from '../configDraft.js';
 import { t } from '../i18n.js';
@@ -19,6 +19,9 @@ import ShareImport from './ShareImport.vue';
 const { config, draft, notify, copy, shareBlocked } = useConfig();
 const { saveNow } = useSession();
 const importing = ref(false);
+// Saved exercises as the import opened: saving it does not change the preview while the modal fades out.
+const savedExercises = shallowRef([]);
+watch(importing, (on) => on && (savedExercises.value = config.value.exercises));
 // Exercise in its edit dialog.
 const { item: editing, open: editOpen, fresh, edit: editExercise, remove: removeExercise } = useEditDialog(() => draft.value.exercises);
 // Exercises asked for in Play, out of all those defined.
@@ -67,7 +70,7 @@ function addExercise() {
       <h3>{{ t('config.exercises.import') }}</h3>
       <ShareImport
         :parse="parseExercises"
-        :changes="(imported) => exerciseChanges(config.exercises, imported)"
+        :changes="(imported) => exerciseChanges(savedExercises, imported)"
         :summary="exerciseSummary"
         @import="importShared"
         @cancel="importing = false"

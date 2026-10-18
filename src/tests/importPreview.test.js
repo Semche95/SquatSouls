@@ -22,6 +22,16 @@ async function confirm() {
   await flushPromises();
   await formDialogClosed();
 }
+// The modal shows the import as before while it fades out, the import being saved: its line, its mode,
+// its preview and its messages.
+async function confirmUnchanged() {
+  const shown = () => formDialog().findAll('#import-game, .import-mode .active, .import-preview, .cfg-import p').map((el) => el.text());
+  const before = shown();
+  await formDialog().find('.cfg-import').trigger('submit');
+  await flushPromises();
+  expect(shown()).toEqual(before);
+  await formDialogClosed();
+}
 
 // Each group shown: its title, then each row with its box and its details.
 const groups = () =>
@@ -188,6 +198,31 @@ describe('import preview', () => {
       ['Plank', 20],
     ]);
     expect(w.find('.banner.ok').text()).toBe('Exercises imported: 1 added, 0 updated.');
+  });
+
+  it('shows the import unchanged while the modal closes, whether it replaces a game, adds one or imports exercises', async () => {
+    setup(saving);
+    let w = await openConfig();
+    await importGame(w);
+    await paste(shareGame(eldenRing));
+    await confirmUnchanged();
+    expect(savedConfig().games[0].events.map((ev) => ev.name)).toEqual(['Death', 'Boss defeated', 'Grace']);
+
+    setup(saving);
+    w = await openConfig();
+    await importGame(w);
+    await paste(shareGame(eldenRing));
+    await formDialog().findAll('.import-mode button')[1].trigger('click');
+    await formDialog().find('input[aria-label="Name of the imported game"]').setValue('Elden Ring no hit');
+    await confirmUnchanged();
+    expect(savedConfig().games.map((g) => g.name)).toEqual(['Elden Ring', 'Sekiro', 'Elden Ring no hit']);
+
+    setup(saving);
+    w = await openConfig();
+    await importExercises(w);
+    await paste(shareExercises([{ name: 'Plank', unit: 's', min: 20, max: 40 }]));
+    await confirmUnchanged();
+    expect(savedConfig().exercises.map((ex) => ex.name)).toEqual(['Squats', 'Plank']);
   });
 
   it('lists the longest imports in full', async () => {

@@ -34,8 +34,12 @@ const choice = shallowRef(null);
 const form = ref(null);
 watch(newGame, (game) => game && (form.value = game), { immediate: true });
 watch(importing, (on) => on && ((form.value = null), (choice.value = null)));
+// Saved games as the modal opened: saving the created or imported game does not change what the modal shows
+// while it fades out.
+const games = shallowRef([]);
+watch(open, (on) => on && (games.value = config.value.games), { immediate: true });
 
-const nameTaken = computed(() => config.value.games.some((g) => sameName(g.name, form.value.name)));
+const nameTaken = computed(() => games.value.some((g) => sameName(g.name, form.value.name)));
 // Why the new game cannot be created yet, '' when it can.
 const createBlocked = computed(() => {
   if (!form.value.name.trim()) return t('config.games.nameNeeded');
@@ -55,9 +59,9 @@ async function createGame() {
   close();
 }
 
-const existingGame = (name) => config.value.games.find((g) => sameName(g.name, name));
+const existingGame = (name) => games.value.find((g) => sameName(g.name, name));
 const takenName = (name) => !!existingGame(name);
-const replaceBlocked = () => (config.value.games.length ? '' : t('config.games.noReplace'));
+const replaceBlocked = () => (games.value.length ? '' : t('config.games.noReplace'));
 
 // First name free among "Sekiro 2", "Sekiro 3"…, shortened to fit the length limit.
 function freeName(name) {
@@ -71,7 +75,7 @@ function freeName(name) {
 function choiceOf(game) {
   if (choice.value?.game === game) return choice.value;
   const existing = existingGame(game.name);
-  const target = existing ?? byName(config.value.games)[0];
+  const target = existing ?? byName(games.value)[0];
   return { game, replace: !!existing, target: target?.id ?? '', name: existing ? freeName(game.name) : game.name };
 }
 const choose = (game, change) => (choice.value = { ...choiceOf(game), ...change });
@@ -82,7 +86,7 @@ const importLine = (game) => {
 };
 
 // As a new game, all its events are new.
-const changesOf = (game) => eventChanges(config.value.games.find((g) => g.id === targetOf(game)), game);
+const changesOf = (game) => eventChanges(games.value.find((g) => g.id === targetOf(game)), game);
 function importBlocked(game) {
   const { replace, name } = choiceOf(game);
   if (replace) return '';
@@ -93,10 +97,10 @@ function importBlocked(game) {
 async function importShared(shared, chosen) {
   const target = targetOf(shared);
   const game = target ? shared : { ...shared, name: choiceOf(shared).name.trim() };
-  const games = importGame(config.value.games, game, chosen, target);
-  if (!(await saveNow({ ...config.value, games }))) return;
-  draft.value.games = clone(games);
-  const imported = target ? games.find((g) => g.id === target) : games.at(-1);
+  const saved = importGame(config.value.games, game, chosen, target);
+  if (!(await saveNow({ ...config.value, games: saved }))) return;
+  draft.value.games = clone(saved);
+  const imported = target ? saved.find((g) => g.id === target) : saved.at(-1);
   editedGameId.value = imported.id;
   close();
   const { name } = imported;
@@ -163,7 +167,7 @@ async function importShared(shared, chosen) {
           <template v-if="choiceOf(result).replace">
             <span>{{ t('config.games.replaceTarget') }}</span>
             <select v-select :value="choiceOf(result).target" :aria-label="t('config.games.replaceTarget')" @change="choose(result, { target: $event.target.value })">
-              <option v-for="g in byName(config.games)" :key="g.id" :value="g.id">{{ g.name }}</option>
+              <option v-for="g in byName(games)" :key="g.id" :value="g.id">{{ g.name }}</option>
             </select>
           </template>
           <template v-else>

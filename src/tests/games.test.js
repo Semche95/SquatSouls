@@ -82,6 +82,19 @@ describe('games', () => {
     expect(shownGame(w)).toBe('Elden Ring');
   });
 
+  it('shows the new game form unchanged while the modal closes, the game being saved', async () => {
+    setup({ save_config: (args) => ({ config: args.config }) });
+    const w = await openConfig();
+    await w.find('.cfg-game-bar > .primary').trigger('click');
+    await formDialogOpen();
+    await formDialog().find('input[aria-label="Name of the new game"]').setValue('Nioh');
+    await formDialog().find('form').trigger('submit');
+    await flushPromises();
+    expect(formDialog().find('form > p').exists()).toBe(false);
+    await formDialogClosed();
+    expect(savedConfig().games.map((g) => g.name)).toEqual(['Elden Ring', 'Sekiro', 'Nioh']);
+  });
+
   it('refuses to create a game with a name already taken', async () => {
     setup();
     const w = await openConfig();
