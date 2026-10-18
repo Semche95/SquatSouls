@@ -13,7 +13,7 @@ import CountdownSeal from './CountdownSeal.vue';
 import SessionActions from './SessionActions.vue';
 import DisabledTip from './DisabledTip.vue';
 
-const { config, tab, cfgTab, gameId, intensity, noExercise, game } = useConfig();
+const { config, tab, cfgTab, gameId, intensity, noGame, noExercise, game } = useConfig();
 const { session, notice, skipRecovery, stopTimer, startTimer, toggleTimer, timing, trigger, confirmStop, dismiss, remaining, complete, halve, skipExercise } = useSession();
 const { detected, selectDetected, addGame, ignoreDetected } = useSteam();
 
@@ -29,7 +29,7 @@ const steamOffer = computed(() => {
   if (!d.games.length) return !d.ignored;
   return !gameLocked.value && !d.games.some((g) => g.id === gameId.value);
 });
-// Exercises are created in their sub-tab of Program.
+// Games and exercises are created in their sub-tab of Program.
 function showProgram(sub) {
   tab.value = 'program';
   cfgTab.value = sub;
@@ -91,8 +91,8 @@ useKeydown((e) => {
     <div class="play-head">
       <div class="field">
         <label for="play-game">{{ t('play.game') }}</label>
-        <DisabledTip class="grow" :tip="gameLocked ? t('play.gameLocked') : ''">
-          <select v-select id="play-game" v-model="gameId" :disabled="gameLocked">
+        <DisabledTip class="grow" :tip="gameLocked ? t('play.gameLocked') : noGame ? t('play.noGame', { program: t('app.tabs.program') }) : ''">
+          <select v-select id="play-game" v-model="gameId" :disabled="gameLocked || noGame">
             <option value="" disabled>{{ t('play.chooseGame') }}</option>
             <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id" :disabled="!g.events.length">
               {{ g.events.length ? g.name : t('play.noEvent', { name: g.name }) }}
@@ -152,6 +152,9 @@ useKeydown((e) => {
         </button>
       </DisabledTip>
     </div>
+    <i18n-t v-else-if="noGame" keypath="play.noGame" tag="p" class="empty" scope="global">
+      <template #program><button class="link" @click="showProgram('games')">{{ t('app.tabs.program') }}</button></template>
+    </i18n-t>
     <i18n-t v-if="noExercise" keypath="play.noExercise" tag="p" class="empty" scope="global">
       <template #program><button class="link" @click="showProgram('exercises')">{{ t('app.tabs.program') }}</button></template>
     </i18n-t>

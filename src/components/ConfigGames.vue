@@ -98,7 +98,7 @@ function addEvent(game) {
         </DisabledTip>
         <button type="button" class="ghost" @click="renaming = null">{{ t('common.cancel') }}</button>
       </form>
-      <div v-else class="field">
+      <div v-else-if="draft.games.length" class="field">
         <select v-select id="cfg-game" :value="editedGame?.id ?? ''" :aria-label="t('play.game')" @change="selectGame($event.target.value)">
           <option v-if="!editedGame" value="" disabled>{{ t('play.chooseGame') }}</option>
           <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">{{ g.name }}</option>
@@ -108,14 +108,13 @@ function addEvent(game) {
           <DisabledTip :tip="savedEdited?.events.length ? '' : t('config.games.shareEmpty')">
             <button class="ghost" :disabled="!savedEdited?.events.length" @click="shareEdited">{{ t('common.share') }}</button>
           </DisabledTip>
-          <DisabledTip :tip="draft.games.length < 2 ? t('config.games.lastGame') : ''">
-            <button class="ghost danger" :disabled="draft.games.length < 2" @click="askRemove">{{ t('common.remove') }}</button>
-          </DisabledTip>
+          <button class="ghost danger" @click="askRemove">{{ t('common.remove') }}</button>
         </template>
       </div>
       <button class="primary" @click="openNewGame">{{ t('config.games.new') }}</button>
       <button @click="openImport">{{ t('common.import') }}</button>
     </header>
+    <p v-if="!draft.games.length" class="empty">{{ t('config.games.none') }}</p>
     <template v-if="editedGame">
       <h2 class="setting-title">{{ t('config.games.events') }}</h2>
       <div class="tiles cfg-events">

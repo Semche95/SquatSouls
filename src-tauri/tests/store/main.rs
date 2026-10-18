@@ -48,3 +48,14 @@ fn existing_store_keeps_its_config_whatever_the_language() {
     let reopened = Store::open(&path, Some("en-US")).unwrap();
     assert_eq!(reopened.config().unwrap(), default_config(Language::Fr));
 }
+
+#[test]
+fn existing_store_without_game_stays_without_game() {
+    let path = temp_db("no-game");
+    let mut s = Store::open(&path, LOCALE).unwrap();
+    let mut cfg = default_config(Language::En);
+    cfg.games.clear();
+    s.save_config(&cfg).unwrap();
+    drop(s);
+    assert_eq!(Store::open(&path, LOCALE).unwrap().config().unwrap(), cfg);
+}

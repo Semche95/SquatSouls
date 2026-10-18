@@ -8,7 +8,7 @@ import EditRow from './EditRow.vue';
 
 // Edit dialog of an exercise of the draft: included or not, range, unit, timer, own recovery and,
 // when timed, the other side. `recovery` is the one of all exercises.
-const props = defineProps({ ex: { type: Object, required: true }, recovery: Number, removable: Boolean, fresh: Boolean });
+const props = defineProps({ ex: { type: Object, required: true }, recovery: Number, fresh: Boolean });
 defineEmits(['remove']);
 const open = defineModel({ type: Boolean, required: true });
 
@@ -36,7 +36,6 @@ function setTimed(value) {
     :name-label="t('config.exercises.name')"
     :name-needed="t('config.exercises.nameNeeded')"
     :remove="t('config.exercises.remove')"
-    :remove-tip="removable ? '' : t('config.exercises.lastExercise')"
     :fresh="fresh"
     @remove="$emit('remove')"
   >

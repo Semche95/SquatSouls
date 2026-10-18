@@ -3,7 +3,6 @@ import { VueFinalModal } from 'vue-final-modal';
 import { MAX_NAME } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { vReveal } from '../reveal.js';
-import DisabledTip from './DisabledTip.vue';
 
 // Edit dialog of an event or an exercise: its name under the kind of item, its settings in rows (EditRow), then its
 // removal and Close. `item` belongs to the draft and is edited in place: the changes wait for Save.
@@ -14,7 +13,6 @@ defineProps({
   nameLabel: { type: String, required: true },
   nameNeeded: { type: String, required: true },
   remove: { type: String, required: true },
-  removeTip: { type: String, default: '' },
   fresh: Boolean,
 });
 defineEmits(['remove']);
@@ -40,9 +38,7 @@ const open = defineModel({ type: Boolean, required: true });
     </div>
     <slot />
     <div class="edit-foot">
-      <DisabledTip :tip="removeTip">
-        <button class="ghost danger" :disabled="!!removeTip" @click="$emit('remove')">{{ remove }}</button>
-      </DisabledTip>
+      <button class="ghost danger" @click="$emit('remove')">{{ remove }}</button>
       <button class="primary" @click="open = false">{{ t('common.close') }}</button>
     </div>
   </VueFinalModal>

@@ -74,7 +74,6 @@ function addExercise() {
       v-model="editOpen"
       :ex="editing"
       :recovery="draft.recovery"
-      :removable="draft.exercises.length > 1"
       :fresh="fresh"
       @remove="removeExercise"
     />

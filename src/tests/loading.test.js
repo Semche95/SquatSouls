@@ -51,9 +51,9 @@ describe('loading', () => {
   });
 
   it('reports an invalid config outside the Program and Settings tabs', async () => {
-    setup({ get_config: { config, error: { code: 'config_ignored', params: { cause: { code: 'no_game', params: {} } } } } });
+    setup({ get_config: { config, error: { code: 'config_ignored', params: { cause: { code: 'exercise_empty', params: {} } } } } });
     const w = await mountApp();
-    expect(w.find('.banner.error').text()).toContain('Saved configuration ignored, default configuration used. No game defined.');
+    expect(w.find('.banner.error').text()).toContain('Saved configuration ignored, default configuration used. An exercise has an empty id or name.');
     await w.find('.banner.error button').trigger('click');
     expect(w.find('.cfg-events').exists()).toBe(true);
   });

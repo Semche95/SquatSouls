@@ -29,16 +29,17 @@ impl Store {
         Self::init(Connection::open_in_memory()?, system_locale)
     }
 
-    /// Updates the schema and fills a new database with the default configuration, in the effective language.
+    /// Updates the schema and fills a database just created with the default configuration, in the effective
+    /// language. An existing database is never filled, even without any game.
     fn init(mut conn: Connection, system_locale: Option<&str>) -> Result<Self> {
         conn.execute_batch("PRAGMA foreign_keys = ON")?;
+        let created: bool =
+            conn.query_row("SELECT NOT EXISTS (SELECT 1 FROM sqlite_master)", [], |r| {
+                r.get(0)
+            })?;
         schema::migrate(&mut conn)?;
         let mut store = Store { conn };
-        let empty: bool =
-            store
-                .conn
-                .query_row("SELECT NOT EXISTS (SELECT 1 FROM games)", [], |r| r.get(0))?;
-        if empty {
+        if created {
             let language = store.language()?.resolve(system_locale);
             store.save_config(&default_config(language))?;
         }

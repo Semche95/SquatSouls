@@ -27,6 +27,19 @@ describe('exercises', () => {
     expect(savedConfig().exercises.map((e) => e.id)).toEqual(['squat', 'new-exercise', 'new-exercise-2']);
   });
 
+  it('removes the last exercise', async () => {
+    setup();
+    const w = await openExercises({ dialog: false });
+    await openTile(w.find('.tile-slot .tile'));
+    await editDialog().find('.edit-foot .danger').trigger('click');
+    await flushPromises();
+    expect(w.findAll('.cfg-exercises .tile-name')).toHaveLength(0);
+    responses.save_config = (args) => ({ config: args.config });
+    await save(w).trigger('click');
+    await flushPromises();
+    expect(savedConfig().exercises).toEqual([]);
+  });
+
   it('tells why the session ended once no exercise is included, encouraging only if exercises were done', async () => {
     setup({ get_session: emptySession(), save_config: (args) => ({ config: args.config }) });
     const w = await openExercises({ dialog: false });
@@ -40,14 +53,11 @@ describe('exercises', () => {
     expect(w.find('.farewell').exists()).toBe(false);
   });
 
-  it('shows an exercise\'s range on its tile, sets it in its dialog and keeps at least one exercise', async () => {
+  it('shows an exercise\'s range on its tile and sets it in its dialog', async () => {
     setup();
     const w = await openExercises({ dialog: false });
     expect(w.find('.tile-slot .tile-foot').text()).toBe('10–15 reps');
     await openTile(w.find('.tile-slot .tile'));
-    const remove = editDialog().find('.edit-foot .danger');
-    expect(remove.element.disabled).toBe(true);
-    await expectTip(remove, 'At least one exercise is needed');
     // The minimum never goes above the maximum.
     await editDialog().find('input[aria-label="Maximum"]').setValue('11');
     const more = editDialog().findAll('button[aria-label="More"]')[0];

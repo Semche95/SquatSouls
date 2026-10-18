@@ -6,9 +6,6 @@ use std::collections::HashSet;
 
 impl Config {
     pub fn validate(&self) -> Result<(), AppError> {
-        if self.exercises.is_empty() {
-            return Err(AppError::new("no_exercise"));
-        }
         if self.recovery > MAX_SECONDS {
             return Err(AppError::new("recovery_too_long").with("max", MAX_SECONDS));
         }
@@ -42,14 +39,6 @@ impl Config {
             }
         }
 
-        let active = self.active_exercises().count();
-        if active == 0 {
-            return Err(AppError::new("no_active_exercise"));
-        }
-
-        if self.games.is_empty() {
-            return Err(AppError::new("no_game"));
-        }
         let mut game_ids = HashSet::new();
         let mut game_names = HashSet::new();
         for game in &self.games {

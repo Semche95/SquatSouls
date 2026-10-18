@@ -132,4 +132,28 @@ describe('games', () => {
     expect(w.find('.banner.info').text()).toBe('The session ended: its game was deleted.');
     expect(w.find('.session-actions .farewell').exists()).toBe(true);
   });
+
+  it('removes the last game and says there is none, in Program as in Play, where the session cannot start', async () => {
+    setup({ get_config: { config: { ...config, games: config.games.slice(0, 1) } }, get_session: idleSession(), save_config: (args) => ({ config: args.config }) });
+    const w = await openConfig();
+    await w.find('.cfg-game-bar .danger').trigger('click');
+    await confirmDialogOpen();
+    await confirmDialog().find('.danger').trigger('click');
+    await flushPromises();
+    expect(savedConfig().games).toEqual([]);
+    expect(w.find('#cfg-game').exists()).toBe(false);
+    expect(w.find('.config .empty').text()).toBe('No game yet.');
+    await w.findAll('.tabs button')[0].trigger('click');
+    expect(w.find('#play-game').element.disabled).toBe(true);
+    await expectTip(w.find('#play-game'), 'No game yet. Games are created and imported in Program.');
+    expect(w.find('.play-head + .empty').text()).toBe('No game yet. Games are created and imported in Program.');
+    const start = w.find('.session-actions .primary');
+    expect(start.text()).toBe('Start the session');
+    expect(start.element.disabled).toBe(true);
+    await expectTip(start, 'No game with events');
+    expect(w.find('.session-actions .danger').element.disabled).toBe(true);
+    await w.find('.play-head + .empty .link').trigger('click');
+    expect(w.find('.cfg-game-bar').exists()).toBe(true);
+    await confirmDialogClosed();
+  });
 });

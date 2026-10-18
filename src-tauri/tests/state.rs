@@ -105,6 +105,55 @@ fn removing_the_sessions_game_without_any_exercise_done_cancels_it() {
 }
 
 #[test]
+fn switching_every_exercise_off_ends_the_session_with_the_exercises_done() {
+    let mut state = state();
+    let cfg = state.config.clone();
+    let start = Local::now().timestamp() - 100;
+    let boss = state
+        .session
+        .draw(&cfg, "ds3", "boss", &mut StdRng::seed_from_u64(42))
+        .unwrap();
+    let entry = state
+        .session
+        .complete_exercise(boss.id, &boss.items[0].exercise_id, start)
+        .unwrap();
+    state.store.append_history(&[entry]).unwrap();
+    state.save_session_summary();
+
+    let mut off = state.config.clone();
+    off.exercises.iter_mut().for_each(|ex| ex.enabled = false);
+    state.store_config(off).unwrap();
+    assert_eq!(state.session.started_at, None, "the next session waits");
+    assert_eq!(
+        state.session.view().ended,
+        Some(ended(true, EndCause::NoExercise))
+    );
+    let [session] = &sessions(&state)[..] else {
+        panic!("one session in the history");
+    };
+    assert_eq!(session.sets, 1, "only the exercise done");
+}
+
+#[test]
+fn removing_every_exercise_without_any_exercise_done_cancels_the_session() {
+    let mut state = state();
+    let cfg = state.config.clone();
+    state
+        .session
+        .start(&cfg, "ds3", Local::now().timestamp())
+        .unwrap();
+    let mut none = state.config.clone();
+    none.exercises.clear();
+    state.store_config(none).unwrap();
+    assert_eq!(state.session.started_at, None);
+    assert_eq!(
+        state.session.view().ended,
+        Some(ended(false, EndCause::NoExercise))
+    );
+    assert!(sessions(&state).is_empty(), "nothing saved");
+}
+
+#[test]
 fn removing_another_game_keeps_the_session() {
     let mut state = state();
     let cfg = state.config.clone();

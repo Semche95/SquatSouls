@@ -38,6 +38,7 @@ export const [provideConfig, useConfig] = defineShared(() => {
   // Intensity of the next session, normal at each launch unless the configuration remembers it.
   const intensity = ref('normal');
 
+  const noGame = computed(() => !config.value?.games.length);
   // A session is only played with an included exercise, on a game with an event.
   const noExercise = computed(() => !config.value?.exercises.some((ex) => ex.enabled));
   const playable = computed(() => !!config.value?.games.some((g) => g.events.length));
@@ -95,5 +96,5 @@ export const [provideConfig, useConfig] = defineShared(() => {
     }
   }
 
-  return { config, draft, configError, configMsg, notify, copy, tab, cfgTab, editedGameId, newGame, gameId, intensity, noExercise, playable, game, editedGame, applyConfigView, store };
+  return { config, draft, configError, configMsg, notify, copy, tab, cfgTab, editedGameId, newGame, gameId, intensity, noGame, noExercise, playable, game, editedGame, applyConfigView, store };
 });

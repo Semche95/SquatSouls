@@ -42,21 +42,22 @@ fn validation_catches_mistakes() {
     cfg.games[0].events.clear();
     cfg.validate().unwrap();
 
+    // Without any game, the configuration is saved: Play and Program say so.
+    let mut cfg = default_config(Language::En);
+    cfg.games.clear();
+    cfg.validate().unwrap();
+
     // Several games can share a Steam AppId: the same game, configured for different challenges.
     let mut cfg = default_config(Language::Fr);
     cfg.games[1].steam_app_id = cfg.games[0].steam_app_id;
     cfg.validate().unwrap();
 
-    let mut cfg = default_config(Language::Fr);
-    cfg.exercises.clear();
-    assert_eq!(cfg.validate().unwrap_err(), AppError::new("no_exercise"));
-
+    // Every exercise can be switched off or removed, the last one included.
     let mut cfg = default_config(Language::Fr);
     cfg.exercises.iter_mut().for_each(|ex| ex.enabled = false);
-    assert_eq!(
-        cfg.validate().unwrap_err(),
-        AppError::new("no_active_exercise")
-    );
+    cfg.validate().unwrap();
+    cfg.exercises.clear();
+    cfg.validate().unwrap();
 
     let mut cfg = default_config(Language::Fr);
     cfg.games[0].events[0].max_per_session = Some(0);
