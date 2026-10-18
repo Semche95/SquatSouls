@@ -100,7 +100,7 @@ describe('sharing', () => {
     await open().trigger('click');
     await formDialogOpen();
     await formDialog().find('textarea').setValue(shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1 }] }));
-    expect(formDialog().find('#import-game').text()).toBe('New game: Nioh');
+    expect(formDialog().find('#import-game').text()).toBe('Nioh');
     await formDialog().find('.cfg-import').trigger('submit');
     await flushPromises();
     await formDialogClosed();

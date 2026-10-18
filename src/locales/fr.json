@@ -157,7 +157,6 @@
       "newName": "Nom du nouveau jeu",
       "nameTaken": "Un jeu porte déjà ce nom.",
       "exists": "{name} existe déjà.",
-      "importNew": "Nouveau jeu : {name}",
       "replace": "Remplacer un jeu",
       "replaceTarget": "Jeu à remplacer",
       "noReplace": "Aucun jeu à remplacer.",

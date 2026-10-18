@@ -157,7 +157,6 @@
       "newName": "Name of the new game",
       "nameTaken": "A game already has this name.",
       "exists": "{name} already exists.",
-      "importNew": "New game: {name}",
       "replace": "Replace a game",
       "replaceTarget": "Game to replace",
       "noReplace": "No game to replace.",

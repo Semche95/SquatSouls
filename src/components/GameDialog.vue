@@ -80,10 +80,7 @@ function choiceOf(game) {
 }
 const choose = (game, change) => (choice.value = { ...choiceOf(game), ...change });
 const targetOf = (game) => (choiceOf(game).replace ? choiceOf(game).target : undefined);
-const importLine = (game) => {
-  if (takenName(game.name)) return t('config.games.exists', { name: game.name });
-  return choiceOf(game).replace ? game.name : t('config.games.importNew', { name: game.name });
-};
+const importLine = (game) => (takenName(game.name) ? t('config.games.exists', { name: game.name }) : game.name);
 
 // As a new game, all its events are new.
 const changesOf = (game) => eventChanges(games.value.find((g) => g.id === targetOf(game)), game);

@@ -155,7 +155,7 @@ describe('import preview', () => {
     const replace = formDialog().find('.import-mode button');
     expect(replace.element.disabled).toBe(true);
     await expectTip(replace, 'No game to replace.');
-    expect(formDialog().find('#import-game').text()).toBe('New game: Nioh');
+    expect(formDialog().find('#import-game').text()).toBe('Nioh');
   });
 
   it('checks or unchecks a whole group at once', async () => {
