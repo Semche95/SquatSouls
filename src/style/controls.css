@@ -95,8 +95,8 @@
 label.check {
   cursor: pointer;
 }
-/* Every configuration checkbox is a switch, in Settings as in the exercise list. */
-:is(.config, .edit-dialog) input[type='checkbox'] {
+/* Every checkbox is a switch, wherever it is: Settings, exercise list, dialogs and import preview. */
+input[type='checkbox'] {
   appearance: none;
   flex: none;
   position: relative;
@@ -104,14 +104,15 @@ label.check {
   height: 20px;
   margin: 0;
   padding: 0;
-  border: 1px solid var(--line);
+  /* Muted rather than line, so an off switch stands out from the panel it sits on. */
+  border: 1px solid var(--muted);
   border-radius: 10px;
   background: var(--panel-2);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
   vertical-align: middle;
 }
-:is(.config, .edit-dialog) input[type='checkbox']::before {
+input[type='checkbox']::before {
   content: '';
   position: absolute;
   top: 2px;
@@ -122,15 +123,15 @@ label.check {
   background: var(--muted);
   transition: transform 0.15s, background 0.15s;
 }
-:is(.config, .edit-dialog) input[type='checkbox']:checked {
+input[type='checkbox']:checked {
   background: var(--gold);
   border-color: var(--gold);
 }
-:is(.config, .edit-dialog) input[type='checkbox']:checked::before {
+input[type='checkbox']:checked::before {
   transform: translateX(16px);
   background: var(--bg);
 }
-:is(.config, .edit-dialog) input[type='checkbox']:focus-visible {
+input[type='checkbox']:focus-visible {
   outline: 2px solid var(--gold-soft);
   outline-offset: 2px;
 }
