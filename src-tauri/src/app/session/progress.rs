@@ -42,14 +42,15 @@ impl Session {
         Ok(())
     }
 
-    /// Dismisses a set. Not started, it is a misclick: the trigger is no longer counted, and its exercises as drawn
-    /// are reserved for the next trigger of the same event. Started, it stops there: its exercises done stay counted,
-    /// as does the trigger, without the jokers of the set.
+    /// Dismisses a set. Not started, it is a misclick: the trigger is no longer counted, its exercises as drawn
+    /// are reserved for the next trigger of the same event, and the jokers spent on it never count. Started, it
+    /// stops there: its exercises done stay counted, as does the trigger, without the jokers of the set.
     pub fn dismiss(&mut self, id: u64) -> Result<(), AppError> {
         let draw = self.take_pending(id)?;
-        if draw.items.iter().any(|it| it.done) {
+        if draw.started() {
             return Ok(());
         }
+        self.drop_unstarted(&draw);
         let key = (draw.game_id, draw.event_id);
         if let Some(count) = self.triggers.get_mut(&key) {
             *count = count.saturating_sub(1);

@@ -42,7 +42,7 @@ function currentSummary() {
     game: gameName.value,
     duration: Math.floor(Date.now() / 1000) - s.startedAt,
     events: events.flatMap((ev) => {
-      const count = s.triggers.find((tr) => tr.gameId === s.gameId && tr.eventId === ev.id)?.count;
+      const count = s.countedTriggers.find((tr) => tr.gameId === s.gameId && tr.eventId === ev.id)?.count;
       return count ? [{ event: ev.name, count }] : [];
     }),
     totals: s.totals,

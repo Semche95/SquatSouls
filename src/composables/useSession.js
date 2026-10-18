@@ -12,7 +12,7 @@ const UNIT_SECONDS = { seconds: 1, minutes: 60 };
 export const SIDES = 2;
 
 export const [provideSession, useSession] = defineShared(({ call }, { config, draft, game, gameId, intensity, store }) => {
-  const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], jokers: 0, jokersEarned: 0, jokersSpent: 0 });
+  const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], countedTriggers: [], jokers: 0, jokersEarned: 0, jokersSpent: 0 });
   const notice = ref('');
   // Encouragement shown once the session ends, until the next one starts: index in `session.farewells`.
   const farewell = ref(-1);

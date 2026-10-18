@@ -31,7 +31,7 @@ impl Session {
         item.halved = true;
         item.halve_cost = None;
         item.skip_cost -= cost;
-        draw.forfeit();
+        draw.spend(cost);
         self.spend(cost);
         Ok(())
     }
@@ -44,7 +44,7 @@ impl Session {
             return Err(AppError::new(NOT_ENOUGH_JOKERS));
         }
         let cost = draw.items.remove(pos).skip_cost;
-        draw.forfeit();
+        draw.spend(cost);
         self.spend(cost);
         self.finish_if_done(id)?;
         Ok(())
@@ -67,10 +67,25 @@ impl Session {
         self.jokers_spent += jokers;
     }
 
+    /// A set dropped before being started: the jokers spent on it are lost without ever counting.
+    pub(super) fn drop_unstarted(&mut self, draw: &Draw) {
+        if !draw.started() {
+            self.jokers_spent -= draw.spent;
+        }
+    }
+
+    /// Jokers earned and spent as the summary counts them: those spent on a set to do not started yet are left
+    /// out, as when the session stops there.
     pub fn jokers(&self) -> Jokers {
+        let unstarted: u32 = self
+            .pending
+            .iter()
+            .filter(|d| !d.started())
+            .map(|d| d.spent)
+            .sum();
         Jokers {
             earned: self.jokers_earned,
-            spent: self.jokers_spent,
+            spent: self.jokers_spent - unstarted,
         }
     }
 }

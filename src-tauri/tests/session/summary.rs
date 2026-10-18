@@ -29,3 +29,54 @@ fn summary_counts_events_in_game_order_and_jokers() {
     );
     assert!(Session::default().event_counts(&cfg).is_empty());
 }
+
+#[test]
+fn summary_leaves_out_the_sets_to_do_not_started() {
+    let cfg = default_config(Language::Fr);
+    let mut s = Session::default();
+    let mut r = rng();
+    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    s.draw(&cfg, "ds3", "mort", &mut r).unwrap();
+    let counts = |s: &Session| -> Vec<_> {
+        s.event_counts(&cfg)
+            .into_iter()
+            .map(|e| (e.event, e.count))
+            .collect()
+    };
+    assert!(counts(&s).is_empty(), "nothing started yet");
+    let v = s.view();
+    assert_eq!(v.triggers.len(), 2, "the limits still count both");
+    assert!(v.counted_triggers.is_empty());
+    s.complete_exercise(boss.id, &boss.items[0].exercise_id, 5)
+        .unwrap();
+    assert_eq!(counts(&s), vec![("Boss vaincu".to_string(), 1)]);
+    let v = s.view();
+    assert_eq!(v.counted_triggers.len(), 1);
+    assert_eq!(v.counted_triggers[0].event_id, "boss");
+}
+
+#[test]
+fn summary_counts_the_jokers_spent_on_a_set_once_started() {
+    let (mut s, boss) = session_with_jokers();
+    s.halve(boss.id, &boss.items[1].exercise_id).unwrap();
+    assert_eq!(s.jokers().spent, 0, "the set is not started yet");
+    assert_eq!(s.view().jokers_spent, 0);
+    assert_eq!(s.view().jokers, 2 - HALVE_COST, "spent all the same");
+    s.complete_exercise(boss.id, &boss.items[0].exercise_id, 20)
+        .unwrap();
+    assert_eq!(s.jokers().spent, HALVE_COST);
+}
+
+#[test]
+fn the_jokers_spent_on_a_set_dismissed_before_being_started_never_count() {
+    let (mut s, boss) = session_with_jokers();
+    s.halve(boss.id, &boss.items[0].exercise_id).unwrap();
+    s.dismiss(boss.id).unwrap();
+    assert_eq!(
+        s.jokers(),
+        Jokers {
+            earned: 2,
+            spent: 0
+        }
+    );
+}

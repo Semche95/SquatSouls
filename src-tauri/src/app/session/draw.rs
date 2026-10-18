@@ -60,7 +60,7 @@ impl Session {
             trigger_count,
             max_per_session: ev.max_per_session,
             drawn: items,
-            forfeited: false,
+            spent: 0,
         };
         if !capped {
             self.last = draw.items.iter().map(|it| it.exercise_id.clone()).collect();

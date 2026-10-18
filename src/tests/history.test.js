@@ -98,7 +98,7 @@ describe('history', () => {
     expect(w.find('.log').exists()).toBe(false);
   });
 
-  it('copies the summary of the current session and of a past one', async () => {
+  it('copies the summary of the current session, without its sets not started, and of a past one', async () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(3601 * 1000);
     const writeText = vi.fn().mockResolvedValue();
@@ -109,7 +109,9 @@ describe('history', () => {
         sets: 1,
         totals: [{ exercise: 'Squats', unit: 'reps', sets: 1, amount: 10 }],
         log: [{ at: 0, amount: 10, unit: 'reps', exercise: 'Squats', event: 'Death' }],
-        triggers: [{ gameId: 'er', eventId: 'boss', count: 1 }, { gameId: 'er', eventId: 'death', count: 2 }],
+        // A second boss set is still to do, not started.
+        triggers: [{ gameId: 'er', eventId: 'boss', count: 2 }, { gameId: 'er', eventId: 'death', count: 2 }],
+        countedTriggers: [{ gameId: 'er', eventId: 'boss', count: 1 }, { gameId: 'er', eventId: 'death', count: 2 }],
         jokersEarned: 2,
       }),
       get_history: [

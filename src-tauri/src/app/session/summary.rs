@@ -3,6 +3,7 @@
 use super::{Draw, Intensity, Session};
 use crate::app::Config;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 /// A set done, as saved in the history.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -55,15 +56,32 @@ pub struct SessionView {
     pub totals: Vec<Total>,
     /// Sets done, most recent first.
     pub log: Vec<LogEntry>,
+    /// Triggers of the events, sets to do included, against which their limits apply.
     pub triggers: Vec<TriggerCount>,
+    /// Triggers the summary counts: those of the sets to do not started yet are left out, as when the session
+    /// stops there.
+    pub counted_triggers: Vec<TriggerCount>,
     pub jokers: u32,
+    /// Jokers earned and spent as the summary counts them (see `Session::jokers`).
     pub jokers_earned: u32,
     pub jokers_spent: u32,
 }
 
 impl Session {
-    /// Events triggered in the session's game, in the order of its events.
+    /// Triggers the summary counts: a set to do not started yet is left out, as if it were dismissed.
+    fn counted_triggers(&self) -> HashMap<(String, String), u32> {
+        let mut counted = self.triggers.clone();
+        for draw in self.pending.iter().filter(|d| !d.started()) {
+            if let Some(count) = counted.get_mut(&(draw.game_id.clone(), draw.event_id.clone())) {
+                *count = count.saturating_sub(1);
+            }
+        }
+        counted
+    }
+
+    /// Events triggered in the session's game as the summary counts them, in the order of its events.
     pub fn event_counts(&self, config: &Config) -> Vec<EventCount> {
+        let counted = self.counted_triggers();
         let Some(game) = config
             .games
             .iter()
@@ -74,7 +92,7 @@ impl Session {
         game.events
             .iter()
             .filter_map(|ev| {
-                let count = *self.triggers.get(&(game.id.clone(), ev.id.clone()))?;
+                let count = *counted.get(&(game.id.clone(), ev.id.clone()))?;
                 (count > 0).then(|| EventCount {
                     event: ev.name.clone(),
                     count,
@@ -84,17 +102,6 @@ impl Session {
     }
 
     pub fn view(&self) -> SessionView {
-        let mut triggers: Vec<TriggerCount> = self
-            .triggers
-            .iter()
-            .filter(|(_, &count)| count > 0)
-            .map(|((g, e), &count)| TriggerCount {
-                game_id: g.clone(),
-                event_id: e.clone(),
-                count,
-            })
-            .collect();
-        triggers.sort_by(|a, b| (&a.game_id, &a.event_id).cmp(&(&b.game_id, &b.event_id)));
         SessionView {
             started_at: self.started_at,
             game_id: self.game_id.clone(),
@@ -103,12 +110,28 @@ impl Session {
             sets: self.done.len(),
             totals: totals(&self.done),
             log: self.done.iter().rev().cloned().collect(),
-            triggers,
+            triggers: trigger_counts(&self.triggers),
+            counted_triggers: trigger_counts(&self.counted_triggers()),
             jokers: self.jokers,
-            jokers_earned: self.jokers_earned,
-            jokers_spent: self.jokers_spent,
+            jokers_earned: self.jokers().earned,
+            jokers_spent: self.jokers().spent,
         }
     }
+}
+
+/// Positive triggers, by game then event.
+fn trigger_counts(triggers: &HashMap<(String, String), u32>) -> Vec<TriggerCount> {
+    let mut counts: Vec<TriggerCount> = triggers
+        .iter()
+        .filter(|(_, &count)| count > 0)
+        .map(|((g, e), &count)| TriggerCount {
+            game_id: g.clone(),
+            event_id: e.clone(),
+            count,
+        })
+        .collect();
+    counts.sort_by(|a, b| (&a.game_id, &a.event_id).cmp(&(&b.game_id, &b.event_id)));
+    counts
 }
 
 /// Sums sets by exercise, in order of first appearance.

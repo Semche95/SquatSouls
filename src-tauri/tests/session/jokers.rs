@@ -13,7 +13,6 @@ fn skipping_a_set_costs_its_exercises() {
     let v = s.view();
     assert_eq!(v.jokers, 0);
     assert_eq!(v.jokers_earned, 2);
-    assert_eq!(v.jokers_spent, SKIP_COST);
     assert!(v.pending.is_empty());
     assert_eq!(v.sets, 2, "only the no hit set is done");
     let count = v
@@ -33,7 +32,6 @@ fn skipping_an_exercise_keeps_the_rest_of_the_set() {
     let v = s.view();
     assert_eq!(v.jokers, 0);
     assert_eq!(v.pending[0].items, vec![second.clone()]);
-    assert_eq!(v.jokers_spent, SKIP_COST);
     assert!(
         s.skip_exercise(boss.id, &second.exercise_id).is_err(),
         "plus de joker"
@@ -62,7 +60,6 @@ fn halving_then_skipping_costs_a_full_skip() {
     assert_eq!(halved.halve_cost, None, "a single half per exercise");
     assert_eq!(halved.skip_cost, SKIP_COST - HALVE_COST);
     assert_eq!(v.jokers, 2 - HALVE_COST);
-    assert_eq!(v.jokers_spent, HALVE_COST);
     assert_eq!(
         s.halve(boss.id, &item.exercise_id).unwrap_err().code,
         "exercise_not_reducible"

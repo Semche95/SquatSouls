@@ -11,12 +11,13 @@ impl Session {
         self.bag.clear();
         for mut draw in std::mem::take(&mut self.pending) {
             let Some((game, ev)) = find_event(config, &draw.game_id, &draw.event_id) else {
+                self.drop_unstarted(&draw);
                 continue;
             };
             draw.game_name = game.name.clone();
             draw.event_name = ev.name.clone();
             draw.max_per_session = ev.max_per_session;
-            if !draw.forfeited {
+            if draw.spent == 0 {
                 draw.jokers = ev.jokers;
             }
             self.refit(

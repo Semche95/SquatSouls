@@ -91,15 +91,20 @@ pub struct Draw {
     /// Exercises as drawn, reserved for the next trigger if the set is dismissed before being started.
     #[serde(skip)]
     pub drawn: Vec<DrawItem>,
-    /// True once jokers have been spent on the set.
+    /// Jokers spent on the set.
     #[serde(skip)]
-    pub forfeited: bool,
+    pub spent: u32,
 }
 
 impl Draw {
+    /// True once an exercise of the set is done.
+    pub fn started(&self) -> bool {
+        self.items.iter().any(|it| it.done)
+    }
+
     /// Spends jokers on the set: it no longer earns its own.
-    pub(super) fn forfeit(&mut self) {
+    pub(super) fn spend(&mut self, jokers: u32) {
         self.jokers = 0;
-        self.forfeited = true;
+        self.spent += jokers;
     }
 }
