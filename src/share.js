@@ -124,10 +124,10 @@ export function shareGame(game) {
 }
 
 // Missing optional field (exercise-specific recovery or timer, game Steam AppId): the key is omitted.
-const withOptional = (item, key, value) => (value === undefined ? item : { ...item, [key]: value });
+export const withOptional = (item, key, value) => (value === undefined ? item : { ...item, [key]: value });
 
 // Settings of an exercise carried by a shared text, its optional ones omitted when missing; on each side only when true.
-const sharedSettings = ({ unit, min, max, recovery, timed, eachSide }) =>
+export const sharedSettings = ({ unit, min, max, recovery, timed, eachSide }) =>
   withOptional(withOptional(withOptional({ unit, min, max }, 'recovery', recovery), 'timed', timed), 'eachSide', eachSide || undefined);
 
 // The global recovery and whether exercises are enabled are not shared: everyone keeps their own.
@@ -160,33 +160,4 @@ const validExercise = (ex) =>
 
 export function parseExercises(text) {
   return firstByName(parse(text, EXERCISES, (d) => isList(d.exercises, validExercise)).exercises);
-}
-
-// The imported game replaces the one with the same name (keeping its id and, unless it brings one,
-// its Steam AppId), otherwise it is added.
-export function importGame(games, { name, steamAppId, events }) {
-  const existing = games.find((g) => sameName(g.name, name));
-  const game = withOptional({ id: existing?.id ?? newId(name, games), name, events }, 'steamAppId', steamAppId ?? existing?.steamAppId);
-  return existing ? games.map((g) => (g === existing ? game : g)) : [...games, game];
-}
-
-// Imported exercises update those with the same name, which stay enabled or not, and
-// add the others, enabled.
-export function mergeExercises(exercises, imported) {
-  const merged = exercises.map((ex) => ({ ...ex }));
-  let added = 0;
-  let updated = 0;
-  for (const { name, ...settings } of imported) {
-    const i = merged.findIndex((e) => sameName(e.name, name));
-    const ex = merged[i];
-    const shared = (item) => ({ ...item, ...sharedSettings(settings) });
-    if (!ex) {
-      merged.push(shared({ id: newId(name, merged), name: name.trim(), enabled: true }));
-      added++;
-    } else if (JSON.stringify(sharedSettings(ex)) !== JSON.stringify(sharedSettings(settings))) {
-      merged[i] = shared({ id: ex.id, name: ex.name, enabled: ex.enabled });
-      updated++;
-    }
-  }
-  return { exercises: merged, added, updated };
 }
