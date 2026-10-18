@@ -1,7 +1,7 @@
 pub mod app;
 mod commands;
 mod startup;
-mod state;
+pub mod state;
 mod tray;
 mod update;
 

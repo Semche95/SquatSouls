@@ -95,6 +95,10 @@
     "endConfirmed": "Terminer",
     "confirmCancel": "Annuler la séance ? Les compteurs (dont les limites par séance), les séries à faire et les séries faites seront effacés, et ses séries retirées de l'historique.",
     "keep": "Garder la séance",
+    "endCause": {
+      "gameRemoved": "La séance s'est terminée : son jeu a été supprimé.",
+      "noExercise": "La séance s'est terminée : plus aucun exercice n'est proposé."
+    },
     "farewells": [
       "Feu allumé. Repose-toi, tes jambes l'ont bien mérité.",
       "Victoire. Chaque série a compté.",

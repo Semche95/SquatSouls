@@ -18,7 +18,7 @@ The business rules are described in `docs/BEHAVIOR.md`, which is the reference.
 - `src-tauri/src/`: Rust backend. The business logic lives in `app/`, the default configuration in `app/seed.en.json` and `app/seed.fr.json`, whose structure is `app/seed.schema.json`.
 - `src-tauri/migrations/`: SQL schema migrations, one per `V<n>__<name>.sql` file (rules in its `README.md`).
 - `src/tests/`: interface tests (Vitest), one file per tab or module; `app.js` shared data, mounting and the save bar, `program.js` the Program tab's game, sub-tabs and edit dialogs, `setup.js` Tauri backend mock, `schemas.test.js` the language files against their schemas.
-- `src-tauri/tests/`: backend tests (Cargo integration tests on the public API of `app`), one file per module.
+- `src-tauri/tests/`: backend tests (Cargo integration tests on the public API of `app`, and of `state` for what links the session to the store), one file per module.
 - `site/`: presentation site published on GitHub Pages by `.github/workflows/site.yml`, which adds `src/theme.css` (palette and fonts shared with the app), `src/slogans.js`, the icon and `docs/screenshots/`. Its texts are in `site/locales/en.json` and `site/locales/fr.json`, following `site/locales/schema.json`; the workflow writes the English ones into `index.html` with `scripts/site-english.js`, so the page reads before its JavaScript runs.
 
 ## Commands

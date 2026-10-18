@@ -1,6 +1,6 @@
 //! Progress of a set: exercises done and set dismissed.
 
-use super::{LogEntry, Session};
+use super::{Draw, LogEntry, Session};
 use crate::app::AppError;
 
 impl Session {
@@ -47,8 +47,22 @@ impl Session {
     /// stops there: its exercises done stay counted, as does the trigger, without the jokers of the set.
     pub fn dismiss(&mut self, id: u64) -> Result<(), AppError> {
         let draw = self.take_pending(id)?;
+        self.dismissed(draw);
+        Ok(())
+    }
+
+    /// Dismisses every set to do, so that the session keeps only what was done; true if an exercise was done,
+    /// the session then having something to end with.
+    pub fn dismiss_all(&mut self) -> bool {
+        for draw in std::mem::take(&mut self.pending) {
+            self.dismissed(draw);
+        }
+        !self.done.is_empty()
+    }
+
+    fn dismissed(&mut self, draw: Draw) {
         if draw.started() {
-            return Ok(());
+            return;
         }
         self.drop_unstarted(&draw);
         let key = (draw.game_id, draw.event_id);
@@ -56,6 +70,5 @@ impl Session {
             *count = count.saturating_sub(1);
         }
         self.reserved.insert(key, draw.drawn);
-        Ok(())
     }
 }

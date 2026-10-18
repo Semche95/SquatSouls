@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
-import { responses, setup, openConfig, shownTip, expectTip, layOutControls, editDialog, save, savedConfig } from './app.js';
+import { emptySession, idleSession, responses, setup, openConfig, shownTip, expectTip, layOutControls, editDialog, save, savedConfig } from './app.js';
 import { openExercises, openTile, closeDialog, saveAndReopen } from './program.js';
 
 describe('exercises', () => {
@@ -25,6 +25,19 @@ describe('exercises', () => {
     await save(w).trigger('click');
     await flushPromises();
     expect(savedConfig().exercises.map((e) => e.id)).toEqual(['squat', 'new-exercise', 'new-exercise-2']);
+  });
+
+  it('tells why the session ended once no exercise is included, encouraging only if exercises were done', async () => {
+    setup({ get_session: emptySession(), save_config: (args) => ({ config: args.config }) });
+    const w = await openExercises({ dialog: false });
+    await w.find('input[aria-label="Include this exercise"]').setValue(false);
+    // Without any exercise done, the backend cancels the session, telling why.
+    responses.get_session = idleSession({ ended: { saved: false, cause: 'noExercise' } });
+    await save(w).trigger('click');
+    await flushPromises();
+    await w.findAll('.tabs button')[0].trigger('click');
+    expect(w.find('.banner.info').text()).toBe('The session ended: no exercise is included anymore.');
+    expect(w.find('.farewell').exists()).toBe(false);
   });
 
   it('shows an exercise\'s range on its tile, sets it in its dialog and keeps at least one exercise', async () => {

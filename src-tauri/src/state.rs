@@ -1,17 +1,20 @@
 //! Shared application state and configuration loading.
 
-use crate::app::{default_config, AppError, Config, Language, LanguageSetting, Session, Store};
+use crate::app::{
+    default_config, AppError, Config, EndCause, Language, LanguageSetting, Session, SessionEnd,
+    Store,
+};
 use chrono::Local;
 use serde::{Deserialize, Serialize};
 use std::sync::{Mutex, MutexGuard};
 use tauri::State;
 
-pub(crate) struct AppState {
-    pub(crate) config: Config,
+pub struct AppState {
+    pub config: Config,
     /// Error met while loading the configuration (the default config is then used).
     pub(crate) config_error: Option<AppError>,
-    pub(crate) store: Store,
-    pub(crate) session: Session,
+    pub store: Store,
+    pub session: Session,
     /// System locale, read at launch to resolve the `System` language setting.
     pub(crate) system_locale: Option<String>,
     pub(crate) language: Language,
@@ -23,7 +26,7 @@ pub(crate) type Shared<'a> = State<'a, Mutex<AppState>>;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct ConfigView {
+pub struct ConfigView {
     config: Config,
     error: Option<AppError>,
 }
@@ -47,7 +50,7 @@ pub(crate) struct NativeTexts {
 }
 
 impl AppState {
-    pub(crate) fn new(store: Store, system_locale: Option<String>) -> Self {
+    pub fn new(store: Store, system_locale: Option<String>) -> Self {
         let language = store
             .language()
             .unwrap_or_else(|e| {
@@ -101,13 +104,12 @@ impl AppState {
         Ok(())
     }
 
-    pub(crate) fn store_config(&mut self, config: Config) -> Result<ConfigView, AppError> {
+    pub fn store_config(&mut self, config: Config) -> Result<ConfigView, AppError> {
         self.store
             .save_config(&config)
             .map_err(|e| AppError::internal("Configuration not saved", e))?;
-        // The session's game was removed: the session is cancelled.
-        if self.session.game_removed(&config) {
-            self.cancel_session()?;
+        if let Some(cause) = self.session.end_cause(&config) {
+            self.end_unplayable_session(cause)?;
         }
         self.config = config;
         self.config_error = None;
@@ -117,7 +119,7 @@ impl AppState {
     }
 
     /// Saves the events triggered and the jokers of the started session, for the history.
-    pub(crate) fn save_session_summary(&mut self) {
+    pub fn save_session_summary(&mut self) {
         let Some(started_at) = self.session.started_at else {
             return;
         };
@@ -128,6 +130,34 @@ impl AppState {
         {
             log::error!("Session summary not saved: {e}");
         }
+    }
+
+    /// The session's game is removed or no exercise is included: the session ends there, keeping only the exercises
+    /// done, with the summary of the configuration it was played with; without any, it is cancelled. Either way,
+    /// the next session tells why.
+    fn end_unplayable_session(&mut self, cause: EndCause) -> Result<(), AppError> {
+        if self.session.dismiss_all() {
+            self.save_session_summary();
+            self.end_session(Some(cause));
+        } else {
+            self.cancel_session()?;
+            self.session = Session::after(SessionEnd {
+                saved: false,
+                cause: Some(cause),
+            });
+        }
+        Ok(())
+    }
+
+    /// Saves the end of the started session, by itself for `cause` or else with **End the session**; the next one
+    /// waits to be started.
+    pub(crate) fn end_session(&mut self, cause: Option<EndCause>) {
+        if let Some(started_at) = self.session.started_at {
+            if let Err(e) = self.store.end_session(started_at, now()) {
+                log::error!("Session end not saved: {e}");
+            }
+        }
+        self.session = Session::after(SessionEnd { saved: true, cause });
     }
 
     /// Removes the current session's sets from the history; the next one waits to be started.

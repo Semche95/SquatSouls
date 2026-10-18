@@ -115,11 +115,11 @@ describe('games', () => {
     await confirmDialogClosed();
   });
 
-  it('asks for the game again when the session\'s game is removed', async () => {
+  it('asks for the game again when the session\'s game is removed, and tells why the session ended', async () => {
     setup({ get_session: emptySession({ sets: 1 }), save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
-    // The backend cancels the session of the removed game.
-    responses.get_session = idleSession();
+    // The backend ends the session of the removed game, with its exercises done.
+    responses.get_session = idleSession({ ended: { saved: true, cause: 'gameRemoved' } });
     await w.find('.cfg-game-bar .danger').trigger('click');
     await confirmDialogOpen();
     await confirmDialog().find('.danger').trigger('click');
@@ -129,5 +129,7 @@ describe('games', () => {
     expect(select.element.value).toBe('');
     expect(select.element.disabled).toBe(false);
     expect(w.find('.events').exists()).toBe(false);
+    expect(w.find('.banner.info').text()).toBe('The session ended: its game was deleted.');
+    expect(w.find('.session-actions .farewell').exists()).toBe(true);
   });
 });

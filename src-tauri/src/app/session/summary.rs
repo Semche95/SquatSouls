@@ -1,6 +1,6 @@
 //! What the session shows: sets done, totals and triggers.
 
-use super::{Draw, Intensity, Session};
+use super::{Draw, Intensity, Session, SessionEnd};
 use crate::app::Config;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -65,6 +65,8 @@ pub struct SessionView {
     /// Jokers earned and spent as the summary counts them (see `Session::jokers`).
     pub jokers_earned: u32,
     pub jokers_spent: u32,
+    /// How the previous session ended, until this one starts.
+    pub ended: Option<SessionEnd>,
 }
 
 impl Session {
@@ -115,6 +117,7 @@ impl Session {
             jokers: self.jokers,
             jokers_earned: self.jokers().earned,
             jokers_spent: self.jokers().spent,
+            ended: self.ended,
         }
     }
 }

@@ -136,7 +136,7 @@
     },
     "session": {
       "type": "object",
-      "required": ["pendingSets", "noSets", "nothingToCancel", "noEvent", "noExercise", "start", "end", "cancel", "confirmEnd", "endConfirmed", "confirmCancel", "keep", "farewells"],
+      "required": ["pendingSets", "noSets", "nothingToCancel", "noEvent", "noExercise", "start", "end", "cancel", "confirmEnd", "endConfirmed", "confirmCancel", "keep", "endCause", "farewells"],
       "additionalProperties": false,
       "properties": {
         "pendingSets": { "$ref": "#/$defs/text" },
@@ -151,6 +151,12 @@
         "endConfirmed": { "$ref": "#/$defs/text" },
         "confirmCancel": { "$ref": "#/$defs/text" },
         "keep": { "$ref": "#/$defs/text" },
+        "endCause": {
+          "type": "object",
+          "required": ["gameRemoved", "noExercise"],
+          "additionalProperties": false,
+          "properties": { "gameRemoved": { "$ref": "#/$defs/text" }, "noExercise": { "$ref": "#/$defs/text" } }
+        },
         "farewells": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } }
       }
     },

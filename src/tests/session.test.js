@@ -376,7 +376,7 @@ describe('session', () => {
   });
 
   it('encourages next to the session actions once it ends, until the next one starts', async () => {
-    setup({ get_session: emptySession({ sets: 1 }), end_session: idleSession(), start_session: emptySession() });
+    setup({ get_session: emptySession({ sets: 1 }), end_session: idleSession({ ended: { saved: true, cause: null } }), start_session: emptySession() });
     const w = await mountApp();
     expect(w.find('.farewell').exists()).toBe(false);
     await w.find('.session-actions .primary').trigger('click');

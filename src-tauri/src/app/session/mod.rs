@@ -14,6 +14,7 @@ pub use set::*;
 pub use summary::*;
 
 use super::{AppError, Config, Game};
+use serde::Serialize;
 use std::collections::HashMap;
 
 #[derive(Debug, Default)]
@@ -36,9 +37,37 @@ pub struct Session {
     /// Exercises of dismissed sets, by game and event: the next trigger gives them back.
     reserved: HashMap<(String, String), Vec<DrawItem>>,
     next_id: u64,
+    /// How the previous session ended, kept until this one starts.
+    ended: Option<SessionEnd>,
+}
+
+/// Why a session ended by itself, on saving a configuration it can no longer be played on.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum EndCause {
+    GameRemoved,
+    NoExercise,
+}
+
+/// How a session ended; a cancelled one leaves none.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SessionEnd {
+    /// False when it ended by itself without any exercise done: nothing was saved, as on a cancellation.
+    pub saved: bool,
+    /// Why it ended by itself, none when ended with **End the session**.
+    pub cause: Option<EndCause>,
 }
 
 impl Session {
+    /// Next session, waiting to be started after the one that ended as `end`.
+    pub fn after(end: SessionEnd) -> Self {
+        Session {
+            ended: Some(end),
+            ..Session::default()
+        }
+    }
+
     /// Starts the session on the game at `now`, unless it already is; returns its start. Without an event or an
     /// included exercise, nothing could be played.
     pub fn start(&mut self, config: &Config, game_id: &str, now: i64) -> Result<i64, AppError> {
@@ -47,6 +76,7 @@ impl Session {
             return Err(AppError::new("start_without_event").with("game", game.name.as_str()));
         }
         self.game_id = Some(game.id.clone());
+        self.ended = None;
         Ok(*self.started_at.get_or_insert(now))
     }
 

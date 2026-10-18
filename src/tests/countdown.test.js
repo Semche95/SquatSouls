@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, draw, responses, setup, mountApp, press, expectTip, layOutControls } from './app.js';
+import { config, emptySession, idleSession, draw, responses, setup, mountApp, press, expectTip, layOutControls, confirmDialog, confirmDialogOpen, confirmDialogClosed } from './app.js';
 import { chime, recoveryEnd, sideSignal, startSignal } from '../sound.js';
 
 vi.mock('../sound.js', () => ({ chime: vi.fn(), recoveryEnd: vi.fn(), sideSignal: vi.fn(), startSignal: vi.fn() }));
@@ -82,6 +82,24 @@ describe('countdown', () => {
       await w.findAll('.card')[0].find('.card-actions button').trigger('click');
       await flushPromises();
       expect(await sealShown(w)).toBe(true);
+    });
+
+    it('stops when the session ends without its button, its game removed', async () => {
+      const w = await completeOne();
+      expect(await sealShown(w)).toBe(true);
+      // The confirmation dialog waits on real timers.
+      vi.useRealTimers();
+      responses.save_config = (args) => ({ config: args.config });
+      responses.get_session = idleSession();
+      await w.findAll('.tabs button')[2].trigger('click');
+      await w.find('.cfg-game-bar .danger').trigger('click');
+      await confirmDialogOpen();
+      await confirmDialog().find('.danger').trigger('click');
+      await flushPromises();
+      await confirmDialogClosed();
+      await w.findAll('.tabs button')[0].trigger('click');
+      await vi.waitFor(() => expect(w.find('.countdown-seal').exists()).toBe(false));
+      expect(recoveryEnd).not.toHaveBeenCalled();
     });
 
     it('stays shown once no set is left to do', async () => {

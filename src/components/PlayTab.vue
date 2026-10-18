@@ -157,6 +157,7 @@ useKeydown((e) => {
     </i18n-t>
 
     <p v-if="notice" v-reveal class="banner info">{{ notice }}</p>
+    <p v-if="session.ended?.cause" v-reveal class="banner info">{{ t(`session.endCause.${session.ended.cause}`) }}</p>
 
     <section class="pending">
       <h2>

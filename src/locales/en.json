@@ -95,6 +95,10 @@
     "endConfirmed": "End",
     "confirmCancel": "Cancel the session? The counters (including the per-session limits), the sets to do and the sets done will be cleared, and its sets removed from the history.",
     "keep": "Keep the session",
+    "endCause": {
+      "gameRemoved": "The session ended: its game was deleted.",
+      "noExercise": "The session ended: no exercise is included anymore."
+    },
     "farewells": [
       "Bonfire lit. Rest now, your legs have earned it.",
       "Victory achieved. Every set counted.",

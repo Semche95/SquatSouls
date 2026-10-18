@@ -1,6 +1,6 @@
 //! Adjustment of the session to a new configuration.
 
-use super::{DrawItem, Session};
+use super::{DrawItem, EndCause, Session};
 use crate::app::{Config, Game, GameEvent};
 use rand::Rng;
 
@@ -140,11 +140,17 @@ impl Session {
         }
     }
 
-    /// True if the session started on a game missing from `config`.
-    pub fn game_removed(&self, config: &Config) -> bool {
-        self.game_id
-            .as_ref()
-            .is_some_and(|id| config.games.iter().all(|g| &g.id != id))
+    /// Why the started session can no longer be played on `config`, none while it can: its game is removed, or no
+    /// exercise is included.
+    pub fn end_cause(&self, config: &Config) -> Option<EndCause> {
+        let id = self.game_id.as_ref()?;
+        if config.games.iter().all(|g| &g.id != id) {
+            Some(EndCause::GameRemoved)
+        } else if config.active_exercises().next().is_none() {
+            Some(EndCause::NoExercise)
+        } else {
+            None
+        }
     }
 }
 

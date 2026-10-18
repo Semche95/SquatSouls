@@ -154,3 +154,38 @@ fn a_dismissed_set_comes_back_on_the_next_trigger_of_its_event() {
     );
     assert_eq!(fresh.items.len(), 2);
 }
+
+#[test]
+fn dismissing_every_set_keeps_only_the_exercises_done() {
+    let cfg = default_config(Language::En);
+    let mut s = Session::default();
+    let mut r = rng();
+    let game = &cfg.games[0];
+    let event = game.events.iter().find(|e| e.draws > 1).unwrap();
+    let started = s.draw(&cfg, &game.id, &event.id, &mut r).unwrap();
+    s.draw(&cfg, &game.id, &event.id, &mut r).unwrap();
+    let entry = s
+        .complete_exercise(started.id, &started.items[0].exercise_id, 10)
+        .unwrap();
+    assert!(s.dismiss_all(), "an exercise was done");
+    let v = s.view();
+    assert!(v.pending.is_empty());
+    assert_eq!(v.log, vec![entry], "only the exercise done stays");
+    assert_eq!(v.triggers[0].count, 1, "only the started set stays counted");
+    assert_eq!(v.jokers, 0, "a stopped set earns no jokers");
+    assert_eq!(
+        s.event_counts(&cfg),
+        vec![EventCount {
+            event: event.name.clone(),
+            count: 1
+        }]
+    );
+
+    let mut untouched = Session::default();
+    untouched.draw(&cfg, &game.id, &event.id, &mut r).unwrap();
+    assert!(
+        !untouched.dismiss_all(),
+        "nothing done: nothing to end with"
+    );
+    assert!(untouched.view().triggers.is_empty());
+}

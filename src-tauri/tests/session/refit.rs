@@ -5,13 +5,48 @@ use std::collections::HashSet;
 fn removed_game_is_detected() {
     let mut cfg = default_config(Language::Fr);
     let mut s = Session::default();
-    assert!(!s.game_removed(&cfg), "session not started yet");
+    assert_eq!(s.end_cause(&cfg), None, "session not started yet");
     s.draw(&cfg, "ds1", "mort", &mut rng()).unwrap();
-    assert!(!s.game_removed(&cfg));
+    assert_eq!(s.end_cause(&cfg), None);
     cfg.games.retain(|g| g.id != "ds2");
-    assert!(!s.game_removed(&cfg), "another removed game does not count");
+    assert_eq!(
+        s.end_cause(&cfg),
+        None,
+        "another removed game does not count"
+    );
     cfg.games.retain(|g| g.id != "ds1");
-    assert!(s.game_removed(&cfg));
+    assert_eq!(s.end_cause(&cfg), Some(EndCause::GameRemoved));
+}
+
+#[test]
+fn removed_game_is_detected_for_a_session_started_by_its_button() {
+    let mut cfg = default_config(Language::En);
+    let mut s = Session::default();
+    s.start(&cfg, "ds1", 5).unwrap();
+    cfg.games.retain(|g| g.id != "ds2");
+    assert_eq!(
+        s.end_cause(&cfg),
+        None,
+        "another removed game does not count"
+    );
+    cfg.games.clear();
+    assert_eq!(s.end_cause(&cfg), Some(EndCause::GameRemoved));
+}
+
+#[test]
+fn a_session_without_included_exercise_is_detected() {
+    let mut cfg = default_config(Language::En);
+    let mut s = Session::default();
+    cfg.exercises.iter_mut().for_each(|ex| ex.enabled = false);
+    assert_eq!(s.end_cause(&cfg), None, "session not started yet");
+    let cfg_on = default_config(Language::En);
+    s.start(&cfg_on, "ds1", 5).unwrap();
+    cfg.exercises[0].enabled = true;
+    assert_eq!(s.end_cause(&cfg), None, "one included exercise is enough");
+    cfg.exercises[0].enabled = false;
+    assert_eq!(s.end_cause(&cfg), Some(EndCause::NoExercise));
+    cfg.exercises.clear();
+    assert_eq!(s.end_cause(&cfg), Some(EndCause::NoExercise));
 }
 
 #[test]

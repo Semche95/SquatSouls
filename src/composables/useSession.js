@@ -14,11 +14,14 @@ export const SIDES = 2;
 export const [provideSession, useSession] = defineShared(({ call }, { config, draft, game, gameId, intensity, noExercise, store }) => {
   const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], countedTriggers: [], jokers: 0, jokersEarned: 0, jokersSpent: 0 });
   const notice = ref('');
-  // Encouragement shown once the session ends, until the next one starts: index in `session.farewells`.
+  // Encouragement shown once a session ends with exercises done, however it ends (End the session, or a saved
+  // configuration it can no longer be played on), until the next one starts: index in `session.farewells`.
   const farewell = ref(-1);
-  watch(() => session.value.startedAt, (started) => {
-    if (started) farewell.value = -1;
+  watch(() => !!session.value.ended?.saved, (saved) => {
+    farewell.value = saved ? Math.floor(Math.random() * tm('session.farewells').length) : -1;
   });
+  // The recovery stops with the session, however it ends.
+  watch(() => session.value.startedAt, (started) => started || skipRecovery());
   // Recovery after an exercise is done: no other can be marked done before it ends.
   const recovery = useCountdown();
   const { left: recoveryLeft, share: recoveryShare } = recovery;
@@ -220,10 +223,8 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   async function endSession() {
     notice.value = '';
-    skipRecovery();
     try {
       session.value = await call('end_session');
-      farewell.value = Math.floor(Math.random() * tm('session.farewells').length);
     } catch {
       await reload();
     }
@@ -231,7 +232,6 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   async function cancelSession() {
     notice.value = '';
-    skipRecovery();
     try {
       session.value = await call('cancel_session');
     } catch {

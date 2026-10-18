@@ -1,6 +1,6 @@
 //! Session: draw, exercises and sets, start, end and cancellation.
 
-use crate::app::{AppError, Draw, Intensity, Session, SessionView};
+use crate::app::{AppError, Draw, Intensity, SessionView};
 use crate::state::{lock, now, AppState, Shared};
 
 #[tauri::command]
@@ -111,12 +111,7 @@ pub(crate) fn start_session(
 pub(crate) fn end_session(state: Shared) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
     s.session.check_end()?;
-    if let Some(started_at) = s.session.started_at {
-        if let Err(e) = s.store.end_session(started_at, now()) {
-            log::error!("Session end not saved: {e}");
-        }
-    }
-    s.session = Session::default();
+    s.end_session(None);
     Ok(s.session.view())
 }
 
