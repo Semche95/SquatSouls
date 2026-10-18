@@ -539,7 +539,7 @@
         "event_empty": { "type": "string", "pattern": "^[^{}]*(?:\\{game\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }] },
         "event_duplicate": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|id)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{id\\}" }] },
         "event_no_draw": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|event)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{event\\}" }] },
-        "event_too_many_draws": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|event|draws|active)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{event\\}" }, { "pattern": "\\{draws\\}" }, { "pattern": "\\{active\\}" }] },
+        "event_too_many_draws": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|event|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{event\\}" }, { "pattern": "\\{max\\}" }] },
         "event_zero_limit": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|event)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{event\\}" }] },
         "event_limit_too_high": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|event|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{event\\}" }, { "pattern": "\\{max\\}" }] },
         "event_too_many_jokers": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|event|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{event\\}" }, { "pattern": "\\{max\\}" }] },

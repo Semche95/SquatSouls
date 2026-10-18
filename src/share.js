@@ -137,17 +137,17 @@ export function shareExercises(exercises) {
 const validEvent = (ev) =>
   isName(ev?.name) && isCount(ev.draws, BOUNDS.positive) && (ev.maxPerSession === undefined || isCount(ev.maxPerSession, BOUNDS.amount)) && (ev.jokers === undefined || isCount(ev.jokers, BOUNDS.jokers));
 
-// Shared game ready to import; `draws` is capped at the number of enabled exercises (`clamped` reports it).
-export function parseGame(text, exerciseCount) {
+// Shared game ready to import; `draws` is capped at the largest number of requested exercises (`clamped` reports it).
+export function parseGame(text) {
   const data = parse(text, GAME, (d) => isName(d.name) && (d.steamAppId === undefined || isCount(d.steamAppId, BOUNDS.positive)) && isList(d.events, validEvent));
   const shared = firstByName(data.events);
   const events = [];
   for (const { name, draws, maxPerSession, jokers = 0 } of shared) {
-    const ev = { id: newId(name, events), name: name.trim(), draws: Math.min(draws, exerciseCount), jokers };
+    const ev = { id: newId(name, events), name: name.trim(), draws: Math.min(draws, BOUNDS.draws.max), jokers };
     if (maxPerSession !== undefined) ev.maxPerSession = maxPerSession;
     events.push(ev);
   }
-  const game = { name: data.name.trim(), events, clamped: shared.some((ev) => ev.draws > exerciseCount) };
+  const game = { name: data.name.trim(), events, clamped: shared.some((ev) => ev.draws > BOUNDS.draws.max) };
   return withOptional(game, 'steamAppId', data.steamAppId);
 }
 

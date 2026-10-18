@@ -45,14 +45,14 @@ describe('sharing', () => {
     expect(formDialog().find('.cfg-import .banner.error').text()).toBe('This text is not a valid shared game.');
     expect(text.attributes('aria-invalid')).toBe('true');
     expect(submit().element.disabled).toBe(true);
-    await text.setValue(shareGame({ name: 'sekiro', events: [{ name: 'Death', draws: 3, jokers: 1 }] }));
+    await text.setValue(shareGame({ name: 'sekiro', events: [{ name: 'Death', draws: 101, jokers: 1 }] }));
     expect(formDialog().find('.cfg-import .banner.warn').text()).toBe('sekiro already exists: it will be replaced.');
     await formDialog().find('.cfg-import').trigger('submit');
     await flushPromises();
     await formDialogClosed();
     expect(savedConfig().games.map((g) => g.id)).toEqual(['er', 'sekiro']);
-    expect(savedConfig().games[1]).toEqual({ id: 'sekiro', name: 'sekiro', events: [{ id: 'death', name: 'Death', draws: 1, jokers: 1 }] });
-    expect(w.find('.banner.ok').text()).toBe('sekiro imported, limited to 1 exercise per event.');
+    expect(savedConfig().games[1]).toEqual({ id: 'sekiro', name: 'sekiro', events: [{ id: 'death', name: 'Death', draws: 100, jokers: 1 }] });
+    expect(w.find('.banner.ok').text()).toBe('sekiro imported, limited to 100 exercises per event.');
     expect(shownGame(w)).toBe('sekiro');
     expectUnchanged(w);
     await open().trigger('click');

@@ -389,7 +389,7 @@
     "event_empty": "{game} : identifiant ou nom d'événement vide.",
     "event_duplicate": "{game} : l'événement « {id} » est défini deux fois.",
     "event_no_draw": "{game} › {event} : il faut au moins 1 exercice.",
-    "event_too_many_draws": "{game} › {event} : {draws} exercices demandés, plus que les exercices proposés ({active}).",
+    "event_too_many_draws": "{game} › {event} : {max} exercices demandés au plus.",
     "event_zero_limit": "{game} › {event} : la limite par séance doit être d'au moins 1 (ou vide).",
     "event_limit_too_high": "{game} › {event} : la limite par séance doit être de {max} au plus.",
     "event_too_many_jokers": "{game} › {event} : {max} jokers gagnés au plus.",

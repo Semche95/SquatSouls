@@ -2,7 +2,7 @@
 // Creation or import of a game, in a modal over the Games tab: both are saved right away.
 import { computed, ref, watch } from 'vue';
 import { VueFinalModal } from 'vue-final-modal';
-import { byName, clone, MAX_NAME, newId, sameName } from '../configDraft.js';
+import { BOUNDS, byName, clone, MAX_NAME, newId, sameName } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { importGame, parseGame } from '../share.js';
 import { vReveal } from '../reveal.js';
@@ -50,8 +50,6 @@ async function createGame() {
   close();
 }
 
-const activeCount = () => config.value.exercises.filter((ex) => ex.enabled).length;
-const parseShared = (text) => parseGame(text, activeCount());
 const takenName = (name) => config.value.games.some((g) => sameName(g.name, name));
 
 async function importShared(game) {
@@ -59,8 +57,7 @@ async function importShared(game) {
   draft.value.games = importGame(draft.value.games, clone(game));
   editedGameId.value = config.value.games.find((g) => sameName(g.name, game.name)).id;
   close();
-  const count = activeCount();
-  notify(game.clamped ? t('config.games.importedClamped', { name: game.name }, count) : t('config.games.imported', { name: game.name }));
+  notify(game.clamped ? t('config.games.importedClamped', { name: game.name }, BOUNDS.draws.max) : t('config.games.imported', { name: game.name }));
 }
 </script>
 
@@ -97,7 +94,7 @@ async function importShared(game) {
     </template>
     <template v-else>
       <h3>{{ t('config.games.import') }}</h3>
-      <ShareImport v-slot="{ result }" :parse="parseShared" @import="importShared" @cancel="close">
+      <ShareImport v-slot="{ result }" :parse="parseGame" @import="importShared" @cancel="close">
         <p v-if="takenName(result.name)" v-reveal class="banner warn">{{ t('config.games.willReplace', { name: result.name }) }}</p>
       </ShareImport>
     </template>

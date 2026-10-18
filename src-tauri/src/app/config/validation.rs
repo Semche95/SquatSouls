@@ -80,10 +80,9 @@ impl Config {
                 if ev.draws == 0 {
                     return Err(at("event_no_draw"));
                 }
-                if ev.draws as usize > active {
-                    return Err(at("event_too_many_draws")
-                        .with("draws", ev.draws)
-                        .with("active", active));
+                // Beyond the included exercises, a set gets all of them.
+                if ev.draws as usize > MAX_ITEMS {
+                    return Err(at("event_too_many_draws").with("max", MAX_ITEMS));
                 }
                 if ev.max_per_session == Some(0) {
                     return Err(at("event_zero_limit"));

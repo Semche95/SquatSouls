@@ -14,15 +14,13 @@ fn validation_catches_mistakes() {
     );
 
     let mut cfg = default_config(Language::Fr);
-    let draws = cfg.exercises.len() as u32 + 1;
-    cfg.games[0].events[0].draws = draws;
+    cfg.games[0].events[0].draws = MAX_ITEMS as u32 + 1;
     assert_eq!(
         cfg.validate().unwrap_err(),
         AppError::new("event_too_many_draws")
             .with("game", "Elden Ring")
             .with("event", "Mort")
-            .with("draws", draws)
-            .with("active", cfg.exercises.len())
+            .with("max", MAX_ITEMS)
     );
 
     let mut cfg = default_config(Language::Fr);
@@ -199,21 +197,12 @@ fn names_units_and_counts_are_limited() {
 }
 
 #[test]
-fn draws_are_limited_by_the_enabled_exercises() {
+fn draws_are_not_limited_by_the_enabled_exercises() {
     let mut cfg = default_config(Language::Fr);
-    let draws = cfg
-        .games
-        .iter()
-        .flat_map(|g| &g.events)
-        .map(|ev| ev.draws as usize)
-        .max()
-        .unwrap();
-    let disabled = cfg.exercises.len() - draws;
     cfg.exercises
         .iter_mut()
-        .take(disabled)
+        .skip(1)
         .for_each(|ex| ex.enabled = false);
+    cfg.games[0].events[0].draws = MAX_ITEMS as u32;
     cfg.validate().unwrap();
-    cfg.exercises[disabled].enabled = false;
-    assert_eq!(cfg.validate().unwrap_err().code, "event_too_many_draws");
 }

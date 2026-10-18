@@ -115,6 +115,7 @@ fn limits_follow_the_validation() {
         ("amount", 1, MAX_AMOUNT),
         ("count", 0, MAX_AMOUNT),
         ("seconds", 0, MAX_SECONDS),
+        ("draws", 1, MAX_ITEMS as u32),
     ] {
         assert_eq!(def(&schema, bound)["minimum"], json!(min), "{bound}");
         assert_eq!(def(&schema, bound)["maximum"], json!(max), "{bound}");

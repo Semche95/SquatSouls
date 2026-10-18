@@ -15,6 +15,28 @@ fn removed_game_is_detected() {
 }
 
 #[test]
+fn an_event_asking_for_more_than_the_included_exercises_gets_all_of_them() {
+    let mut cfg = default_config(Language::En);
+    cfg.exercises
+        .iter_mut()
+        .skip(3)
+        .for_each(|ex| ex.enabled = false);
+    let ev = &mut cfg.games[0].events[0];
+    ev.draws = 4;
+    let (game, event) = (cfg.games[0].id.clone(), cfg.games[0].events[0].id.clone());
+    let draw = Session::default()
+        .draw(&cfg, &game, &event, &mut rng())
+        .unwrap();
+    let ids: HashSet<_> = draw
+        .items
+        .iter()
+        .map(|it| it.exercise_id.as_str())
+        .collect();
+    let included: HashSet<_> = cfg.active_exercises().map(|ex| ex.id.as_str()).collect();
+    assert_eq!(ids, included, "each included exercise once");
+}
+
+#[test]
 fn a_saved_configuration_keeps_the_sets_to_do() {
     let mut cfg = default_config(Language::Fr);
     let mut s = Session::default();
@@ -163,4 +185,38 @@ fn a_set_with_spent_jokers_still_earns_nothing() {
     event_mut(&mut cfg, "ds3", "boss").jokers = 2;
     s.apply_config(&cfg, &mut rng());
     assert_eq!(pending(&s, boss.id).unwrap().jokers, 0);
+}
+
+#[test]
+fn an_exercise_switched_off_without_replacement_leaves_the_set() {
+    let mut cfg = default_config(Language::En);
+    cfg.exercises
+        .iter_mut()
+        .skip(3)
+        .for_each(|ex| ex.enabled = false);
+    cfg.games[0].events[0].draws = 3;
+    let (game, event) = (cfg.games[0].id.clone(), cfg.games[0].events[0].id.clone());
+    let mut s = Session::default();
+    let draw = s.draw(&cfg, &game, &event, &mut rng()).unwrap();
+    let (first, off) = (&draw.items[0], &draw.items[2]);
+    s.complete_exercise(draw.id, &first.exercise_id, 5).unwrap();
+    for id in [&first.exercise_id, &off.exercise_id] {
+        cfg.exercises
+            .iter_mut()
+            .find(|ex| &ex.id == id)
+            .unwrap()
+            .enabled = false;
+    }
+    s.apply_config(&cfg, &mut rng());
+    let ids: Vec<_> = pending(&s, draw.id)
+        .unwrap()
+        .items
+        .into_iter()
+        .map(|it| it.exercise_id)
+        .collect();
+    assert_eq!(
+        ids,
+        vec![first.exercise_id.clone(), draw.items[1].exercise_id.clone()],
+        "the exercise done stays, the one switched off leaves"
+    );
 }

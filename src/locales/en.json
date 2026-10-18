@@ -389,7 +389,7 @@
     "event_empty": "{game}: empty event id or name.",
     "event_duplicate": "{game}: event \"{id}\" is defined twice.",
     "event_no_draw": "{game} › {event}: at least 1 exercise is requested.",
-    "event_too_many_draws": "{game} › {event}: {draws} exercises requested, more than the included exercises ({active}).",
+    "event_too_many_draws": "{game} › {event}: at most {max} exercises requested.",
     "event_zero_limit": "{game} › {event}: the per-session limit must be at least 1 (or empty).",
     "event_limit_too_high": "{game} › {event}: the per-session limit must be {max} or less.",
     "event_too_many_jokers": "{game} › {event}: at most {max} jokers earned.",

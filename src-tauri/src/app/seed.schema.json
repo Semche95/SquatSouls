@@ -17,6 +17,7 @@
     "amount": { "type": "integer", "minimum": 1, "maximum": 9999 },
     "count": { "type": "integer", "minimum": 0, "maximum": 9999 },
     "seconds": { "type": "integer", "minimum": 0, "maximum": 3600 },
+    "draws": { "type": "integer", "minimum": 1, "maximum": 100 },
     "exercise": {
       "type": "object",
       "required": ["id", "name", "unit", "min", "max"],
@@ -51,7 +52,7 @@
       "properties": {
         "id": { "$ref": "#/$defs/id" },
         "name": { "$ref": "#/$defs/name" },
-        "draws": { "$ref": "#/$defs/positive" },
+        "draws": { "$ref": "#/$defs/draws" },
         "maxPerSession": { "$ref": "#/$defs/amount" },
         "jokers": { "$ref": "#/$defs/count" }
       }

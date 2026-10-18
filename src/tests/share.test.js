@@ -21,7 +21,7 @@ describe('game sharing', () => {
     const text = shareGame(config.games[0]);
     expect(text).toMatch(/^squatsouls\/game\/elden-ring:/);
     expect(JSON.stringify(unpack(text).data)).not.toContain('"id"');
-    expect(parseGame(text, 3)).toEqual({
+    expect(parseGame(text)).toEqual({
       name: 'Elden Ring',
       events: [
         { id: 'death', name: 'Death', draws: 1, jokers: 0, maxPerSession: 15 },
@@ -34,22 +34,22 @@ describe('game sharing', () => {
   it('ignores the identifier placed in front of the compressed text', () => {
     const text = shareGame(config.games[0]);
     const payload = text.slice(text.indexOf(':') + 1);
-    expect(parseGame(`squatsouls/exercises:${payload}`, 3)).toEqual(parseGame(text, 3));
-    expect(parseGame(payload, 3)).toEqual(parseGame(text, 3));
+    expect(parseGame(`squatsouls/exercises:${payload}`)).toEqual(parseGame(text));
+    expect(parseGame(payload)).toEqual(parseGame(text));
   });
 
   it('shares the game\'s Steam AppId and reads a version 1 text, which has none', () => {
     const game = { ...config.games[0], steamAppId: 1245620 };
-    expect(parseGame(shareGame(game), 3).steamAppId).toBe(1245620);
+    expect(parseGame(shareGame(game)).steamAppId).toBe(1245620);
     const { steamAppId, ...v1 } = unpack(shareGame(game)).data;
-    const read = parseGame(packed(1, shareGame(game), v1), 3);
-    expect(read).toEqual(parseGame(shareGame(config.games[0]), 3));
+    const read = parseGame(packed(1, shareGame(game), v1));
+    expect(read).toEqual(parseGame(shareGame(config.games[0])));
     expect(read).not.toHaveProperty('steamAppId');
   });
 
-  it('caps the drawn number at the number of defined exercises', () => {
-    const text = shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 5, jokers: 0 }] });
-    expect(parseGame(text, 2)).toMatchObject({ events: [{ draws: 2 }], clamped: true });
+  it('caps the requested exercises at 100, whatever the included exercises', () => {
+    const text = shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 101, jokers: 0 }, { name: 'Boss', draws: 100, jokers: 0 }] });
+    expect(parseGame(text)).toMatchObject({ events: [{ draws: 100 }, { draws: 100 }], clamped: true });
   });
 
   it('refuses a text that is not a valid shared game', () => {
@@ -68,26 +68,26 @@ describe('game sharing', () => {
       ...['\n', '\t', '\u200B', '\u202E', '\uFEFF', '\u0085'].map((c) => shareGame({ name: 'Nioh', events: [{ name: `Death${c}`, draws: 1 }] })),
       shareGame({ name: 'Nioh', events: Array.from({ length: MAX_ITEMS + 1 }, () => ({ name: 'Death', draws: 1 })) }),
     ];
-    for (const text of invalid) expect(() => parseGame(text, 3)).toThrow('This text is not a valid shared game.');
+    for (const text of invalid) expect(() => parseGame(text)).toThrow('This text is not a valid shared game.');
   });
 
   it('keeps only the first of two events with the same name', () => {
     const text = shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1 }, { name: ' death ', draws: 9 }, { name: 'Boss', draws: 1 }] });
-    expect(parseGame(text, 3)).toMatchObject({ events: [{ name: 'Death', draws: 1 }, { name: 'Boss' }], clamped: false });
+    expect(parseGame(text)).toMatchObject({ events: [{ name: 'Death', draws: 1 }, { name: 'Boss' }], clamped: false });
   });
 
   it('accepts the emoji sequences, joined by a zero width joiner', () => {
-    expect(parseGame(shareGame({ name: 'Nioh 👨‍👩‍👧', events: [{ name: 'Death', draws: 1 }] }), 3).name).toBe('Nioh 👨‍👩‍👧');
+    expect(parseGame(shareGame({ name: 'Nioh 👨‍👩‍👧', events: [{ name: 'Death', draws: 1 }] })).name).toBe('Nioh 👨‍👩‍👧');
   });
 
   it('refuses a pasted text or a content too large without decompressing it all', () => {
     const bomb = 'squatsouls/game:' + toBase64(deflateSync(new Uint8Array(100 * 1024 * 1024)));
-    expect(() => parseGame(bomb, 3)).toThrow('This text is not a valid shared game.');
-    expect(() => parseGame(shareGame(config.games[0]) + ' '.repeat(300 * 1024), 3)).toThrow('This text is not a valid shared game.');
+    expect(() => parseGame(bomb)).toThrow('This text is not a valid shared game.');
+    expect(() => parseGame(shareGame(config.games[0]) + ' '.repeat(300 * 1024))).toThrow('This text is not a valid shared game.');
   });
 
   it('tells where to import exercises pasted instead of a game', () => {
-    expect(() => parseGame(shareExercises(exercises), 3)).toThrow('This text shares exercises: import it from the Exercises tab, with Import.');
+    expect(() => parseGame(shareExercises(exercises))).toThrow('This text shares exercises: import it from the Exercises tab, with Import.');
   });
 
   it('brings the limits and jokers of older versions within the bounds', () => {
@@ -100,7 +100,7 @@ describe('game sharing', () => {
 
   it('asks for an update for a text from an unknown format version', () => {
     const text = packed(999, shareGame(config.games[0]));
-    expect(() => parseGame(text, 3)).toThrow('This text comes from a newer version of SquatSouls: update it to import the text.');
+    expect(() => parseGame(text)).toThrow('This text comes from a newer version of SquatSouls: update it to import the text.');
   });
 
   it('replaces the game with the same name keeping its id, otherwise adds it', () => {
