@@ -78,9 +78,21 @@
   color: var(--gold);
   background: var(--gold-soft);
 }
-/* Excluded exercise: kept in the list but no longer asked for; its switch and pen stay bright. */
+/* Included exercise: raised, with a gold edge that the hover brightens. */
+.tile-slot:not(.cfg-off) .tile {
+  background: var(--panel-2);
+  border-color: color-mix(in srgb, var(--gold) 45%, transparent);
+}
+.tile-slot:not(.cfg-off) .tile:hover {
+  border-color: var(--gold);
+}
+/* Excluded exercise: kept in the list but no longer asked for, sunk and grayed; its switch and pen stay bright. */
+.cfg-off .tile {
+  background: var(--bg);
+}
 .cfg-off .tile > :not(.tile-pen) {
-  opacity: 0.45;
+  opacity: 0.3;
+  filter: grayscale(1);
 }
 .tile-new {
   align-items: center;
