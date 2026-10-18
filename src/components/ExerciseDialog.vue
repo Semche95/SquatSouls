@@ -24,8 +24,8 @@ const TIMERS = [
 
 const range = computed(() => rangeBounds(props.ex));
 
-// The saved exercise is shared: a new one has nothing to share before Save.
-const { config, copy } = useConfig();
+// The saved exercise is shared, once Program has no pending change: a new one is not saved yet.
+const { config, copy, shareBlocked } = useConfig();
 const saved = computed(() => config.value.exercises.find((ex) => ex.id === props.ex.id));
 
 // Only a timed exercise is done on each side.
@@ -53,8 +53,8 @@ function setTimed(value) {
       </label>
     </template>
     <template #actions>
-      <DisabledTip :tip="saved ? '' : t('config.exercises.shareUnsaved')">
-        <button class="ghost" :disabled="!saved" @click="copy(shareExercise(saved))">{{ t('common.share') }}</button>
+      <DisabledTip :tip="shareBlocked">
+        <button class="ghost" :disabled="!!shareBlocked" @click="copy(shareExercise(saved))">{{ t('common.share') }}</button>
       </DisabledTip>
     </template>
     <EditRow :label="t('config.exercises.range')">

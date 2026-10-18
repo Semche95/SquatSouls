@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { t } from '../i18n.js';
+import { timerSummary } from '../itemSummary.js';
 import { vTooltip } from '../tooltip.js';
 import ProgramTile from './ProgramTile.vue';
 import TimerIcon from './TimerIcon.vue';
@@ -10,7 +11,7 @@ import TimerIcon from './TimerIcon.vue';
 const props = defineProps({ ex: Object });
 defineEmits(['edit']);
 
-const timedTip = computed(() => props.ex.timed && t(`config.exercises.${props.ex.eachSide ? 'timedSideSummary' : 'timedSummary'}.${props.ex.timed}`));
+const timedTip = computed(() => timerSummary(props.ex));
 </script>
 
 <template>

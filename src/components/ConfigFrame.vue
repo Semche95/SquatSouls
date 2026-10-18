@@ -9,13 +9,12 @@ import { vReveal } from '../reveal.js';
 import DisabledTip from './DisabledTip.vue';
 
 const props = defineProps({ settings: Boolean });
-const { config, draft, configError, configMsg, notify } = useConfig();
+const { config, draft, configError, configMsg, notify, tabDraft, tabDirty } = useConfig();
 const { saveNow } = useSession();
 onBeforeUnmount(() => notify(''));
 
-// Configuration this tab would save; the other tab's pending changes stay in the draft.
-const pending = computed(() => draft.value && withTabDraft(config.value, draft.value, props.settings));
-const dirty = computed(() => !!pending.value && JSON.stringify(pending.value) !== JSON.stringify(config.value));
+const pending = computed(() => tabDraft(props.settings));
+const dirty = computed(() => tabDirty(props.settings));
 // First badly filled field of the tab, which blocks "Save" (empty if everything is valid).
 const draftError = computed(() => (pending.value ? fieldError(normalized(pending.value)) : ''));
 

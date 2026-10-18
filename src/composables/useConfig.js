@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import { byName, clone, normalized, fieldError } from '../configDraft.js';
+import { byName, clone, normalized, fieldError, withTabDraft } from '../configDraft.js';
 import { errorText, t } from '../i18n.js';
 import { defineShared } from './shared.js';
 
@@ -44,6 +44,15 @@ export const [provideConfig, useConfig] = defineShared(() => {
   const playable = computed(() => !!config.value?.games.some((g) => g.events.length));
   const game = computed(() => config.value?.games.find((g) => g.id === gameId.value) ?? null);
   const editedGame = computed(() => findOr(draft.value?.games ?? [], editedGameId.value));
+  // Configuration the Program tab, or the Settings tab, would save: the other tab's pending changes stay in the draft.
+  const tabDraft = (settings) => draft.value && withTabDraft(config.value, draft.value, settings);
+  function tabDirty(settings) {
+    const cfg = tabDraft(settings);
+    return !!cfg && JSON.stringify(cfg) !== JSON.stringify(config.value);
+  }
+  // Sharing and importing work on the saved program: not while Program has pending changes, which a share
+  // would leave out and an import would have to merge. Why they are not possible, '' when they are.
+  const shareBlocked = computed(() => (tabDirty(false) ? t('config.saveFirst') : ''));
 
   watch(gameId, (id) => {
     if (id) invoke('set_last_game', { gameId: id }).catch(() => {});
@@ -88,6 +97,7 @@ export const [provideConfig, useConfig] = defineShared(() => {
 
   // Copies a shared text to the clipboard.
   async function copy(text) {
+    if (shareBlocked.value) return;
     try {
       await navigator.clipboard.writeText(text);
       notify(t('config.copied'));
@@ -96,5 +106,5 @@ export const [provideConfig, useConfig] = defineShared(() => {
     }
   }
 
-  return { config, draft, configError, configMsg, notify, copy, tab, cfgTab, editedGameId, newGame, gameId, intensity, noGame, noExercise, playable, game, editedGame, applyConfigView, store };
+  return { config, draft, configError, configMsg, notify, copy, tab, cfgTab, editedGameId, newGame, gameId, intensity, noGame, noExercise, playable, game, editedGame, tabDraft, tabDirty, shareBlocked, applyConfigView, store };
 });

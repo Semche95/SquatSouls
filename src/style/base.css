@@ -39,7 +39,8 @@ button {
   padding: 8px 14px;
   transition: border-color 0.12s, background 0.12s, transform 0.06s;
 }
-button:hover {
+/* `:where` keeps the specificity of `button:hover`, so that the borders of the button classes still win. */
+button:hover:where(:not(:disabled)) {
   border-color: var(--gold);
 }
 button:active {

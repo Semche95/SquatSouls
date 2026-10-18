@@ -23,9 +23,12 @@ export function newId(name, items) {
   return id;
 }
 
+// Name compared to others, without case nor surrounding spaces.
+export const nameKey = (name) => name.trim().toLowerCase();
+
 // Two names identical up to surrounding spaces and case refer to the same game.
 export function sameName(a, b) {
-  return a.trim().toLowerCase() === b.trim().toLowerCase();
+  return nameKey(a) === nameKey(b);
 }
 
 // A name that starts with a game's name, without extending it with a letter ("Megabonk 2", "Elden Ring no hit"),

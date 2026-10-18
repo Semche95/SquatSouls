@@ -27,7 +27,7 @@ describe('game sharing', () => {
         { id: 'death', name: 'Death', draws: 1, jokers: 0, maxPerSession: 15 },
         { id: 'boss-defeated', name: 'Boss defeated', draws: 1, jokers: 2 },
       ],
-      clamped: false,
+      clamped: [],
     });
   });
 
@@ -49,7 +49,7 @@ describe('game sharing', () => {
 
   it('caps the requested exercises at 100, whatever the included exercises', () => {
     const text = shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 101, jokers: 0 }, { name: 'Boss', draws: 100, jokers: 0 }] });
-    expect(parseGame(text)).toMatchObject({ events: [{ draws: 100 }, { draws: 100 }], clamped: true });
+    expect(parseGame(text)).toMatchObject({ events: [{ draws: 100 }, { draws: 100 }], clamped: ['death'] });
   });
 
   it('refuses a text that is not a valid shared game', () => {
@@ -73,7 +73,7 @@ describe('game sharing', () => {
 
   it('keeps only the first of two events with the same name', () => {
     const text = shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1 }, { name: ' death ', draws: 9 }, { name: 'Boss', draws: 1 }] });
-    expect(parseGame(text)).toMatchObject({ events: [{ name: 'Death', draws: 1 }, { name: 'Boss' }], clamped: false });
+    expect(parseGame(text)).toMatchObject({ events: [{ name: 'Death', draws: 1 }, { name: 'Boss' }], clamped: [] });
   });
 
   it('accepts the emoji sequences, joined by a zero width joiner', () => {
@@ -201,5 +201,4 @@ describe('exercise sharing', () => {
   it('tells where to import a game pasted instead of exercises', () => {
     expect(() => parseExercises(shareGame(config.games[0]))).toThrow('This text shares a game: import it from the Games tab, with Import a game.');
   });
-
 });

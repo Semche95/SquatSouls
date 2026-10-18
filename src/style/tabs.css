@@ -19,7 +19,7 @@
   color: var(--muted);
 }
 .tabs button:hover:not(.active),
-.segmented button:hover:not(.active) {
+.segmented button:hover:not(.active, :disabled) {
   background: var(--gold-soft);
   color: var(--text);
 }

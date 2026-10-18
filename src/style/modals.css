@@ -44,10 +44,26 @@
   position: relative;
   gap: 16px;
   width: min(480px, 100%);
+  /* Never taller than the window, whatever its size: a long import preview shrinks and scrolls instead. */
+  --fit-window: calc(100vh - 48px);
+  max-height: var(--fit-window);
+  display: flex;
+  flex-direction: column;
+}
+/* An import preview needs room for its details: wider, and no taller than a comfortable reading height. */
+.confirm-modal-content.form-dialog:has(.import-preview) {
+  width: min(600px, 100%);
+  max-height: min(var(--fit-window), 760px);
 }
 .form-dialog form {
   display: grid;
   gap: 16px;
+  min-height: 0;
+}
+/* In a very low window, where even the shrunk preview does not fit, the whole form scrolls. */
+.form-dialog form.cfg-import {
+  display: flex;
+  overflow-y: auto;
 }
 .game-fields {
   display: grid;

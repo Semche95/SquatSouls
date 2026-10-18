@@ -1,20 +1,22 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { VueFinalModal } from 'vue-final-modal';
-import { BOUNDS, newId } from '../configDraft.js';
+import { BOUNDS, clone, newId } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { parseExercises, shareExercises } from '../share.js';
-import { mergeExercises } from '../importChanges.js';
+import { exerciseChanges, mergeExercises } from '../importChanges.js';
+import { exerciseSummary } from '../itemSummary.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import { useEditDialog } from '../composables/useEditDialog.js';
 import ConfigExercise from './ConfigExercise.vue';
 import CountStepper from './CountStepper.vue';
+import DisabledTip from './DisabledTip.vue';
 import EditRow from './EditRow.vue';
 import ExerciseDialog from './ExerciseDialog.vue';
 import ShareImport from './ShareImport.vue';
 
-const { config, draft, notify, copy } = useConfig();
+const { config, draft, notify, copy, shareBlocked } = useConfig();
 const { saveNow } = useSession();
 const importing = ref(false);
 // Exercise in its edit dialog.
@@ -22,11 +24,11 @@ const { item: editing, open: editOpen, fresh, edit: editExercise, remove: remove
 // Exercises asked for in Play, out of all those defined.
 const included = computed(() => draft.value.exercises.filter((ex) => ex.enabled).length);
 
-// The confirmed import is saved right away; the draft receives it without losing its other changes.
-async function importShared(imported) {
-  const { exercises, added, updated } = mergeExercises(config.value.exercises, imported);
+// The confirmed import is saved right away, Program having no pending change; the draft receives it.
+async function importShared(imported, chosen) {
+  const { exercises, added, updated } = mergeExercises(config.value.exercises, imported, chosen);
   if (!(await saveNow({ ...config.value, exercises }))) return;
-  draft.value.exercises = mergeExercises(draft.value.exercises, imported).exercises;
+  draft.value.exercises = clone(exercises);
   importing.value = false;
   notify(t('config.exercises.imported', { added: t('config.exercises.added', added), updated }));
 }
@@ -46,8 +48,12 @@ function addExercise() {
         <h2 class="setting-title">{{ t('config.exercises.count', { n: included, total: draft.exercises.length }, included) }}</h2>
         <p class="hint">{{ t('config.exercises.enabledHint') }}</p>
       </div>
-      <button class="ghost" @click="copy(shareExercises(config.exercises))">{{ t('common.share') }}</button>
-      <button @click="importing = true">{{ t('common.import') }}</button>
+      <DisabledTip :tip="shareBlocked">
+        <button class="ghost" :disabled="!!shareBlocked" @click="copy(shareExercises(config.exercises))">{{ t('common.share') }}</button>
+      </DisabledTip>
+      <DisabledTip :tip="shareBlocked">
+        <button :disabled="!!shareBlocked" @click="importing = true">{{ t('common.import') }}</button>
+      </DisabledTip>
     </header>
     <VueFinalModal
       v-model="importing"
@@ -59,7 +65,13 @@ function addExercise() {
     >
       <button class="modal-close" :aria-label="t('common.close')" @click="importing = false">×</button>
       <h3>{{ t('config.exercises.import') }}</h3>
-      <ShareImport :parse="parseExercises" @import="importShared" @cancel="importing = false" />
+      <ShareImport
+        :parse="parseExercises"
+        :changes="(imported) => exerciseChanges(config.exercises, imported)"
+        :summary="exerciseSummary"
+        @import="importShared"
+        @cancel="importing = false"
+      />
     </VueFinalModal>
     <div class="setting-card">
       <EditRow :label="t('config.exercises.recovery')" :hint="t('config.exercises.recoveryHint')" for-id="cfg-recovery">

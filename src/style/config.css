@@ -34,6 +34,10 @@
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+  min-height: 0;
+}
+.cfg-import > :not(.import-preview) {
+  flex-shrink: 0;
 }
 /* Import: shared text to paste, then Import. */
 .cfg-import textarea {
@@ -43,6 +47,103 @@
 /* The spacing between blocks already comes from the form. */
 .cfg-import .banner.error {
   margin-bottom: 0;
+}
+/* A game import: replace one of the games or import it as a new one. */
+.import-mode {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+/* Import preview: the changes grouped by status, sunk in a box apart from the pasted text; the list
+   scrolls inside it, Import and Cancel staying in view. */
+.import-preview {
+  display: grid;
+  align-content: start;
+  flex: 1 1 auto;
+  min-height: 120px;
+  overflow-y: auto;
+  padding: 10px 4px 10px 6px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.import-preview > p {
+  margin: 0;
+  padding-inline: 8px;
+}
+/* A full-width rule between the groups. */
+.import-group + .import-group {
+  margin-top: 12px;
+  margin-inline: -6px -4px;
+  padding: 12px 4px 0 6px;
+  border-top: 1px solid var(--line);
+}
+.import-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+/* The same side padding as the rows, so the title and hint line up with the names and All with their switches. */
+:is(.import-group-head, .import-hint, .import-group li label) {
+  padding-inline: 8px;
+}
+.import-group h4 {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.import-count {
+  margin-left: 4px;
+  color: var(--muted);
+}
+.import-hint {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.import-group ul {
+  display: grid;
+  gap: 2px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.import-all {
+  color: var(--muted);
+  font-size: 0.85rem;
+  gap: 10px;
+}
+/* Each row as in Settings: the name and its details on the left, the switch on the right. */
+.import-group li label {
+  padding-block: 6px;
+  border-radius: 6px;
+}
+.import-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.import-group li label:hover {
+  background: var(--panel);
+}
+.import-name {
+  overflow-wrap: anywhere;
+}
+.import-detail {
+  display: flex;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.import-detail > span + span::before {
+  content: '·';
+  margin: 0 6px;
 }
 /* Games: the edited game and its actions on the left, creation and import on the right. */
 .cfg-game-bar {

@@ -1,5 +1,5 @@
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
-import { BOUNDS, isCleanText, isCount, MAX_ITEMS, MAX_NAME, MAX_UNIT, newId, rangeBounds, sameName } from './configDraft.js';
+import { BOUNDS, isCleanText, isCount, MAX_ITEMS, MAX_NAME, MAX_UNIT, nameKey, newId, rangeBounds, sameName } from './configDraft.js';
 import { t } from './i18n.js';
 
 // Text shared between users: a game (name and events) or the exercise list, without ids,
@@ -141,7 +141,8 @@ export const shareExercise = (ex) => shareExercises([ex], `exercise/${newId(ex.n
 const validEvent = (ev) =>
   isName(ev?.name) && isCount(ev.draws, BOUNDS.positive) && (ev.maxPerSession === undefined || isCount(ev.maxPerSession, BOUNDS.amount)) && (ev.jokers === undefined || isCount(ev.jokers, BOUNDS.jokers));
 
-// Shared game ready to import; `draws` is capped at the largest number of requested exercises (`clamped` reports it).
+// Shared game ready to import; `draws` is capped at the largest number of requested exercises (`clamped` lists
+// the name keys of the capped events).
 export function parseGame(text) {
   const data = parse(text, GAME, (d) => isName(d.name) && (d.steamAppId === undefined || isCount(d.steamAppId, BOUNDS.positive)) && isList(d.events, validEvent));
   const shared = firstByName(data.events);
@@ -151,7 +152,7 @@ export function parseGame(text) {
     if (maxPerSession !== undefined) ev.maxPerSession = maxPerSession;
     events.push(ev);
   }
-  const game = { name: data.name.trim(), events, clamped: shared.some((ev) => ev.draws > BOUNDS.draws.max) };
+  const game = { name: data.name.trim(), events, clamped: shared.filter((ev) => ev.draws > BOUNDS.draws.max).map((ev) => nameKey(ev.name)) };
   return withOptional(game, 'steamAppId', data.steamAppId);
 }
 

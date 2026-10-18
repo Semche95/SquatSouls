@@ -13,7 +13,7 @@ import EventDialog from './EventDialog.vue';
 import GameDialog from './GameDialog.vue';
 import DisabledTip from './DisabledTip.vue';
 
-const { config, draft, editedGameId, editedGame, newGame, copy } = useConfig();
+const { config, draft, editedGameId, editedGame, newGame, copy, shareBlocked } = useConfig();
 const { saveNow } = useSession();
 // Import of a shared game, in the same modal as creation.
 const importing = ref(false);
@@ -76,6 +76,7 @@ async function removeGame(game) {
 
 // The saved game is shared: without event, there is nothing to import.
 const savedEdited = computed(() => config.value.games.find((g) => g.id === editedGame.value?.id));
+const shareGameBlocked = computed(() => shareBlocked.value || (savedEdited.value?.events.length ? '' : t('config.games.shareEmpty')));
 function shareEdited() {
   copy(shareGame(savedEdited.value));
 }
@@ -105,14 +106,16 @@ function addEvent(game) {
         </select>
         <template v-if="editedGame">
           <button class="ghost" @click="openRename">{{ t('config.games.rename') }}</button>
-          <DisabledTip :tip="savedEdited?.events.length ? '' : t('config.games.shareEmpty')">
-            <button class="ghost" :disabled="!savedEdited?.events.length" @click="shareEdited">{{ t('common.share') }}</button>
+          <DisabledTip :tip="shareGameBlocked">
+            <button class="ghost" :disabled="!!shareGameBlocked" @click="shareEdited">{{ t('common.share') }}</button>
           </DisabledTip>
           <button class="ghost danger" @click="askRemove">{{ t('common.remove') }}</button>
         </template>
       </div>
       <button class="primary" @click="openNewGame">{{ t('config.games.new') }}</button>
-      <button @click="openImport">{{ t('common.import') }}</button>
+      <DisabledTip :tip="shareBlocked">
+        <button :disabled="!!shareBlocked" @click="openImport">{{ t('common.import') }}</button>
+      </DisabledTip>
     </header>
     <p v-if="!draft.games.length" class="empty">{{ t('config.games.none') }}</p>
     <template v-if="editedGame">

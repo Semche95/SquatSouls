@@ -203,7 +203,7 @@
     },
     "config": {
       "type": "object",
-      "required": ["tabs", "save", "discard", "noChanges", "unsaved", "saved", "copied", "games", "event", "exercises", "settings"],
+      "required": ["tabs", "save", "discard", "noChanges", "saveFirst", "unsaved", "saved", "copied", "games", "event", "exercises", "settings"],
       "additionalProperties": false,
       "properties": {
         "tabs": {
@@ -218,25 +218,32 @@
         "save": { "$ref": "#/$defs/text" },
         "discard": { "$ref": "#/$defs/text" },
         "noChanges": { "$ref": "#/$defs/text" },
+        "saveFirst": { "$ref": "#/$defs/text" },
         "unsaved": { "$ref": "#/$defs/text" },
         "saved": { "$ref": "#/$defs/text" },
         "copied": { "$ref": "#/$defs/text" },
         "games": {
           "type": "object",
-          "required": ["import", "new", "newName", "nameTaken", "nameNeeded", "copyEvents", "newEvents", "noCopy", "create", "shareEmpty", "willReplace", "gameName", "rename", "renameDone", "none", "confirmRemove", "thisGame", "keepGame", "addEvent", "newEvent", "imported", "importedClamped", "events"],
+          "required": ["import", "new", "newName", "nameTaken", "exists", "importNew", "replace", "replaceTarget", "noReplace", "importAsNew", "importName", "nameNeeded", "copyEvents", "newEvents", "noCopy", "create", "shareEmpty", "gameName", "rename", "renameDone", "none", "confirmRemove", "thisGame", "keepGame", "addEvent", "newEvent", "imported", "importedClamped", "events"],
           "additionalProperties": false,
           "properties": {
             "import": { "$ref": "#/$defs/text" },
             "new": { "$ref": "#/$defs/text" },
             "newName": { "$ref": "#/$defs/text" },
             "nameTaken": { "$ref": "#/$defs/text" },
+            "exists": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
+            "importNew": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
+            "replace": { "$ref": "#/$defs/text" },
+            "replaceTarget": { "$ref": "#/$defs/text" },
+            "noReplace": { "$ref": "#/$defs/text" },
+            "importAsNew": { "$ref": "#/$defs/text" },
+            "importName": { "$ref": "#/$defs/text" },
             "nameNeeded": { "$ref": "#/$defs/text" },
             "copyEvents": { "$ref": "#/$defs/text" },
             "newEvents": { "$ref": "#/$defs/text" },
             "noCopy": { "$ref": "#/$defs/text" },
             "create": { "$ref": "#/$defs/text" },
             "shareEmpty": { "$ref": "#/$defs/text" },
-            "willReplace": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
             "gameName": { "$ref": "#/$defs/text" },
             "rename": { "$ref": "#/$defs/text" },
             "renameDone": { "$ref": "#/$defs/text" },
@@ -253,7 +260,7 @@
         },
         "event": {
           "type": "object",
-          "required": ["perSet", "maxPerSession", "name", "draws", "limit", "noLimit", "jokers", "title", "nameNeeded", "remove", "drawsHint", "limitHint", "jokersHint"],
+          "required": ["perSet", "maxPerSession", "name", "draws", "limit", "noLimit", "noLimitSummary", "noJokers", "jokers", "title", "nameNeeded", "remove", "drawsHint", "limitHint", "jokersHint"],
           "additionalProperties": false,
           "properties": {
             "perSet": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\|" }] },
@@ -262,6 +269,8 @@
             "draws": { "$ref": "#/$defs/text" },
             "limit": { "$ref": "#/$defs/text" },
             "noLimit": { "$ref": "#/$defs/text" },
+            "noLimitSummary": { "$ref": "#/$defs/text" },
+            "noJokers": { "$ref": "#/$defs/text" },
             "jokers": { "$ref": "#/$defs/text" },
             "title": { "$ref": "#/$defs/text" },
             "nameNeeded": { "$ref": "#/$defs/text" },
@@ -273,7 +282,7 @@
         },
         "exercises": {
           "type": "object",
-          "required": ["import", "imported", "added", "new", "defaultUnit", "recovery", "unit", "min", "max", "enabled", "name", "unitPlaceholder", "minimum", "maximum", "recoveryLabel", "add", "shareUnsaved", "timed", "notTimed", "seconds", "timedSummary", "timedSideSummary", "eachSide", "eachSideHint", "recoverySummary", "minutes", "title", "count", "enabledHint", "included", "recoveryHint", "ownRecoveryHint", "range", "rangeValue", "nameNeeded", "remove"],
+          "required": ["import", "imported", "added", "new", "defaultUnit", "recovery", "unit", "min", "max", "enabled", "name", "unitPlaceholder", "minimum", "maximum", "recoveryLabel", "add", "timed", "notTimed", "seconds", "timedSummary", "timedSideSummary", "eachSide", "eachSideHint", "recoverySummary", "generalRecovery", "minutes", "title", "count", "enabledHint", "included", "recoveryHint", "ownRecoveryHint", "range", "rangeValue", "rangeUnit", "nameNeeded", "remove"],
           "additionalProperties": false,
           "properties": {
             "import": { "$ref": "#/$defs/text" },
@@ -292,7 +301,6 @@
             "maximum": { "$ref": "#/$defs/text" },
             "recoveryLabel": { "$ref": "#/$defs/text" },
             "add": { "$ref": "#/$defs/text" },
-            "shareUnsaved": { "$ref": "#/$defs/text" },
             "timed": { "$ref": "#/$defs/text" },
             "notTimed": { "$ref": "#/$defs/text" },
             "seconds": { "$ref": "#/$defs/text" },
@@ -317,6 +325,7 @@
             "eachSide": { "$ref": "#/$defs/text" },
             "eachSideHint": { "$ref": "#/$defs/text" },
             "recoverySummary": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }] },
+            "generalRecovery": { "$ref": "#/$defs/text" },
             "minutes": { "$ref": "#/$defs/text" },
             "title": { "$ref": "#/$defs/text" },
             "count": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:n|total)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\{total\\}" }, { "pattern": "\\|" }] },
@@ -326,6 +335,7 @@
             "ownRecoveryHint": { "$ref": "#/$defs/text" },
             "range": { "$ref": "#/$defs/text" },
             "rangeValue": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:min|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{min\\}" }, { "pattern": "\\{max\\}" }] },
+            "rangeUnit": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:min|max|unit)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{min\\}" }, { "pattern": "\\{max\\}" }, { "pattern": "\\{unit\\}" }] },
             "nameNeeded": { "$ref": "#/$defs/text" },
             "remove": { "$ref": "#/$defs/text" }
           }
@@ -398,7 +408,7 @@
     },
     "share": {
       "type": "object",
-      "required": ["text", "placeholder", "pasteFirst", "gameInvalid", "gameMisplaced", "exercisesInvalid", "exercisesMisplaced", "newer"],
+      "required": ["text", "placeholder", "pasteFirst", "gameInvalid", "gameMisplaced", "exercisesInvalid", "exercisesMisplaced", "newer", "new", "changed", "absent", "absentHint", "all", "change", "nothing", "chooseOne"],
       "additionalProperties": false,
       "properties": {
         "text": { "$ref": "#/$defs/text" },
@@ -408,7 +418,15 @@
         "gameMisplaced": { "$ref": "#/$defs/text" },
         "exercisesInvalid": { "$ref": "#/$defs/text" },
         "exercisesMisplaced": { "$ref": "#/$defs/text" },
-        "newer": { "$ref": "#/$defs/text" }
+        "newer": { "$ref": "#/$defs/text" },
+        "new": { "$ref": "#/$defs/text" },
+        "changed": { "$ref": "#/$defs/text" },
+        "absent": { "$ref": "#/$defs/text" },
+        "absentHint": { "$ref": "#/$defs/text" },
+        "all": { "$ref": "#/$defs/text" },
+        "change": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:before|after)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{before\\}" }, { "pattern": "\\{after\\}" }] },
+        "nothing": { "$ref": "#/$defs/text" },
+        "chooseOne": { "$ref": "#/$defs/text" }
       }
     },
     "quit": {
