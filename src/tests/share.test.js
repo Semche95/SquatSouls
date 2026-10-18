@@ -60,6 +60,8 @@ describe('game sharing', () => {
       shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 0 }] }),
       shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1, maxPerSession: 0 }] }),
       shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1, jokers: -1 }] }),
+      shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1, maxPerSession: 10000 }] }),
+      shareGame({ name: 'Nioh', events: [{ name: 'Death', draws: 1, jokers: 10000 }] }),
       shareGame({ name: 'Nioh', steamAppId: 0, events: [{ name: 'Death', draws: 1 }] }),
       shareGame({ name: 'Nioh', steamAppId: '485510', events: [{ name: 'Death', draws: 1 }] }),
       shareGame({ name: 'N'.repeat(MAX_NAME + 1), events: [{ name: 'Death', draws: 1 }] }),
@@ -86,6 +88,14 @@ describe('game sharing', () => {
 
   it('tells where to import exercises pasted instead of a game', () => {
     expect(() => parseGame(shareExercises(exercises), 3)).toThrow('This text shares exercises: import it from the Exercises tab, with Import.');
+  });
+
+  it('brings the limits and jokers of older versions within the bounds', () => {
+    const old = { name: 'Nioh', events: [{ name: 'Death', draws: 1, maxPerSession: 10000, jokers: 10000 }] };
+    for (const version of [1, 2, 3, 4, 5]) {
+      expect(parseGame(packed(version, shareGame(config.games[0]), old)).events[0]).toMatchObject({ maxPerSession: 9999, jokers: 9999 });
+    }
+    expect(() => parseGame(packed(5, shareGame(config.games[0]), { name: 'Nioh', events: [{ name: 'Death', draws: 1, jokers: -1 }] }))).toThrow('This text is not a valid shared game.');
   });
 
   it('asks for an update for a text from an unknown format version', () => {
@@ -142,6 +152,9 @@ describe('exercise sharing', () => {
       shareExercises([]),
       shareExercises([{ name: 'Squats', unit: 'reps', min: 5, max: 0 }]),
       shareExercises([{ name: 'Squats', unit: 'reps', min: 6, max: 5 }]),
+      shareExercises([{ name: 'Squats', unit: 'reps', min: 0, max: 5 }]),
+      shareExercises([{ name: 'Squats', unit: 'reps', min: 1, max: 10000 }]),
+      shareExercises([{ name: 'Squats', unit: 'reps', min: 1, max: 5, recovery: 3601 }]),
       shareExercises([{ name: '', unit: 'reps', min: 1, max: 5 }]),
       shareExercises([{ name: 'Squats', unit: 'reps', min: 1, max: 5, recovery: -1 }]),
       shareExercises([{ name: 'Plank', unit: 's', min: 1, max: 5, timed: 'hours' }]),
@@ -181,6 +194,18 @@ describe('exercise sharing', () => {
     for (const version of [1, 2, 3]) {
       const read = parseExercises(packed(version, shareExercises(exercises), old));
       expect(read).toEqual([{ name: 'Squats', unit: 'reps', min: 1, max: 5, recovery: 45 }, { name: 'Push-ups', unit: 'reps', min: 1, max: 5 }]);
+    }
+  });
+
+  it('brings the numbers of older versions within the bounds', () => {
+    const old = { exercises: [{ name: 'Squats', unit: 'reps', min: 0, max: 10000, recovery: 3601 }, { name: 'Lunges', unit: 'reps', min: 10000, max: 20000 }] };
+    for (const version of [1, 2, 3, 4, 5]) {
+      const read = parseExercises(packed(version, shareExercises(exercises), old));
+      expect(read).toEqual([{ name: 'Squats', unit: 'reps', min: 1, max: 9999, recovery: 3600 }, { name: 'Lunges', unit: 'reps', min: 9999, max: 9999 }]);
+    }
+    for (const ex of [{ min: -1, max: 5 }, { min: 6, max: 5 }, { min: 0, max: 0 }, { min: 1, max: 5, recovery: -1 }]) {
+      const text = packed(5, shareExercises(exercises), { exercises: [{ name: 'Squats', unit: 'reps', ...ex }] });
+      expect(() => parseExercises(text)).toThrow('This text is not a valid shared exercise list.');
     }
   });
 

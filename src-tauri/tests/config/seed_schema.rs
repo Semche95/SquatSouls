@@ -110,7 +110,13 @@ fn limits_follow_the_validation() {
         def(&schema, "game")["properties"]["events"]["maxItems"],
         json!(MAX_ITEMS)
     );
-    for count in ["count", "positive"] {
-        assert_eq!(def(&schema, count)["maximum"], json!(u32::MAX), "{count}");
+    for (bound, min, max) in [
+        ("positive", 1, u32::MAX),
+        ("amount", 1, MAX_AMOUNT),
+        ("count", 0, MAX_AMOUNT),
+        ("seconds", 0, MAX_SECONDS),
+    ] {
+        assert_eq!(def(&schema, bound)["minimum"], json!(min), "{bound}");
+        assert_eq!(def(&schema, bound)["maximum"], json!(max), "{bound}");
     }
 }

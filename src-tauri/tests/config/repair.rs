@@ -30,4 +30,30 @@ fn repair_brings_a_configuration_within_the_limits() {
     assert_eq!(cfg.games[0].events.len(), MAX_ITEMS);
     assert_eq!(cfg.exercises[0].unit, "r".repeat(MAX_UNIT));
     assert_eq!(cfg.ignored_games[0].name, "Nioh");
+
+    // Numbers out of bounds are brought to the nearest bound, the maximum never below the minimum.
+    let mut cfg = default_config(Language::Fr);
+    cfg.recovery = u32::MAX;
+    cfg.timer_prep = u32::MAX;
+    cfg.exercises[0].min = 0;
+    cfg.exercises[0].max = u32::MAX;
+    cfg.exercises[1].min = u32::MAX;
+    cfg.exercises[1].max = u32::MAX;
+    cfg.exercises[2].recovery = Some(u32::MAX);
+    cfg.games[0].events[0].max_per_session = Some(u32::MAX);
+    cfg.games[0].events[0].jokers = u32::MAX;
+    assert!(cfg.repair());
+    cfg.validate().unwrap();
+    assert_eq!((cfg.recovery, cfg.timer_prep), (MAX_SECONDS, MAX_SECONDS));
+    assert_eq!(
+        (cfg.exercises[0].min, cfg.exercises[0].max),
+        (1, MAX_AMOUNT)
+    );
+    assert_eq!(
+        (cfg.exercises[1].min, cfg.exercises[1].max),
+        (MAX_AMOUNT, MAX_AMOUNT)
+    );
+    assert_eq!(cfg.exercises[2].recovery, Some(MAX_SECONDS));
+    assert_eq!(cfg.games[0].events[0].max_per_session, Some(MAX_AMOUNT));
+    assert_eq!(cfg.games[0].events[0].jokers, MAX_AMOUNT);
 }

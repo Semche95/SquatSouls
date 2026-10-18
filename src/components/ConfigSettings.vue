@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { byName } from '../configDraft.js';
+import { BOUNDS, byName } from '../configDraft.js';
 import { languageSetting, setLanguage, t } from '../i18n.js';
 import { vReveal } from '../reveal.js';
 import { useApi } from '../composables/useApi.js';
@@ -84,7 +84,7 @@ const status = computed(() => {
         </div>
         <div class="setting-row check">
           <label for="timer-prep">{{ t('fields.timerPrep') }}</label>
-          <CountStepper id="timer-prep" v-model="draft.timerPrep" :unit="t('fields.secondsUnit')" />
+          <CountStepper id="timer-prep" v-model="draft.timerPrep" :bounds="BOUNDS.seconds" :unit="t('fields.secondsUnit')" />
         </div>
       </div>
     </section>

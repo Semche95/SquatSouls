@@ -23,7 +23,7 @@ pub struct LogEntry {
 pub struct Total {
     pub exercise: String,
     pub unit: String,
-    pub amount: u32,
+    pub amount: u64,
     pub sets: u32,
 }
 
@@ -143,13 +143,13 @@ pub fn totals(entries: &[LogEntry]) -> Vec<Total> {
             .find(|t| t.exercise == e.exercise && t.unit == e.unit)
         {
             Some(t) => {
-                t.amount += e.amount;
+                t.amount += u64::from(e.amount);
                 t.sets += 1;
             }
             None => out.push(Total {
                 exercise: e.exercise.clone(),
                 unit: e.unit.clone(),
-                amount: e.amount,
+                amount: u64::from(e.amount),
                 sets: 1,
             }),
         }

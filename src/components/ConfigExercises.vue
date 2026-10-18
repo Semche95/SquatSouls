@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { VueFinalModal } from 'vue-final-modal';
-import { newId } from '../configDraft.js';
+import { BOUNDS, newId } from '../configDraft.js';
 import { t } from '../i18n.js';
 import { mergeExercises, parseExercises, shareExercises } from '../share.js';
 import { useConfig } from '../composables/useConfig.js';
@@ -62,7 +62,7 @@ function addExercise() {
     </VueFinalModal>
     <div class="setting-card">
       <EditRow :label="t('config.exercises.recovery')" :hint="t('config.exercises.recoveryHint')" for-id="cfg-recovery">
-        <CountStepper id="cfg-recovery" v-model="draft.recovery" :unit="t('fields.secondsUnit')" />
+        <CountStepper id="cfg-recovery" v-model="draft.recovery" :bounds="BOUNDS.seconds" :unit="t('fields.secondsUnit')" />
       </EditRow>
     </div>
     <div class="tiles">

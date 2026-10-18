@@ -1,4 +1,4 @@
-//! Validation of the configuration, and the name and count limits it checks or repairs.
+//! Validation of the configuration, and the name, number and count limits it checks or repairs.
 
 use super::Config;
 use crate::app::AppError;
@@ -8,6 +8,12 @@ impl Config {
     pub fn validate(&self) -> Result<(), AppError> {
         if self.exercises.is_empty() {
             return Err(AppError::new("no_exercise"));
+        }
+        if self.recovery > MAX_SECONDS {
+            return Err(AppError::new("recovery_too_long").with("max", MAX_SECONDS));
+        }
+        if self.timer_prep > MAX_SECONDS {
+            return Err(AppError::new("timer_prep_too_long").with("max", MAX_SECONDS));
         }
         let mut exercise_ids = HashSet::new();
         if self.exercises.len() > MAX_ITEMS {
@@ -22,11 +28,17 @@ impl Config {
             if !exercise_ids.insert(ex.id.as_str()) {
                 return Err(AppError::new("exercise_duplicate").with("id", ex.id.as_str()));
             }
-            if ex.max == 0 || ex.min > ex.max {
+            if ex.min == 0 || ex.min > ex.max || ex.max > MAX_AMOUNT {
                 return Err(AppError::new("exercise_range")
                     .with("name", ex.name.as_str())
                     .with("min", ex.min)
-                    .with("max", ex.max));
+                    .with("max", ex.max)
+                    .with("limit", MAX_AMOUNT));
+            }
+            if ex.recovery.is_some_and(|r| r > MAX_SECONDS) {
+                return Err(AppError::new("exercise_recovery_too_long")
+                    .with("name", ex.name.as_str())
+                    .with("max", MAX_SECONDS));
             }
         }
 
@@ -76,19 +88,34 @@ impl Config {
                 if ev.max_per_session == Some(0) {
                     return Err(at("event_zero_limit"));
                 }
+                if ev.max_per_session.is_some_and(|m| m > MAX_AMOUNT) {
+                    return Err(at("event_limit_too_high").with("max", MAX_AMOUNT));
+                }
+                if ev.jokers > MAX_AMOUNT {
+                    return Err(at("event_too_many_jokers").with("max", MAX_AMOUNT));
+                }
             }
         }
         Ok(())
     }
 
-    /// Brings a configuration saved before the name and count limits within them, so it stays usable:
-    /// hidden characters removed, names and units cut, exercises and events beyond the limit dropped,
-    /// a name left empty replaced by its id. Ignored games, named by the Steam Store, are cleaned too. Returns whether something changed.
+    /// Brings a configuration saved before the name, number and count limits within them, so it stays usable:
+    /// hidden characters removed, names and units cut, numbers brought within their bounds, exercises and
+    /// events beyond the limit dropped, a name left empty replaced by its id. Ignored games, named by the
+    /// Steam Store, are cleaned too. Returns whether something changed.
     pub fn repair(&mut self) -> bool {
-        let mut changed = self.exercises.len() > MAX_ITEMS;
+        let mut changed = clamp(&mut self.recovery, 0, MAX_SECONDS)
+            | clamp(&mut self.timer_prep, 0, MAX_SECONDS)
+            | (self.exercises.len() > MAX_ITEMS);
         self.exercises.truncate(MAX_ITEMS);
         for ex in &mut self.exercises {
-            changed |= NAME.repair(&mut ex.name, &ex.id) | UNIT.repair(&mut ex.unit, "");
+            changed |= NAME.repair(&mut ex.name, &ex.id)
+                | UNIT.repair(&mut ex.unit, "")
+                | clamp(&mut ex.min, 1, MAX_AMOUNT)
+                | clamp(&mut ex.max, ex.min, MAX_AMOUNT);
+            if let Some(recovery) = &mut ex.recovery {
+                changed |= clamp(recovery, 0, MAX_SECONDS);
+            }
         }
         for ignored in &mut self.ignored_games {
             changed |= NAME.repair(&mut ignored.name, "");
@@ -97,7 +124,10 @@ impl Config {
             changed |= NAME.repair(&mut game.name, &game.id) | (game.events.len() > MAX_ITEMS);
             game.events.truncate(MAX_ITEMS);
             for ev in &mut game.events {
-                changed |= NAME.repair(&mut ev.name, &ev.id);
+                changed |= NAME.repair(&mut ev.name, &ev.id) | clamp(&mut ev.jokers, 0, MAX_AMOUNT);
+                if let Some(limit) = &mut ev.max_per_session {
+                    changed |= clamp(limit, 1, MAX_AMOUNT);
+                }
             }
         }
         changed
@@ -108,6 +138,19 @@ impl Config {
 pub const MAX_NAME: usize = 300;
 pub const MAX_UNIT: usize = 50;
 pub const MAX_ITEMS: usize = 100;
+
+/// Largest minimum, maximum, per-session limit and jokers earned, and longest recovery or countdown in seconds:
+/// far above any training, they keep the numbers shown within their frames and the computations within `u32`.
+pub const MAX_AMOUNT: u32 = 9999;
+pub const MAX_SECONDS: u32 = 3600;
+
+/// Brings `value` within `min..=max`. Returns whether it changed.
+fn clamp(value: &mut u32, min: u32, max: u32) -> bool {
+    let clamped = (*value).clamp(min, max);
+    let changed = clamped != *value;
+    *value = clamped;
+    changed
+}
 
 /// Control or invisible character (zero width, text direction override): it would break the copied
 /// summary or hide part of a name. The zero width joiner stays allowed, emoji sequences use it.

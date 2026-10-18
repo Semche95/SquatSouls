@@ -10,6 +10,7 @@ fn validation_catches_mistakes() {
             .with("name", "Pompes")
             .with("min", 20)
             .with("max", 12)
+            .with("limit", MAX_AMOUNT)
     );
 
     let mut cfg = default_config(Language::Fr);
@@ -67,6 +68,68 @@ fn validation_catches_mistakes() {
             .with("game", "Elden Ring")
             .with("event", "Mort")
     );
+}
+
+#[test]
+fn numbers_are_limited() {
+    let mut cfg = default_config(Language::Fr);
+    cfg.recovery = MAX_SECONDS;
+    cfg.timer_prep = MAX_SECONDS;
+    cfg.exercises[0].min = MAX_AMOUNT;
+    cfg.exercises[0].max = MAX_AMOUNT;
+    cfg.exercises[0].recovery = Some(MAX_SECONDS);
+    cfg.games[0].events[0].max_per_session = Some(MAX_AMOUNT);
+    cfg.games[0].events[0].jokers = MAX_AMOUNT;
+    cfg.validate().unwrap();
+
+    let range = |min: u32, max: u32| {
+        AppError::new("exercise_range")
+            .with("name", "Pompes")
+            .with("min", min)
+            .with("max", max)
+            .with("limit", MAX_AMOUNT)
+    };
+    for (min, max) in [(0, 5), (1, MAX_AMOUNT + 1)] {
+        let mut cfg = default_config(Language::Fr);
+        cfg.exercises[0].min = min;
+        cfg.exercises[0].max = max;
+        assert_eq!(cfg.validate().unwrap_err(), range(min, max));
+    }
+
+    let too_long = |change: fn(&mut Config), error: AppError| {
+        let mut cfg = default_config(Language::Fr);
+        change(&mut cfg);
+        assert_eq!(cfg.validate().unwrap_err(), error.with("max", MAX_SECONDS));
+    };
+    too_long(
+        |cfg| cfg.recovery = MAX_SECONDS + 1,
+        AppError::new("recovery_too_long"),
+    );
+    too_long(
+        |cfg| cfg.timer_prep = MAX_SECONDS + 1,
+        AppError::new("timer_prep_too_long"),
+    );
+    too_long(
+        |cfg| cfg.exercises[0].recovery = Some(MAX_SECONDS + 1),
+        AppError::new("exercise_recovery_too_long").with("name", "Pompes"),
+    );
+
+    let too_high = |change: fn(&mut GameEvent), code: &'static str| {
+        let mut cfg = default_config(Language::Fr);
+        change(&mut cfg.games[0].events[0]);
+        assert_eq!(
+            cfg.validate().unwrap_err(),
+            AppError::new(code)
+                .with("game", "Elden Ring")
+                .with("event", "Mort")
+                .with("max", MAX_AMOUNT)
+        );
+    };
+    too_high(
+        |ev| ev.max_per_session = Some(MAX_AMOUNT + 1),
+        "event_limit_too_high",
+    );
+    too_high(|ev| ev.jokers = MAX_AMOUNT + 1, "event_too_many_jokers");
 }
 
 #[test]

@@ -27,7 +27,7 @@ impl Intensity {
         match self {
             Intensity::Easy => self.round_half(amount),
             Intensity::Normal => amount,
-            Intensity::Hard => self.round_half(amount * 3),
+            Intensity::Hard => self.round_half(amount.saturating_mul(3)),
         }
     }
 

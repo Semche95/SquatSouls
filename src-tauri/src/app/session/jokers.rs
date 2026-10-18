@@ -62,6 +62,12 @@ impl Session {
         Ok(())
     }
 
+    /// Adds the jokers earned by a completed set.
+    pub(super) fn earn(&mut self, jokers: u32) {
+        self.jokers = self.jokers.saturating_add(jokers);
+        self.jokers_earned = self.jokers_earned.saturating_add(jokers);
+    }
+
     fn spend(&mut self, jokers: u32) {
         self.jokers -= jokers;
         self.jokers_spent += jokers;

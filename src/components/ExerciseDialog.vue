@@ -1,5 +1,6 @@
 <script setup>
-import { MAX_UNIT } from '../configDraft.js';
+import { computed } from 'vue';
+import { BOUNDS, MAX_UNIT, rangeBounds } from '../configDraft.js';
 import { t } from '../i18n.js';
 import CountStepper from './CountStepper.vue';
 import EditDialog from './EditDialog.vue';
@@ -17,6 +18,8 @@ const TIMERS = [
   { value: 'seconds', label: 'seconds' },
   { value: 'minutes', label: 'minutes' },
 ];
+
+const range = computed(() => rangeBounds(props.ex));
 
 // Only a timed exercise is done on each side.
 function setTimed(value) {
@@ -46,9 +49,9 @@ function setTimed(value) {
     <EditRow :label="t('config.exercises.range')">
       <span class="edit-range">
         <span class="muted">{{ t('config.exercises.min') }}</span>
-        <CountStepper v-model="ex.min" :aria-label="t('config.exercises.minimum')" />
+        <CountStepper v-model="ex.min" :bounds="range.min" :aria-label="t('config.exercises.minimum')" />
         <span class="muted">{{ t('config.exercises.max') }}</span>
-        <CountStepper v-model="ex.max" :aria-label="t('config.exercises.maximum')" />
+        <CountStepper v-model="ex.max" :bounds="range.max" :aria-label="t('config.exercises.maximum')" />
       </span>
     </EditRow>
     <EditRow :label="t('config.exercises.unit')" for-id="ex-unit">
@@ -62,7 +65,7 @@ function setTimed(value) {
       </div>
     </EditRow>
     <EditRow :label="t('config.exercises.recoveryLabel')" :hint="t('config.exercises.ownRecoveryHint')" for-id="ex-recovery">
-      <CountStepper id="ex-recovery" v-model="ex.recovery" optional :base="+recovery || 0" :placeholder="String(recovery)" :unit="t('fields.secondsUnit')" />
+      <CountStepper id="ex-recovery" v-model="ex.recovery" optional :bounds="BOUNDS.seconds" :base="+recovery || 0" :placeholder="String(recovery)" :unit="t('fields.secondsUnit')" />
     </EditRow>
     <EditRow v-if="ex.timed" :label="t('config.exercises.eachSide')" :hint="t('config.exercises.eachSideHint')" for-id="ex-each-side">
       <input id="ex-each-side" v-model="ex.eachSide" type="checkbox" />

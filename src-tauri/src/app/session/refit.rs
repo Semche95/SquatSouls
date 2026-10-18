@@ -28,8 +28,7 @@ impl Session {
                 rng,
             );
             if draw.items.iter().all(|it| it.done) {
-                self.jokers += draw.jokers;
-                self.jokers_earned += draw.jokers;
+                self.earn(draw.jokers);
             } else {
                 self.pending.push(draw);
             }

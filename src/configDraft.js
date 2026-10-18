@@ -40,15 +40,33 @@ export function byName(games) {
   return [...games].sort((a, b) => a.name.localeCompare(b.name, language.value, { sensitivity: 'base' }));
 }
 
-// Largest number accepted by the backend (u32).
-const MAX_COUNT = 4294967295;
-
-export const isCount = (v, min) => Number.isInteger(v) && v >= min && v <= MAX_COUNT;
-
 // Limits checked by the backend: longest name and unit, in characters, and most exercises or events in a game.
 export const MAX_NAME = 300;
 export const MAX_UNIT = 50;
 export const MAX_ITEMS = 100;
+
+// Bounds of each number field, checked by the backend: far above any training, they keep the numbers
+// shown within their frames. The requested exercises never exceed the exercises; `positive` is any u32
+// from 1, for a Steam AppId or the requested exercises of a shared game, capped at import.
+const MAX_AMOUNT = 9999;
+export const BOUNDS = {
+  seconds: { min: 0, max: 3600 },
+  amount: { min: 1, max: MAX_AMOUNT },
+  jokers: { min: 0, max: MAX_AMOUNT },
+  draws: { min: 1, max: MAX_ITEMS },
+  positive: { min: 1, max: 4294967295 },
+};
+
+export const isCount = (v, { min, max }) => Number.isInteger(v) && v >= min && v <= max;
+
+// Bounds of an exercise's minimum and maximum: each one also stops at the other, when it is valid.
+export function rangeBounds(ex) {
+  const { amount } = BOUNDS;
+  return {
+    min: { ...amount, max: isCount(ex.max, amount) ? ex.max : amount.max },
+    max: { ...amount, min: isCount(ex.min, amount) ? ex.min : amount.min },
+  };
+}
 
 // Control or invisible character (zero width, text direction override), refused by the backend.
 // The zero width joiner stays allowed, emoji sequences use it.
@@ -64,14 +82,15 @@ export function parseCount(text) {
   return /^\d+$/.test(t) ? Number(t) : t;
 }
 
-// The backend refuses a negative, decimal or too large number without explanation: report it while typing.
-export function countError(value) {
-  if (value === undefined || value === '' || isCount(value, 0)) return '';
-  return t(Number.isInteger(value) && value > MAX_COUNT ? 'fields.tooLarge' : 'fields.notCount');
+// A text, a decimal number or a number out of `bounds`, reported while typing.
+export function countError(value, bounds) {
+  if (value === undefined || value === '' || isCount(value, bounds)) return '';
+  if (!Number.isInteger(value)) return t('fields.notCount', bounds);
+  return value < bounds.min ? t('fields.tooSmall', bounds) : t('fields.tooLarge', bounds);
 }
 
 // First badly filled field of the configuration, '' if there is none: an empty event or exercise name,
-// then an invalid number.
+// then an invalid number, out of its bounds included.
 export function fieldError(cfg) {
   // Field path: names from the data, then the translated field name.
   const at = (...path) => path.slice(0, -1).concat(t(`fields.${path.at(-1)}`)).join(' › ');
@@ -79,17 +98,19 @@ export function fieldError(cfg) {
   for (const g of cfg.games) names.push(...g.events.map((ev) => [ev.name, at(g.name, 'eventName')]));
   const unnamed = names.find(([name]) => !name.trim());
   if (unnamed) return t('fields.error', { field: unnamed[1], error: t('fields.empty') });
-  const fields = [[cfg.recovery, at('globalRecovery')], [cfg.timerPrep, at('timerPrep')]];
+  const { seconds, amount, jokers, draws } = BOUNDS;
+  const fields = [[cfg.recovery, seconds, at('globalRecovery')], [cfg.timerPrep, seconds, at('timerPrep')]];
   for (const ex of cfg.exercises) {
-    fields.push([ex.min, at(ex.name, 'minimum')], [ex.max, at(ex.name, 'maximum')], [ex.recovery, at(ex.name, 'recovery')]);
+    const range = rangeBounds(ex);
+    fields.push([ex.min, range.min, at(ex.name, 'minimum')], [ex.max, range.max, at(ex.name, 'maximum')], [ex.recovery, seconds, at(ex.name, 'recovery')]);
   }
   for (const g of cfg.games) {
     for (const ev of g.events) {
-      fields.push([ev.draws, at(g.name, ev.name, 'draws')], [ev.maxPerSession, at(g.name, ev.name, 'limit')], [ev.jokers, at(g.name, ev.name, 'jokers')]);
+      fields.push([ev.draws, draws, at(g.name, ev.name, 'draws')], [ev.maxPerSession, amount, at(g.name, ev.name, 'limit')], [ev.jokers, jokers, at(g.name, ev.name, 'jokers')]);
     }
   }
-  for (const [value, field] of fields) {
-    const error = countError(value);
+  for (const [value, bounds, field] of fields) {
+    const error = countError(value, bounds);
     if (error) return t('fields.error', { field, error });
   }
   return '';

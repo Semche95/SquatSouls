@@ -38,12 +38,12 @@ describe('configuration', () => {
   });
 
   it('shows the save error', async () => {
-    setup({ save_config: rejection('exercise_range', { name: 'Squats', min: 20, max: 15 }) });
+    setup({ save_config: rejection('exercise_range', { name: 'Squats', min: 20, max: 15, limit: 9999 }) });
     const w = await openConfig();
     await rename(w, 'Other');
     await save(w).trigger('click');
     await flushPromises();
-    expect(w.find('.banner.error').text()).toBe('Invalid range for "Squats" (20 to 15).');
+    expect(w.find('.banner.error').text()).toBe('Invalid range for "Squats" (20 to 15): from 1 to 9999, the minimum not above the maximum.');
   });
 
   it('disables saving while a field is badly filled and gives the reason', async () => {
@@ -52,7 +52,7 @@ describe('configuration', () => {
     const min = editDialog().find('input[aria-label="Minimum"]');
     await min.setValue('-2');
     expect(save(w).attributes('disabled')).toBeDefined();
-    await expectTip(save(w), 'Squats › minimum: a whole number is needed, 0 or more.');
+    await expectTip(save(w), 'Squats › minimum: a whole number is needed, 1 or more.');
     await min.setValue('2');
     expect(save(w).attributes('disabled')).toBeUndefined();
   });

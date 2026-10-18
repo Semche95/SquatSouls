@@ -35,14 +35,18 @@ describe('exercises', () => {
     const remove = editDialog().find('.edit-foot .danger');
     expect(remove.element.disabled).toBe(true);
     await expectTip(remove, 'At least one exercise is needed');
-    await editDialog().find('input[aria-label="Maximum"]').setValue('');
-    await editDialog().findAll('button[aria-label="More"]')[0].trigger('click');
-    expect(w.find('.tile-slot .tile-foot').text()).toBe('11–0 reps');
+    // The minimum never goes above the maximum.
+    await editDialog().find('input[aria-label="Maximum"]').setValue('11');
+    const more = editDialog().findAll('button[aria-label="More"]')[0];
+    await more.trigger('click');
+    expect(w.find('.tile-slot .tile-foot').text()).toBe('11–11 reps');
+    expect(more.element.disabled).toBe(true);
+    await expectTip(more, 'Already at 11');
     await closeDialog();
     responses.save_config = (args) => ({ config: args.config });
     await save(w).trigger('click');
     await flushPromises();
-    expect(savedConfig().exercises[0]).toMatchObject({ min: 11, max: 0 });
+    expect(savedConfig().exercises[0]).toMatchObject({ min: 11, max: 11 });
   });
 
   it('disables an exercise from its tile or its dialog to keep it out of the draw without removing it', async () => {
@@ -128,11 +132,11 @@ describe('exercises', () => {
     const min = editDialog().find('input[aria-label="Minimum"]');
     await min.trigger('focus');
     await min.setValue('abc');
-    await vi.waitFor(() => expect(shownTip()).toBe('a whole number is needed, 0 or more'));
+    await vi.waitFor(() => expect(shownTip()).toBe('a whole number is needed, 1 or more'));
     await min.trigger('blur');
     await vi.waitFor(() => expect(shownTip()).toBeUndefined());
     await min.trigger('mouseenter');
-    await vi.waitFor(() => expect(shownTip()).toBe('a whole number is needed, 0 or more'));
+    await vi.waitFor(() => expect(shownTip()).toBe('a whole number is needed, 1 or more'));
     await min.trigger('mouseleave');
     await min.trigger('focus');
     expect(min.attributes('aria-invalid')).toBe('true');

@@ -361,12 +361,13 @@
     },
     "fields": {
       "type": "object",
-      "required": ["error", "notCount", "tooLarge", "globalRecovery", "minimum", "maximum", "recovery", "draws", "limit", "jokers", "timerPrep", "secondsUnit", "decrease", "increase", "exerciseName", "eventName", "empty", "atMin", "alreadyEmpty"],
+      "required": ["error", "notCount", "tooSmall", "tooLarge", "globalRecovery", "minimum", "maximum", "recovery", "draws", "limit", "jokers", "timerPrep", "secondsUnit", "decrease", "increase", "exerciseName", "eventName", "empty", "atBound", "alreadyEmpty"],
       "additionalProperties": false,
       "properties": {
         "error": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:field|error)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{field\\}" }, { "pattern": "\\{error\\}" }] },
-        "notCount": { "$ref": "#/$defs/text" },
-        "tooLarge": { "$ref": "#/$defs/text" },
+        "notCount": { "type": "string", "pattern": "^[^{}]*(?:\\{min\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{min\\}" }] },
+        "tooSmall": { "type": "string", "pattern": "^[^{}]*(?:\\{min\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{min\\}" }] },
+        "tooLarge": { "type": "string", "pattern": "^[^{}]*(?:\\{max\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{max\\}" }] },
         "globalRecovery": { "$ref": "#/$defs/text" },
         "minimum": { "$ref": "#/$defs/text" },
         "maximum": { "$ref": "#/$defs/text" },
@@ -381,7 +382,7 @@
         "exerciseName": { "$ref": "#/$defs/text" },
         "eventName": { "$ref": "#/$defs/text" },
         "empty": { "$ref": "#/$defs/text" },
-        "atMin": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }] },
+        "atBound": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }] },
         "alreadyEmpty": { "$ref": "#/$defs/text" }
       }
     },
@@ -511,7 +512,7 @@
     },
     "errors": {
       "type": "object",
-      "required": ["unknown", "database_not_prepared", "database_damaged", "database_denied", "database_full", "internal", "config_ignored", "tray_unavailable", "invalid_language", "no_exercise", "exercise_empty", "exercise_duplicate", "exercise_range", "no_active_exercise", "no_game", "game_empty", "game_duplicate", "game_name_duplicate", "event_empty", "event_duplicate", "event_no_draw", "event_too_many_draws", "event_zero_limit", "name_too_long", "name_hidden_char", "unit_too_long", "unit_hidden_char", "too_many_exercises", "too_many_events", "unknown_game", "unknown_event", "session_other_game", "not_enough_jokers", "exercise_not_reducible", "set_not_pending", "exercise_not_in_set", "exercise_already_done", "exercise_not_next", "set_not_current", "end_without_set", "end_with_pending_sets"],
+      "required": ["unknown", "database_not_prepared", "database_damaged", "database_denied", "database_full", "internal", "config_ignored", "tray_unavailable", "invalid_language", "no_exercise", "exercise_empty", "exercise_duplicate", "exercise_range", "exercise_recovery_too_long", "recovery_too_long", "timer_prep_too_long", "no_active_exercise", "no_game", "game_empty", "game_duplicate", "game_name_duplicate", "event_empty", "event_duplicate", "event_no_draw", "event_too_many_draws", "event_zero_limit", "event_limit_too_high", "event_too_many_jokers", "name_too_long", "name_hidden_char", "unit_too_long", "unit_hidden_char", "too_many_exercises", "too_many_events", "unknown_game", "unknown_event", "session_other_game", "not_enough_jokers", "exercise_not_reducible", "set_not_pending", "exercise_not_in_set", "exercise_already_done", "exercise_not_next", "set_not_current", "end_without_set", "end_with_pending_sets"],
       "additionalProperties": false,
       "properties": {
         "unknown": { "$ref": "#/$defs/text" },
@@ -526,9 +527,12 @@
         "no_exercise": { "$ref": "#/$defs/text" },
         "exercise_empty": { "$ref": "#/$defs/text" },
         "exercise_duplicate": { "type": "string", "pattern": "^[^{}]*(?:\\{id\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{id\\}" }] },
-        "exercise_range": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:name|min|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }, { "pattern": "\\{min\\}" }, { "pattern": "\\{max\\}" }] },
+        "exercise_range": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:name|min|max|limit)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }, { "pattern": "\\{min\\}" }, { "pattern": "\\{max\\}" }, { "pattern": "\\{limit\\}" }] },
         "no_active_exercise": { "$ref": "#/$defs/text" },
         "no_game": { "$ref": "#/$defs/text" },
+        "exercise_recovery_too_long": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:name|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }, { "pattern": "\\{max\\}" }] },
+        "recovery_too_long": { "type": "string", "pattern": "^[^{}]*(?:\\{max\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{max\\}" }] },
+        "timer_prep_too_long": { "type": "string", "pattern": "^[^{}]*(?:\\{max\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{max\\}" }] },
         "game_empty": { "$ref": "#/$defs/text" },
         "game_duplicate": { "type": "string", "pattern": "^[^{}]*(?:\\{id\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{id\\}" }] },
         "game_name_duplicate": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
@@ -537,6 +541,8 @@
         "event_no_draw": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|event)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{event\\}" }] },
         "event_too_many_draws": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|event|draws|active)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{event\\}" }, { "pattern": "\\{draws\\}" }, { "pattern": "\\{active\\}" }] },
         "event_zero_limit": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|event)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{event\\}" }] },
+        "event_limit_too_high": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|event|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{event\\}" }, { "pattern": "\\{max\\}" }] },
+        "event_too_many_jokers": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:game|event|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }, { "pattern": "\\{event\\}" }, { "pattern": "\\{max\\}" }] },
         "name_too_long": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:name|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }, { "pattern": "\\{max\\}" }] },
         "name_hidden_char": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
         "unit_too_long": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:name|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }, { "pattern": "\\{max\\}" }] },

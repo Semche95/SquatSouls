@@ -36,8 +36,7 @@ impl Session {
     pub(super) fn finish_if_done(&mut self, id: u64) -> Result<(), AppError> {
         if self.pending_draw(id)?.items.iter().all(|it| it.done) {
             let draw = self.take_pending(id)?;
-            self.jokers += draw.jokers;
-            self.jokers_earned += draw.jokers;
+            self.earn(draw.jokers);
         }
         Ok(())
     }

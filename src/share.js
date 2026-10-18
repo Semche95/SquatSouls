@@ -1,5 +1,5 @@
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
-import { isCleanText, isCount, MAX_ITEMS, MAX_NAME, MAX_UNIT, newId, sameName } from './configDraft.js';
+import { BOUNDS, isCleanText, isCount, MAX_ITEMS, MAX_NAME, MAX_UNIT, newId, rangeBounds, sameName } from './configDraft.js';
 import { t } from './i18n.js';
 
 // Text shared between users: a game (name and events) or the exercise list, without ids,
@@ -7,7 +7,7 @@ import { t } from './i18n.js';
 // compressed JSON; the short identifier placed in front (`squatsouls/game/sekiro:`, `squatsouls/exercises:`)
 // is only informative and the import ignores it.
 const MARK = 'squatsouls';
-const VERSION = 5;
+const VERSION = 6;
 const GAME = 'game';
 const EXERCISES = 'exercises';
 
@@ -17,12 +17,14 @@ const EXERCISES = 'exercises';
 // Version 3: an exercise can be timed; before, it is timed if its unit reads as a duration.
 // Version 4: an exercise's own recovery is named `recovery`; before, `pause`.
 // Version 5: a timed exercise can be done on each side (`eachSide`); before, never.
+// Version 6: the numbers follow the configuration bounds; before, they are brought within them.
 const READERS = {
-  1: (data) => withRecoveries(withUnitTimes(data)),
-  2: (data) => withRecoveries(withUnitTimes(data)),
-  3: (data) => withRecoveries(data),
-  4: (data) => data,
-  5: (data) => data,
+  1: (data) => withinBounds(withRecoveries(withUnitTimes(data))),
+  2: (data) => withinBounds(withRecoveries(withUnitTimes(data))),
+  3: (data) => withinBounds(withRecoveries(data)),
+  4: (data) => withinBounds(data),
+  5: (data) => withinBounds(data),
+  6: (data) => data,
 };
 
 // Time units of a timed exercise, and the units read as one in texts shared before exercises could be timed
@@ -43,6 +45,24 @@ function withUnitTimes(data) {
 function withRecoveries(data) {
   if (!Array.isArray(data.exercises)) return data;
   return { ...data, exercises: data.exercises.map(({ pause, ...ex }) => withOptional(ex, 'recovery', pause)) };
+}
+
+// A number the versions before the bounds accepted, from `floor`, brought within `min`..`max`; any other value
+// is left for the validation to refuse.
+const within = (v, floor, { min, max }) => (Number.isInteger(v) && v >= floor ? Math.min(Math.max(v, min), max) : v);
+
+// Numbers of a text shared before the bounds, brought within them as the configurations were on the update
+// that brought them: the requested exercises stay capped at import, which reports it.
+function withinBounds(data) {
+  const exercise = (ex) => {
+    const min = within(ex?.min, 0, BOUNDS.amount);
+    const bounded = { ...ex, min, max: within(ex?.max, Math.max(ex?.min, 1), { ...BOUNDS.amount, min }) };
+    return withOptional(bounded, 'recovery', within(ex?.recovery, 0, BOUNDS.seconds));
+  };
+  const event = (ev) => ({ ...ev, maxPerSession: within(ev?.maxPerSession, 1, BOUNDS.amount), jokers: within(ev?.jokers, 0, BOUNDS.jokers) });
+  if (Array.isArray(data.exercises)) return { ...data, exercises: data.exercises.map(exercise) };
+  if (Array.isArray(data.events)) return { ...data, events: data.events.map(event) };
+  return data;
 }
 
 const isName = (v) => typeof v === 'string' && v.trim() !== '' && isCleanText(v, MAX_NAME);
@@ -115,11 +135,11 @@ export function shareExercises(exercises) {
 }
 
 const validEvent = (ev) =>
-  isName(ev?.name) && isCount(ev.draws, 1) && (ev.maxPerSession === undefined || isCount(ev.maxPerSession, 1)) && (ev.jokers === undefined || isCount(ev.jokers, 0));
+  isName(ev?.name) && isCount(ev.draws, BOUNDS.positive) && (ev.maxPerSession === undefined || isCount(ev.maxPerSession, BOUNDS.amount)) && (ev.jokers === undefined || isCount(ev.jokers, BOUNDS.jokers));
 
 // Shared game ready to import; `draws` is capped at the number of enabled exercises (`clamped` reports it).
 export function parseGame(text, exerciseCount) {
-  const data = parse(text, GAME, (d) => isName(d.name) && (d.steamAppId === undefined || isCount(d.steamAppId, 1)) && isList(d.events, validEvent));
+  const data = parse(text, GAME, (d) => isName(d.name) && (d.steamAppId === undefined || isCount(d.steamAppId, BOUNDS.positive)) && isList(d.events, validEvent));
   const shared = firstByName(data.events);
   const events = [];
   for (const { name, draws, maxPerSession, jokers = 0 } of shared) {
@@ -132,7 +152,7 @@ export function parseGame(text, exerciseCount) {
 }
 
 const validExercise = (ex) =>
-  isName(ex?.name) && isCleanText(ex.unit, MAX_UNIT) && isCount(ex.min, 0) && isCount(ex.max, 1) && ex.min <= ex.max && (ex.recovery === undefined || isCount(ex.recovery, 0)) && (ex.timed === undefined || TIME_UNITS.includes(ex.timed)) && (ex.eachSide === undefined || (ex.eachSide === true && ex.timed !== undefined));
+  isName(ex?.name) && isCleanText(ex.unit, MAX_UNIT) && isCount(ex.min, BOUNDS.amount) && isCount(ex.max, rangeBounds(ex).max) && (ex.recovery === undefined || isCount(ex.recovery, BOUNDS.seconds)) && (ex.timed === undefined || TIME_UNITS.includes(ex.timed)) && (ex.eachSide === undefined || (ex.eachSide === true && ex.timed !== undefined));
 
 export function parseExercises(text) {
   return firstByName(parse(text, EXERCISES, (d) => isList(d.exercises, validExercise)).exercises);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { byName, countError, extendsName, newId, normalized, fieldError, parseCount } from '../configDraft.js';
+import { BOUNDS, byName, countError, extendsName, newId, normalized, fieldError, parseCount, rangeBounds } from '../configDraft.js';
 
 describe('newId', () => {
   it('derives the id from the name without accents and avoids duplicates', () => {
@@ -43,10 +43,20 @@ describe('parseCount and countError', () => {
   it('reads a typed integer and reports any other text', () => {
     expect(parseCount(' 12 ')).toBe(12);
     expect(parseCount('')).toBe('');
-    expect(countError(parseCount(''))).toBe('');
-    expect(countError(parseCount('12'))).toBe('');
-    for (const text of ['abc', '-2', '1.5', '3e2']) expect(countError(parseCount(text))).toBe('a whole number is needed, 0 or more');
-    expect(countError(parseCount('99999999999'))).toBe('number too large');
+    expect(countError(parseCount(''), BOUNDS.jokers)).toBe('');
+    expect(countError(parseCount('12'), BOUNDS.jokers)).toBe('');
+    for (const text of ['abc', '-2', '1.5', '3e2']) expect(countError(parseCount(text), BOUNDS.jokers)).toBe('a whole number is needed, 0 or more');
+    expect(countError(parseCount('0'), BOUNDS.amount)).toBe('at least 1');
+    expect(countError(parseCount('9999'), BOUNDS.amount)).toBe('');
+    expect(countError(parseCount('10000'), BOUNDS.amount)).toBe('at most 9999');
+    expect(countError(parseCount('3601'), BOUNDS.seconds)).toBe('at most 3600');
+  });
+});
+
+describe('rangeBounds', () => {
+  it('keeps the minimum within 1 and the maximum, and the maximum within the minimum and 9999', () => {
+    expect(rangeBounds({ min: 5, max: 12 })).toEqual({ min: { min: 1, max: 12 }, max: { min: 5, max: 9999 } });
+    expect(rangeBounds({ min: 'abc', max: 0 })).toEqual({ min: { min: 1, max: 9999 }, max: { min: 1, max: 9999 } });
   });
 });
 
@@ -66,13 +76,19 @@ describe('fieldError', () => {
     expect(fieldError(cfg({ ev: { name: '', jokers: -1 } }))).toBe('Elden Ring › event name: it cannot be empty.');
   });
 
-  it('names the first negative, decimal or too large field', () => {
-    expect(fieldError({ ...cfg(), recovery: -1 })).toBe('Recovery after each exercise: a whole number is needed, 0 or more.');
+  it('names the first decimal or out of bounds field', () => {
+    expect(fieldError({ ...cfg(), recovery: -1 })).toBe('Recovery after each exercise: at least 0.');
+    expect(fieldError({ ...cfg(), recovery: 3601 })).toBe('Recovery after each exercise: at most 3600.');
     expect(fieldError({ ...cfg(), timerPrep: 'abc' })).toBe('Countdown before the timer: a whole number is needed, 0 or more.');
-    expect(fieldError(cfg({ ex: { min: 1.5 } }))).toBe('Squats › minimum: a whole number is needed, 0 or more.');
-    expect(fieldError(cfg({ ex: { recovery: -3 } }))).toBe('Squats › recovery: a whole number is needed, 0 or more.');
-    expect(fieldError(cfg({ ev: { maxPerSession: 2.5 } }))).toBe('Elden Ring › Death › limit per session: a whole number is needed, 0 or more.');
-    expect(fieldError(cfg({ ev: { jokers: 1e10 } }))).toBe('Elden Ring › Death › jokers earned: number too large.');
-    expect(fieldError(cfg({ ev: { draws: 'two' } }))).toBe('Elden Ring › Death › exercises requested: a whole number is needed, 0 or more.');
+    expect(fieldError(cfg({ ex: { min: 1.5 } }))).toBe('Squats › minimum: a whole number is needed, 1 or more.');
+    expect(fieldError(cfg({ ex: { min: 0 } }))).toBe('Squats › minimum: at least 1.');
+    expect(fieldError(cfg({ ex: { min: 6 } }))).toBe('Squats › minimum: at most 5.');
+    expect(fieldError(cfg({ ex: { max: 10000 } }))).toBe('Squats › maximum: at most 9999.');
+    expect(fieldError(cfg({ ex: { recovery: -3 } }))).toBe('Squats › recovery: at least 0.');
+    expect(fieldError(cfg({ ev: { maxPerSession: 2.5 } }))).toBe('Elden Ring › Death › limit per session: a whole number is needed, 1 or more.');
+    expect(fieldError(cfg({ ev: { maxPerSession: 10000 } }))).toBe('Elden Ring › Death › limit per session: at most 9999.');
+    expect(fieldError(cfg({ ev: { jokers: 1e10 } }))).toBe('Elden Ring › Death › jokers earned: at most 9999.');
+    expect(fieldError(cfg({ ev: { draws: 'two' } }))).toBe('Elden Ring › Death › exercises requested: a whole number is needed, 1 or more.');
+    expect(fieldError(cfg({ ev: { draws: 101 } }))).toBe('Elden Ring › Death › exercises requested: at most 100.');
   });
 });

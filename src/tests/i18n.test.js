@@ -61,7 +61,7 @@ describe('language loading', () => {
 
 describe('backend errors', () => {
   it('are shown from their code, with their parameters', () => {
-    expect(errorText({ code: 'exercise_range', params: { name: 'Squats', min: 20, max: 15 } })).toBe('Invalid range for "Squats" (20 to 15).');
+    expect(errorText({ code: 'exercise_range', params: { name: 'Squats', min: 20, max: 15, limit: 9999 } })).toBe('Invalid range for "Squats" (20 to 15): from 1 to 9999, the minimum not above the maximum.');
     expect(errorText({ code: 'not_enough_jokers', params: {} })).toBe('Not enough jokers.');
   });
 
