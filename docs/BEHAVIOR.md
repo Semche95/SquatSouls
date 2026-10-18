@@ -84,8 +84,8 @@ Button and setting names are quoted as they appear in the English interface.
 
 ## Session
 
-- A session does not start on its own, so that its duration only counts the time played: it starts with **Start the session**, shown in place of **End the session** until then, or with its first triggered event. When the app opens and after each end or cancellation, the next session waits to be started.
-- The game is locked on the first triggered event: it can no longer change before the next session. The last chosen game is remembered from one launch to the next. On the very first launch, or if that game no longer exists or has no event left, no game is selected: it must be chosen before triggering an event. A game without event is saved, but the game choice shows it greyed out with "(no event)" and does not let it be chosen, nor the Steam detection select it.
+- A session does not start on its own, so that its duration only counts the time played: it starts with **Start the session**, shown in place of **End the session** until then, or with its first triggered event. **Start the session** stays disabled until a game is chosen (tooltip "Choose a game", or "No game with events" when none can be chosen), since nothing could be played. Without any included exercise, no session can start: **Start the session** and the events are disabled (tooltip "No exercise included", the backend refuses them too, keyboard shortcuts included), and Play says that exercises are created and included in Program, a link to its Exercises sub-tab. When the app opens and after each end or cancellation, the next session waits to be started.
+- As soon as a session starts, with **Start the session** or with its first triggered event, the game choice of Play is disabled (tooltip "The game can't be changed during a session"): the session's game can no longer change before the next session. The last chosen game is remembered from one launch to the next. On the very first launch, or if that game no longer exists or has no event left, no game is selected: it must be chosen before starting the session or triggering an event. A game without event is saved, but the game choice shows it greyed out with "(no event)" and does not let it be chosen, nor the Steam detection select it.
 - **End the session** is only possible with at least one set done and no set to do (the backend refuses it otherwise). The end time is saved in the history.
 - **Cancel the session** resets everything (counters, jokers, sets to do and done) and removes the sets of this session from the history. The button stays disabled until the session has started. It asks for confirmation once the session has a set, done or to do; without any (for example after dismissing the only set), nothing is lost and it cancels right away.
 - A saved configuration applies immediately, without restarting. It touches neither the sets done nor the counters (renaming a game or an event keeps its counters). The sets to do stay as drawn, with up-to-date names, except:
@@ -95,7 +95,7 @@ Button and setting names are quoted as they appear in the English interface.
   - a changed minimum or maximum brings the number of an exercise to do back within the new bounds (scaled by the intensity), unless it was halved;
   - changed jokers apply to the event's sets, except those on which jokers were already spent, which no longer earn any.
 
-  Exercises already done never change. If it removes the game of the current session, the session is cancelled (as with **Cancel the session**) and the game must be chosen again.
+  Exercises already done never change. If it removes the game of the current session, the session is cancelled (as with **Cancel the session**) and the game must be chosen again. If it leaves the game of the current session without event, the session keeps it, still shown in Play, and can still end with its sets done.
 
 ## History and summary
 

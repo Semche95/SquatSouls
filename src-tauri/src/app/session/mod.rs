@@ -13,13 +13,14 @@ pub use jokers::*;
 pub use set::*;
 pub use summary::*;
 
-use super::AppError;
+use super::{AppError, Config, Game};
 use std::collections::HashMap;
 
 #[derive(Debug, Default)]
 pub struct Session {
     /// Absent until the session is started, by its button or its first event.
     pub started_at: Option<i64>,
+    /// Game of the session, set at the latest when it starts and locked until the next session.
     game_id: Option<String>,
     intensity: Intensity,
     triggers: HashMap<(String, String), u32>,
@@ -38,9 +39,32 @@ pub struct Session {
 }
 
 impl Session {
-    /// Starts the session at `now`, unless it already is; returns its start.
-    pub fn start(&mut self, now: i64) -> i64 {
-        *self.started_at.get_or_insert(now)
+    /// Starts the session on the game at `now`, unless it already is; returns its start. Without an event or an
+    /// included exercise, nothing could be played.
+    pub fn start(&mut self, config: &Config, game_id: &str, now: i64) -> Result<i64, AppError> {
+        let game = self.session_game(config, game_id)?;
+        if game.events.is_empty() {
+            return Err(AppError::new("start_without_event").with("game", game.name.as_str()));
+        }
+        self.game_id = Some(game.id.clone());
+        Ok(*self.started_at.get_or_insert(now))
+    }
+
+    /// Game of `config` the session can be played on: the session's own once it has one, as long as an exercise
+    /// is included. Checked before anything changes, so that a refused draw leaves the session as it was.
+    fn session_game<'a>(&self, config: &'a Config, game_id: &str) -> Result<&'a Game, AppError> {
+        let game = config
+            .games
+            .iter()
+            .find(|g| g.id == game_id)
+            .ok_or_else(|| AppError::new("unknown_game").with("id", game_id))?;
+        if self.game_id.as_ref().is_some_and(|id| id != &game.id) {
+            return Err(AppError::new("session_other_game"));
+        }
+        if config.active_exercises().next().is_none() {
+            return Err(AppError::new("start_without_exercise"));
+        }
+        Ok(game)
     }
 
     /// Sets the intensity of the next draws and, as new bounds do, applies it right away to the sets to do

@@ -62,13 +62,14 @@
     },
     "play": {
       "type": "object",
-      "required": ["game", "gameLocked", "noEvent", "chooseGame", "intensity", "intensities", "intensityTips", "detected", "ignore", "recovery", "skipRecovery", "todo", "jokersTip", "jokers", "empty", "capped"],
+      "required": ["game", "gameLocked", "noEvent", "chooseGame", "noExercise", "intensity", "intensities", "intensityTips", "detected", "ignore", "recovery", "skipRecovery", "todo", "jokersTip", "jokers", "empty", "capped"],
       "additionalProperties": false,
       "properties": {
         "game": { "$ref": "#/$defs/text" },
         "gameLocked": { "$ref": "#/$defs/text" },
         "noEvent": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
         "chooseGame": { "$ref": "#/$defs/text" },
+        "noExercise": { "type": "string", "pattern": "^[^{}]*(?:\\{program\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{program\\}" }] },
         "intensity": { "$ref": "#/$defs/text" },
         "intensities": {
           "type": "object",
@@ -135,12 +136,14 @@
     },
     "session": {
       "type": "object",
-      "required": ["pendingSets", "noSets", "nothingToCancel", "start", "end", "cancel", "confirmEnd", "endConfirmed", "confirmCancel", "keep", "farewells"],
+      "required": ["pendingSets", "noSets", "nothingToCancel", "noEvent", "noExercise", "start", "end", "cancel", "confirmEnd", "endConfirmed", "confirmCancel", "keep", "farewells"],
       "additionalProperties": false,
       "properties": {
         "pendingSets": { "$ref": "#/$defs/text" },
         "noSets": { "$ref": "#/$defs/text" },
         "nothingToCancel": { "$ref": "#/$defs/text" },
+        "noEvent": { "$ref": "#/$defs/text" },
+        "noExercise": { "$ref": "#/$defs/text" },
         "start": { "$ref": "#/$defs/text" },
         "end": { "$ref": "#/$defs/text" },
         "cancel": { "$ref": "#/$defs/text" },
@@ -512,7 +515,7 @@
     },
     "errors": {
       "type": "object",
-      "required": ["unknown", "database_not_prepared", "database_damaged", "database_denied", "database_full", "internal", "config_ignored", "tray_unavailable", "invalid_language", "no_exercise", "exercise_empty", "exercise_duplicate", "exercise_range", "exercise_recovery_too_long", "recovery_too_long", "timer_prep_too_long", "no_active_exercise", "no_game", "game_empty", "game_duplicate", "game_name_duplicate", "event_empty", "event_duplicate", "event_no_draw", "event_too_many_draws", "event_zero_limit", "event_limit_too_high", "event_too_many_jokers", "name_too_long", "name_hidden_char", "unit_too_long", "unit_hidden_char", "too_many_exercises", "too_many_events", "unknown_game", "unknown_event", "session_other_game", "not_enough_jokers", "exercise_not_reducible", "set_not_pending", "exercise_not_in_set", "exercise_already_done", "exercise_not_next", "set_not_current", "end_without_set", "end_with_pending_sets"],
+      "required": ["unknown", "database_not_prepared", "database_damaged", "database_denied", "database_full", "internal", "config_ignored", "tray_unavailable", "invalid_language", "no_exercise", "exercise_empty", "exercise_duplicate", "exercise_range", "exercise_recovery_too_long", "recovery_too_long", "timer_prep_too_long", "no_active_exercise", "no_game", "game_empty", "game_duplicate", "game_name_duplicate", "event_empty", "event_duplicate", "event_no_draw", "event_too_many_draws", "event_zero_limit", "event_limit_too_high", "event_too_many_jokers", "name_too_long", "name_hidden_char", "unit_too_long", "unit_hidden_char", "too_many_exercises", "too_many_events", "unknown_game", "unknown_event", "session_other_game", "not_enough_jokers", "exercise_not_reducible", "set_not_pending", "exercise_not_in_set", "exercise_already_done", "exercise_not_next", "set_not_current", "start_without_event", "start_without_exercise", "end_without_set", "end_with_pending_sets"],
       "additionalProperties": false,
       "properties": {
         "unknown": { "$ref": "#/$defs/text" },
@@ -559,6 +562,8 @@
         "exercise_already_done": { "$ref": "#/$defs/text" },
         "exercise_not_next": { "$ref": "#/$defs/text" },
         "set_not_current": { "$ref": "#/$defs/text" },
+        "start_without_event": { "type": "string", "pattern": "^[^{}]*(?:\\{game\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{game\\}" }] },
+        "start_without_exercise": { "$ref": "#/$defs/text" },
         "end_without_set": { "$ref": "#/$defs/text" },
         "end_with_pending_sets": { "$ref": "#/$defs/text" }
       }

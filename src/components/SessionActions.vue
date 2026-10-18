@@ -1,10 +1,12 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { rt, t, tm } from '../i18n.js';
+import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import ConfirmDialog from './ConfirmDialog.vue';
 import DisabledTip from './DisabledTip.vue';
 
+const { noExercise, playable, game } = useConfig();
 const { session, farewell, startSession, endSession, cancelSession } = useSession();
 
 // Session action awaiting confirmation.
@@ -22,7 +24,9 @@ const farewellText = computed(() => (farewell.value < 0 ? '' : rt(tm('session.fa
 <template>
   <div class="session-actions">
     <p v-if="farewellText" class="farewell">{{ farewellText }}</p>
-    <button v-if="!started" class="primary" @click="startSession">{{ t('session.start') }}</button>
+    <DisabledTip v-if="!started" :tip="noExercise ? t('session.noExercise') : !playable ? t('session.noEvent') : game ? '' : t('play.chooseGame')">
+      <button class="primary" :disabled="!game || noExercise" @click="startSession">{{ t('session.start') }}</button>
+    </DisabledTip>
     <DisabledTip v-else :tip="canEnd ? '' : t(session.pending.length ? 'session.pendingSets' : 'session.noSets')">
       <button class="primary" :disabled="!canEnd" @click="confirmEnd = true">{{ t('session.end') }}</button>
     </DisabledTip>

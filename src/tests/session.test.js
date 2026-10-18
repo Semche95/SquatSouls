@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, draw, rejection, responses, setup, mountApp, press, expectTip, layOutControls, confirmDialog, confirmDialogOpen, confirmDialogClosed } from './app.js';
+import { config, emptySession, idleSession, draw, rejection, responses, setup, mountApp, press, expectTip, layOutControls, confirmDialog, confirmDialogOpen, confirmDialogClosed } from './app.js';
 import { rt, tm } from '../i18n.js';
 import { chime, recoveryEnd, sideSignal, startSignal } from '../sound.js';
 
@@ -20,6 +20,7 @@ describe('session', () => {
     expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'death', intensity: 'normal' });
     expect(w.find('.card.current').text()).toContain('Squats');
     expect(w.find('.event .count').text()).toBe('1 / 15');
+    expect(w.find('#play-game').element.disabled).toBe(true);
   });
 
   it('only offers to dismiss queued sets', async () => {
@@ -158,6 +159,16 @@ describe('session', () => {
     expect(select.element.value).toBe('sekiro');
   });
 
+  it('keeps showing the session\'s game once it has no event left', async () => {
+    const games = [{ ...config.games[0], events: [] }, config.games[1]];
+    setup({ get_config: { config: { ...config, games } }, get_session: emptySession({ sets: 1 }) });
+    const w = await mountApp();
+    const select = w.find('#play-game');
+    expect(select.element.value).toBe('er');
+    expect(select.element.disabled).toBe(true);
+    expect(w.find('.session-actions .primary').element.disabled).toBe(false);
+  });
+
   describe('intensity', () => {
     const levels = (w) => w.findAll('.segmented button');
 
@@ -196,6 +207,16 @@ describe('session', () => {
       expect(w.find('.segmented .active').text()).toBe(tm('play.intensities').easy);
     });
 
+    it('starts the session at the chosen intensity', async () => {
+      setup({ get_session: idleSession(), start_session: emptySession({ intensity: 'hard' }) });
+      const w = await mountApp();
+      await levels(w)[2].trigger('click');
+      await w.find('.session-actions .primary').trigger('click');
+      await flushPromises();
+      expect(invoke).toHaveBeenCalledWith('start_session', { gameId: 'er', intensity: 'hard' });
+      expect(w.find('.segmented .active').text()).toBe(tm('play.intensities').hard);
+    });
+
     it('explains on hover how each level scales the exercises', async () => {
       setup();
       const w = await mountApp();
@@ -227,20 +248,63 @@ describe('session', () => {
   });
 
   it('waits for the start button before starting the session', async () => {
-    setup({ get_session: emptySession({ startedAt: null }), start_session: emptySession() });
+    setup({ get_session: idleSession(), start_session: emptySession() });
     const w = await mountApp();
     expect(w.find('.session-actions .danger').element.disabled).toBe(true);
     const start = w.find('.session-actions .primary');
     expect(start.text()).toBe('Start the session');
     await start.trigger('click');
     await flushPromises();
-    expect(invoke).toHaveBeenCalledWith('start_session', undefined);
+    expect(invoke).toHaveBeenCalledWith('start_session', { gameId: 'er', intensity: 'normal' });
     expect(w.find('.session-actions .primary').text()).toBe('End the session');
     expect(w.find('.session-actions .danger').element.disabled).toBe(false);
   });
 
+  it('cannot start a session before a game is chosen, then locks it from the start', async () => {
+    setup({ get_last_game: '', get_session: idleSession() });
+    const w = await mountApp();
+    const start = () => w.find('.session-actions .primary');
+    expect(start().element.disabled).toBe(true);
+    await expectTip(start(), 'Choose a game');
+    await w.find('#play-game').setValue('sekiro');
+    expect(start().element.disabled).toBe(false);
+    responses.start_session = emptySession({ gameId: 'sekiro' });
+    await start().trigger('click');
+    await flushPromises();
+    expect(invoke).toHaveBeenCalledWith('start_session', { gameId: 'sekiro', intensity: 'normal' });
+    expect(w.find('#play-game').element.disabled).toBe(true);
+    await expectTip(w.find('#play-game'), 'The game can\'t be changed during a session');
+  });
+
+  it('cannot start a session while no game has an event', async () => {
+    const games = config.games.map((g) => ({ ...g, events: [] }));
+    setup({ get_config: { config: { ...config, games } }, get_session: idleSession() });
+    const w = await mountApp();
+    const start = w.find('.session-actions .primary');
+    expect(start.element.disabled).toBe(true);
+    await expectTip(start, 'No game with events');
+  });
+
+  it('cannot start a session nor trigger an event without an included exercise', async () => {
+    const exercises = config.exercises.map((ex) => ({ ...ex, enabled: false }));
+    setup({ get_config: { config: { ...config, exercises } }, get_session: idleSession() });
+    const w = await mountApp();
+    const start = w.find('.session-actions .primary');
+    expect(start.element.disabled).toBe(true);
+    await expectTip(start, 'No exercise included');
+    const event = w.find('.event');
+    expect(event.element.disabled).toBe(true);
+    await expectTip(event, 'No exercise included');
+    await press('Digit1');
+    expect(invoke).not.toHaveBeenCalledWith('draw', expect.anything());
+    const empty = w.findAll('.play .empty').find((p) => p.text().startsWith('No exercise included yet.'));
+    expect(empty.text()).toBe('No exercise included yet. Exercises are created and included in Program.');
+    await empty.find('button').trigger('click');
+    expect(w.find('.cfg-exercises').exists()).toBe(true);
+  });
+
   it('asks for confirmation before ending the session, then waits for the next one', async () => {
-    setup({ get_session: emptySession({ sets: 1 }), end_session: emptySession({ startedAt: null }) });
+    setup({ get_session: emptySession({ sets: 1 }), end_session: idleSession() });
     const w = await mountApp();
     await w.find('.session-actions .primary').trigger('click');
     expect(invoke).not.toHaveBeenCalledWith('end_session', undefined);
@@ -271,13 +335,13 @@ describe('session', () => {
   });
 
   it('disables cancelling while the session is not started', async () => {
-    setup({ get_session: emptySession({ startedAt: null }) });
+    setup({ get_session: idleSession() });
     const w = await mountApp();
     expect(w.find('.session-actions .danger').element.disabled).toBe(true);
   });
 
   it('cancels the session without confirmation while it has no set', async () => {
-    setup({ get_session: emptySession({ gameId: 'er' }), cancel_session: emptySession() });
+    setup({ get_session: emptySession(), cancel_session: idleSession() });
     const w = await mountApp();
     await w.find('.session-actions .danger').trigger('click');
     await flushPromises();
@@ -286,7 +350,7 @@ describe('session', () => {
   });
 
   it('asks for confirmation before cancelling a session with a set to do', async () => {
-    setup({ get_session: emptySession({ gameId: 'er', pending: [draw] }) });
+    setup({ get_session: emptySession({ pending: [draw] }) });
     const w = await mountApp();
     await w.find('.session-actions .danger').trigger('click');
     await confirmDialogOpen();
@@ -295,7 +359,7 @@ describe('session', () => {
 
   it('asks for confirmation before cancelling a session with a set done', async () => {
     const log = [{ at: 0, amount: 10, unit: 'reps', exercise: 'Squats', event: 'Death' }];
-    setup({ get_session: emptySession({ gameId: 'er', sets: 1, log }), cancel_session: emptySession() });
+    setup({ get_session: emptySession({ sets: 1, log }), cancel_session: idleSession() });
     const w = await mountApp();
     await w.find('.session-actions .danger').trigger('click');
     await confirmDialogOpen();
@@ -312,7 +376,7 @@ describe('session', () => {
   });
 
   it('encourages next to the session actions once it ends, until the next one starts', async () => {
-    setup({ get_session: emptySession({ sets: 1 }), end_session: emptySession({ startedAt: null }), start_session: emptySession() });
+    setup({ get_session: emptySession({ sets: 1 }), end_session: idleSession(), start_session: emptySession() });
     const w = await mountApp();
     expect(w.find('.farewell').exists()).toBe(false);
     await w.find('.session-actions .primary').trigger('click');

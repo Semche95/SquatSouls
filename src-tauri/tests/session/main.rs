@@ -82,7 +82,67 @@ fn session_waits_to_be_started() {
         "started by its first set done"
     );
     assert!(entries.iter().all(|e| e.session == 5));
-    assert_eq!(s.start(9), 5, "a started session keeps its start");
+    assert_eq!(
+        s.start(&cfg, "ds1", 9).unwrap(),
+        5,
+        "a started session keeps its start"
+    );
+}
+
+#[test]
+fn nothing_starts_without_an_included_exercise() {
+    let mut cfg = default_config(Language::En);
+    cfg.exercises.iter_mut().for_each(|ex| ex.enabled = false);
+    let (game, event) = (cfg.games[0].id.clone(), cfg.games[0].events[0].id.clone());
+    let refused = AppError::new("start_without_exercise");
+    let mut s = Session::default();
+    assert_eq!(s.start(&cfg, &game, 5).unwrap_err(), refused);
+    assert_eq!(
+        s.draw(&cfg, &game, &event, &mut rng()).unwrap_err(),
+        refused
+    );
+    cfg.exercises.clear();
+    assert_eq!(
+        s.draw(&cfg, &game, &event, &mut rng()).unwrap_err(),
+        refused
+    );
+    let view = s.view();
+    assert_eq!(view.started_at, None, "refused, not started");
+    assert!(
+        view.pending.is_empty() && view.triggers.is_empty(),
+        "nothing drawn nor counted"
+    );
+}
+
+#[test]
+fn a_session_starts_on_a_game_with_an_event_then_keeps_it() {
+    let mut cfg = default_config(Language::En);
+    let mut s = Session::default();
+    assert_eq!(
+        s.start(&cfg, "nioh", 5).unwrap_err(),
+        AppError::new("unknown_game").with("id", "nioh")
+    );
+    let (game, name) = (cfg.games[0].id.clone(), cfg.games[0].name.clone());
+    cfg.games[0].events.clear();
+    assert_eq!(
+        s.start(&cfg, &game, 5).unwrap_err(),
+        AppError::new("start_without_event").with("game", name.as_str())
+    );
+    assert_eq!(s.view().started_at, None, "refused, not started");
+    let cfg = default_config(Language::En);
+    assert_eq!(s.start(&cfg, &game, 5).unwrap(), 5);
+    assert_eq!(s.view().game_id.as_deref(), Some(game.as_str()));
+    let other = &cfg.games[1];
+    assert_eq!(
+        s.start(&cfg, &other.id, 9).unwrap_err().code,
+        "session_other_game"
+    );
+    let event = &other.events[0].id;
+    assert_eq!(
+        s.draw(&cfg, &other.id, event, &mut rng()).unwrap_err().code,
+        "session_other_game",
+        "locked from the start, before any event"
+    );
 }
 
 #[test]

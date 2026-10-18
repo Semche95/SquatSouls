@@ -11,7 +11,8 @@ impl Session {
         exercise_id: &str,
         now: i64,
     ) -> Result<LogEntry, AppError> {
-        let session = self.start(now);
+        // The set's draw already gave the session its game.
+        let session = *self.started_at.get_or_insert(now);
         let (draw, pos) = self.pending_item(id, exercise_id)?;
         if draw.items[..pos].iter().any(|it| !it.done) {
             return Err(AppError::new("exercise_not_next"));

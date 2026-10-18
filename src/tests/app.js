@@ -33,9 +33,14 @@ export const config = {
   ],
 };
 
-// Session started, without any set.
+// Session waiting to be started, as at launch and after each end or cancellation.
+export function idleSession(extra = {}) {
+  return { startedAt: null, gameId: null, pending: [], sets: 0, totals: [], log: [], triggers: [], countedTriggers: [], jokers: 0, jokersEarned: 0, jokersSpent: 0, ...extra };
+}
+
+// Session started on Elden Ring, without any set.
 export function emptySession(extra = {}) {
-  return { startedAt: 1, pending: [], sets: 0, totals: [], log: [], triggers: [], countedTriggers: [], jokers: 0, jokersEarned: 0, jokersSpent: 0, ...extra };
+  return idleSession({ startedAt: 1, gameId: 'er', ...extra });
 }
 
 export const draw = { id: 7, eventName: 'Death', gameName: 'Elden Ring', jokers: 0, items: [{ exerciseId: 'squat', name: 'Squats', amount: 10, unit: 'reps', halved: false, halveCost: 1, skipCost: 2 }] };
@@ -48,7 +53,7 @@ let mounted = [];
 export function setup(over = {}) {
   responses = {
     get_config: { config },
-    get_session: emptySession(),
+    get_session: idleSession(),
     get_history: [],
     count_active_days: 0,
     get_last_game: 'er',

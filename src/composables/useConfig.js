@@ -38,14 +38,12 @@ export const [provideConfig, useConfig] = defineShared(() => {
   // Intensity of the next session, normal at each launch unless the configuration remembers it.
   const intensity = ref('normal');
 
+  // A session is only played with an included exercise, on a game with an event.
+  const noExercise = computed(() => !config.value?.exercises.some((ex) => ex.enabled));
+  const playable = computed(() => !!config.value?.games.some((g) => g.events.length));
   const game = computed(() => config.value?.games.find((g) => g.id === gameId.value) ?? null);
   const editedGame = computed(() => findOr(draft.value?.games ?? [], editedGameId.value));
 
-  // Remembered or current game removed, or left without event: ask for the game again. The config is watched too, because an
-  // unknown remembered game leaves `game` null both before and after it loads.
-  watch([config, game], ([cfg, g]) => {
-    if (cfg && !g?.events.length) gameId.value = '';
-  });
   watch(gameId, (id) => {
     if (id) invoke('set_last_game', { gameId: id }).catch(() => {});
   });
@@ -97,5 +95,5 @@ export const [provideConfig, useConfig] = defineShared(() => {
     }
   }
 
-  return { config, draft, configError, configMsg, notify, copy, tab, cfgTab, editedGameId, newGame, gameId, intensity, game, editedGame, applyConfigView, store };
+  return { config, draft, configError, configMsg, notify, copy, tab, cfgTab, editedGameId, newGame, gameId, intensity, noExercise, playable, game, editedGame, applyConfigView, store };
 });

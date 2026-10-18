@@ -13,14 +13,14 @@ import CountdownSeal from './CountdownSeal.vue';
 import SessionActions from './SessionActions.vue';
 import DisabledTip from './DisabledTip.vue';
 
-const { config, gameId, intensity, game } = useConfig();
+const { config, tab, cfgTab, gameId, intensity, noExercise, game } = useConfig();
 const { session, notice, skipRecovery, stopTimer, startTimer, toggleTimer, timing, trigger, confirmStop, dismiss, remaining, complete, halve, skipExercise } = useSession();
 const { detected, selectDetected, addGame, ignoreDetected } = useSteam();
 
 const INTENSITIES = ['easy', 'normal', 'hard'];
 
-// The game is locked from the session's first event until the next session.
-const gameLocked = computed(() => !!session.value.gameId);
+// The game is locked as soon as the session starts, by its button or its first event, until the next session.
+const gameLocked = computed(() => !!session.value.startedAt);
 // Detected Steam game: an unknown game is offered for adding, unless it is ignored; the configured games
 // matching it, for selection, unless one of them already is or the session's game is locked.
 const steamOffer = computed(() => {
@@ -29,6 +29,11 @@ const steamOffer = computed(() => {
   if (!d.games.length) return !d.ignored;
   return !gameLocked.value && !d.games.some((g) => g.id === gameId.value);
 });
+// Exercises are created in their sub-tab of Program.
+function showProgram(sub) {
+  tab.value = 'program';
+  cfgTab.value = sub;
+}
 // Current set highlighted, then the queue of the next ones.
 const stage = computed(() => [session.value.pending.slice(0, 1), session.value.pending.slice(1)]);
 
@@ -130,21 +135,26 @@ useKeydown((e) => {
     </p>
 
     <div v-if="game" class="events">
-      <button v-for="(ev, i) in game.events" :key="ev.id" class="event" @click="trigger(ev)">
-        <kbd v-if="i < 9">{{ i + 1 }}</kbd>
-        <span class="event-name">
-          {{ ev.name }}
-          <span v-if="ev.jokers" class="reward-tag">{{ t('common.reward', ev.jokers) }}</span>
-        </span>
-        <span v-if="triggerCount(ev.id)" class="count">
-          <template v-if="ev.maxPerSession">{{ Math.min(triggerCount(ev.id), ev.maxPerSession) }} / {{ ev.maxPerSession }}</template>
-          <template v-else>×{{ triggerCount(ev.id) }}</template>
-        </span>
-        <span v-if="ev.maxPerSession" class="edge-bar gauge">
-          <span :style="{ width: `${Math.min(100, (100 * triggerCount(ev.id)) / ev.maxPerSession)}%` }"></span>
-        </span>
-      </button>
+      <DisabledTip v-for="(ev, i) in game.events" :key="ev.id" :tip="noExercise ? t('session.noExercise') : ''">
+        <button class="event" :disabled="noExercise" @click="trigger(ev)">
+          <kbd v-if="i < 9">{{ i + 1 }}</kbd>
+          <span class="event-name">
+            {{ ev.name }}
+            <span v-if="ev.jokers" class="reward-tag">{{ t('common.reward', ev.jokers) }}</span>
+          </span>
+          <span v-if="triggerCount(ev.id)" class="count">
+            <template v-if="ev.maxPerSession">{{ Math.min(triggerCount(ev.id), ev.maxPerSession) }} / {{ ev.maxPerSession }}</template>
+            <template v-else>×{{ triggerCount(ev.id) }}</template>
+          </span>
+          <span v-if="ev.maxPerSession" class="edge-bar gauge">
+            <span :style="{ width: `${Math.min(100, (100 * triggerCount(ev.id)) / ev.maxPerSession)}%` }"></span>
+          </span>
+        </button>
+      </DisabledTip>
     </div>
+    <i18n-t v-if="noExercise" keypath="play.noExercise" tag="p" class="empty" scope="global">
+      <template #program><button class="link" @click="showProgram('exercises')">{{ t('app.tabs.program') }}</button></template>
+    </i18n-t>
 
     <p v-if="notice" v-reveal class="banner info">{{ notice }}</p>
 

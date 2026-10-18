@@ -38,6 +38,7 @@
     "gameLocked": "The game can't be changed during a session",
     "noEvent": "{name} (no event)",
     "chooseGame": "Choose a game",
+    "noExercise": "No exercise included yet. Exercises are created and included in {program}.",
     "intensity": "Intensity",
     "intensities": {
       "easy": "Easy",
@@ -85,6 +86,8 @@
     "pendingSets": "There are sets left to do",
     "noSets": "No set done",
     "nothingToCancel": "Nothing to cancel",
+    "noEvent": "No game with events",
+    "noExercise": "No exercise included",
     "start": "Start the session",
     "end": "End the session",
     "cancel": "Cancel the session",
@@ -409,6 +412,8 @@
     "exercise_already_done": "This exercise is already done.",
     "exercise_not_next": "Do the earlier exercises of the set first.",
     "set_not_current": "Finish the older sets first.",
+    "start_without_event": "{game} has no event: the session cannot start.",
+    "start_without_exercise": "No exercise included: the session cannot start.",
     "end_without_set": "No set done: nothing to end.",
     "end_with_pending_sets": "There are sets left to do: finish or cancel them before ending the session."
   }

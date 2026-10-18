@@ -16,7 +16,7 @@ pub(crate) fn draw(
     } = &mut *guard;
     session.set_intensity(intensity);
     let draw = session.draw(config, &game_id, &event_id, &mut rand::rng())?;
-    session.start(now());
+    session.start(config, &game_id, now())?;
     guard.save_session_summary();
     Ok(draw)
 }
@@ -92,9 +92,17 @@ pub(crate) fn get_session(state: Shared) -> Result<SessionView, AppError> {
 }
 
 #[tauri::command]
-pub(crate) fn start_session(state: Shared) -> Result<SessionView, AppError> {
+pub(crate) fn start_session(
+    state: Shared,
+    game_id: String,
+    intensity: Intensity,
+) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
-    s.session.start(now());
+    let AppState {
+        config, session, ..
+    } = &mut *s;
+    session.set_intensity(intensity);
+    session.start(config, &game_id, now())?;
     Ok(s.session.view())
 }
 

@@ -12,14 +12,7 @@ impl Session {
         event_id: &str,
         rng: &mut R,
     ) -> Result<Draw, AppError> {
-        let game = config
-            .games
-            .iter()
-            .find(|g| g.id == game_id)
-            .ok_or_else(|| AppError::new("unknown_game").with("id", game_id))?;
-        if self.game_id.as_ref().is_some_and(|id| id != &game.id) {
-            return Err(AppError::new("session_other_game"));
-        }
+        let game = self.session_game(config, game_id)?;
         let ev = game
             .events
             .iter()

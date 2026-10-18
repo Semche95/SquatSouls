@@ -11,7 +11,7 @@ const UNIT_SECONDS = { seconds: 1, minutes: 60 };
 // Sides of an exercise timed on each side.
 export const SIDES = 2;
 
-export const [provideSession, useSession] = defineShared(({ call }, { config, draft, game, gameId, intensity, store }) => {
+export const [provideSession, useSession] = defineShared(({ call }, { config, draft, game, gameId, intensity, noExercise, store }) => {
   const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], countedTriggers: [], jokers: 0, jokersEarned: 0, jokersSpent: 0 });
   const notice = ref('');
   // Encouragement shown once the session ends, until the next one starts: index in `session.farewells`.
@@ -94,11 +94,15 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     stopTimer();
   });
 
+  // The game of Play is the session's own once it has one, even left without event. Otherwise a remembered or chosen
+  // game removed, or left without event, asks for the game again. The config is watched too, because an unknown
+  // remembered game leaves `game` null both before and after it loads.
+  watch([config, game, () => session.value.gameId], ([cfg, g, locked]) => {
+    if (locked) gameId.value = locked;
+    else if (cfg && !g?.events.length) gameId.value = '';
+  });
   watch(session, (s) => {
-    if (s.gameId) {
-      gameId.value = s.gameId;
-      intensity.value = s.intensity;
-    }
+    if (s.gameId) intensity.value = s.intensity;
   });
 
   // Intensity changed during the session: applied right away to the sets to do.
@@ -132,7 +136,9 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     return true;
   }
 
+  // Whatever triggers it (button, key), an event needs an included exercise, like the session's start.
   async function trigger(ev) {
+    if (noExercise.value) return;
     notice.value = '';
     try {
       const draw = await call('draw', { gameId: game.value.id, eventId: ev.id, intensity: intensity.value });
@@ -206,7 +212,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   async function startSession() {
     try {
-      session.value = await call('start_session');
+      session.value = await call('start_session', { gameId: game.value.id, intensity: intensity.value });
     } catch {
       /* error already shown */
     }

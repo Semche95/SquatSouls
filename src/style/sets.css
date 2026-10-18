@@ -8,6 +8,10 @@
   border-radius: var(--radius);
   text-align: center;
 }
+/* A link inside the sentence, without the gap that separates it from a title. */
+.empty .link {
+  padding: 0;
+}
 
 .pending {
   --seal: 112px;

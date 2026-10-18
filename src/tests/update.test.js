@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { setup, mountApp, emitEvent, emptySession, expectTip, openSettings, save, savedConfig } from './app.js';
+import { setup, mountApp, emitEvent, emptySession, idleSession, expectTip, openSettings, save, savedConfig } from './app.js';
 
 const banner = (w) => w.find('.banner.update');
 const downloading = (progress = null) => ({ version: '0.2.0', progress, stage: 'downloading' });
@@ -39,7 +39,7 @@ describe('update', () => {
   });
 
   it('announces the downloaded update and restarts on request outside a session', async () => {
-    setup({ get_update: null, get_session: emptySession({ startedAt: null }), restart_to_update: undefined });
+    setup({ get_update: null, get_session: idleSession(), restart_to_update: undefined });
     const w = await mountApp();
     await emitEvent('update-changed', ready);
     expect(banner(w).text()).toContain('Version 0.2.0 is ready');
@@ -50,7 +50,7 @@ describe('update', () => {
   });
 
   it('does not restart during a session', async () => {
-    setup({ get_update: ready });
+    setup({ get_update: ready, get_session: emptySession() });
     const w = await mountApp();
     const button = banner(w).find('button');
     expect(button.element.disabled).toBe(true);

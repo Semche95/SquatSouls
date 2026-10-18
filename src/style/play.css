@@ -28,7 +28,11 @@
   border-radius: 12px;
   box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.06), 0 6px 16px -8px rgba(0, 0, 0, 0.8);
 }
-.event:hover {
+/* Its tooltip container (DisabledTip) takes the grid cell. */
+.events > .tip > .event {
+  flex: 1;
+}
+.event:hover:not(:disabled) {
   border-color: var(--gold);
   background: linear-gradient(180deg, #352e23, #28231b);
   box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.08), 0 0 0 3px var(--gold-soft);

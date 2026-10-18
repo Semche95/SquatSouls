@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
-import { config, emptySession, responses, setup, openConfig, expectUnchanged, expectTip, layOutControls, formDialog, formDialogOpen, formDialogClosed, confirmDialog, confirmDialogOpen, confirmDialogClosed, save, savedConfig } from './app.js';
+import { config, emptySession, idleSession, responses, setup, openConfig, expectUnchanged, expectTip, layOutControls, formDialog, formDialogOpen, formDialogClosed, confirmDialog, confirmDialogOpen, confirmDialogClosed, save, savedConfig } from './app.js';
 import { shownGame, gameButton, rename } from './program.js';
 
 // Games offered by the select of the Program tab.
@@ -116,10 +116,10 @@ describe('games', () => {
   });
 
   it('asks for the game again when the session\'s game is removed', async () => {
-    setup({ get_session: emptySession({ gameId: 'er', sets: 1 }), save_config: (args) => ({ config: args.config }) });
+    setup({ get_session: emptySession({ sets: 1 }), save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
     // The backend cancels the session of the removed game.
-    responses.get_session = emptySession();
+    responses.get_session = idleSession();
     await w.find('.cfg-game-bar .danger').trigger('click');
     await confirmDialogOpen();
     await confirmDialog().find('.danger').trigger('click');
