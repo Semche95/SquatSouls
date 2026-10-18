@@ -7,7 +7,7 @@ import { sharedSettings, withOptional } from './share.js';
 // Unchanged items are not listed. The chosen changes are a Set of keys.
 
 const eventSettings = ({ draws, maxPerSession, jokers = 0 }) => withOptional({ draws, jokers }, 'maxPerSession', maxPerSession);
-const differ = (a, b) => JSON.stringify(a) !== JSON.stringify(b);
+export const differ = (a, b) => JSON.stringify(a) !== JSON.stringify(b);
 
 function changes(current, imported, settings) {
   const byKey = new Map(current.map((item) => [nameKey(item.name), item]));

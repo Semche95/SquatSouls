@@ -100,6 +100,19 @@ describe('import preview', () => {
     expect(w.find('.banner.ok').text()).toBe('Elden Ring no hit imported.');
   });
 
+  it('keeps the switches as they are while the name of the new game is edited', async () => {
+    setup(saving);
+    const w = await openConfig();
+    await importGame(w);
+    await paste(shareGame(eldenRing));
+    await formDialog().findAll('.import-mode button')[1].trigger('click');
+    await row('Death').setValue(false);
+    await formDialog().find('input[aria-label="Name of the imported game"]').setValue('Elden Ring no hit');
+    expect(row('Death').element.checked).toBe(false);
+    await confirm();
+    expect(savedConfig().games[2].events.map((ev) => ev.name)).toEqual(['Boss defeated', 'Grace']);
+  });
+
   it('replaces the game chosen in place of a game whose name is free, keeping its name', async () => {
     setup(saving);
     const w = await openConfig();
