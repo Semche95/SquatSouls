@@ -40,6 +40,7 @@ pnpm test                   # interface tests (Vitest), after any change to src/
 - Never modify, rename, merge or delete a migration in `src-tauri/migrations/` once created, even uncommitted, even to fix a mistake, not even its comments (refinery checksums their content): every schema change goes through a new `V<n+1>__<name>.sql` file. Migration comments are written in English from the start, so they never need translating.
 - In JavaScript, strings in single quotes, never double, escaping the apostrophe (`'moins d\'une minute'`).
 - Every checkbox is a switch, never a native checkbox: `style/controls.css` styles every `input type="checkbox"` as one, for the whole app.
+- Never mark a state or an emphasis with a thicker or colored left border (accent bar, side stripe): use the background, the text color or an existing control instead.
 - A disabled button must look disabled: check that `style/base.css` gives it a `:disabled` style (reduced opacity, no pointer cursor nor hover effect), rather than relying on the `disabled` attribute alone. The reason it is disabled is shown in a tooltip by wrapping it in `DisabledTip` (`components/DisabledTip.vue`), never with a `title`.
 - Any change to the share/import format (`share.js`) is versioned: increment `VERSION`, add the new version's reader to `READERS` while keeping those of the previous ones, and test importing texts from the old versions.
 - Tests only live in `src/tests/` (interface) and `src-tauri/tests/` (backend): no `*.test.js` file elsewhere in `src/`, no `#[cfg(test)]` module in `src-tauri/src/`.
