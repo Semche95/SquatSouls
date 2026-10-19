@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, idleSession, draw, responses, setup, mountApp, press, expectTip, layOutControls, confirmDialog, confirmDialogOpen, confirmDialogClosed } from './app.js';
+import { config, emptySession, idleSession, draw, responses, setup, mountApp, press, expectTip, layOutControls, confirmDialog, confirmDialogOpen, confirmDialogClosed, save } from './app.js';
 import { chime, recoveryEnd, sideSignal, startSignal } from '../sound.js';
 
 vi.mock('../sound.js', () => ({ chime: vi.fn(), recoveryEnd: vi.fn(), sideSignal: vi.fn(), startSignal: vi.fn() }));
@@ -108,6 +108,47 @@ describe('countdown', () => {
       await w.findAll('.card')[1].find('.card-actions button').trigger('click');
       await flushPromises();
       expect(w.find('.empty .countdown-seal').exists()).toBe(true);
+    });
+
+    // Saves the global recovery `seconds` in the Program tab, then goes back to Play.
+    async function saveGlobalRecovery(w, seconds) {
+      await w.findAll('.tabs button')[2].trigger('click');
+      await w.findAll('.subtabs button')[1].trigger('click');
+      await w.find('#cfg-recovery').setValue(seconds);
+      await save(w).trigger('click');
+      await flushPromises();
+      await w.findAll('.tabs button')[0].trigger('click');
+    }
+
+    it('takes a saved recovery as if it had started with it, keeping the time elapsed', async () => {
+      const w = await completeOne(draw.items[0]);
+      responses.save_config = (args) => ({ config: args.config });
+      await vi.advanceTimersByTimeAsync(10_000);
+      await saveGlobalRecovery(w, 30);
+      expect(w.find('.countdown-left').text()).toBe('0:20');
+      // The ring empties over the new recovery: 10 s elapsed out of 30.
+      expect(Number(w.find('.seal-ring').attributes('stroke-dashoffset'))).toBeCloseTo(-1 / 3);
+      await saveGlobalRecovery(w, 120);
+      expect(w.find('.countdown-left').text()).toBe('1:50');
+      await saveGlobalRecovery(w, 0);
+      expect(await sealShown(w)).toBe(false);
+      expect(recoveryEnd).not.toHaveBeenCalled();
+    });
+
+    it('ends with the bell when a saved recovery is already past', async () => {
+      const w = await completeOne(draw.items[0]);
+      responses.save_config = (args) => ({ config: args.config });
+      await vi.advanceTimersByTimeAsync(40_000);
+      await saveGlobalRecovery(w, 30);
+      expect(await sealShown(w)).toBe(false);
+      expect(recoveryEnd).toHaveBeenCalledOnce();
+    });
+
+    it('keeps the exercise\'s own recovery when the global recovery changes', async () => {
+      const w = await completeOne();
+      responses.save_config = (args) => ({ config: args.config });
+      await saveGlobalRecovery(w, 30);
+      expect(w.find('.countdown-left').text()).toBe('1:30');
     });
 
     it('does not start a recovery when every recovery is 0', async () => {

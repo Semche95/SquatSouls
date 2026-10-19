@@ -24,11 +24,13 @@ export function useCountdown() {
     end.value = now.value + ms;
     ticker = setInterval(() => {
       now.value = Date.now();
-      if (msLeft.value) return;
-      const then = onEnd;
-      stop();
-      then?.();
+      if (!msLeft.value) finish(onEnd);
     }, TICK_MS);
+  }
+
+  function finish(then) {
+    stop();
+    then?.();
   }
 
   function start(duration, then) {
@@ -56,5 +58,19 @@ export function useCountdown() {
     if (heldMs.value) run(heldMs.value);
   }
 
-  return { left, share, held, start, stop, hold, resume };
+  // Gives the running countdown a new duration, as if it had started with it: the time already elapsed is kept.
+  // Already past it, ends right away, running `onEnd` unless the new duration is 0.
+  function resize(duration) {
+    if (!seconds.value || duration === seconds.value) return;
+    const ms = duration * 1000 - (seconds.value * 1000 - msLeft.value);
+    if (ms <= 0) return finish(duration ? onEnd : undefined);
+    seconds.value = duration;
+    if (heldMs.value) heldMs.value = ms;
+    else {
+      clearInterval(ticker);
+      run(ms);
+    }
+  }
+
+  return { left, share, held, start, stop, hold, resume, resize };
 }

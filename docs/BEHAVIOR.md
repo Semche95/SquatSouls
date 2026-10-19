@@ -58,6 +58,7 @@ Button and setting names are quoted as they appear in the English interface.
 - During the recovery, no exercise can be marked done (tooltip "Recovery in progress" on **Done**), neither in the same set nor in another one, including a set drawn during the recovery. Jokers, **Cancel** and **Stop** remain possible and do not start a recovery.
 - When the recovery reaches its end, a bell rings twice, like the start of a boxing round. Ending it early or stopping it plays nothing.
 - The recovery shows as a countdown on the top border of the current set (or of the empty block), its ring emptying as time passes. Clicking it (tooltip **Skip**) or pressing Escape ends the recovery right away. It also stops when the session ends or is cancelled, but not when the set whose exercise started it stops: that exercise stays done.
+- A configuration saved during the recovery (global recovery, the exercise's own recovery, or the exercise removed) gives the recovery running the duration that now applies to the exercise that started it, as if it had started with it: the countdown shows that duration minus the time already elapsed, longer or shorter. Already past that duration, the recovery ends right away, with the bell, or without a sound if that duration is 0 s.
 
 ## Timer
 

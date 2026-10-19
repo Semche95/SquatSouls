@@ -32,8 +32,13 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   // Time unit of a timed exercise, undefined otherwise.
   const timedUnit = (item) => exerciseOf(item)?.timed;
 
-  function startRecovery(seconds) {
-    recovery.start(seconds, () => {
+  // Exercise whose recovery runs: a saved configuration that changes its recovery resizes the one running.
+  const recovering = ref(null);
+  watch(() => recovering.value && recoveryAfter(recovering.value), (seconds) => recovering.value && recovery.resize(seconds));
+
+  function startRecovery(item) {
+    recovering.value = item;
+    recovery.start(recoveryAfter(item), () => {
       if (config.value.sound) recoveryEnd();
     });
   }
@@ -198,7 +203,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   async function complete(draw, item) {
     if (recoveryLeft.value || timing.value) return;
-    if (await act('complete_exercise', draw, { exerciseId: item.exerciseId })) startRecovery(recoveryAfter(item));
+    if (await act('complete_exercise', draw, { exerciseId: item.exerciseId })) startRecovery(item);
   }
 
   function halve(draw, item) {
