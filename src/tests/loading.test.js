@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, draw, emptySession, idleSession, rejection, setup, mountApp } from './app.js';
+import { config, draw, emptySession, idleSession, rejection, setup, mountApp, layOutControls, confirmDialog, confirmDialogOpen, confirmDialogClosed } from './app.js';
 import { tm } from '../i18n.js';
 
 describe('loading', () => {
@@ -70,6 +70,50 @@ describe('loading', () => {
     expect(w.find('select').element.disabled).toBe(true);
     expect(w.find('.segmented .active').text()).toBe(tm('play.intensities').hard);
     expect(w.text()).toContain('Squats');
+  });
+
+  describe('once a resumed session ends', () => {
+    layOutControls();
+    const active = (w) => w.find('.segmented .active').text();
+    const resumed = (extra = {}) => setup({ get_session: emptySession({ intensity: 'hard' }), cancel_session: idleSession(), end_session: idleSession(), ...extra });
+    const cancel = async (w) => {
+      await w.find('.session-actions .danger').trigger('click');
+      await flushPromises();
+    };
+
+    it('goes back to normal when cancelled', async () => {
+      resumed();
+      const w = await mountApp();
+      await cancel(w);
+      expect(active(w)).toBe(tm('play.intensities').normal);
+    });
+
+    it('goes back to normal when ended', async () => {
+      resumed({ get_session: emptySession({ intensity: 'hard', sets: 1 }) });
+      const w = await mountApp();
+      await w.find('.session-actions .primary').trigger('click');
+      await confirmDialogOpen();
+      await confirmDialog().find('.primary').trigger('click');
+      await flushPromises();
+      await confirmDialogClosed();
+      expect(active(w)).toBe(tm('play.intensities').normal);
+    });
+
+    it('keeps the remembered intensity', async () => {
+      resumed({ get_config: { config: { ...config, rememberIntensity: true } }, get_intensity: 'hard', set_intensity: undefined });
+      const w = await mountApp();
+      await cancel(w);
+      expect(active(w)).toBe(tm('play.intensities').hard);
+    });
+
+    it('keeps an intensity chosen during the session', async () => {
+      resumed({ set_session_intensity: emptySession({ intensity: 'easy' }) });
+      const w = await mountApp();
+      await w.findAll('.segmented button')[0].trigger('click');
+      await flushPromises();
+      await cancel(w);
+      expect(active(w)).toBe(tm('play.intensities').easy);
+    });
   });
 
   it('tells a session in progress that could not be resumed', async () => {

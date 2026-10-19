@@ -117,9 +117,25 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     if (s.gameId) intensity.value = s.intensity;
   });
 
+  // A session resumed at launch brings the intensity chosen in an earlier launch: once it ends, however it ends,
+  // unless an intensity is chosen meanwhile, the intensity is the one a launch gives, normal unless remembered.
+  let inherited = false;
+  watch(() => session.value.startedAt, (started) => {
+    if (started || !inherited) return;
+    inherited = false;
+    if (!config.value.rememberIntensity) intensity.value = 'normal';
+  });
+
+  async function resume() {
+    const s = await call('get_session');
+    inherited = !!s.gameId;
+    session.value = s;
+  }
+
   // Intensity changed during the session: applied right away to the sets to do.
   watch(intensity, async (value) => {
     if (!session.value.gameId || value === session.value.intensity) return;
+    inherited = false;
     try {
       session.value = await call('set_session_intensity', { intensity: value });
     } catch {
@@ -254,7 +270,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   return {
     session, notice, farewell, recoveryLeft, recoveryShare, skipRecovery, timing, timerLeft, timerShare, timerHeld, timedUnit, startTimer, stopTimer,
-    toggleTimer, reload, saveNow, saveChange, trigger, act, confirmStop, started, dismiss, dismissNow, remaining, canAfford, setSkipCost,
+    toggleTimer, resume, reload, saveNow, saveChange, trigger, act, confirmStop, started, dismiss, dismissNow, remaining, canAfford, setSkipCost,
     complete, halve, skipExercise, skipSet, startSession, endSession, cancelSession,
   };
 });

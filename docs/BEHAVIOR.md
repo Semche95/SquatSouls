@@ -37,7 +37,7 @@ Button and setting names are quoted as they appear in the English interface.
 - It can change during the session and, as a changed minimum or maximum does, applies right away to the exercises to do: their number is the one drawn, halved first if it was, scaled by the new intensity (18 drawn gives 27 in **Hard** and 9 in **Easy**). Exercises already done never change.
 - Hovering a level shows its effect on the number of exercises.
 - It appears neither in the summary nor in the history, which show the numbers actually done.
-- Each launch starts at **Normal**, unless **Remember the intensity between launches** is on in Settings (off by default, part of the configuration and saved with **Save**): the chosen intensity is then kept in the database, outside the configuration, from one launch to the next. A session resumed at launch keeps its own intensity either way.
+- Each launch starts at **Normal**, unless **Remember the intensity between launches** is on in Settings (off by default, part of the configuration and saved with **Save**): the chosen intensity is then kept in the database, outside the configuration, from one launch to the next. A session resumed at launch keeps its own intensity either way; once it ends, however it ends, the intensity is the one the launch gives (**Normal**, or the remembered one), unless an intensity was chosen during the session.
 
 ## Per-session limit
 

@@ -30,7 +30,7 @@ const api = provideApi();
 const { error, call } = api;
 const cfg = provideConfig();
 const { config, configError, gameId, intensity, tab, applyConfigView } = cfg;
-const { session, saveChange } = provideSession(api, cfg);
+const { session, resume, saveChange } = provideSession(api, cfg);
 provideSteam(cfg, { saveChange });
 
 onMounted(async () => {
@@ -40,7 +40,7 @@ onMounted(async () => {
     gameId.value = await invoke('get_last_game').catch(() => '');
     applyConfigView(await call('get_config'));
     if (config.value.rememberIntensity) intensity.value = await invoke('get_intensity').catch(() => 'normal');
-    session.value = await call('get_session');
+    await resume();
   } catch {
     /* error already shown */
   }
