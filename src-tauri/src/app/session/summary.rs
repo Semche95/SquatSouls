@@ -47,6 +47,9 @@ pub struct EventCount {
 pub struct SessionView {
     /// Absent until the session is started.
     pub started_at: Option<i64>,
+    /// Start the session would have had to last as long without the time the app was closed: its duration is the
+    /// time since.
+    pub counted_from: Option<i64>,
     /// Game of the session, set on the first event.
     pub game_id: Option<String>,
     /// Intensity of the session.
@@ -106,6 +109,7 @@ impl Session {
     pub fn view(&self) -> SessionView {
         SessionView {
             started_at: self.started_at,
+            counted_from: self.started_at.map(|_| self.opened_at - self.counted),
             game_id: self.game_id.clone(),
             intensity: self.intensity,
             pending: self.pending.clone(),

@@ -24,6 +24,25 @@ fn ended(saved: bool, cause: EndCause) -> SessionEnd {
     }
 }
 
+/// Starts the session on "ds3" now.
+fn start(state: &mut AppState) -> i64 {
+    state
+        .change_session(|s, cfg| s.start(cfg, "ds3", Local::now().timestamp()))
+        .unwrap()
+}
+
+/// Marks done at `at` the first exercise of `set`.
+fn complete_first(state: &mut AppState, set: &Draw, at: i64) {
+    state
+        .change_session(|s, _| s.complete_exercise(set.id, &set.items[0].exercise_id, at))
+        .unwrap();
+}
+
+/// The app quit then launched again on the same database.
+fn relaunch(state: AppState) -> AppState {
+    AppState::new(state.store, None)
+}
+
 /// Sessions of the history over the last two days.
 fn sessions(state: &AppState) -> Vec<SessionTotals> {
     let today = Local::now().date_naive();
@@ -34,28 +53,27 @@ fn sessions(state: &AppState) -> Vec<SessionTotals> {
 #[test]
 fn removing_the_sessions_game_ends_it_with_the_exercises_done() {
     let mut state = state();
-    let cfg = state.config.clone();
     let mut r = StdRng::seed_from_u64(42);
     let start = Local::now().timestamp() - 100;
-    let boss = state.session.draw(&cfg, "ds3", "boss", &mut r).unwrap();
-    state.session.draw(&cfg, "ds3", "mort", &mut r).unwrap();
-    let entry = state
-        .session
-        .complete_exercise(boss.id, &boss.items[0].exercise_id, start)
+    let boss = state
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", &mut r))
         .unwrap();
-    state.store.append_history(&[entry]).unwrap();
-    state.save_session_summary();
+    state
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", &mut r))
+        .unwrap();
+    complete_first(&mut state, &boss, start);
 
     state.store_config(without_game(&state, "ds3")).unwrap();
-    assert_eq!(state.session.started_at, None, "the next session waits");
+    assert_eq!(state.session().started_at, None, "the next session waits");
     assert_eq!(
-        state.session.view().ended,
+        state.session().view().ended,
         Some(ended(true, EndCause::GameRemoved))
     );
-    let cfg = state.config.clone();
-    state.session.start(&cfg, "ds1", start + 200).unwrap();
+    state
+        .change_session(|s, cfg| s.start(cfg, "ds1", start + 200))
+        .unwrap();
     assert_eq!(
-        state.session.view().ended,
+        state.session().view().ended,
         None,
         "told until the next session starts"
     );
@@ -84,21 +102,15 @@ fn removing_the_sessions_game_ends_it_with_the_exercises_done() {
 #[test]
 fn removing_the_sessions_game_without_any_exercise_done_cancels_it() {
     let mut state = state();
-    let cfg = state.config.clone();
+    start(&mut state);
     state
-        .session
-        .start(&cfg, "ds3", Local::now().timestamp())
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", &mut StdRng::seed_from_u64(42)))
         .unwrap();
-    state
-        .session
-        .draw(&cfg, "ds3", "mort", &mut StdRng::seed_from_u64(42))
-        .unwrap();
-    state.save_session_summary();
 
     state.store_config(without_game(&state, "ds3")).unwrap();
-    assert_eq!(state.session.started_at, None);
+    assert_eq!(state.session().started_at, None);
     assert_eq!(
-        state.session.view().ended,
+        state.session().view().ended,
         Some(ended(false, EndCause::GameRemoved))
     );
     assert!(sessions(&state).is_empty(), "nothing saved");
@@ -107,25 +119,17 @@ fn removing_the_sessions_game_without_any_exercise_done_cancels_it() {
 #[test]
 fn switching_every_exercise_off_ends_the_session_with_the_exercises_done() {
     let mut state = state();
-    let cfg = state.config.clone();
-    let start = Local::now().timestamp() - 100;
     let boss = state
-        .session
-        .draw(&cfg, "ds3", "boss", &mut StdRng::seed_from_u64(42))
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", &mut StdRng::seed_from_u64(42)))
         .unwrap();
-    let entry = state
-        .session
-        .complete_exercise(boss.id, &boss.items[0].exercise_id, start)
-        .unwrap();
-    state.store.append_history(&[entry]).unwrap();
-    state.save_session_summary();
+    complete_first(&mut state, &boss, Local::now().timestamp() - 100);
 
     let mut off = state.config.clone();
     off.exercises.iter_mut().for_each(|ex| ex.enabled = false);
     state.store_config(off).unwrap();
-    assert_eq!(state.session.started_at, None, "the next session waits");
+    assert_eq!(state.session().started_at, None, "the next session waits");
     assert_eq!(
-        state.session.view().ended,
+        state.session().view().ended,
         Some(ended(true, EndCause::NoExercise))
     );
     let [session] = &sessions(&state)[..] else {
@@ -137,17 +141,13 @@ fn switching_every_exercise_off_ends_the_session_with_the_exercises_done() {
 #[test]
 fn removing_every_exercise_without_any_exercise_done_cancels_the_session() {
     let mut state = state();
-    let cfg = state.config.clone();
-    state
-        .session
-        .start(&cfg, "ds3", Local::now().timestamp())
-        .unwrap();
+    start(&mut state);
     let mut none = state.config.clone();
     none.exercises.clear();
     state.store_config(none).unwrap();
-    assert_eq!(state.session.started_at, None);
+    assert_eq!(state.session().started_at, None);
     assert_eq!(
-        state.session.view().ended,
+        state.session().view().ended,
         Some(ended(false, EndCause::NoExercise))
     );
     assert!(sessions(&state).is_empty(), "nothing saved");
@@ -156,11 +156,195 @@ fn removing_every_exercise_without_any_exercise_done_cancels_the_session() {
 #[test]
 fn removing_another_game_keeps_the_session() {
     let mut state = state();
-    let cfg = state.config.clone();
-    let start = state
-        .session
-        .start(&cfg, "ds3", Local::now().timestamp())
-        .unwrap();
+    let start = start(&mut state);
     state.store_config(without_game(&state, "ds1")).unwrap();
-    assert_eq!(state.session.started_at, Some(start));
+    assert_eq!(state.session().started_at, Some(start));
+}
+
+#[test]
+fn the_session_resumes_as_it_was_at_the_next_launch() {
+    let mut state = state();
+    let mut r = StdRng::seed_from_u64(42);
+    let start = Local::now().timestamp() - 100;
+    state
+        .change_session(|s, cfg| {
+            s.set_intensity(Intensity::Easy);
+            s.start(cfg, "ds3", start)
+        })
+        .unwrap();
+    let boss = state
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", &mut r))
+        .unwrap();
+    complete_first(&mut state, &boss, start + 10);
+    state
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", &mut r))
+        .unwrap();
+    let before = state.session().view();
+
+    let state = relaunch(state);
+    let after = state.session().view();
+    assert_eq!(after.started_at, Some(start));
+    assert_eq!(after.game_id.as_deref(), Some("ds3"));
+    assert_eq!(after.intensity, Intensity::Easy, "its own intensity");
+    assert_eq!(after.pending, before.pending);
+    assert_eq!(after.log, before.log);
+    assert_eq!(after.triggers, before.triggers);
+    assert_eq!(after.jokers, before.jokers);
+    assert_eq!(after.ended, None);
+    let [session] = &sessions(&state)[..] else {
+        panic!("one session in the history");
+    };
+    assert_eq!(session.sets, 1, "the exercise done is saved once");
+}
+
+#[test]
+fn an_ended_or_cancelled_session_does_not_resume() {
+    let mut state = state();
+    let boss = state
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", &mut StdRng::seed_from_u64(42)))
+        .unwrap();
+    for it in &boss.items {
+        state
+            .change_session(|s, _| {
+                s.complete_exercise(boss.id, &it.exercise_id, Local::now().timestamp())
+            })
+            .unwrap();
+    }
+    state.end_session(None);
+    let mut state = relaunch(state);
+    assert_eq!(state.session().started_at, None);
+    assert_eq!(
+        sessions(&state).len(),
+        1,
+        "the ended session stays in the history"
+    );
+
+    start(&mut state);
+    state.cancel_session().unwrap();
+    let state = relaunch(state);
+    assert_eq!(state.session().started_at, None);
+}
+
+#[test]
+fn an_unreadable_session_in_progress_is_told_at_the_next_launch() {
+    let path = temp_db("unreadable");
+    let mut state = AppState::new(Store::open(&path, Some("fr_FR.UTF-8")).unwrap(), None);
+    start(&mut state);
+    drop(state);
+    let conn = rusqlite::Connection::open(&path).unwrap();
+    conn.execute("UPDATE current_session SET intensity = 'extreme'", [])
+        .unwrap();
+    drop(conn);
+    let state = AppState::new(Store::open(&path, Some("fr_FR.UTF-8")).unwrap(), None);
+    assert_eq!(state.session().started_at, None);
+    assert_eq!(
+        state.session().view().ended,
+        Some(ended(false, EndCause::Unreadable))
+    );
+    let state = relaunch(state);
+    assert_eq!(state.session().view().ended, None, "told only once");
+    drop(state);
+    std::fs::remove_file(&path).unwrap();
+}
+
+#[test]
+fn no_update_is_installed_during_a_session() {
+    let mut state = state();
+    assert_eq!(state.allow_update(), Ok(()), "waiting to be started");
+    start(&mut state);
+    assert_eq!(
+        state.allow_update(),
+        Err(AppError::new("update_during_session"))
+    );
+    let mut state = relaunch(state);
+    assert!(state.allow_update().is_err(), "the resumed session too");
+    state.cancel_session().unwrap();
+    assert_eq!(state.allow_update(), Ok(()));
+}
+
+/// Launches again on the database at `path` after `breaking` made its configuration invalid: the default one is
+/// used in its place.
+fn relaunch_with_invalid_config(state: AppState, path: &std::path::Path) -> AppState {
+    drop(state);
+    let conn = rusqlite::Connection::open(path).unwrap();
+    conn.execute(
+        "UPDATE games SET name = (SELECT name FROM games WHERE id = 'ds1') WHERE id = 'ds3'",
+        [],
+    )
+    .unwrap();
+    drop(conn);
+    let state = AppState::new(Store::open(path, Some("fr_FR.UTF-8")).unwrap(), None);
+    assert_eq!(
+        state.config,
+        default_config(Language::En),
+        "default configuration, in the system language"
+    );
+    state
+}
+
+/// Temporary database for the test `name`, deleted beforehand.
+fn temp_db(name: &str) -> std::path::PathBuf {
+    let path =
+        std::env::temp_dir().join(format!("squatsouls-state-{name}-{}.db", std::process::id()));
+    let _ = std::fs::remove_file(&path);
+    path
+}
+
+#[test]
+fn a_session_resumed_under_the_default_configuration_adjusts_to_it() {
+    let path = temp_db("invalid-config");
+    let mut state = AppState::new(Store::open(&path, Some("fr_FR.UTF-8")).unwrap(), None);
+    let mut renamed = state.config.clone();
+    renamed
+        .games
+        .iter_mut()
+        .find(|g| g.id == "ds3")
+        .unwrap()
+        .name = "Renamed".into();
+    state.store_config(renamed).unwrap();
+    start(&mut state);
+    state
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", &mut StdRng::seed_from_u64(42)))
+        .unwrap();
+    assert_eq!(state.session().view().pending[0].game_name, "Renamed");
+
+    let state = relaunch_with_invalid_config(state, &path);
+    let view = state.session().view();
+    assert_eq!(view.game_id.as_deref(), Some("ds3"), "resumed");
+    let default_name = &state
+        .config
+        .games
+        .iter()
+        .find(|g| g.id == "ds3")
+        .unwrap()
+        .name;
+    assert_eq!(&view.pending[0].game_name, default_name, "adjusted");
+    drop(state);
+    std::fs::remove_file(&path).unwrap();
+}
+
+#[test]
+fn a_session_resumed_on_a_game_the_default_configuration_lacks_ends() {
+    let path = temp_db("invalid-config-game");
+    let mut state = AppState::new(Store::open(&path, Some("fr_FR.UTF-8")).unwrap(), None);
+    let mut own = state.config.clone();
+    let mut game = own.games.iter().find(|g| g.id == "ds3").unwrap().clone();
+    game.id = "own".into();
+    game.name = "Own game".into();
+    own.games.push(game);
+    state.store_config(own).unwrap();
+    let set = state
+        .change_session(|s, cfg| s.draw(cfg, "own", "mort", &mut StdRng::seed_from_u64(42)))
+        .unwrap();
+    complete_first(&mut state, &set, Local::now().timestamp());
+
+    let state = relaunch_with_invalid_config(state, &path);
+    assert_eq!(state.session().started_at, None);
+    assert_eq!(
+        state.session().view().ended,
+        Some(ended(true, EndCause::GameRemoved))
+    );
+    assert_eq!(sessions(&state)[0].sets, 1, "its exercise done stays");
+    drop(state);
+    std::fs::remove_file(&path).unwrap();
 }

@@ -44,19 +44,22 @@ describe('quit', () => {
     expect(invoke).not.toHaveBeenCalledWith('request_quit');
   });
 
-  it('confirms quitting during a session', async () => {
+  it('confirms quitting during a session, which resumes at the next launch', async () => {
     setup();
     await mountApp();
     await ask();
-    expect(modal().textContent).toContain('Quit Squat Souls?The current session stops');
-    await click('button.danger');
+    expect(modal().textContent).toContain(
+      'Quit Squat Souls?The current session will resume where it left off the next time Squat Souls opens.',
+    );
+    await click('button.primary');
     expect(invoke).toHaveBeenCalledWith('quit');
   });
 
-  it('keeps the session with its button or Escape', async () => {
+  it('stays with its button or Escape', async () => {
     setup();
     await mountApp();
     await ask();
+    expect(modal().querySelector('button.ghost').textContent).toContain('Stay');
     await click('button.ghost');
     await confirmDialogClosed();
     await ask();

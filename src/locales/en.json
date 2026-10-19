@@ -98,7 +98,8 @@
     "keep": "Keep the session",
     "endCause": {
       "gameRemoved": "The session ended: its game was deleted.",
-      "noExercise": "The session ended: no exercise is included anymore."
+      "noExercise": "The session ended: no exercise is included anymore.",
+      "unreadable": "The session ended: it could not be resumed. Its exercises done stay in the history."
     },
     "farewells": [
       "Bonfire lit. Rest now, your legs have earned it.",
@@ -318,7 +319,8 @@
   },
   "quit": {
     "title": "Quit Squat Souls?",
-    "confirm": "The current session stops: the sets to do are dropped and unused jokers are lost, the sets done stay in the history."
+    "confirm": "The current session will resume where it left off the next time Squat Souls opens.",
+    "stay": "Stay"
   },
   "about": {
     "description": "Squat Souls turns your games into a workout: boss down, missed jump, rage-inducing game over, you pay in bodyweight exercises before picking the controller back up. The harsher the game, the stronger you get. Prepare to squat.",
@@ -366,10 +368,12 @@
   "update": {
     "available": "Version {version} is available",
     "availableHint": "Ready to download. It installs when the app quits.",
+    "availableHintSession": "Ready to download. It installs when the app quits outside a session.",
     "downloadingHint": "Downloading in the background…",
     "failedHint": "The download failed. Check the connection, then try again.",
     "ready": "Version {version} is ready",
     "readyHint": "It will be installed when you quit.",
+    "readyHintSession": "It installs when the app quits outside a session.",
     "manualHint": "Download the new package to install it.",
     "download": "Download",
     "update": "Update",
@@ -434,6 +438,7 @@
     "start_without_event": "{game} has no event: the session cannot start.",
     "start_without_exercise": "No exercise included: the session cannot start.",
     "end_without_set": "No set done: nothing to end.",
-    "end_with_pending_sets": "There are sets left to do: finish or cancel them before ending the session."
+    "end_with_pending_sets": "There are sets left to do: finish or cancel them before ending the session.",
+    "update_during_session": "The update installs once the session is over."
   }
 }

@@ -1,7 +1,8 @@
 //! Notification area icon, window hidden rather than closed depending on the configuration, and quitting,
-//! confirmed by the interface during a session, installing the downloaded update.
+//! confirmed by the interface during a session, which resumes at the next launch, installing the downloaded
+//! update otherwise.
 
-use crate::state::{AppState, NativeTexts};
+use crate::state::{in_session, AppState, NativeTexts};
 use crate::update;
 use std::sync::Mutex;
 use tauri::menu::{Menu, MenuItem};
@@ -23,12 +24,6 @@ pub(crate) fn show_main(app: &AppHandle) {
     }
 }
 
-/// Without state (minimal mode at launch), never.
-fn in_session(app: &AppHandle) -> bool {
-    app.try_state::<Mutex<AppState>>()
-        .is_some_and(|state| state.lock().is_ok_and(|s| s.session.started_at.is_some()))
-}
-
 /// Shows the window with the quit confirmation.
 fn confirm_quit(app: &AppHandle) {
     show_main(app);
@@ -45,7 +40,8 @@ pub(crate) fn request_quit(app: &AppHandle) {
 }
 
 /// Quitting by the system (Cmd+Q in the macOS menu) during a session waits for the confirmation.
-/// `app.exit` gives a code and is never held back. Once quitting, the downloaded update is installed.
+/// `app.exit` gives a code and is never held back. Once quitting, the session in progress counts until now, and
+/// without one, the downloaded update is installed.
 pub(crate) fn on_run_event(app: &AppHandle, event: RunEvent) {
     match event {
         RunEvent::ExitRequested {
@@ -54,7 +50,14 @@ pub(crate) fn on_run_event(app: &AppHandle, event: RunEvent) {
             api.prevent_exit();
             confirm_quit(app);
         }
-        RunEvent::Exit => update::install_on_exit(app),
+        RunEvent::Exit => {
+            if let Some(state) = app.try_state::<Mutex<AppState>>() {
+                if let Ok(s) = state.lock() {
+                    s.mark_seen();
+                }
+            }
+            update::install_on_exit(app);
+        }
         _ => {}
     }
 }

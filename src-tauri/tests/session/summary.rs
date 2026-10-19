@@ -80,3 +80,16 @@ fn the_jokers_spent_on_a_set_dismissed_before_being_started_never_count() {
         }
     );
 }
+
+#[test]
+fn the_duration_counts_from_the_start_without_the_time_the_app_was_closed() {
+    let cfg = default_config(Language::Fr);
+    let mut s = Session::default();
+    assert_eq!(s.view().counted_from, None, "not started");
+    s.start(&cfg, "ds3", 1000).unwrap();
+    assert_eq!(s.view().counted_from, Some(1000));
+    s.resume(1060, 5000);
+    assert_eq!(s.view().counted_from, Some(5000 - 60));
+    s.resume(5100, 9000);
+    assert_eq!(s.view().counted_from, Some(9000 - 160));
+}

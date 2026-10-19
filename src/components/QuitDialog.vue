@@ -6,7 +6,8 @@ import { t } from '../i18n.js';
 import { useKeydown } from '../composables/useKeydown.js';
 import ConfirmDialog from './ConfirmDialog.vue';
 
-// Quitting asked during a session (shortcut, tray menu, window closed): awaits confirmation.
+// Quitting asked during a session (shortcut, tray menu, window closed): awaits confirmation. Nothing is lost, the
+// session resumes at the next launch.
 const asked = ref(false);
 
 // e.key follows the layout: Q stays Q on AZERTY.
@@ -36,7 +37,8 @@ onBeforeUnmount(() => unlisten?.());
     :title="t('quit.title')"
     :text="t('quit.confirm')"
     :confirm="t('native.quit')"
-    :keep="t('session.keep')"
+    :keep="t('quit.stay')"
+    validate
     @confirm="invoke('quit')"
   />
 </template>

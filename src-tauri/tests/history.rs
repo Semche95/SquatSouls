@@ -38,6 +38,7 @@ fn sessions_grouped_by_session_and_game() {
                     spent: 0,
                 },
             )]),
+            durations: HashMap::new(),
         },
     );
     assert_eq!(groups.len(), 2);
@@ -162,4 +163,28 @@ fn a_session_past_midnight_stays_on_the_day_it_started() {
     assert_eq!(session.start, start, "from the start of the session");
     assert_eq!(session.duration, 3 * 3600);
     assert_eq!(count_days(&[start]), 1);
+}
+
+#[test]
+fn a_session_lasts_the_time_the_app_was_open() {
+    let records = |opened| SessionRecords {
+        ends: HashMap::from([(1000, 9000)]),
+        durations: HashMap::from([(
+            1000,
+            SessionDuration {
+                counted: 60,
+                opened,
+            },
+        )]),
+        ..SessionRecords::default()
+    };
+    let duration =
+        |opened, last| sessions(&[entry(last, 1000, "Sekiro", 10)], &records(opened))[0].duration;
+    assert_eq!(duration(None, 1020), 60, "ended: the time counted");
+    assert_eq!(
+        duration(Some(5000), 5030),
+        90,
+        "in progress: until its last set"
+    );
+    assert_eq!(duration(Some(5000), 1020), 60, "no set since it reopened");
 }

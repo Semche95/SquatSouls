@@ -8,11 +8,13 @@ import { releaseUrl } from '../repository.js';
 import { useApi } from '../composables/useApi.js';
 import DisabledTip from './DisabledTip.vue';
 
-// During a session, the app is not restarted.
+// During a session, the app is not restarted, and quitting does not install the update.
 defineProps({ locked: Boolean });
+// Stages whose hint tells the update installs on quitting, which waits for the end of the session.
+const WAITS_FOR_SESSION = ['available', 'ready'];
 
 // Update announced as soon as found, downloaded in the background, right away or on request, again on request
-// after a failure, and installed on quitting, or, for the packages that cannot install it, downloaded by the user. Shared with the parent that binds it.
+// after a failure, and installed on quitting outside a session, or, for the packages that cannot install it, downloaded by the user. Shared with the parent that binds it.
 const update = defineModel({ type: Object, default: null });
 const { call } = useApi();
 
@@ -45,7 +47,7 @@ function restart() {
     </svg>
     <div class="update-text">
       <strong>{{ t(stage === 'ready' ? 'update.ready' : 'update.available', { version: update.version }) }}</strong>
-      <span>{{ t(`update.${stage}Hint`) }}</span>
+      <span>{{ t(`update.${stage}Hint${locked && WAITS_FOR_SESSION.includes(stage) ? 'Session' : ''}`) }}</span>
     </div>
     <span v-if="stage === 'ready'" class="row">
       <DisabledTip :tip="locked ? t('update.restartLocked') : ''">

@@ -1,5 +1,6 @@
 pub mod app;
 mod commands;
+mod session_clock;
 mod startup;
 pub mod state;
 mod tray;
@@ -107,6 +108,7 @@ pub fn run() {
             let (update_check, update_auto) = (state.config.update_check, state.config.update_auto);
             app.manage(Mutex::new(state));
             startup::copy_regularly(app.handle());
+            session_clock::record_regularly(app.handle());
             update::apply(app.handle(), update_check, update_auto);
             Ok(())
         })

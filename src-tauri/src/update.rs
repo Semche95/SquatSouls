@@ -1,8 +1,9 @@
 //! Update: checked at launch when enabled, announced as soon as found, downloaded in the background
 //! right away when automatic or else on request, downloaded again on request after a failure,
-//! installed on quitting or on request. The `.deb` and `.rpm` packages are only told.
+//! installed on quitting or on request, never during a session. The `.deb` and `.rpm` packages are only told.
 
 use crate::app::AppError;
+use crate::state::{lock, AppState};
 use serde::Serialize;
 use std::sync::{Mutex, MutexGuard};
 use tauri::async_runtime::JoinHandle;
@@ -214,8 +215,12 @@ async fn download(app: &AppHandle, generation: u64, update: Update) {
     }
 }
 
-/// On quitting: installs the downloaded update without restarting the app.
+/// On quitting: installs the downloaded update without restarting the app. During a session, which resumes at the
+/// next launch, the update waits for the app to quit without one.
 pub(crate) fn install_on_exit(app: &AppHandle) {
+    if allow_update(app).is_err() {
+        return;
+    }
     if let Some((update, bytes)) = app.state::<PendingUpdate>().take() {
         if let Err(e) = update.restart_after_install(false).install(bytes) {
             log::error!("Update not installed: {e}");
@@ -223,8 +228,9 @@ pub(crate) fn install_on_exit(app: &AppHandle) {
     }
 }
 
-/// Installs the downloaded update and restarts the app on the new version.
+/// Installs the downloaded update and restarts the app on the new version, never during a session.
 pub(crate) fn install_and_restart(app: &AppHandle) -> Result<(), AppError> {
+    allow_update(app)?;
     let (update, bytes) = app
         .state::<PendingUpdate>()
         .take()
@@ -233,4 +239,13 @@ pub(crate) fn install_and_restart(app: &AppHandle) -> Result<(), AppError> {
         .install(bytes)
         .map_err(|e| AppError::internal("Update not installed", e))?;
     app.restart()
+}
+
+/// Whether the update may be installed now (see `AppState::allow_update`); always in the minimal mode at launch,
+/// which has no session.
+fn allow_update(app: &AppHandle) -> Result<(), AppError> {
+    match app.try_state::<Mutex<AppState>>() {
+        Some(state) => lock(&state)?.allow_update(),
+        None => Ok(()),
+    }
 }

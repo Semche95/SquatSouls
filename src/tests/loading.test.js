@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, rejection, setup, mountApp } from './app.js';
+import { config, draw, emptySession, idleSession, rejection, setup, mountApp } from './app.js';
+import { tm } from '../i18n.js';
 
 describe('loading', () => {
   it('asks for the game on first launch', async () => {
@@ -56,5 +57,24 @@ describe('loading', () => {
     expect(w.find('.banner.error').text()).toContain('Saved configuration ignored, default configuration used. An exercise has an empty id or name.');
     await w.find('.banner.error button').trigger('click');
     expect(w.find('.cfg-events').exists()).toBe(true);
+  });
+  it('resumes the session in progress with its game and its own intensity', async () => {
+    setup({
+      get_config: { config: { ...config, rememberIntensity: true } },
+      get_intensity: 'easy',
+      get_last_game: 'sekiro',
+      get_session: emptySession({ gameId: 'er', intensity: 'hard', pending: [draw] }),
+    });
+    const w = await mountApp();
+    expect(w.find('select').element.value).toBe('er');
+    expect(w.find('select').element.disabled).toBe(true);
+    expect(w.find('.segmented .active').text()).toBe(tm('play.intensities').hard);
+    expect(w.text()).toContain('Squats');
+  });
+
+  it('tells a session in progress that could not be resumed', async () => {
+    setup({ get_session: idleSession({ ended: { saved: false, cause: 'unreadable' } }) });
+    const w = await mountApp();
+    expect(w.text()).toContain('The session ended: it could not be resumed. Its exercises done stay in the history.');
   });
 });

@@ -57,6 +57,14 @@ describe('update', () => {
     await expectTip(button, 'Available once the session is over');
   });
 
+  it('tells during a session that the update waits for quitting outside a session', async () => {
+    setup({ get_update: ready, get_session: emptySession() });
+    const w = await mountApp();
+    expect(banner(w).text()).toContain('It installs when the app quits outside a session.');
+    await emitEvent('update-changed', { version: '0.2.0', progress: null, stage: 'available' });
+    expect(banner(w).text()).toContain('Ready to download. It installs when the app quits outside a session.');
+  });
+
   it('downloads the update found on request when it is not automatic', async () => {
     setup({ get_update: { version: '0.2.0', progress: null, stage: 'available' }, download_update: undefined });
     const w = await mountApp();

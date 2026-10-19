@@ -20,7 +20,7 @@ pub struct DayTotals {
 pub struct SessionTotals {
     /// Start of the session.
     pub start: i64,
-    /// Seconds between the start of the session and its end (or its last set).
+    /// Seconds the session lasted while the app was open, until its end or else its last set.
     pub duration: i64,
     pub game: String,
     pub sets: usize,
@@ -37,6 +37,17 @@ pub struct SessionRecords {
     pub ends: HashMap<i64, i64>,
     pub events: HashMap<i64, Vec<EventCount>>,
     pub jokers: HashMap<i64, Jokers>,
+    /// Absent for sessions saved before it was recorded.
+    pub durations: HashMap<i64, SessionDuration>,
+}
+
+/// Time a session was open, without the time the app was closed in between.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SessionDuration {
+    /// Seconds of the periods already closed.
+    pub counted: i64,
+    /// Start of the period in progress, none once the session ended.
+    pub opened: Option<i64>,
 }
 
 /// Groups sets by session and by game.
@@ -55,13 +66,23 @@ pub fn sessions(entries: &[LogEntry], records: &SessionRecords) -> Vec<SessionTo
             // A set done before its session's start can only come from a clock change.
             let start = list.iter().map(|e| e.at).fold(session, i64::min);
             let last = list.iter().map(|e| e.at).max().unwrap_or_default();
-            let end = records
-                .ends
-                .get(&session)
-                .map_or(last, |&ended| ended.max(last));
+            let duration = match records.durations.get(&session) {
+                Some(&SessionDuration {
+                    counted,
+                    opened: Some(opened),
+                }) => counted + (last - opened).max(0),
+                Some(d) => d.counted,
+                None => {
+                    records
+                        .ends
+                        .get(&session)
+                        .map_or(last, |&ended| ended.max(last))
+                        - start
+                }
+            };
             SessionTotals {
                 start,
-                duration: end - start,
+                duration,
                 game: game.to_string(),
                 sets: list.len(),
                 totals: totals(&list),

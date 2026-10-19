@@ -1,7 +1,7 @@
 //! Session: draw, exercises and sets, start, end and cancellation.
 
-use crate::app::{AppError, Draw, Intensity, SessionView};
-use crate::state::{lock, now, AppState, Shared};
+use crate::app::{AppError, Config, Draw, Intensity, Session, SessionView};
+use crate::state::{lock, now, Shared};
 
 #[tauri::command]
 pub(crate) fn draw(
@@ -10,15 +10,12 @@ pub(crate) fn draw(
     event_id: String,
     intensity: Intensity,
 ) -> Result<Draw, AppError> {
-    let mut guard = lock(&state)?;
-    let AppState {
-        config, session, ..
-    } = &mut *guard;
-    session.set_intensity(intensity);
-    let draw = session.draw(config, &game_id, &event_id, &mut rand::rng())?;
-    session.start(config, &game_id, now())?;
-    guard.save_session_summary();
-    Ok(draw)
+    lock(&state)?.change_session(|session, config| {
+        session.set_intensity(intensity);
+        let draw = session.draw(config, &game_id, &event_id, &mut rand::rng())?;
+        session.start(config, &game_id, now())?;
+        Ok(draw)
+    })
 }
 
 #[tauri::command]
@@ -26,9 +23,10 @@ pub(crate) fn set_session_intensity(
     state: Shared,
     intensity: Intensity,
 ) -> Result<SessionView, AppError> {
-    let mut s = lock(&state)?;
-    s.session.set_intensity(intensity);
-    Ok(s.session.view())
+    change(&state, |session, _| {
+        session.set_intensity(intensity);
+        Ok(())
+    })
 }
 
 #[tauri::command]
@@ -37,21 +35,16 @@ pub(crate) fn complete_exercise(
     draw_id: u64,
     exercise_id: String,
 ) -> Result<SessionView, AppError> {
-    let mut s = lock(&state)?;
-    let entry = s.session.complete_exercise(draw_id, &exercise_id, now())?;
-    if let Err(e) = s.store.append_history(&[entry]) {
-        log::error!("History not saved: {e}");
-    }
-    s.save_session_summary();
-    Ok(s.session.view())
+    change(&state, |session, _| {
+        session
+            .complete_exercise(draw_id, &exercise_id, now())
+            .map(drop)
+    })
 }
 
 #[tauri::command]
 pub(crate) fn dismiss(state: Shared, draw_id: u64) -> Result<SessionView, AppError> {
-    let mut s = lock(&state)?;
-    s.session.dismiss(draw_id)?;
-    s.save_session_summary();
-    Ok(s.session.view())
+    change(&state, |session, _| session.dismiss(draw_id))
 }
 
 #[tauri::command]
@@ -60,10 +53,7 @@ pub(crate) fn halve(
     draw_id: u64,
     exercise_id: String,
 ) -> Result<SessionView, AppError> {
-    let mut s = lock(&state)?;
-    s.session.halve(draw_id, &exercise_id)?;
-    s.save_session_summary();
-    Ok(s.session.view())
+    change(&state, |session, _| session.halve(draw_id, &exercise_id))
 }
 
 #[tauri::command]
@@ -72,23 +62,19 @@ pub(crate) fn skip_exercise(
     draw_id: u64,
     exercise_id: String,
 ) -> Result<SessionView, AppError> {
-    let mut s = lock(&state)?;
-    s.session.skip_exercise(draw_id, &exercise_id)?;
-    s.save_session_summary();
-    Ok(s.session.view())
+    change(&state, |session, _| {
+        session.skip_exercise(draw_id, &exercise_id)
+    })
 }
 
 #[tauri::command]
 pub(crate) fn skip_set(state: Shared, draw_id: u64) -> Result<SessionView, AppError> {
-    let mut s = lock(&state)?;
-    s.session.skip_set(draw_id)?;
-    s.save_session_summary();
-    Ok(s.session.view())
+    change(&state, |session, _| session.skip_set(draw_id))
 }
 
 #[tauri::command]
 pub(crate) fn get_session(state: Shared) -> Result<SessionView, AppError> {
-    Ok(lock(&state)?.session.view())
+    Ok(lock(&state)?.session().view())
 }
 
 #[tauri::command]
@@ -97,27 +83,34 @@ pub(crate) fn start_session(
     game_id: String,
     intensity: Intensity,
 ) -> Result<SessionView, AppError> {
-    let mut s = lock(&state)?;
-    let AppState {
-        config, session, ..
-    } = &mut *s;
-    session.set_intensity(intensity);
-    session.start(config, &game_id, now())?;
-    Ok(s.session.view())
+    change(&state, |session, config| {
+        session.set_intensity(intensity);
+        session.start(config, &game_id, now()).map(drop)
+    })
 }
 
 /// Ends the session, with at least one set done and none left to do; the next one waits to be started.
 #[tauri::command]
 pub(crate) fn end_session(state: Shared) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
-    s.session.check_end()?;
+    s.session().check_end()?;
     s.end_session(None);
-    Ok(s.session.view())
+    Ok(s.session().view())
 }
 
 #[tauri::command]
 pub(crate) fn cancel_session(state: Shared) -> Result<SessionView, AppError> {
     let mut s = lock(&state)?;
     s.cancel_session()?;
-    Ok(s.session.view())
+    Ok(s.session().view())
+}
+
+/// Applies `change` to the session, saved with it, and returns what the session shows.
+fn change(
+    state: &Shared,
+    change: impl FnOnce(&mut Session, &Config) -> Result<(), AppError>,
+) -> Result<SessionView, AppError> {
+    let mut s = lock(state)?;
+    s.change_session(change)?;
+    Ok(s.session().view())
 }

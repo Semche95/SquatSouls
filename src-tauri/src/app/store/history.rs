@@ -1,9 +1,9 @@
-//! History: sets done, session ends, events and jokers, and their reading by day.
+//! History: sets done, session ends, events, jokers and durations, and their reading by day.
 
 use super::Store;
 use crate::app::{
     active_days, count_days, days_range, last_days, window_start, DayTotals, EventCount, Jokers,
-    LogEntry, SessionRecords,
+    LogEntry, SessionDuration, SessionRecords,
 };
 use chrono::NaiveDate;
 use rusqlite::{params, Result, Row};
@@ -11,7 +11,7 @@ use std::collections::HashMap;
 
 impl Store {
     pub fn append_history(&mut self, entries: &[LogEntry]) -> Result<()> {
-        let tx = self.conn.transaction()?;
+        let tx = self.conn.savepoint()?;
         {
             let mut stmt = tx.prepare(
                 "INSERT INTO sets (at, session, game, event, exercise, unit, amount)
@@ -26,12 +26,19 @@ impl Store {
         tx.commit()
     }
 
-    pub fn end_session(&self, session: i64, ended: i64) -> Result<()> {
-        self.conn.execute(
+    /// Saves the end of a session, which closes the period it was open in.
+    pub fn end_session(&mut self, session: i64, ended: i64) -> Result<()> {
+        let tx = self.conn.savepoint()?;
+        tx.execute(
             "INSERT OR REPLACE INTO session_ends (session, ended) VALUES (?1, ?2)",
             params![session, ended],
         )?;
-        Ok(())
+        tx.execute(
+            "UPDATE session_durations SET counted = counted + MAX(?2 - opened, 0), opened = NULL
+             WHERE session = ?1 AND opened IS NOT NULL",
+            params![session, ended],
+        )?;
+        tx.commit()
     }
 
     /// Replaces the events triggered and the jokers saved for a session.
@@ -41,7 +48,7 @@ impl Store {
         events: &[EventCount],
         jokers: Jokers,
     ) -> Result<()> {
-        let tx = self.conn.transaction()?;
+        let tx = self.conn.savepoint()?;
         tx.execute("DELETE FROM session_events WHERE session = ?1", [session])?;
         {
             let mut stmt = tx.prepare(
@@ -58,10 +65,16 @@ impl Store {
         tx.commit()
     }
 
-    /// Removes a session's sets, end, events and jokers from the history.
+    /// Removes a session's sets, end, events, jokers and duration from the history.
     pub fn remove_session(&mut self, session: i64) -> Result<()> {
-        let tx = self.conn.transaction()?;
-        for table in ["sets", "session_ends", "session_events", "session_jokers"] {
+        let tx = self.conn.savepoint()?;
+        for table in [
+            "sets",
+            "session_ends",
+            "session_events",
+            "session_jokers",
+            "session_durations",
+        ] {
             tx.execute(
                 &format!("DELETE FROM {table} WHERE session = ?1"),
                 [session],
@@ -102,24 +115,7 @@ impl Store {
     /// Sets of the sessions started between `from` and `to` (included), and what is kept of
     /// those sessions.
     fn sets_between(&self, from: i64, to: i64) -> Result<(Vec<LogEntry>, SessionRecords)> {
-        let entries = self
-            .conn
-            .prepare(
-                "SELECT at, session, game, event, exercise, unit, amount FROM sets
-                 WHERE session BETWEEN ?1 AND ?2 ORDER BY at, id",
-            )?
-            .query_map([from, to], |r| {
-                Ok(LogEntry {
-                    at: r.get(0)?,
-                    session: r.get(1)?,
-                    game: r.get(2)?,
-                    event: r.get(3)?,
-                    exercise: r.get(4)?,
-                    unit: r.get(5)?,
-                    amount: r.get(6)?,
-                })
-            })?
-            .collect::<Result<_>>()?;
+        let entries = self.sets_of(from, to)?;
         let ends = self.session_rows("SELECT session, ended FROM session_ends", from, to, |r| {
             r.get(1)
         })?;
@@ -148,12 +144,45 @@ impl Store {
                 })
             },
         )?;
+        let durations = self.session_rows(
+            "SELECT session, counted, opened FROM session_durations",
+            from,
+            to,
+            |r| {
+                Ok(SessionDuration {
+                    counted: r.get(1)?,
+                    opened: r.get(2)?,
+                })
+            },
+        )?;
         let records = SessionRecords {
             ends: ends.into_iter().collect(),
             events,
             jokers: jokers.into_iter().collect(),
+            durations: durations.into_iter().collect(),
         };
         Ok((entries, records))
+    }
+
+    /// Sets of the sessions started between `from` and `to` (included), in the order they were done.
+    pub(super) fn sets_of(&self, from: i64, to: i64) -> Result<Vec<LogEntry>> {
+        self.conn
+            .prepare(
+                "SELECT at, session, game, event, exercise, unit, amount FROM sets
+                 WHERE session BETWEEN ?1 AND ?2 ORDER BY at, id",
+            )?
+            .query_map([from, to], |r| {
+                Ok(LogEntry {
+                    at: r.get(0)?,
+                    session: r.get(1)?,
+                    game: r.get(2)?,
+                    event: r.get(3)?,
+                    exercise: r.get(4)?,
+                    unit: r.get(5)?,
+                    amount: r.get(6)?,
+                })
+            })?
+            .collect()
     }
 
     /// Rows of `select` (whose first column is the session) for sessions started between `from`

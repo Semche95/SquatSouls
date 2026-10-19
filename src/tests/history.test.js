@@ -138,6 +138,30 @@ describe('history', () => {
     vi.unstubAllGlobals();
   });
 
+  it('leaves out of the current session the time the app was closed', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(3601 * 1000);
+    const writeText = vi.fn().mockResolvedValue();
+    vi.stubGlobal('navigator', { clipboard: { writeText } });
+    // Resumed after the app stayed closed for half an hour.
+    setup({
+      get_session: emptySession({
+        countedFrom: 1801,
+        sets: 1,
+        totals: [{ exercise: 'Squats', unit: 'reps', sets: 1, amount: 10 }],
+        log: [{ at: 0, amount: 10, unit: 'reps', exercise: 'Squats', event: 'Death' }],
+      }),
+    });
+    const w = await mountApp();
+    await w.findAll('.tabs button')[1].trigger('click');
+    await flushPromises();
+    await w.find('.current .group-head button').trigger('click');
+    await flushPromises();
+    expect(writeText).toHaveBeenCalledWith(expect.stringMatching(/^Elden Ring · 30 min\n/));
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
   it('copies a whole day once it has several sessions', async () => {
     const writeText = vi.fn().mockResolvedValue();
     vi.stubGlobal('navigator', { clipboard: { writeText } });

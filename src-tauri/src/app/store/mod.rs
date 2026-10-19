@@ -1,7 +1,8 @@
-//! SQLite storage, written row by row: configuration, history, settings, Steam Store names, schema migrations
-//! and the opening of the file at launch, with its copy from the previous launch.
+//! SQLite storage, written row by row: configuration, history, session in progress, settings, Steam Store names,
+//! schema migrations and the opening of the file at launch, with its copy from the previous launch.
 
 mod config;
+mod current;
 mod history;
 mod launch;
 mod schema;
@@ -44,5 +45,25 @@ impl Store {
             store.save_config(&default_config(language))?;
         }
         Ok(store)
+    }
+
+    /// Runs `change` as a whole: on failure, nothing it wrote is kept. The store's own writes nest in it.
+    pub fn atomically<T>(&mut self, change: impl FnOnce(&mut Self) -> Result<T>) -> Result<T> {
+        self.conn.execute_batch("SAVEPOINT atomically")?;
+        match change(self) {
+            Ok(value) => {
+                self.conn.execute_batch("RELEASE atomically")?;
+                Ok(value)
+            }
+            Err(e) => {
+                if let Err(undo) = self
+                    .conn
+                    .execute_batch("ROLLBACK TO atomically; RELEASE atomically")
+                {
+                    log::error!("Changes not undone: {undo}");
+                }
+                Err(e)
+            }
+        }
     }
 }

@@ -34,13 +34,14 @@ const gameName = computed(() => config.value?.games.find((g) => g.id === session
 const copied = ref('');
 let copiedTimer;
 
-// The current session lasts until now; its events follow the order of the game's events.
+// The current session lasts until now, without the time the app was closed; its events follow the order of the
+// game's events.
 function currentSummary() {
   const s = session.value;
   const events = config.value.games.find((g) => g.id === s.gameId)?.events ?? [];
   return sessionSummary({
     game: gameName.value,
-    duration: Math.floor(Date.now() / 1000) - s.startedAt,
+    duration: Math.floor(Date.now() / 1000) - s.countedFrom,
     events: events.flatMap((ev) => {
       const count = s.countedTriggers.find((tr) => tr.gameId === s.gameId && tr.eventId === ev.id)?.count;
       return count ? [{ event: ev.name, count }] : [];

@@ -98,7 +98,8 @@
     "keep": "Garder la séance",
     "endCause": {
       "gameRemoved": "La séance s'est terminée : son jeu a été supprimé.",
-      "noExercise": "La séance s'est terminée : plus aucun exercice n'est proposé."
+      "noExercise": "La séance s'est terminée : plus aucun exercice n'est proposé.",
+      "unreadable": "La séance s'est terminée : elle n'a pas pu reprendre. Ses exercices faits restent dans l'historique."
     },
     "farewells": [
       "Feu allumé. Repose-toi, tes jambes l'ont bien mérité.",
@@ -318,7 +319,8 @@
   },
   "quit": {
     "title": "Quitter Squat Souls ?",
-    "confirm": "La séance en cours s'arrête : les séries à faire sont retirées et les jokers non utilisés sont perdus, les séries faites restent dans l'historique."
+    "confirm": "La séance en cours reprendra là où elle en est à la prochaine ouverture.",
+    "stay": "Rester"
   },
   "about": {
     "description": "Squat Souls transforme tes parties en entraînement : boss vaincu, saut raté, game over rageant, tout se règle au poids du corps avant de reprendre la manette. Plus le jeu est impitoyable, plus tu deviens solide. Prépare-toi à transpirer.",
@@ -366,10 +368,12 @@
   "update": {
     "available": "La version {version} est disponible",
     "availableHint": "Prête à être téléchargée. Elle s'installera à la fermeture de l'appli.",
+    "availableHintSession": "Prête à être téléchargée. Elle s'installera à la fermeture de l'appli, en dehors d'une séance.",
     "downloadingHint": "Téléchargement en arrière-plan…",
     "failedHint": "Le téléchargement a échoué. Vérifier la connexion, puis réessayer.",
     "ready": "La version {version} est prête",
     "readyHint": "Elle s'installera à la fermeture de l'appli.",
+    "readyHintSession": "Elle s'installera à la fermeture de l'appli, en dehors d'une séance.",
     "manualHint": "Télécharge le nouveau paquet pour l'installer.",
     "download": "Télécharger",
     "update": "Mettre à jour",
@@ -434,6 +438,7 @@
     "start_without_event": "{game} n'a aucun événement : la séance ne peut pas démarrer.",
     "start_without_exercise": "Aucun exercice proposé : la séance ne peut pas démarrer.",
     "end_without_set": "Aucune série faite : rien à terminer.",
-    "end_with_pending_sets": "Des séries sont encore à faire : les finir ou les annuler avant de terminer la séance."
+    "end_with_pending_sets": "Des séries sont encore à faire : les finir ou les annuler avant de terminer la séance.",
+    "update_during_session": "La mise à jour s'installe une fois la séance terminée."
   }
 }
