@@ -1,7 +1,7 @@
 {
   "name": "squat-souls",
   "private": true,
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Turns in-game events into bodyweight exercises with a random number of reps",
   "license": "MIT",
   "author": "Semche95",
