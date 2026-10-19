@@ -144,6 +144,16 @@ describe('countdown', () => {
       expect(recoveryEnd).toHaveBeenCalledOnce();
     });
 
+    it('stops without the bell when the saved recovery is already past but the save also ends the session', async () => {
+      const w = await completeOne(draw.items[0]);
+      responses.save_config = (args) => ({ config: args.config });
+      responses.get_session = idleSession({ ended: { saved: true, cause: 'noExercise' } });
+      await vi.advanceTimersByTimeAsync(40_000);
+      await saveGlobalRecovery(w, 30);
+      expect(await sealShown(w)).toBe(false);
+      expect(recoveryEnd).not.toHaveBeenCalled();
+    });
+
     it('keeps the exercise\'s own recovery when the global recovery changes', async () => {
       const w = await completeOne();
       responses.save_config = (args) => ({ config: args.config });

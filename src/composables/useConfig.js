@@ -74,18 +74,19 @@ export const [provideConfig, useConfig] = defineShared(() => {
     configError.value = view.error ? errorText(view.error) : '';
   }
 
-  // Saves `cfg` without touching the draft; returns false if the backend refuses.
+  // Saves `cfg` without applying it nor touching the draft; returns the saved configuration, null if the backend
+  // refuses.
   async function store(cfg) {
     const clean = normalized(cfg);
     fail(fieldError(clean));
-    if (configError.value) return false;
+    if (configError.value) return null;
     try {
-      config.value = (await invoke('save_config', { config: clean })).config;
+      const saved = (await invoke('save_config', { config: clean })).config;
       fail('');
-      return true;
+      return saved;
     } catch (e) {
       fail(errorText(e));
-      return false;
+      return null;
     }
   }
 

@@ -32,9 +32,13 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   // Time unit of a timed exercise, undefined otherwise.
   const timedUnit = (item) => exerciseOf(item)?.timed;
 
-  // Exercise whose recovery runs: a saved configuration that changes its recovery resizes the one running.
+  // Exercise whose recovery runs: a saved configuration that changes its recovery resizes the one running, unless
+  // it also ends the session, which stops the recovery.
   const recovering = ref(null);
-  watch(() => recovering.value && recoveryAfter(recovering.value), (seconds) => recovering.value && recovery.resize(seconds));
+  watch(
+    () => (session.value.startedAt && recovering.value ? recoveryAfter(recovering.value) : null),
+    (seconds) => seconds === null || recovery.resize(seconds),
+  );
 
   function startRecovery(item) {
     recovering.value = item;
@@ -127,10 +131,14 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     session.value = await invoke('get_session');
   }
 
-  // Configuration saved right away and applied to the session; false if the backend refuses it.
+  // Configuration saved right away and applied to the session; false if the backend refuses it. The configuration
+  // and the session it leaves are applied together, so that nothing sees one without the other.
   async function saveNow(cfg) {
-    if (!(await store(cfg))) return false;
-    await reload();
+    const saved = await store(cfg);
+    if (!saved) return false;
+    const refitted = await invoke('get_session');
+    config.value = saved;
+    session.value = refitted;
     return true;
   }
 
