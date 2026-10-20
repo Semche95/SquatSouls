@@ -1,9 +1,9 @@
 <script setup>
 import { computed } from 'vue';
-import { formatCountdown } from '../format.js';
-import { t } from '../i18n.js';
+import { formatCountdown } from '../i18n/format.js';
+import { t } from '../i18n/i18n.js';
 import { SIDES, useSession } from '../composables/useSession.js';
-import { vTooltip } from '../tooltip.js';
+import { vTooltip } from '../ui/tooltip.js';
 
 // Countdown set astride the top border of its container, which must be positioned: the ring empties clockwise.
 // It shows the timer of a timed exercise (click or Space holds or resumes it, Escape stops it), otherwise the recovery

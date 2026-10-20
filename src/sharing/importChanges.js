@@ -1,4 +1,4 @@
-import { nameKey, newId, sameName } from './configDraft.js';
+import { nameKey, newId, sameName } from '../config/configDraft.js';
 import { sharedSettings, withOptional } from './share.js';
 
 // Changes an import brings to the configuration, listed for the user to choose from, then applied as chosen.

@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { vTooltip } from '../tooltip.js';
-import { countError, parseCount } from '../configDraft.js';
+import { vTooltip } from '../ui/tooltip.js';
+import { countError, parseCount } from '../config/configDraft.js';
 
 // Integer field whose format and `bounds` are checked while typing (error in a tooltip).
 // Cleared, it becomes 0 when leaving the field, or disappears if it is optional.

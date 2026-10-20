@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { VueFinalModal } from 'vue-final-modal';
-import { rt, t, tm } from '../i18n.js';
+import { rt, t, tm } from '../i18n/i18n.js';
 import { useConfig } from '../composables/useConfig.js';
 
 const { tab, cfgTab } = useConfig();

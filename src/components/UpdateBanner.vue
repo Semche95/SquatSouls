@@ -3,8 +3,8 @@ import { computed, onBeforeUnmount, onMounted } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { t } from '../i18n.js';
-import { releaseUrl } from '../repository.js';
+import { t } from '../i18n/i18n.js';
+import { releaseUrl } from '../project/repository.js';
 import { useApi } from '../composables/useApi.js';
 import DisabledTip from './DisabledTip.vue';
 

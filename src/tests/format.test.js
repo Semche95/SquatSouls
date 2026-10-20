@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { formatCountdown, formatDuration, sessionSummary } from '../format.js';
-import { setLanguage } from '../i18n.js';
+import { formatCountdown, formatDuration, sessionSummary } from '../i18n/format.js';
+import { setLanguage } from '../i18n/i18n.js';
 
 describe('formatCountdown', () => {
   it('shows minutes and seconds', () => {

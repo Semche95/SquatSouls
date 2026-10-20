@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { rt, t, tm } from '../i18n.js';
+import { rt, t, tm } from '../i18n/i18n.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import ConfirmDialog from './ConfirmDialog.vue';

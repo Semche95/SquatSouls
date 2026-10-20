@@ -1,8 +1,8 @@
 import { onScopeDispose, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import { clone } from '../configDraft.js';
-import { t, tm } from '../i18n.js';
-import { chime, recoveryEnd, sideSignal, startSignal } from '../sound.js';
+import { clone } from '../config/configDraft.js';
+import { t, tm } from '../i18n/i18n.js';
+import { chime, recoveryEnd, sideSignal, startSignal } from '../session/sound.js';
 import { defineShared } from './shared.js';
 import { useCountdown } from './useCountdown.js';
 

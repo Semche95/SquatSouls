@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { nextTick, ref } from 'vue';
-import { reveal, vReveal } from '../reveal.js';
+import { reveal, vReveal } from '../ui/reveal.js';
 import { config, setup, mountApp, openSettings } from './app.js';
 
 // A block revealed when it appears and an accordion revealed when it opens, their state given by the test.

@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
-import { t } from '../i18n.js';
+import { t } from '../i18n/i18n.js';
 import { useKeydown } from '../composables/useKeydown.js';
 import ConfirmDialog from './ConfirmDialog.vue';
 

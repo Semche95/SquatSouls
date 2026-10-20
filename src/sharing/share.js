@@ -1,6 +1,6 @@
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
-import { BOUNDS, isCleanText, isCount, MAX_ITEMS, MAX_NAME, MAX_UNIT, nameKey, newId, rangeBounds, sameName } from './configDraft.js';
-import { t } from './i18n.js';
+import { BOUNDS, isCleanText, isCount, MAX_ITEMS, MAX_NAME, MAX_UNIT, nameKey, newId, rangeBounds, sameName } from '../config/configDraft.js';
+import { t } from '../i18n/i18n.js';
 
 // Text shared between users: a game (name and events) or the exercise list, without ids,
 // as compressed JSON (deflate) then base64-encoded. The format version and content type are in the

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { nameKey } from '../configDraft.js';
-import { appliedCount, defaultChoice, eventChanges, exerciseChanges, importGame, mergeExercises } from '../importChanges.js';
+import { nameKey } from '../config/configDraft.js';
+import { appliedCount, defaultChoice, eventChanges, exerciseChanges, importGame, mergeExercises } from '../sharing/importChanges.js';
 import { config } from './app.js';
 
 const exercises = [

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { errorText, language, languageSetting, loadLanguage, setLanguage, t } from '../i18n.js';
+import { errorText, language, languageSetting, loadLanguage, setLanguage, t } from '../i18n/i18n.js';
 import { config, rejection, setup, mountApp } from './app.js';
 
 const nativeCalls = () => invoke.mock.calls.filter(([cmd]) => cmd === 'set_native_texts').map(([, args]) => args.texts);

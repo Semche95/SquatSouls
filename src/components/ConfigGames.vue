@@ -1,9 +1,9 @@
 <script setup>
 import { computed, nextTick, ref } from 'vue';
-import { byName, MAX_NAME, newId, sameName } from '../configDraft.js';
-import { t } from '../i18n.js';
-import { shareGame } from '../share.js';
-import { vSelect } from '../select.js';
+import { byName, MAX_NAME, newId, sameName } from '../config/configDraft.js';
+import { t } from '../i18n/i18n.js';
+import { shareGame } from '../sharing/share.js';
+import { vSelect } from '../ui/select.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import { useEditDialog } from '../composables/useEditDialog.js';

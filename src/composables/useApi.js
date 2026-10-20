@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import { errorText } from '../i18n.js';
+import { errorText } from '../i18n/i18n.js';
 import { defineShared } from './shared.js';
 
 export const [provideApi, useApi] = defineShared(() => {

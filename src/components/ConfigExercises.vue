@@ -1,11 +1,11 @@
 <script setup>
 import { computed, ref, shallowRef, watch } from 'vue';
 import { VueFinalModal } from 'vue-final-modal';
-import { BOUNDS, clone, newId } from '../configDraft.js';
-import { t } from '../i18n.js';
-import { parseExercises, shareExercises } from '../share.js';
-import { exerciseChanges, mergeExercises } from '../importChanges.js';
-import { exerciseSummary } from '../itemSummary.js';
+import { BOUNDS, clone, newId } from '../config/configDraft.js';
+import { t } from '../i18n/i18n.js';
+import { parseExercises, shareExercises } from '../sharing/share.js';
+import { exerciseChanges, mergeExercises } from '../sharing/importChanges.js';
+import { exerciseSummary } from '../config/itemSummary.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import { useEditDialog } from '../composables/useEditDialog.js';

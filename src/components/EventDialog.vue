@@ -1,6 +1,6 @@
 <script setup>
-import { BOUNDS } from '../configDraft.js';
-import { t } from '../i18n.js';
+import { BOUNDS } from '../config/configDraft.js';
+import { t } from '../i18n/i18n.js';
 import CountStepper from './CountStepper.vue';
 import EditDialog from './EditDialog.vue';
 import EditRow from './EditRow.vue';

@@ -1,9 +1,9 @@
 import { ref } from 'vue';
 import { createI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
-import en from './locales/en.json';
-import fr from './locales/fr.json';
-import { logError } from './log.js';
+import en from '../locales/en.json';
+import fr from '../locales/fr.json';
+import { logError } from '../logging/log.js';
 
 // Language of a session without answer from the backend, and of every missing text.
 const FALLBACK = 'en';

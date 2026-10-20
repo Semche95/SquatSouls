@@ -2,13 +2,13 @@
 // Creation or import of a game, in a modal over the Games tab: both are saved right away.
 import { computed, ref, shallowRef, watch } from 'vue';
 import { VueFinalModal } from 'vue-final-modal';
-import { BOUNDS, byName, clone, MAX_NAME, newId, sameName } from '../configDraft.js';
-import { t } from '../i18n.js';
-import { parseGame } from '../share.js';
-import { eventChanges, importGame } from '../importChanges.js';
-import { eventSummary } from '../itemSummary.js';
-import { vReveal } from '../reveal.js';
-import { vSelect } from '../select.js';
+import { BOUNDS, byName, clone, MAX_NAME, newId, sameName } from '../config/configDraft.js';
+import { t } from '../i18n/i18n.js';
+import { parseGame } from '../sharing/share.js';
+import { eventChanges, importGame } from '../sharing/importChanges.js';
+import { eventSummary } from '../config/itemSummary.js';
+import { vReveal } from '../ui/reveal.js';
+import { vSelect } from '../ui/select.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import ShareImport from './ShareImport.vue';

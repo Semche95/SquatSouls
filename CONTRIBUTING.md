@@ -8,7 +8,7 @@ Issues and pull requests are welcome. Before changing how the app behaves, read 
 - No visible text in the code: every text goes through `t` and is added to `src/locales/schema.json` and to every language (`src/locales/en.json`, `src/locales/fr.json`). The Rust backend returns error codes, never translated text.
 - French texts follow French typography: a no-break space (U+00A0) before `:`, a narrow no-break space (U+202F) before `?`, `!`, `;` and inside `« »`.
 - A migration in `src-tauri/migrations/` is never modified once created: every schema change adds a new `V<n+1>__<name>.sql` file.
-- Any change to the share format (`src/share.js`) increments `VERSION` and keeps the readers of the previous versions.
+- Any change to the share format (`src/sharing/share.js`) increments `VERSION` and keeps the readers of the previous versions.
 - In JavaScript, strings use single quotes.
 - Tests live in `src/tests/` (interface) and `src-tauri/tests/` (backend).
 
@@ -16,15 +16,19 @@ Issues and pull requests are welcome. Before changing how the app behaves, read 
 
 ```
 src/                     Vue 3 interface
-  App.vue                header and tabs
-  components/            one component per tab and its blocks
+  main.js                entry point
+  components/            App.vue (header and tabs), one component per tab and its blocks
   composables/           shared state (provide/inject), backend calls, keyboard
   locales/               interface texts (en.json source and fallback, fr.json) and their schema
-  i18n.js                vue-i18n setup, language switch, backend error messages
-  share.js               share and import format, versioned
-  slogans.js             slogans shown under the title, in English only
-  style/                 styles by domain, imported in cascade order by index.css
-  theme.css              palette and fonts, shared with the site
+  i18n/                  vue-i18n setup, language switch, backend error messages, formatting
+  config/                configuration draft, its limits and its summaries
+  sharing/               share and import format, versioned, and the changes an import brings
+  ui/                    reveal, select and tooltip behaviors
+  session/               timer sounds
+  logging/               interface errors written to the log file
+  project/               links to the GitHub repository
+  splash/                slogans shown under the title (English only), shared with the site
+  style/                 palette and fonts shared with the site (theme.css), styles by domain imported in cascade order by index.css
   tests/                 interface tests (Vitest)
 src-tauri/src/           Rust backend
   lib.rs                 startup and log files
@@ -39,8 +43,8 @@ site/                    presentation site, published on GitHub Pages by the Sit
 
 ## Adding a language
 
-1. Add `src/locales/<code>.json` following `src/locales/schema.json` (the tests check it), and register it in `src/i18n.js` (with its plural rule if it differs from English).
-2. Add it to the language list in `src/components/ConfigSettings.vue` and to the Steam Store languages in `src/locale.js`.
+1. Add `src/locales/<code>.json` following `src/locales/schema.json` (the tests check it), and register it in `src/i18n/i18n.js` (with its plural rule if it differs from English).
+2. Add it to the language list in `src/components/ConfigSettings.vue` and to the Steam Store languages in `src/i18n/locale.js`.
 3. In `src-tauri/src/app/language.rs`, add it to `Language` and `LanguageSetting`, and to the system locale resolution.
 4. Add `src-tauri/src/app/seed.<code>.json` following `seed.schema.json`, with the same ids, numbers and AppIds as the other seeds, and load it in `src-tauri/src/app/config/defaults.rs`.
 5. For the site, add `site/locales/<code>.json` following `site/locales/schema.json`, its button in `site/index.html` and its code in `site/language.js`.

@@ -1,4 +1,4 @@
-import { t } from './i18n.js';
+import { t } from '../i18n/i18n.js';
 
 // Texts summing up an event or an exercise field by field, always in the same order; `plain` marks
 // the default value of an optional field, left out unless it changes.

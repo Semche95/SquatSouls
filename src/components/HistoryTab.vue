@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
-import { daySummary, formatDay, formatDuration, formatTime, sessionSummary } from '../format.js';
-import { t } from '../i18n.js';
+import { daySummary, formatDay, formatDuration, formatTime, sessionSummary } from '../i18n/format.js';
+import { t } from '../i18n/i18n.js';
 import { useApi } from '../composables/useApi.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';

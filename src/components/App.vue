@@ -1,23 +1,23 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import { pickSlogan } from './slogans.js';
-import { t } from './i18n.js';
-import { formatTime } from './format.js';
-import { vReveal } from './reveal.js';
-import { provideApi } from './composables/useApi.js';
-import { provideConfig } from './composables/useConfig.js';
-import { provideSession } from './composables/useSession.js';
-import { provideSteam } from './composables/useSteam.js';
-import PlayTab from './components/PlayTab.vue';
-import HistoryTab from './components/HistoryTab.vue';
-import ProgramTab from './components/ProgramTab.vue';
-import ConfigFrame from './components/ConfigFrame.vue';
-import ConfigSettings from './components/ConfigSettings.vue';
-import QuitDialog from './components/QuitDialog.vue';
-import AboutDialog from './components/AboutDialog.vue';
-import OnboardingDialog from './components/OnboardingDialog.vue';
-import UpdateBanner from './components/UpdateBanner.vue';
+import { pickSlogan } from '../splash/slogans.js';
+import { t } from '../i18n/i18n.js';
+import { formatTime } from '../i18n/format.js';
+import { vReveal } from '../ui/reveal.js';
+import { provideApi } from '../composables/useApi.js';
+import { provideConfig } from '../composables/useConfig.js';
+import { provideSession } from '../composables/useSession.js';
+import { provideSteam } from '../composables/useSteam.js';
+import PlayTab from './PlayTab.vue';
+import HistoryTab from './HistoryTab.vue';
+import ProgramTab from './ProgramTab.vue';
+import ConfigFrame from './ConfigFrame.vue';
+import ConfigSettings from './ConfigSettings.vue';
+import QuitDialog from './QuitDialog.vue';
+import AboutDialog from './AboutDialog.vue';
+import OnboardingDialog from './OnboardingDialog.vue';
+import UpdateBanner from './UpdateBanner.vue';
 
 // Picked once at launch, shown under the title.
 const slogan = pickSlogan();

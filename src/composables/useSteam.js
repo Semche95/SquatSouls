@@ -1,7 +1,7 @@
 import { onScopeDispose, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import { byName, extendsName } from '../configDraft.js';
-import { steamLanguage } from '../locale.js';
+import { byName, extendsName } from '../config/configDraft.js';
+import { steamLanguage } from '../i18n/locale.js';
 import { defineShared } from './shared.js';
 
 // Interval between process scans when detection is enabled.

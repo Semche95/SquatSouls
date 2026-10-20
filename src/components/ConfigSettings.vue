@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from 'vue';
-import { BOUNDS, byName } from '../configDraft.js';
-import { languageSetting, setLanguage, t } from '../i18n.js';
-import { vReveal } from '../reveal.js';
+import { BOUNDS, byName } from '../config/configDraft.js';
+import { languageSetting, setLanguage, t } from '../i18n/i18n.js';
+import { vReveal } from '../ui/reveal.js';
 import { useApi } from '../composables/useApi.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSteam } from '../composables/useSteam.js';

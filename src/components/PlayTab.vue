@@ -1,9 +1,9 @@
 <script setup>
 import { computed } from 'vue';
-import { t } from '../i18n.js';
-import { byName } from '../configDraft.js';
-import { vReveal } from '../reveal.js';
-import { vSelect } from '../select.js';
+import { t } from '../i18n/i18n.js';
+import { byName } from '../config/configDraft.js';
+import { vReveal } from '../ui/reveal.js';
+import { vSelect } from '../ui/select.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import { useKeydown } from '../composables/useKeydown.js';

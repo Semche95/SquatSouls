@@ -1,5 +1,5 @@
 <script setup>
-import { vTooltip } from '../tooltip.js';
+import { vTooltip } from '../ui/tooltip.js';
 
 // Stopwatch of a timed exercise, in ember like the timer seal in play; `label` tells how it is timed.
 defineProps({ label: { type: String, required: true } });

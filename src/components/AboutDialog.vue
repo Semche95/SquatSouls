@@ -3,9 +3,9 @@ import { onMounted, ref } from 'vue';
 import { getVersion } from '@tauri-apps/api/app';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { VueFinalModal } from 'vue-final-modal';
-import { rt, t, tm } from '../i18n.js';
+import { rt, t, tm } from '../i18n/i18n.js';
 import { author } from '../../package.json';
-import { repositoryUrl } from '../repository.js';
+import { repositoryUrl } from '../project/repository.js';
 import icon from '../../src-tauri/icons/128x128.png';
 
 const open = defineModel({ type: Boolean });

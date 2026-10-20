@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BOUNDS, byName, countError, extendsName, newId, normalized, fieldError, parseCount, rangeBounds } from '../configDraft.js';
+import { BOUNDS, byName, countError, extendsName, newId, normalized, fieldError, parseCount, rangeBounds } from '../config/configDraft.js';
 
 describe('newId', () => {
   it('derives the id from the name without accents and avoids duplicates', () => {

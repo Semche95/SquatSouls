@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { config, emptySession, idleSession, draw, responses, setup, mountApp, press, expectTip, layOutControls, confirmDialog, confirmDialogOpen, confirmDialogClosed, save } from './app.js';
-import { chime, recoveryEnd, sideSignal, startSignal } from '../sound.js';
+import { chime, recoveryEnd, sideSignal, startSignal } from '../session/sound.js';
 
-vi.mock('../sound.js', () => ({ chime: vi.fn(), recoveryEnd: vi.fn(), sideSignal: vi.fn(), startSignal: vi.fn() }));
+vi.mock('../session/sound.js', () => ({ chime: vi.fn(), recoveryEnd: vi.fn(), sideSignal: vi.fn(), startSignal: vi.fn() }));
 
 describe('countdown', () => {
   layOutControls();

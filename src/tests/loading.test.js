@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { config, draw, emptySession, idleSession, rejection, setup, mountApp, layOutControls, confirmDialog, confirmDialogOpen, confirmDialogClosed } from './app.js';
-import { tm } from '../i18n.js';
+import { tm } from '../i18n/i18n.js';
 
 describe('loading', () => {
   it('asks for the game on first launch', async () => {

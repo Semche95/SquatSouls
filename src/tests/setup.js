@@ -1,5 +1,5 @@
 import { beforeEach, expect, vi } from 'vitest';
-import { languageSetting, setLanguage } from '../i18n.js';
+import { languageSetting, setLanguage } from '../i18n/i18n.js';
 
 // The Tauri backend does not exist under Vitest: each test simulates its responses.
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));

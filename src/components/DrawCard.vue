@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from 'vue';
-import { t } from '../i18n.js';
+import { t } from '../i18n/i18n.js';
 import { useSession } from '../composables/useSession.js';
-import { vReveal } from '../reveal.js';
+import { vReveal } from '../ui/reveal.js';
 import DisabledTip from './DisabledTip.vue';
 import CountdownSeal from './CountdownSeal.vue';
 

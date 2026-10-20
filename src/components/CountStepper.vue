@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { t } from '../i18n.js';
+import { t } from '../i18n/i18n.js';
 import CountInput from './CountInput.vue';
 import DisabledTip from './DisabledTip.vue';
 

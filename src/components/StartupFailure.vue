@@ -2,8 +2,8 @@
 import { ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { errorText, t } from '../i18n.js';
-import { issuesUrl, releaseUrl } from '../repository.js';
+import { errorText, t } from '../i18n/i18n.js';
+import { issuesUrl, releaseUrl } from '../project/repository.js';
 import { provideApi } from '../composables/useApi.js';
 import UpdateBanner from './UpdateBanner.vue';
 

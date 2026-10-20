@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { i18n } from '../i18n.js';
+import { i18n } from '../i18n/i18n.js';
 import { setup, mountApp } from './app.js';
 import StartupFailure from '../components/StartupFailure.vue';
 

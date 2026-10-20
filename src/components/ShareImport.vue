@@ -1,8 +1,8 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
-import { t } from '../i18n.js';
-import { vReveal } from '../reveal.js';
-import { appliedCount, defaultChoice, differ } from '../importChanges.js';
+import { t } from '../i18n/i18n.js';
+import { vReveal } from '../ui/reveal.js';
+import { appliedCount, defaultChoice, differ } from '../sharing/importChanges.js';
 import { useConfig } from '../composables/useConfig.js';
 import DisabledTip from './DisabledTip.vue';
 import ImportPreview from './ImportPreview.vue';

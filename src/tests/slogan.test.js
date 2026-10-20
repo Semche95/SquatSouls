@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pickSlogan, slogans } from '../slogans.js';
+import { pickSlogan, slogans } from '../splash/slogans.js';
 import { setup, mountApp } from './app.js';
 
 describe('slogan', () => {

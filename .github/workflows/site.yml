@@ -9,8 +9,8 @@ on:
     paths:
       - site/**
       - docs/screenshots/**
-      - src/theme.css
-      - src/slogans.js
+      - src/style/theme.css
+      - src/splash/slogans.js
       - src-tauri/icons/128x128.png
       - scripts/site-english.js
       - .github/workflows/site.yml
@@ -37,7 +37,7 @@ jobs:
       - name: Assemble the site
         run: |
           cp -r site _site
-          cp src/theme.css src/slogans.js _site/
+          cp src/style/theme.css src/splash/slogans.js _site/
           cp src-tauri/icons/128x128.png _site/icon.png
           cp -r docs/screenshots _site/
           node scripts/site-english.js _site

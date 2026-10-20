@@ -1,6 +1,6 @@
 <script setup>
 import { VueFinalModal } from 'vue-final-modal';
-import { t } from '../i18n.js';
+import { t } from '../i18n/i18n.js';
 
 // Confirmation over the window: `keep`, Escape or a click outside closes it, `confirm` closes it and emits `confirm`.
 // Red for a loss, gold (`validate`) for an action that loses nothing.

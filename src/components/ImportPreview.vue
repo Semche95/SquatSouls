@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { t } from '../i18n.js';
+import { t } from '../i18n/i18n.js';
 
 // Changes an import brings (`importChanges.js`), grouped by status with a switch each and one for the whole
 // group; `chosen` is the Set of the checked keys. `summary` sums up an item field by field (`itemSummary.js`).

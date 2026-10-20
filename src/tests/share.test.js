@@ -1,7 +1,7 @@
 import { deflateSync, strToU8 } from 'fflate';
 import { describe, expect, it } from 'vitest';
-import { MAX_ITEMS, MAX_NAME, MAX_UNIT } from '../configDraft.js';
-import { parseExercises, parseGame, shareExercise, shareExercises, shareGame, toBase64, unpack } from '../share.js';
+import { MAX_ITEMS, MAX_NAME, MAX_UNIT } from '../config/configDraft.js';
+import { parseExercises, parseGame, shareExercise, shareExercises, shareGame, toBase64, unpack } from '../sharing/share.js';
 import { config } from './app.js';
 
 // Shared text written in a given format version, with the content of `shared`.

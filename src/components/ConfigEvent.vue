@@ -1,5 +1,5 @@
 <script setup>
-import { t } from '../i18n.js';
+import { t } from '../i18n/i18n.js';
 import ProgramTile from './ProgramTile.vue';
 
 // Tile of an event: its name, then its exercises per set, its limit and its jokers. A click opens EventDialog.

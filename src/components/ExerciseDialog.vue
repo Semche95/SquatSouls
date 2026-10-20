@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from 'vue';
-import { BOUNDS, MAX_UNIT, rangeBounds } from '../configDraft.js';
-import { t } from '../i18n.js';
-import { shareExercise } from '../share.js';
+import { BOUNDS, MAX_UNIT, rangeBounds } from '../config/configDraft.js';
+import { t } from '../i18n/i18n.js';
+import { shareExercise } from '../sharing/share.js';
 import { useConfig } from '../composables/useConfig.js';
 import CountStepper from './CountStepper.vue';
 import DisabledTip from './DisabledTip.vue';

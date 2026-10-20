@@ -1,5 +1,5 @@
 <script setup>
-import { t } from '../i18n.js';
+import { t } from '../i18n/i18n.js';
 import { useConfig } from '../composables/useConfig.js';
 import ConfigExercises from './ConfigExercises.vue';
 import ConfigGames from './ConfigGames.vue';

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { nextTick, ref } from 'vue';
-import { vSelect } from '../select.js';
+import { vSelect } from '../ui/select.js';
 
 // A select drawn by Tom Select, its options and state given by the test.
 const mountSelect = async (options, { value = '', disabled = false } = {}) => {

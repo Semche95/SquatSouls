@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { emptySession, setup, mountApp } from './app.js';
-import { formatDay, formatTime } from '../format.js';
+import { formatDay, formatTime } from '../i18n/format.js';
 import { intersect } from './setup.js';
 
 describe('history', () => {

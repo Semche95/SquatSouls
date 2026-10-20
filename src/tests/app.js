@@ -3,8 +3,8 @@ import { DOMWrapper, flushPromises, mount } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { createVfm } from 'vue-final-modal';
-import App from '../App.vue';
-import { i18n } from '../i18n.js';
+import App from '../components/App.vue';
+import { i18n } from '../i18n/i18n.js';
 
 export const config = {
   recovery: 60,

@@ -1,4 +1,4 @@
-import { language, t } from './i18n.js';
+import { language, t } from '../i18n/i18n.js';
 
 export function clone(value) {
   return JSON.parse(JSON.stringify(value));

@@ -1,8 +1,8 @@
 <script setup>
 import { VueFinalModal } from 'vue-final-modal';
-import { MAX_NAME } from '../configDraft.js';
-import { t } from '../i18n.js';
-import { vReveal } from '../reveal.js';
+import { MAX_NAME } from '../config/configDraft.js';
+import { t } from '../i18n/i18n.js';
+import { vReveal } from '../ui/reveal.js';
 
 // Edit dialog of an event or an exercise: its name under the kind of item, its settings in rows (EditRow), then its
 // removal, its own actions (slot `actions`) and Close. `item` belongs to the draft and is edited in place: the changes wait for Save.

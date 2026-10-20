@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from 'vue';
-import { t } from '../i18n.js';
-import { timerSummary } from '../itemSummary.js';
-import { vTooltip } from '../tooltip.js';
+import { t } from '../i18n/i18n.js';
+import { timerSummary } from '../config/itemSummary.js';
+import { vTooltip } from '../ui/tooltip.js';
 import ProgramTile from './ProgramTile.vue';
 import TimerIcon from './TimerIcon.vue';
 

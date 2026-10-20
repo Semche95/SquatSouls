@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { error } from '@tauri-apps/plugin-log';
-import { logError, logUncaught } from '../log.js';
+import { logError, logUncaught } from '../logging/log.js';
 
 // Messages sent to the backend's log file.
 const logged = () => error.mock.calls.map(([message]) => message);

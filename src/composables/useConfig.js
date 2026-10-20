@@ -1,7 +1,7 @@
 import { computed, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import { byName, clone, normalized, fieldError, withTabDraft } from '../configDraft.js';
-import { errorText, t } from '../i18n.js';
+import { byName, clone, normalized, fieldError, withTabDraft } from '../config/configDraft.js';
+import { errorText, t } from '../i18n/i18n.js';
 import { defineShared } from './shared.js';
 
 // Display duration of a confirmation.

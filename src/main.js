@@ -1,15 +1,15 @@
 import { createApp, h } from 'vue';
 import { createVfm } from 'vue-final-modal';
 import { invoke } from '@tauri-apps/api/core';
-import App from './App.vue';
+import App from './components/App.vue';
 import StartupFailure from './components/StartupFailure.vue';
-import { i18n, loadLanguage, showLanguage } from './i18n.js';
-import { logError, logUncaught } from './log.js';
-import { unlockSound } from './sound.js';
+import { i18n, loadLanguage, showLanguage } from './i18n/i18n.js';
+import { logError, logUncaught } from './logging/log.js';
+import { unlockSound } from './session/sound.js';
 import 'floating-vue/dist/style.css';
 import 'tom-select/dist/css/tom-select.css';
 import 'vue-final-modal/style.css';
-import './theme.css';
+import './style/theme.css';
 import './style/index.css';
 
 logUncaught();

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { config, setup, mountApp, openConfig, openSettings, expectUnchanged, expectTip, layOutControls, editDialog, formDialog, formDialogOpen, formDialogClosed, save, discard, savedConfig } from './app.js';
 import { shownGame, gameButton, importButton, rename, openExercises, openTile, closeDialog } from './program.js';
-import { shareExercise, shareExercises, shareGame } from '../share.js';
+import { shareExercise, shareExercises, shareGame } from '../sharing/share.js';
 
 describe('sharing', () => {
   layOutControls();

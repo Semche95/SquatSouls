@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { config, setup, openConfig, expectTip, layOutControls, formDialog, formDialogOpen, formDialogClosed, savedConfig } from './app.js';
 import { shownGame, importButton } from './program.js';
-import { shareExercises, shareGame } from '../share.js';
+import { shareExercises, shareGame } from '../sharing/share.js';
 
 const saving = { save_config: (args) => ({ config: args.config }) };
 
