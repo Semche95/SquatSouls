@@ -8,7 +8,7 @@ import { exerciseChanges, mergeExercises } from '../sharing/importChanges.js';
 import { exerciseSummary } from '../config/itemSummary.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
-import { useEditDialog } from '../composables/useEditDialog.js';
+import { provideEditDialog } from '../composables/useEditDialog.js';
 import ConfigExercise from './ConfigExercise.vue';
 import CountStepper from './CountStepper.vue';
 import DisabledTip from './DisabledTip.vue';
@@ -23,7 +23,7 @@ const importing = ref(false);
 const savedExercises = shallowRef([]);
 watch(importing, (on) => on && (savedExercises.value = config.value.exercises));
 // Exercise in its edit dialog.
-const { item: editing, open: editOpen, fresh, edit: editExercise, remove: removeExercise } = useEditDialog(() => draft.value.exercises);
+const { item: editing, edit: editExercise } = provideEditDialog(() => draft.value.exercises);
 // Exercises asked for in Play, out of all those defined.
 const included = computed(() => draft.value.exercises.filter((ex) => ex.enabled).length);
 
@@ -82,16 +82,9 @@ function addExercise() {
       </EditRow>
     </div>
     <div class="tiles">
-      <ConfigExercise v-for="ex in draft.exercises" :key="ex.id" :ex="ex" @edit="editExercise(ex)" />
+      <ConfigExercise v-for="ex in draft.exercises" :key="ex.id" v-model:enabled="ex.enabled" :ex="ex" @edit="editExercise(ex)" />
       <button class="tile tile-new" @click="addExercise">{{ t('config.exercises.add') }}</button>
     </div>
-    <ExerciseDialog
-      v-if="editing"
-      v-model="editOpen"
-      :ex="editing"
-      :recovery="draft.recovery"
-      :fresh="fresh"
-      @remove="removeExercise"
-    />
+    <ExerciseDialog v-if="editing" :recovery="draft.recovery" />
   </section>
 </template>

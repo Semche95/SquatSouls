@@ -6,7 +6,7 @@ import { shareGame } from '../sharing/share.js';
 import { vSelect } from '../ui/select.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
-import { useEditDialog } from '../composables/useEditDialog.js';
+import { provideEditDialog } from '../composables/useEditDialog.js';
 import ConfigEvent from './ConfigEvent.vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import EventDialog from './EventDialog.vue';
@@ -24,7 +24,7 @@ const toRemove = ref(null);
 const renaming = ref(null);
 const renameInput = ref(null);
 // Event in its edit dialog.
-const { item: editing, open: editOpen, fresh, edit: editEvent, remove: removeEvent } = useEditDialog(() => editedGame.value.events);
+const { item: editing, edit: editEvent } = provideEditDialog(() => editedGame.value.events);
 // Why the renamed game cannot take this name, '' when it can: it only has to differ from the other games.
 const renameBlocked = computed(() => {
   if (!renaming.value.trim()) return t('config.games.nameNeeded');
@@ -125,7 +125,7 @@ function addEvent(game) {
         <button class="tile tile-new" @click="addEvent(editedGame)">{{ t('config.games.addEvent') }}</button>
       </div>
     </template>
-    <EventDialog v-if="editing" v-model="editOpen" :ev="editing" :fresh="fresh" @remove="removeEvent" />
+    <EventDialog v-if="editing" />
     <GameDialog v-model:importing="importing" />
     <ConfirmDialog
       v-model="removing"

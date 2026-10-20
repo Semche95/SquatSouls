@@ -4,6 +4,7 @@ import { BOUNDS, MAX_UNIT, rangeBounds } from '../config/configDraft.js';
 import { t } from '../i18n/i18n.js';
 import { shareExercise } from '../sharing/share.js';
 import { useConfig } from '../composables/useConfig.js';
+import { useEditDialog } from '../composables/useEditDialog.js';
 import CountStepper from './CountStepper.vue';
 import DisabledTip from './DisabledTip.vue';
 import EditDialog from './EditDialog.vue';
@@ -11,9 +12,8 @@ import EditRow from './EditRow.vue';
 
 // Edit dialog of an exercise of the draft: included or not, range, unit, timer, own recovery and,
 // when timed, the other side, and Share. `recovery` is the one of all exercises.
-const props = defineProps({ ex: { type: Object, required: true }, recovery: Number, fresh: Boolean });
-defineEmits(['remove']);
-const open = defineModel({ type: Boolean, required: true });
+defineProps({ recovery: Number });
+const { item: ex } = useEditDialog();
 
 // Timer choices: not timed (no `timed`), then the time units.
 const TIMERS = [
@@ -22,29 +22,25 @@ const TIMERS = [
   { value: 'minutes', label: 'minutes' },
 ];
 
-const range = computed(() => rangeBounds(props.ex));
+const range = computed(() => rangeBounds(ex.value));
 
 // The saved exercise is shared, once Program has no pending change: a new one is not saved yet.
 const { config, copy, shareBlocked } = useConfig();
-const saved = computed(() => config.value.exercises.find((ex) => ex.id === props.ex.id));
+const saved = computed(() => config.value.exercises.find((it) => it.id === ex.value.id));
 
 // Only a timed exercise is done on each side.
 function setTimed(value) {
-  props.ex.timed = value;
-  if (!value && props.ex.eachSide) props.ex.eachSide = false;
+  ex.value.timed = value;
+  if (!value && ex.value.eachSide) ex.value.eachSide = false;
 }
 </script>
 
 <template>
   <EditDialog
-    v-model="open"
-    :item="ex"
     :title="t('config.exercises.title')"
     :name-label="t('config.exercises.name')"
     :name-needed="t('config.exercises.nameNeeded')"
-    :remove="t('config.exercises.remove')"
-    :fresh="fresh"
-    @remove="$emit('remove')"
+    :remove-label="t('config.exercises.remove')"
   >
     <template #aside>
       <label class="check edit-aside">

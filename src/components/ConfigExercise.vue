@@ -7,15 +7,16 @@ import ProgramTile from './ProgramTile.vue';
 import TimerIcon from './TimerIcon.vue';
 
 // Tile of an exercise: its switch, its name, then its range, its unit, its timer and its own recovery.
-// A click outside the switch opens ExerciseDialog, through the `edit` event.
-const props = defineProps({ ex: Object });
+// A click outside the switch opens ExerciseDialog, through the `edit` event; the switch is the `enabled` model.
+const props = defineProps({ ex: { type: Object, required: true } });
 defineEmits(['edit']);
+const enabled = defineModel('enabled', { type: Boolean, required: true });
 
 const timedTip = computed(() => timerSummary(props.ex));
 </script>
 
 <template>
-  <div class="tile-slot" :class="{ 'cfg-off': !ex.enabled }">
+  <div class="tile-slot" :class="{ 'cfg-off': !enabled }">
     <ProgramTile @click="$emit('edit')">
       <strong class="tile-name">{{ ex.name.trim() || t('common.unnamed') }}</strong>
       <span class="tile-foot">
@@ -24,7 +25,7 @@ const timedTip = computed(() => timerSummary(props.ex));
       <span v-if="ex.recovery !== undefined" class="tile-meta">{{ t('config.exercises.recoverySummary', { n: ex.recovery }) }}</span>
     </ProgramTile>
     <input
-      v-model="ex.enabled"
+      v-model="enabled"
       v-tooltip="{ content: t('config.exercises.enabled'), placement: 'top' }"
       type="checkbox"
       class="tile-switch"

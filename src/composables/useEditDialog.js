@@ -1,8 +1,10 @@
 import { ref } from 'vue';
+import { defineShared } from './shared.js';
 
-// Item of a draft list (event or exercise) open in its edit dialog, `list` giving that list. The item stays set while
+// Item of a draft list (event or exercise) open in its edit dialog, `list` giving that list. The tab that holds the
+// list provides it to its dialog, which edits the item in place: the changes wait for Save. The item stays set while
 // the dialog fades out; one just added is fresh, opened with its name selected.
-export function useEditDialog(list) {
+export const [provideEditDialog, useEditDialog] = defineShared((list) => {
   const item = ref(null);
   const open = ref(false);
   const fresh = ref(false);
@@ -21,4 +23,4 @@ export function useEditDialog(list) {
   }
 
   return { item, open, fresh, edit, remove };
-}
+});

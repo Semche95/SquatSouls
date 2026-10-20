@@ -3,20 +3,18 @@ import { VueFinalModal } from 'vue-final-modal';
 import { MAX_NAME } from '../config/configDraft.js';
 import { t } from '../i18n/i18n.js';
 import { vReveal } from '../ui/reveal.js';
+import { useEditDialog } from '../composables/useEditDialog.js';
 
-// Edit dialog of an event or an exercise: its name under the kind of item, its settings in rows (EditRow), then its
-// removal, its own actions (slot `actions`) and Close. `item` belongs to the draft and is edited in place: the changes wait for Save.
-// A fresh item opens with its name selected, the others on Close.
+// Edit dialog of the item useEditDialog holds, an event or an exercise: its name under the kind of item, its settings
+// in rows (EditRow), then its removal, its own actions (slot `actions`) and Close. A fresh item opens with its name
+// selected, the others on Close.
 defineProps({
-  item: { type: Object, required: true },
   title: { type: String, required: true },
   nameLabel: { type: String, required: true },
   nameNeeded: { type: String, required: true },
-  remove: { type: String, required: true },
-  fresh: Boolean,
+  removeLabel: { type: String, required: true },
 });
-defineEmits(['remove']);
-const open = defineModel({ type: Boolean, required: true });
+const { item, open, fresh, remove } = useEditDialog();
 </script>
 
 <template>
@@ -38,7 +36,7 @@ const open = defineModel({ type: Boolean, required: true });
     </div>
     <slot />
     <div class="edit-foot">
-      <button class="ghost danger" @click="$emit('remove')">{{ remove }}</button>
+      <button class="ghost danger" @click="remove">{{ removeLabel }}</button>
       <span class="edit-foot-end">
         <slot name="actions" />
         <button class="primary" @click="open = false">{{ t('common.close') }}</button>
