@@ -51,6 +51,7 @@ export const slogans = [
   'Here, there\'s an easy mode.',
   'Treat every rep like a new area: slowly, carefully, and watching your step.',
   'Your body, your rules: character creation is nobody else\'s business.',
+  'HP is red, FP is blue, Malenia\'s tough, but she hasn\'t met you.',
 ];
 
 // Slogans already shown since the list was last cleared, kept from one launch to the next.
