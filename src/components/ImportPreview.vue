@@ -28,7 +28,10 @@ const checkedIn = (group) => group.rows.filter((row) => chosen.value.has(row.key
 
 function toggle(keys, on) {
   const next = new Set(chosen.value);
-  for (const key of keys) on ? next.add(key) : next.delete(key);
+  for (const key of keys) {
+    if (on) next.add(key);
+    else next.delete(key);
+  }
   chosen.value = next;
 }
 </script>

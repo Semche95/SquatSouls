@@ -123,7 +123,7 @@ async function importShared(shared, chosen) {
           <span>{{ t('common.name') }}</span>
           <input v-model="form.name" :maxlength="MAX_NAME" :aria-label="t('config.games.newName')" />
           <span>{{ t('config.games.copyEvents') }}</span>
-          <select v-select v-model="form.source" :aria-label="t('config.games.newEvents')">
+          <select v-model="form.source" v-select :aria-label="t('config.games.newEvents')">
             <option value="">{{ t('config.games.noCopy') }}</option>
             <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">{{ g.name || t('common.unnamed') }}</option>
           </select>

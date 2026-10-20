@@ -81,8 +81,8 @@ export const isCleanText = (v, max) => typeof v === 'string' && [...v].length <=
 // Text typed in a number field: a number if it only has digits, otherwise the text as is
 // (empty, it is ''; anything else, countError reports it).
 export function parseCount(text) {
-  const t = text.trim();
-  return /^\d+$/.test(t) ? Number(t) : t;
+  const trimmed = text.trim();
+  return /^\d+$/.test(trimmed) ? Number(trimmed) : trimmed;
 }
 
 // A text, a decimal number or a number out of `bounds`, reported while typing.

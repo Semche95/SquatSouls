@@ -1,4 +1,5 @@
 import { pickSlogan } from './slogans.js';
+/* global LANGUAGE_KEY -- declared by language.js, loaded before */
 
 // System of the visitor, matching a data-os card, or null on a phone, a tablet or an unknown system.
 function detectOs() {

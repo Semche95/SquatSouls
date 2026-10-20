@@ -38,8 +38,8 @@ function showProgram(sub) {
 const stage = computed(() => [session.value.pending.slice(0, 1), session.value.pending.slice(1)]);
 
 function triggerCount(eventId) {
-  const t = session.value.triggers.find((t) => t.gameId === game.value?.id && t.eventId === eventId);
-  return t?.count ?? 0;
+  const counted = session.value.triggers.find((tr) => tr.gameId === game.value?.id && tr.eventId === eventId);
+  return counted?.count ?? 0;
 }
 
 useKeydown((e) => {
@@ -92,7 +92,7 @@ useKeydown((e) => {
       <div class="field">
         <label for="play-game">{{ t('play.game') }}</label>
         <DisabledTip class="grow" :tip="gameLocked ? t('play.gameLocked') : noGame ? t('play.noGame', { program: t('app.tabs.program') }) : ''">
-          <select v-select id="play-game" v-model="gameId" :disabled="gameLocked || noGame">
+          <select id="play-game" v-model="gameId" v-select :disabled="gameLocked || noGame">
             <option value="" disabled>{{ t('play.chooseGame') }}</option>
             <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id" :disabled="!g.events.length">
               {{ g.events.length ? g.name : t('play.noEvent', { name: g.name }) }}

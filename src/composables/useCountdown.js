@@ -35,7 +35,10 @@ export function useCountdown() {
 
   function start(duration, then) {
     stop();
-    if (!duration) return then?.();
+    if (!duration) {
+      then?.();
+      return;
+    }
     seconds.value = duration;
     onEnd = then;
     run(duration * 1000);
@@ -63,7 +66,10 @@ export function useCountdown() {
   function resize(duration) {
     if (!seconds.value || duration === seconds.value) return;
     const ms = duration * 1000 - (seconds.value * 1000 - msLeft.value);
-    if (ms <= 0) return finish(duration ? onEnd : undefined);
+    if (ms <= 0) {
+      finish(duration ? onEnd : undefined);
+      return;
+    }
     seconds.value = duration;
     if (heldMs.value) heldMs.value = ms;
     else {

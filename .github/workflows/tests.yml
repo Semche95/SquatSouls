@@ -1,7 +1,7 @@
 name: Tests
 
-# On every branch push and pull request, and before each build: interface tests on Linux, backend tests and clippy
-# on the three systems.
+# On every branch push and pull request, and before each build: interface tests and lint on Linux, backend tests and
+# clippy on the three systems.
 on:
   workflow_dispatch:
   workflow_call:
@@ -31,6 +31,9 @@ jobs:
 
       # The interface tests run in jsdom against a mocked backend, so the system changes nothing for them.
       - run: pnpm test
+        if: runner.os == 'Linux'
+
+      - run: pnpm lint
         if: runner.os == 'Linux'
 
       # The backend compiles against the interface built in dist/.

@@ -10,7 +10,7 @@ const exercises = [
 ];
 
 // Every item of an import chosen.
-const all = (items) => new Set(items.map((it) => nameKey(it.name)));
+const all = (items) => new Set(items.map((item) => nameKey(item.name)));
 const summed = (changes) => changes.map(({ key, status, name }) => [key, status, name]);
 
 const [eldenRing, sekiro] = config.games;

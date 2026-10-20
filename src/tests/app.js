@@ -148,7 +148,9 @@ export function layOutControls() {
 // and closing the modal before would leave it active. Closed at the end of its closing transition.
 async function dialogOpen(selector) {
   await vi.waitFor(() => expect(document.querySelector(selector)?.contains(document.activeElement)).toBe(true));
-  await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve)));
+  await new Promise((resolve) => {
+    requestAnimationFrame(() => setTimeout(resolve));
+  });
 }
 const dialogClosed = (selector) => vi.waitFor(() => expect(document.querySelector(selector)).toBeNull());
 

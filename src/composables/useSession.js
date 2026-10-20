@@ -76,7 +76,10 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
       timing.value.ready = false;
       if (config.value.sound) startSignal();
       timer.start(seconds, () => {
-        if (!side || side === SIDES) return timerEnded(draw, item);
+        if (!side || side === SIDES) {
+          timerEnded(draw, item);
+          return;
+        }
         sideDone = target;
         if (config.value.sound) sideSignal();
         runTimer(draw, item, target, seconds, side + 1);

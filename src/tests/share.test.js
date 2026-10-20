@@ -81,7 +81,7 @@ describe('game sharing', () => {
   });
 
   it('refuses a pasted text or a content too large without decompressing it all', () => {
-    const bomb = 'squatsouls/game:' + toBase64(deflateSync(new Uint8Array(100 * 1024 * 1024)));
+    const bomb = `squatsouls/game:${toBase64(deflateSync(new Uint8Array(100 * 1024 * 1024)))}`;
     expect(() => parseGame(bomb)).toThrow('This text is not a valid shared game.');
     expect(() => parseGame(shareGame(config.games[0]) + ' '.repeat(300 * 1024))).toThrow('This text is not a valid shared game.');
   });

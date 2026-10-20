@@ -171,7 +171,7 @@ describe('exercises', () => {
 
   it('brings a cleared required field back to 0 when leaving it', async () => {
     setup();
-    const w = await openExercises();
+    await openExercises();
     const min = editDialog().find('input[aria-label="Minimum"]');
     await min.setValue('');
     await min.trigger('change');

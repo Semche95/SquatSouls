@@ -100,7 +100,7 @@ function addEvent(game) {
         <button type="button" class="ghost" @click="renaming = null">{{ t('common.cancel') }}</button>
       </form>
       <div v-else-if="draft.games.length" class="field">
-        <select v-select id="cfg-game" :value="editedGame?.id ?? ''" :aria-label="t('play.game')" @change="selectGame($event.target.value)">
+        <select id="cfg-game" v-select :value="editedGame?.id ?? ''" :aria-label="t('play.game')" @change="selectGame($event.target.value)">
           <option v-if="!editedGame" value="" disabled>{{ t('play.chooseGame') }}</option>
           <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">{{ g.name }}</option>
         </select>

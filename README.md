@@ -99,6 +99,7 @@ Open an [issue](https://github.com/Semche95/SquatSouls/issues) with your system,
 pnpm tauri dev             # run in development
 cd src-tauri && cargo test # backend tests
 pnpm test                  # interface tests
+pnpm lint                  # JavaScript and Vue lint
 ```
 
 Project layout, translations, rules and releases: [CONTRIBUTING.md](CONTRIBUTING.md).

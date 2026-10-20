@@ -83,7 +83,7 @@ const fromBase64 = (text) => Uint8Array.from(atob(text), (c) => c.charCodeAt(0))
 // `label`, only informative, follows the mark: the type, or what is shared and its name.
 function share(kind, data, label = kind) {
   const payload = JSON.stringify({ version: VERSION, kind, ...data });
-  return `${MARK}/${label}:` + toBase64(deflateSync(strToU8(payload)));
+  return `${MARK}/${label}:${toBase64(deflateSync(strToU8(payload)))}`;
 }
 
 // Version, type and content of a shared text (content absent if the version is unknown); throws an

@@ -65,7 +65,9 @@ describe('select', () => {
     const { w, ts } = await mountSelect(games, { value: 'er' });
     expect(ts.control.querySelector('input')).toBeNull();
     ts.focus();
-    await new Promise((resolve) => setTimeout(resolve));
+    await new Promise((resolve) => {
+      setTimeout(resolve);
+    });
     expect(ts.isOpen).toBe(false);
     ts.control.click();
     expect(ts.isOpen).toBe(true);

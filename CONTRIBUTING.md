@@ -55,6 +55,7 @@ site/                    presentation site, published on GitHub Pages by the Sit
 ```bash
 cd src-tauri && cargo test # backend tests
 pnpm test                  # interface tests
+pnpm lint                  # JavaScript and Vue lint
 cd src-tauri && cargo clippy --all-targets -- -D warnings # Rust lint
 ```
 
