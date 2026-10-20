@@ -28,6 +28,7 @@ pnpm tauri dev          # run in development
 pnpm tauri build        # production build
 cd src-tauri && cargo test # backend tests, after any change to the Rust code
 pnpm test                   # interface tests (Vitest), after any change to src/
+cd src-tauri && cargo clippy --all-targets -- -D warnings # Rust lint, after any change to the Rust code
 ```
 
 ## Conventions

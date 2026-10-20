@@ -1,6 +1,7 @@
 name: Tests
 
-# On every branch push and pull request, and before each build: interface tests on Linux, backend tests on the three systems.
+# On every branch push and pull request, and before each build: interface tests on Linux, backend tests and clippy
+# on the three systems.
 on:
   workflow_dispatch:
   workflow_call:
@@ -36,4 +37,8 @@ jobs:
       - run: pnpm build
 
       - run: cargo test
+        working-directory: src-tauri
+
+      # Each system compiles its own platform code.
+      - run: cargo clippy --all-targets -- -D warnings
         working-directory: src-tauri

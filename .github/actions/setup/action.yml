@@ -29,6 +29,7 @@ runs:
     - uses: dtolnay/rust-toolchain@stable
       with:
         targets: ${{ inputs.target }}
+        components: clippy
 
     - uses: Swatinem/rust-cache@v2
       with:

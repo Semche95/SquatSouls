@@ -55,6 +55,7 @@ site/                    presentation site, published on GitHub Pages by the Sit
 ```bash
 cd src-tauri && cargo test # backend tests
 pnpm test                  # interface tests
+cd src-tauri && cargo clippy --all-targets -- -D warnings # Rust lint
 ```
 
 Commits follow [Conventional Commits](https://www.conventionalcommits.org/), on a single line, one change per commit with its code, tests and documentation.
