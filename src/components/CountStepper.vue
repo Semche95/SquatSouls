@@ -15,7 +15,12 @@ const model = defineModel({ type: [Number, String] });
 const value = computed(() => (Number.isInteger(model.value) ? model.value : props.optional ? null : 0));
 const lowest = computed(() => (props.optional ? value.value === null : value.value <= props.bounds.min));
 const highest = computed(() => value.value !== null && value.value >= props.bounds.max);
-const lowTip = computed(() => (value.value === null ? t('fields.alreadyEmpty') : t('fields.atBound', { n: props.bounds.min })));
+// Why - or + is disabled: the field is already at its bound, or past it while badly filled.
+const lowTip = computed(() => {
+  if (value.value === null) return t('fields.alreadyEmpty');
+  return t(value.value < props.bounds.min ? 'fields.belowBound' : 'fields.atBound', { n: props.bounds.min });
+});
+const highTip = computed(() => t(value.value > props.bounds.max ? 'fields.aboveBound' : 'fields.atBound', { n: props.bounds.max }));
 
 function down() {
   model.value = props.optional && value.value <= props.bounds.min ? undefined : Math.min(props.bounds.max, value.value - 1);
@@ -32,7 +37,7 @@ function up() {
     </DisabledTip>
     <CountInput v-bind="$attrs" v-model="model" :optional="optional" :bounds="bounds" :class="{ alone: !unit }" />
     <span v-if="unit" class="unit">{{ unit }}</span>
-    <DisabledTip :tip="highest ? t('fields.atBound', { n: bounds.max }) : ''">
+    <DisabledTip :tip="highest ? highTip : ''">
       <button type="button" :aria-label="t('fields.increase')" :disabled="highest" @click="up">+</button>
     </DisabledTip>
   </span>

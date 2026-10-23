@@ -326,6 +326,8 @@
     "eventName": "nom de l'événement",
     "empty": "il ne peut pas être vide",
     "atBound": "Déjà à {n}",
+    "belowBound": "Minimum : {n}",
+    "aboveBound": "Maximum : {n}",
     "alreadyEmpty": "Déjà vide"
   },
   "share": {

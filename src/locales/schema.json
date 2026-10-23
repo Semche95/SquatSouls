@@ -422,7 +422,7 @@
     },
     "fields": {
       "type": "object",
-      "required": ["error", "notCount", "tooSmall", "tooLarge", "globalRecovery", "repDuration", "minimum", "maximum", "recovery", "draws", "limit", "jokers", "timerPrep", "secondsUnit", "decrease", "increase", "exerciseName", "eventName", "empty", "atBound", "alreadyEmpty"],
+      "required": ["error", "notCount", "tooSmall", "tooLarge", "globalRecovery", "repDuration", "minimum", "maximum", "recovery", "draws", "limit", "jokers", "timerPrep", "secondsUnit", "decrease", "increase", "exerciseName", "eventName", "empty", "atBound", "belowBound", "aboveBound", "alreadyEmpty"],
       "additionalProperties": false,
       "properties": {
         "error": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:field|error)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{field\\}" }, { "pattern": "\\{error\\}" }] },
@@ -445,6 +445,8 @@
         "eventName": { "$ref": "#/$defs/text" },
         "empty": { "$ref": "#/$defs/text" },
         "atBound": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }] },
+        "belowBound": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }] },
+        "aboveBound": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }] },
         "alreadyEmpty": { "$ref": "#/$defs/text" }
       }
     },

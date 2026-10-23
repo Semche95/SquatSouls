@@ -96,6 +96,19 @@ describe('exercises', () => {
     expect(savedConfig().exercises).toEqual([expect.objectContaining({ id: 'squat', enabled: false })]);
   });
 
+  it('says the bound a badly filled field is past, on its disabled - or +', async () => {
+    setup();
+    const w = await openExercises({ dialog: false });
+    const stepper = (await openExerciseSettings(w)).findAll('.stepper').find((st) => st.find('#cfg-rep-duration').exists());
+    const [less, more] = stepper.findAll('button');
+    await stepper.find('input').setValue('0');
+    expect(less.element.disabled).toBe(true);
+    await expectTip(less, 'Minimum: 1');
+    await stepper.find('input').setValue('4000');
+    expect(more.element.disabled).toBe(true);
+    await expectTip(more, 'Maximum: 3600');
+  });
+
   it('sets the duration of a repetition for every exercise at once, in the dialog of the exercise settings', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openExercises({ dialog: false });
