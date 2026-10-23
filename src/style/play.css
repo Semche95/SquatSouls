@@ -14,13 +14,14 @@
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 8px;
 }
-/* Action button: warm raised face with a gold edge, lit up on hover and pressed on click. */
+/* Action button: warm raised face with a gold edge, lit up on hover and pressed on click. Its key and counter on a
+   line of their own at the top, so the name below takes the whole width. */
 .event {
   position: relative;
   overflow: hidden;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
   text-align: left;
   padding: 12px;
   min-height: 56px;
@@ -58,9 +59,18 @@
 .hud {
   display: none;
 }
+.event-head {
+  display: flex;
+  align-items: center;
+  min-height: 1.4rem;
+}
+.event-head > .count {
+  margin-left: auto;
+}
+/* A long word only breaks when it does not fit alone on its line. */
 .event-name {
-  flex: 1;
   line-height: 1.25;
+  overflow-wrap: break-word;
 }
 .count {
   color: var(--gold);

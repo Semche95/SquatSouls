@@ -177,20 +177,22 @@ useKeydown((e) => {
         :tip="noExercise ? t('session.noExercise') : limitTip(ev)"
       >
         <button class="event" :disabled="noExercise" @click="trigger(ev)">
-          <kbd v-if="i < 9">{{ i + 1 }}</kbd>
+          <span class="event-head">
+            <kbd v-if="i < 9">{{ i + 1 }}</kbd>
+            <span
+              v-if="triggerCount(ev.id)"
+              :key="countKey(ev.id)"
+              class="count"
+              :class="{ added: bumped(ev.id), full: atLimit(ev) || limitReached, refused: capped(ev.id) }"
+              @animationend="addedTrigger = null"
+            >
+              <template v-if="ev.maxPerSession">{{ Math.min(triggerCount(ev.id), ev.maxPerSession) }} / {{ ev.maxPerSession }}</template>
+              <template v-else>×{{ triggerCount(ev.id) }}</template>
+            </span>
+          </span>
           <span class="event-name">
             {{ ev.name }}
             <span v-if="ev.jokers" class="reward-tag">{{ t('common.reward', ev.jokers) }}</span>
-          </span>
-          <span
-            v-if="triggerCount(ev.id)"
-            :key="countKey(ev.id)"
-            class="count"
-            :class="{ added: bumped(ev.id), full: atLimit(ev) || limitReached, refused: capped(ev.id) }"
-            @animationend="addedTrigger = null"
-          >
-            <template v-if="ev.maxPerSession">{{ Math.min(triggerCount(ev.id), ev.maxPerSession) }} / {{ ev.maxPerSession }}</template>
-            <template v-else>×{{ triggerCount(ev.id) }}</template>
           </span>
           <span v-if="ev.maxPerSession" class="edge-bar gauge">
             <span :style="{ width: `${Math.min(100, (100 * triggerCount(ev.id)) / ev.maxPerSession)}%` }"></span>
