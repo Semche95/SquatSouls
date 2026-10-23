@@ -86,6 +86,8 @@ pub struct Draw {
     pub jokers: u32,
     /// True when the event's limit for the session is exceeded.
     pub capped: bool,
+    /// True when the session's limit gave no set.
+    pub limit_reached: bool,
     pub trigger_count: u32,
     pub max_per_session: Option<u32>,
     /// Exercises as drawn, reserved for the next trigger if the set is dismissed before being started.
@@ -94,6 +96,15 @@ pub struct Draw {
     /// Jokers spent on the set.
     #[serde(skip)]
     pub spent: u32,
+    /// Exercises it asked when triggered, and their estimated time in seconds, counted against the session's
+    /// limit: a saved configuration changing the set never recounts them.
+    #[serde(skip)]
+    pub asked: u32,
+    #[serde(skip)]
+    pub time: u32,
+    /// Exercises the session's limit left it, fewer than its event draws: a saved configuration never adds more.
+    #[serde(skip)]
+    pub reduced: Option<u32>,
 }
 
 impl Draw {

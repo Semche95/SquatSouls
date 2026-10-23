@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, idleSession, draw, responses, setup, mountApp, press, expectTip, layOutControls, confirmDialog, confirmDialogOpen, confirmDialogClosed, save } from './app.js';
+import { config, emptySession, idleSession, draw, responses, setup, mountApp, press, expectTip, layOutControls, confirmDialog, confirmDialogOpen, confirmDialogClosed, save, editDialog } from './app.js';
+import { exerciseSettingsButton } from './program.js';
 import { chime, recoveryEnd, sideSignal, startSignal } from '../session/sound.js';
 
 vi.mock('../session/sound.js', () => ({ chime: vi.fn(), recoveryEnd: vi.fn(), sideSignal: vi.fn(), startSignal: vi.fn() }));
@@ -114,7 +115,13 @@ describe('countdown', () => {
     async function saveGlobalRecovery(w, seconds) {
       await w.findAll('.tabs button')[2].trigger('click');
       await w.findAll('.subtabs button')[1].trigger('click');
-      await w.find('#cfg-recovery').setValue(seconds);
+      // The timers are faked: a few frames let the dialog open and close, without moving the recovery's display.
+      await exerciseSettingsButton(w).trigger('click');
+      await vi.advanceTimersByTimeAsync(50);
+      await editDialog().find('#cfg-recovery').setValue(seconds);
+      await editDialog().find('.edit-foot .primary').trigger('click');
+      await vi.advanceTimersByTimeAsync(50);
+      expect(document.querySelector('.edit-dialog')).toBeNull();
       await save(w).trigger('click');
       await flushPromises();
       await w.findAll('.tabs button')[0].trigger('click');

@@ -8,7 +8,7 @@ fn skipping_a_set_costs_its_exercises() {
 
     s.dismiss(boss.id).unwrap();
     let cfg = default_config(Language::Fr);
-    let death = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
+    let death = s.draw(&cfg, "ds3", "mort", 0, &mut rng()).unwrap();
     s.skip_set(death.id).unwrap();
     let v = s.view();
     assert_eq!(v.jokers, 0);
@@ -114,7 +114,7 @@ fn a_single_unit_cannot_be_halved() {
         ex.max = 1;
     }
     let d = Session::default()
-        .draw(&cfg, "ds3", "mort", &mut rng())
+        .draw(&cfg, "ds3", "mort", 0, &mut rng())
         .unwrap();
     assert_eq!(d.items[0].halve_cost, None);
     assert_eq!(

@@ -8,15 +8,19 @@ import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import { useKeydown } from '../composables/useKeydown.js';
 import { useSteam } from '../composables/useSteam.js';
+import { useSessionLimit } from '../composables/useSessionLimit.js';
 import DrawCard from './DrawCard.vue';
 import QueuedDraw from './QueuedDraw.vue';
 import CountdownSeal from './CountdownSeal.vue';
 import SessionActions from './SessionActions.vue';
+import LimitField from './LimitField.vue';
+import LimitGauge from './LimitGauge.vue';
 import DisabledTip from './DisabledTip.vue';
 
 const { config, tab, cfgTab, gameId, intensity, noGame, noExercise, game } = useConfig();
 const { session, skipRecovery, stopTimer, startTimer, toggleTimer, timing, trigger, confirmStop, dismiss, remaining, addedDraw, addedTrigger, cappedTrigger, complete, halve, skipExercise } = useSession();
 const { detected, selectDetected, addGame, ignoreDetected } = useSteam();
+const { reached: limitReached } = useSessionLimit();
 
 const INTENSITIES = ['easy', 'normal', 'hard'];
 
@@ -54,6 +58,11 @@ function triggerCount(eventId) {
   return counted?.count ?? 0;
 }
 const atLimit = (ev) => ev.maxPerSession && triggerCount(ev.id) >= ev.maxPerSession;
+// Why the event asks for nothing more, '' while it gives sets.
+function limitTip(ev) {
+  if (atLimit(ev)) return t('play.limitTip');
+  return limitReached.value ? t('play.sessionLimitTip') : '';
+}
 // Counter of the event just selected: recreated at each selection, by its key, to replay its animation.
 const bumped = (eventId) => addedTrigger.value?.eventId === eventId;
 const capped = (eventId) => cappedTrigger.value?.eventId === eventId;
@@ -141,6 +150,7 @@ useKeydown((e) => {
           </DisabledTip>
         </div>
       </div>
+      <LimitField />
     </div>
 
     <p v-if="steamOffer" class="banner steam">
@@ -164,7 +174,7 @@ useKeydown((e) => {
       <DisabledTip
         v-for="(ev, i) in game.events"
         :key="ev.id"
-        :tip="noExercise ? t('session.noExercise') : atLimit(ev) ? t('play.limitTip') : ''"
+        :tip="noExercise ? t('session.noExercise') : limitTip(ev)"
       >
         <button class="event" :disabled="noExercise" @click="trigger(ev)">
           <kbd v-if="i < 9">{{ i + 1 }}</kbd>
@@ -176,7 +186,7 @@ useKeydown((e) => {
             v-if="triggerCount(ev.id)"
             :key="countKey(ev.id)"
             class="count"
-            :class="{ added: bumped(ev.id), full: atLimit(ev), refused: capped(ev.id) }"
+            :class="{ added: bumped(ev.id), full: atLimit(ev) || limitReached, refused: capped(ev.id) }"
             @animationend="addedTrigger = null"
           >
             <template v-if="ev.maxPerSession">{{ Math.min(triggerCount(ev.id), ev.maxPerSession) }} / {{ ev.maxPerSession }}</template>
@@ -205,7 +215,8 @@ useKeydown((e) => {
     </i18n-t>
 
     <p class="sr-only" aria-live="polite">
-      <template v-if="cappedTrigger">{{ t('play.capped', { event: cappedTrigger.eventName, max: cappedTrigger.max }) }}</template>
+      <template v-if="cappedTrigger?.session">{{ t('play.sessionCapped', { event: cappedTrigger.eventName }) }}</template>
+      <template v-else-if="cappedTrigger">{{ t('play.capped', { event: cappedTrigger.eventName, max: cappedTrigger.max }) }}</template>
     </p>
     <p v-if="session.ended?.cause" v-reveal class="banner info">{{ t(`session.endCause.${session.ended.cause}`) }}</p>
 
@@ -215,6 +226,7 @@ useKeydown((e) => {
         <DisabledTip :tip="t('play.jokersTip')">
           <span class="jokers" :class="{ none: !session.jokers }">{{ t('play.jokers', session.jokers) }}</span>
         </DisabledTip>
+        <LimitGauge />
       </h2>
       <p v-if="!session.pending.length" class="empty">
         {{ t('play.empty') }}

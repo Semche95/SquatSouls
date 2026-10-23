@@ -65,6 +65,7 @@ impl Session {
             return;
         }
         self.drop_unstarted(&draw);
+        self.unask(draw.asked, draw.time);
         let key = (draw.game_id, draw.event_id);
         if let Some(count) = self.triggers.get_mut(&key) {
             *count = count.saturating_sub(1);

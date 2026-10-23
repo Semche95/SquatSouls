@@ -1,6 +1,6 @@
-//! Session: draw, exercises and sets, start, end and cancellation.
+//! Session: draw, intensity and limit, exercises and sets, start, end and cancellation.
 
-use crate::app::{AppError, Config, Draw, Intensity, Session, SessionView};
+use crate::app::{AppError, Config, Draw, Intensity, Session, SessionLimit, SessionView};
 use crate::state::{lock, now, Shared};
 
 #[tauri::command]
@@ -9,11 +9,14 @@ pub(crate) fn draw(
     game_id: String,
     event_id: String,
     intensity: Intensity,
+    limit: Option<SessionLimit>,
 ) -> Result<Draw, AppError> {
     lock(&state)?.change_session(|session, config| {
         session.set_intensity(intensity);
-        let draw = session.draw(config, &game_id, &event_id, &mut rand::rng())?;
-        session.start(config, &game_id, now())?;
+        session.set_limit(limit)?;
+        let now = now();
+        let draw = session.draw(config, &game_id, &event_id, now, &mut rand::rng())?;
+        session.start(config, &game_id, now)?;
         Ok(draw)
     })
 }
@@ -27,6 +30,14 @@ pub(crate) fn set_session_intensity(
         session.set_intensity(intensity);
         Ok(())
     })
+}
+
+#[tauri::command]
+pub(crate) fn set_session_limit(
+    state: Shared,
+    limit: Option<SessionLimit>,
+) -> Result<SessionView, AppError> {
+    change(&state, |session, _| session.set_limit(limit))
 }
 
 #[tauri::command]
@@ -82,9 +93,11 @@ pub(crate) fn start_session(
     state: Shared,
     game_id: String,
     intensity: Intensity,
+    limit: Option<SessionLimit>,
 ) -> Result<SessionView, AppError> {
     change(&state, |session, config| {
         session.set_intensity(intensity);
+        session.set_limit(limit)?;
         session.start(config, &game_id, now()).map(drop)
     })
 }

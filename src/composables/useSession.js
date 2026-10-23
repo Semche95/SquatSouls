@@ -5,18 +5,20 @@ import { tm } from '../i18n/i18n.js';
 import { chime, recoveryEnd, sideSignal, startSignal } from '../session/sound.js';
 import { defineShared } from './shared.js';
 import { useCountdown } from './useCountdown.js';
+import { useSessionChoice } from './useSessionChoice.js';
 
 // Seconds in each time unit of a timed exercise.
 const UNIT_SECONDS = { seconds: 1, minutes: 60 };
 // Sides of an exercise timed on each side.
 export const SIDES = 2;
 
-export const [provideSession, useSession] = defineShared(({ call }, { config, draft, game, gameId, intensity, noExercise, store }) => {
+export const [provideSession, useSession] = defineShared(({ call }, { config, draft, game, gameId, intensity, limit, applyLimit, noExercise, store }) => {
   const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], countedTriggers: [], jokers: 0, jokersEarned: 0, jokersSpent: 0 });
   // Set and event counter the user has just added by an event, until their animation has played: 0 and null otherwise.
   const addedDraw = ref(0);
   const addedTrigger = ref(null);
-  // Event just selected beyond its limit, until its cue has played: `n` grows at each selection to replay it.
+  // Event just selected beyond its limit or the session's, until its cue has played: `n` grows at each selection to
+  // replay it.
   const cappedTrigger = ref(null);
   let cappedCount = 0;
   // Encouragement shown once a session ends with exercises done, however it ends (End the session, or a saved
@@ -121,35 +123,37 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     if (locked) gameId.value = locked;
     else if (cfg && !g?.events.length) gameId.value = '';
   });
-  watch(session, (s) => {
-    if (s.gameId) intensity.value = s.intensity;
-  });
-
-  // A session resumed at launch brings the intensity chosen in an earlier launch: once it ends, however it ends,
-  // unless an intensity is chosen meanwhile, the intensity is the one a launch gives, normal unless remembered.
-  let inherited = false;
-  watch(() => session.value.startedAt, (started) => {
-    if (started || !inherited) return;
-    inherited = false;
-    if (!config.value.rememberIntensity) intensity.value = 'normal';
-  });
+  // Intensity and limit changed during the session apply right away; once a session resumed at launch ends, they
+  // are the ones a launch gives: normal intensity and no limit, unless remembered.
+  const shared = { session, call, reload };
+  const choices = [
+    useSessionChoice(shared, {
+      current: () => intensity.value,
+      apply: (value) => (intensity.value = value),
+      of: (s) => s.intensity,
+      command: 'set_session_intensity',
+      arg: 'intensity',
+      reset: () => {
+        if (!config.value.rememberIntensity) intensity.value = 'normal';
+      },
+    }),
+    useSessionChoice(shared, {
+      current: () => limit.value,
+      apply: applyLimit,
+      of: (s) => s.limit,
+      command: 'set_session_limit',
+      arg: 'limit',
+      reset: () => {
+        if (!config.value.rememberLimit) applyLimit(null);
+      },
+    }),
+  ];
 
   async function resume() {
     const s = await call('get_session');
-    inherited = !!s.gameId;
+    for (const resumed of choices) resumed(s);
     session.value = s;
   }
-
-  // Intensity changed during the session: applied right away to the sets to do.
-  watch(intensity, async (value) => {
-    if (!session.value.gameId || value === session.value.intensity) return;
-    inherited = false;
-    try {
-      session.value = await call('set_session_intensity', { intensity: value });
-    } catch {
-      await reload();
-    }
-  });
 
   async function reload() {
     session.value = await invoke('get_session');
@@ -181,10 +185,10 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
     if (noExercise.value) return;
     cappedTrigger.value = null;
     try {
-      const draw = await call('draw', { gameId: game.value.id, eventId: ev.id, intensity: intensity.value });
+      const draw = await call('draw', { gameId: game.value.id, eventId: ev.id, intensity: intensity.value, limit: limit.value });
       session.value = await call('get_session');
-      if (draw.capped) {
-        cappedTrigger.value = { eventId: ev.id, eventName: draw.eventName, max: draw.maxPerSession, n: ++cappedCount };
+      if (draw.capped || draw.limitReached) {
+        cappedTrigger.value = { eventId: ev.id, eventName: draw.eventName, max: draw.maxPerSession, session: draw.limitReached, n: ++cappedCount };
       } else {
         addedDraw.value = draw.id;
         addedTrigger.value = { eventId: ev.id, drawId: draw.id };
@@ -255,7 +259,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   async function startSession() {
     try {
-      session.value = await call('start_session', { gameId: game.value.id, intensity: intensity.value });
+      session.value = await call('start_session', { gameId: game.value.id, intensity: intensity.value, limit: limit.value });
     } catch {
       /* error already shown */
     }

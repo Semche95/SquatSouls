@@ -29,6 +29,35 @@
 .cfg-head-text .setting-title {
   margin: 0;
 }
+/* Exercises: the toolbar above, set apart from the title and hint below it, over the whole width. */
+.cfg-exercises .group-head {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 20px;
+}
+.cfg-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+/* Share and Import on the right, the settings alone on the left. */
+.ex-settings + * {
+  margin-left: auto;
+}
+.ex-settings {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.ex-settings .sep {
+  color: var(--line);
+}
+.ex-settings b {
+  font-weight: 600;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
 .cfg-import {
   display: flex;
   flex-direction: column;

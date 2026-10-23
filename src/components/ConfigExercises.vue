@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, shallowRef, watch } from 'vue';
 import { VueFinalModal } from 'vue-final-modal';
-import { BOUNDS, clone, newId } from '../config/configDraft.js';
+import { clone, newId } from '../config/configDraft.js';
 import { t } from '../i18n/i18n.js';
 import { parseExercises, shareExercises } from '../sharing/share.js';
 import { exerciseChanges, mergeExercises } from '../sharing/importChanges.js';
@@ -10,15 +10,16 @@ import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import { provideEditDialog } from '../composables/useEditDialog.js';
 import ConfigExercise from './ConfigExercise.vue';
-import CountStepper from './CountStepper.vue';
 import DisabledTip from './DisabledTip.vue';
-import EditRow from './EditRow.vue';
 import ExerciseDialog from './ExerciseDialog.vue';
+import ExerciseSettingsDialog from './ExerciseSettingsDialog.vue';
 import ShareImport from './ShareImport.vue';
 
 const { config, draft, notify, copy, shareBlocked } = useConfig();
 const { saveNow } = useSession();
 const importing = ref(false);
+// Settings shared by every exercise, in their dialog.
+const settingsOpen = ref(false);
 // Saved exercises as the import opened: saving it does not change the preview while the modal fades out.
 const savedExercises = shallowRef([]);
 watch(importing, (on) => on && (savedExercises.value = config.value.exercises));
@@ -47,16 +48,29 @@ function addExercise() {
 <template>
   <section class="group cfg-exercises">
     <header class="group-head">
+      <div class="cfg-toolbar">
+        <!-- The settings shared by every exercise show their values, the dialog changes them. -->
+        <button class="ghost ex-settings" @click="settingsOpen = true">
+          <span aria-hidden="true">⚙</span>
+          <i18n-t keypath="config.exercises.settingsRecovery" tag="span" scope="global">
+            <template #n><b>{{ draft.recovery }} {{ t('fields.secondsUnit') }}</b></template>
+          </i18n-t>
+          <span class="sep" aria-hidden="true">·</span>
+          <i18n-t keypath="config.exercises.settingsRepDuration" tag="span" scope="global">
+            <template #n><b>{{ draft.repDuration }} {{ t('fields.secondsUnit') }}</b></template>
+          </i18n-t>
+        </button>
+        <DisabledTip :tip="shareBlocked">
+          <button :disabled="!!shareBlocked" @click="copy(shareExercises(config.exercises))">{{ t('common.share') }}</button>
+        </DisabledTip>
+        <DisabledTip :tip="shareBlocked">
+          <button :disabled="!!shareBlocked" @click="importing = true">{{ t('common.import') }}</button>
+        </DisabledTip>
+      </div>
       <div class="cfg-head-text">
         <h2 class="setting-title">{{ t('config.exercises.count', { n: included, total: draft.exercises.length }, included) }}</h2>
         <p class="hint">{{ t('config.exercises.enabledHint') }}</p>
       </div>
-      <DisabledTip :tip="shareBlocked">
-        <button class="ghost" :disabled="!!shareBlocked" @click="copy(shareExercises(config.exercises))">{{ t('common.share') }}</button>
-      </DisabledTip>
-      <DisabledTip :tip="shareBlocked">
-        <button :disabled="!!shareBlocked" @click="importing = true">{{ t('common.import') }}</button>
-      </DisabledTip>
     </header>
     <VueFinalModal
       v-model="importing"
@@ -76,15 +90,11 @@ function addExercise() {
         @cancel="importing = false"
       />
     </VueFinalModal>
-    <div class="setting-card">
-      <EditRow :label="t('config.exercises.recovery')" :hint="t('config.exercises.recoveryHint')" for-id="cfg-recovery">
-        <CountStepper id="cfg-recovery" v-model="draft.recovery" :bounds="BOUNDS.seconds" :unit="t('fields.secondsUnit')" />
-      </EditRow>
-    </div>
     <div class="tiles">
       <button class="tile tile-new" @click="addExercise">{{ t('config.exercises.add') }}</button>
       <ConfigExercise v-for="ex in draft.exercises" :key="ex.id" v-model:enabled="ex.enabled" :ex="ex" @edit="editExercise(ex)" />
     </div>
     <ExerciseDialog v-if="editing" :recovery="draft.recovery" />
+    <ExerciseSettingsDialog v-model="settingsOpen" />
   </section>
 </template>

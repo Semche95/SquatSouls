@@ -22,7 +22,7 @@ impl Session {
             }
             self.refit(
                 config,
-                ev.draws,
+                draw.reduced.map_or(ev.draws, |n| n.min(ev.draws)),
                 &mut draw.drawn,
                 Some(&mut draw.items),
                 rng,

@@ -4,7 +4,7 @@ use super::settings::set_setting;
 use super::Store;
 use crate::app::{
     Config, Exercise, Game, GameEvent, IgnoredGame, TimeUnit, DEFAULT_RECOVERY,
-    DEFAULT_STEAM_NOTIFY, DEFAULT_TIMER_PREP,
+    DEFAULT_REP_DURATION, DEFAULT_STEAM_NOTIFY, DEFAULT_TIMER_PREP,
 };
 use rusqlite::{params, Result, Transaction};
 
@@ -15,11 +15,13 @@ const TRAY: &str = "tray";
 const CLOSE_TO_TRAY: &str = "close_to_tray";
 const START_HIDDEN: &str = "start_hidden";
 const REMEMBER_INTENSITY: &str = "remember_intensity";
+const REMEMBER_LIMIT: &str = "remember_limit";
 const SOUND: &str = "sound";
 const UPDATE_CHECK: &str = "update_check";
 const UPDATE_AUTO: &str = "update_auto";
 const TIMER_AUTO_DONE: &str = "timer_auto_done";
 const TIMER_PREP: &str = "timer_prep";
+const REP_DURATION: &str = "rep_duration";
 
 impl Store {
     pub fn config(&self) -> Result<Config> {
@@ -90,9 +92,11 @@ impl Store {
             close_to_tray: self.parsed_setting(CLOSE_TO_TRAY, false)?,
             start_hidden: self.parsed_setting(START_HIDDEN, false)?,
             remember_intensity: self.parsed_setting(REMEMBER_INTENSITY, false)?,
+            remember_limit: self.parsed_setting(REMEMBER_LIMIT, false)?,
             sound: self.parsed_setting(SOUND, true)?,
             timer_auto_done: self.parsed_setting(TIMER_AUTO_DONE, true)?,
             timer_prep: self.parsed_setting(TIMER_PREP, DEFAULT_TIMER_PREP)?,
+            rep_duration: self.parsed_setting(REP_DURATION, DEFAULT_REP_DURATION)?,
             update_check: self.parsed_setting(UPDATE_CHECK, true)?,
             update_auto: self.parsed_setting(UPDATE_AUTO, true)?,
             ignored_games,
@@ -137,6 +141,11 @@ impl Store {
                 old.remember_intensity.to_string(),
                 config.remember_intensity.to_string(),
             ),
+            (
+                REMEMBER_LIMIT,
+                old.remember_limit.to_string(),
+                config.remember_limit.to_string(),
+            ),
             (SOUND, old.sound.to_string(), config.sound.to_string()),
             (
                 TIMER_AUTO_DONE,
@@ -147,6 +156,11 @@ impl Store {
                 TIMER_PREP,
                 old.timer_prep.to_string(),
                 config.timer_prep.to_string(),
+            ),
+            (
+                REP_DURATION,
+                old.rep_duration.to_string(),
+                config.rep_duration.to_string(),
             ),
             (
                 UPDATE_CHECK,

@@ -1,6 +1,6 @@
 //! What the session shows: sets done, totals and triggers.
 
-use super::{Draw, Intensity, Session, SessionEnd};
+use super::{Draw, Intensity, Session, SessionEnd, SessionLimit};
 use crate::app::Config;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -54,6 +54,13 @@ pub struct SessionView {
     pub game_id: Option<String>,
     /// Intensity of the session.
     pub intensity: Intensity,
+    /// Limit of the session, none without one.
+    pub limit: Option<SessionLimit>,
+    /// Exercises asked and their estimated time in seconds, against which the limit applies.
+    pub asked: u32,
+    pub asked_time: u32,
+    /// A set did not fit entirely within the limit in training time: it is reached.
+    pub limit_full: bool,
     pub pending: Vec<Draw>,
     pub sets: usize,
     pub totals: Vec<Total>,
@@ -112,6 +119,10 @@ impl Session {
             counted_from: self.started_at.map(|_| self.opened_at - self.counted),
             game_id: self.game_id.clone(),
             intensity: self.intensity,
+            limit: self.limit,
+            asked: self.asked,
+            asked_time: self.asked_time,
+            limit_full: self.limit_full,
             pending: self.pending.clone(),
             sets: self.done.len(),
             totals: totals(&self.done),

@@ -29,8 +29,8 @@ describe('extendsName', () => {
 
 describe('normalized', () => {
   it('brings cleared number fields back to 0 without touching the original', () => {
-    const cfg = { recovery: '', timerPrep: '', exercises: [{ min: '', max: 5 }], games: [{ events: [{ draws: '', jokers: undefined }] }] };
-    expect(normalized(cfg)).toEqual({ recovery: 0, timerPrep: 0, exercises: [{ min: 0, max: 5 }], games: [{ events: [{ draws: 0, jokers: 0 }] }] });
+    const cfg = { recovery: '', repDuration: '', timerPrep: '', exercises: [{ min: '', max: 5 }], games: [{ events: [{ draws: '', jokers: undefined }] }] };
+    expect(normalized(cfg)).toEqual({ recovery: 0, repDuration: 0, timerPrep: 0, exercises: [{ min: 0, max: 5 }], games: [{ events: [{ draws: 0, jokers: 0 }] }] });
     expect(cfg.exercises[0].min).toBe('');
   });
 
@@ -63,6 +63,7 @@ describe('rangeBounds', () => {
 describe('fieldError', () => {
   const cfg = (patch = {}) => ({
     recovery: 60,
+    repDuration: 3,
     exercises: [{ name: 'Squats', min: 1, max: 5, ...patch.ex }],
     games: [{ name: 'Elden Ring', events: [{ name: 'Death', draws: 1, jokers: 0, ...patch.ev }] }],
   });
@@ -79,6 +80,7 @@ describe('fieldError', () => {
   it('names the first decimal or out of bounds field', () => {
     expect(fieldError({ ...cfg(), recovery: -1 })).toBe('Recovery after each exercise: at least 0.');
     expect(fieldError({ ...cfg(), recovery: 3601 })).toBe('Recovery after each exercise: at most 3600.');
+    expect(fieldError({ ...cfg(), repDuration: 0 })).toBe('Duration of a repetition: at least 1.');
     expect(fieldError({ ...cfg(), timerPrep: 'abc' })).toBe('Countdown before the timer: a whole number is needed, 0 or more.');
     expect(fieldError(cfg({ ex: { min: 1.5 } }))).toBe('Squats › minimum: a whole number is needed, 1 or more.');
     expect(fieldError(cfg({ ex: { min: 0 } }))).toBe('Squats › minimum: at least 1.');

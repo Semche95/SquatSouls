@@ -1,16 +1,20 @@
-//! Session: intensity, draw, sets, progress, jokers, adjustment to the configuration and summary. Saved by the
+//! Session: intensity, limit and the recount of what was asked, draw, sets, progress, jokers, adjustment to the
+//! configuration and summary. Saved by the
 //! store at each change, it resumes at launch without the time the app was closed.
 
 mod draw;
 mod intensity;
 mod jokers;
+mod limit;
 mod progress;
+mod recount;
 mod refit;
 mod set;
 mod summary;
 
 pub use intensity::*;
 pub use jokers::*;
+pub use limit::*;
 pub use set::*;
 pub use summary::*;
 
@@ -26,6 +30,15 @@ pub struct Session {
     /// Game of the session, set at the latest when it starts and locked until the next session.
     pub(crate) game_id: Option<String>,
     pub(crate) intensity: Intensity,
+    /// Limit set by whoever trains, none by default.
+    pub(crate) limit: Option<SessionLimit>,
+    /// Exercises asked and their estimated time in seconds, counted from the trigger of their set.
+    pub(crate) asked: u32,
+    pub(crate) asked_time: u32,
+    /// A set did not fit entirely within the limit in training time: it is reached.
+    pub(crate) limit_full: bool,
+    /// Saved before the exercises asked were counted: they are counted again at launch.
+    pub(crate) asked_unknown: bool,
     pub(crate) triggers: HashMap<(String, String), u32>,
     pub(crate) pending: Vec<Draw>,
     pub(crate) done: Vec<LogEntry>,

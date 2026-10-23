@@ -62,7 +62,7 @@
     },
     "play": {
       "type": "object",
-      "required": ["game", "gameLocked", "noEvent", "chooseGame", "noGame", "noExercise", "intensity", "intensities", "intensityTips", "detected", "ignore", "recovery", "skipRecovery", "todo", "jokersTip", "jokers", "empty", "moreQueued", "foldQueued", "capped", "limitReached", "limitTip"],
+      "required": ["game", "gameLocked", "noEvent", "chooseGame", "noGame", "noExercise", "intensity", "intensities", "intensityTips", "limit", "limitKinds", "minutes", "limitTips", "limitExercises", "limitTime", "detected", "ignore", "recovery", "skipRecovery", "todo", "jokersTip", "jokers", "empty", "moreQueued", "foldQueued", "capped", "limitReached", "limitTip", "sessionLimitTip", "sessionCapped"],
       "additionalProperties": false,
       "properties": {
         "game": { "$ref": "#/$defs/text" },
@@ -92,6 +92,31 @@
             "hard": { "$ref": "#/$defs/text" }
           }
         },
+        "limit": { "$ref": "#/$defs/text" },
+        "limitKinds": {
+          "type": "object",
+          "required": ["none", "exercises", "playTime", "trainingTime"],
+          "additionalProperties": false,
+          "properties": {
+            "none": { "$ref": "#/$defs/text" },
+            "exercises": { "$ref": "#/$defs/text" },
+            "playTime": { "$ref": "#/$defs/text" },
+            "trainingTime": { "$ref": "#/$defs/text" }
+          }
+        },
+        "minutes": { "$ref": "#/$defs/text" },
+        "limitTips": {
+          "type": "object",
+          "required": ["exercises", "playTime", "trainingTime"],
+          "additionalProperties": false,
+          "properties": {
+            "exercises": { "$ref": "#/$defs/text" },
+            "playTime": { "$ref": "#/$defs/text" },
+            "trainingTime": { "type": "string", "pattern": "^[^{}]*(?:\\{program\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{program\\}" }] }
+          }
+        },
+        "limitExercises": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:used|n)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{used\\}" }, { "pattern": "\\{n\\}" }, { "pattern": "\\|" }] },
+        "limitTime": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:used|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{used\\}" }, { "pattern": "\\{max\\}" }] },
         "detected": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
         "ignore": { "$ref": "#/$defs/text" },
         "recovery": { "$ref": "#/$defs/text" },
@@ -104,7 +129,9 @@
         "foldQueued": { "$ref": "#/$defs/text" },
         "capped": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:event|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{event\\}" }, { "pattern": "\\{max\\}" }] },
         "limitReached": { "$ref": "#/$defs/text" },
-        "limitTip": { "$ref": "#/$defs/text" }
+        "limitTip": { "$ref": "#/$defs/text" },
+        "sessionLimitTip": { "$ref": "#/$defs/text" },
+        "sessionCapped": { "type": "string", "pattern": "^[^{}]*(?:\\{event\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{event\\}" }] }
       }
     },
     "draw": {
@@ -289,7 +316,7 @@
         },
         "exercises": {
           "type": "object",
-          "required": ["import", "imported", "added", "new", "defaultUnit", "recovery", "unit", "min", "max", "enabled", "name", "unitPlaceholder", "minimum", "maximum", "recoveryLabel", "add", "timed", "notTimed", "seconds", "timedSummary", "timedSideSummary", "eachSide", "eachSideHint", "recoverySummary", "generalRecovery", "minutes", "title", "count", "enabledHint", "included", "recoveryHint", "ownRecoveryHint", "range", "rangeValue", "rangeUnit", "nameNeeded", "remove"],
+          "required": ["import", "imported", "added", "new", "defaultUnit", "recovery", "unit", "min", "max", "enabled", "name", "unitPlaceholder", "minimum", "maximum", "recoveryLabel", "add", "timed", "notTimed", "seconds", "timedSummary", "timedSideSummary", "eachSide", "eachSideHint", "recoverySummary", "generalRecovery", "minutes", "title", "count", "enabledHint", "included", "settings", "settingsRecovery", "settingsRepDuration", "recoveryHint", "repDuration", "repDurationHint", "ownRecoveryHint", "range", "rangeValue", "rangeUnit", "nameNeeded", "remove"],
           "additionalProperties": false,
           "properties": {
             "import": { "$ref": "#/$defs/text" },
@@ -338,7 +365,12 @@
             "count": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:n|total)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\{total\\}" }, { "pattern": "\\|" }] },
             "enabledHint": { "$ref": "#/$defs/text" },
             "included": { "$ref": "#/$defs/text" },
+            "settings": { "$ref": "#/$defs/text" },
+            "settingsRecovery": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }] },
+            "settingsRepDuration": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }] },
             "recoveryHint": { "$ref": "#/$defs/text" },
+            "repDuration": { "$ref": "#/$defs/text" },
+            "repDurationHint": { "$ref": "#/$defs/text" },
             "ownRecoveryHint": { "$ref": "#/$defs/text" },
             "range": { "$ref": "#/$defs/text" },
             "rangeValue": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:min|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{min\\}" }, { "pattern": "\\{max\\}" }] },
@@ -349,7 +381,7 @@
         },
         "settings": {
           "type": "object",
-          "required": ["general", "language", "systemLanguage", "rememberIntensity", "rememberIntensityHint", "tray", "showIcon", "trayHint", "closeToTray", "startHidden", "steam", "detect", "detectHint", "notify", "noGame", "found", "foundIgnored", "blocked", "unnamed", "ignored", "unignore", "sound", "soundHint", "updates", "updateCheck", "updateCheckHint", "updateAuto", "timer", "timerAutoDone", "timerHint"],
+          "required": ["general", "language", "systemLanguage", "rememberIntensity", "rememberIntensityHint", "rememberLimit", "rememberLimitHint", "tray", "showIcon", "trayHint", "closeToTray", "startHidden", "steam", "detect", "detectHint", "notify", "noGame", "found", "foundIgnored", "blocked", "unnamed", "ignored", "unignore", "sound", "soundHint", "updates", "updateCheck", "updateCheckHint", "updateAuto", "timer", "timerAutoDone", "timerHint"],
           "additionalProperties": false,
           "properties": {
             "general": { "$ref": "#/$defs/text" },
@@ -357,6 +389,8 @@
             "systemLanguage": { "$ref": "#/$defs/text" },
             "rememberIntensity": { "$ref": "#/$defs/text" },
             "rememberIntensityHint": { "$ref": "#/$defs/text" },
+            "rememberLimit": { "$ref": "#/$defs/text" },
+            "rememberLimitHint": { "$ref": "#/$defs/text" },
             "tray": { "$ref": "#/$defs/text" },
             "showIcon": { "$ref": "#/$defs/text" },
             "trayHint": { "$ref": "#/$defs/text" },
@@ -388,7 +422,7 @@
     },
     "fields": {
       "type": "object",
-      "required": ["error", "notCount", "tooSmall", "tooLarge", "globalRecovery", "minimum", "maximum", "recovery", "draws", "limit", "jokers", "timerPrep", "secondsUnit", "decrease", "increase", "exerciseName", "eventName", "empty", "atBound", "alreadyEmpty"],
+      "required": ["error", "notCount", "tooSmall", "tooLarge", "globalRecovery", "repDuration", "minimum", "maximum", "recovery", "draws", "limit", "jokers", "timerPrep", "secondsUnit", "decrease", "increase", "exerciseName", "eventName", "empty", "atBound", "alreadyEmpty"],
       "additionalProperties": false,
       "properties": {
         "error": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:field|error)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{field\\}" }, { "pattern": "\\{error\\}" }] },
@@ -396,6 +430,7 @@
         "tooSmall": { "type": "string", "pattern": "^[^{}]*(?:\\{min\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{min\\}" }] },
         "tooLarge": { "type": "string", "pattern": "^[^{}]*(?:\\{max\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{max\\}" }] },
         "globalRecovery": { "$ref": "#/$defs/text" },
+        "repDuration": { "$ref": "#/$defs/text" },
         "minimum": { "$ref": "#/$defs/text" },
         "maximum": { "$ref": "#/$defs/text" },
         "recovery": { "$ref": "#/$defs/text" },
@@ -550,7 +585,7 @@
     },
     "errors": {
       "type": "object",
-      "required": ["unknown", "database_not_prepared", "database_damaged", "database_denied", "database_full", "internal", "config_ignored", "tray_unavailable", "invalid_language", "exercise_empty", "exercise_duplicate", "exercise_range", "exercise_recovery_too_long", "recovery_too_long", "timer_prep_too_long", "game_empty", "game_duplicate", "game_name_duplicate", "event_empty", "event_duplicate", "event_no_draw", "event_too_many_draws", "event_zero_limit", "event_limit_too_high", "event_too_many_jokers", "name_too_long", "name_hidden_char", "unit_too_long", "unit_hidden_char", "too_many_exercises", "too_many_events", "unknown_game", "unknown_event", "session_other_game", "not_enough_jokers", "exercise_not_reducible", "set_not_pending", "exercise_not_in_set", "exercise_already_done", "exercise_not_next", "set_not_current", "start_without_event", "start_without_exercise", "end_without_set", "end_with_pending_sets", "update_during_session"],
+      "required": ["unknown", "database_not_prepared", "database_damaged", "database_denied", "database_full", "internal", "config_ignored", "tray_unavailable", "invalid_language", "exercise_empty", "exercise_duplicate", "exercise_range", "exercise_recovery_too_long", "recovery_too_long", "rep_duration_range", "timer_prep_too_long", "game_empty", "game_duplicate", "game_name_duplicate", "event_empty", "event_duplicate", "event_no_draw", "event_too_many_draws", "event_zero_limit", "event_limit_too_high", "event_too_many_jokers", "name_too_long", "name_hidden_char", "unit_too_long", "unit_hidden_char", "too_many_exercises", "too_many_events", "unknown_game", "unknown_event", "session_other_game", "not_enough_jokers", "exercise_not_reducible", "set_not_pending", "exercise_not_in_set", "exercise_already_done", "exercise_not_next", "set_not_current", "start_without_event", "start_without_exercise", "end_without_set", "end_with_pending_sets", "update_during_session"],
       "additionalProperties": false,
       "properties": {
         "unknown": { "$ref": "#/$defs/text" },
@@ -567,6 +602,7 @@
         "exercise_range": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:name|min|max|limit)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }, { "pattern": "\\{min\\}" }, { "pattern": "\\{max\\}" }, { "pattern": "\\{limit\\}" }] },
         "exercise_recovery_too_long": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:name|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }, { "pattern": "\\{max\\}" }] },
         "recovery_too_long": { "type": "string", "pattern": "^[^{}]*(?:\\{max\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{max\\}" }] },
+        "rep_duration_range": { "type": "string", "pattern": "^[^{}]*(?:\\{max\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{max\\}" }] },
         "timer_prep_too_long": { "type": "string", "pattern": "^[^{}]*(?:\\{max\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{max\\}" }] },
         "game_empty": { "$ref": "#/$defs/text" },
         "game_duplicate": { "type": "string", "pattern": "^[^{}]*(?:\\{id\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{id\\}" }] },

@@ -35,6 +35,7 @@ fn repair_brings_a_configuration_within_the_limits() {
     let mut cfg = default_config(Language::Fr);
     cfg.recovery = u32::MAX;
     cfg.timer_prep = u32::MAX;
+    cfg.rep_duration = 0;
     cfg.exercises[0].min = 0;
     cfg.exercises[0].max = u32::MAX;
     cfg.exercises[1].min = u32::MAX;
@@ -45,6 +46,7 @@ fn repair_brings_a_configuration_within_the_limits() {
     assert!(cfg.repair());
     cfg.validate().unwrap();
     assert_eq!((cfg.recovery, cfg.timer_prep), (MAX_SECONDS, MAX_SECONDS));
+    assert_eq!(cfg.rep_duration, 1);
     assert_eq!(
         (cfg.exercises[0].min, cfg.exercises[0].max),
         (1, MAX_AMOUNT)

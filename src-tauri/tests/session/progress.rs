@@ -5,9 +5,9 @@ fn complete_dismiss_and_totals() {
     let cfg = default_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
-    let a = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
-    let b = s.draw(&cfg, "ds3", "mort", &mut r).unwrap();
-    let c = s.draw(&cfg, "ds3", "mort", &mut r).unwrap();
+    let a = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
+    let b = s.draw(&cfg, "ds3", "mort", 0, &mut r).unwrap();
+    let c = s.draw(&cfg, "ds3", "mort", 0, &mut r).unwrap();
 
     let logged = complete(&mut s, a.id, 100).unwrap();
     assert_eq!(logged.len(), 2);
@@ -37,7 +37,7 @@ fn complete_dismiss_and_totals() {
 fn sets_are_done_in_the_order_they_were_drawn() {
     let (mut s, boss) = session_with_jokers();
     let cfg = default_config(Language::Fr);
-    let death = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
+    let death = s.draw(&cfg, "ds3", "mort", 0, &mut rng()).unwrap();
     let id = &death.items[0].exercise_id;
     for refused in [
         s.complete_exercise(death.id, id, 20).map(|_| ()),
@@ -93,7 +93,7 @@ fn exercises_are_done_one_by_one() {
     assert_eq!(v.log[0].at, 30);
 
     let cfg = default_config(Language::Fr);
-    let boss = s.draw(&cfg, "ds3", "boss", &mut rng()).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut rng()).unwrap();
     s.complete_exercise(boss.id, &boss.items[0].exercise_id, 40)
         .unwrap();
     s.skip_set(boss.id).unwrap();
@@ -112,8 +112,8 @@ fn dismissing_a_started_set_keeps_its_done_exercises() {
     let cfg = default_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
-    let started = s.draw(&cfg, "ds3", "boss-nohit", &mut r).unwrap();
-    let boss = s.draw(&cfg, "ds3", "boss-nohit", &mut r).unwrap();
+    let started = s.draw(&cfg, "ds3", "boss-nohit", 0, &mut r).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss-nohit", 0, &mut r).unwrap();
     let entry = s
         .complete_exercise(started.id, &started.items[0].exercise_id, 10)
         .unwrap();
@@ -124,7 +124,7 @@ fn dismissing_a_started_set_keeps_its_done_exercises() {
     assert_eq!(v.log, vec![entry], "the exercise done stays counted");
     assert_eq!(v.triggers[0].count, 2, "the trigger stays counted");
     assert_eq!(v.jokers, 0, "a stopped set earns no jokers");
-    let again = s.draw(&cfg, "ds3", "boss-nohit", &mut r).unwrap();
+    let again = s.draw(&cfg, "ds3", "boss-nohit", 0, &mut r).unwrap();
     assert_eq!(again.trigger_count, 3);
     assert_ne!(again.items, started.items, "nothing is reserved");
 }
@@ -134,11 +134,11 @@ fn a_dismissed_set_comes_back_on_the_next_trigger_of_its_event() {
     let cfg = default_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
-    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
     s.dismiss(boss.id).unwrap();
-    let other = s.draw(&cfg, "ds3", "boss-premier", &mut r).unwrap();
+    let other = s.draw(&cfg, "ds3", "boss-premier", 0, &mut r).unwrap();
     assert_ne!(other.items, boss.items, "another event draws normally");
-    let again = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let again = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
     assert_eq!(again.items, boss.items, "same set, as drawn");
     assert_eq!(again.trigger_count, 1);
     s.dismiss(again.id).unwrap();
@@ -147,7 +147,7 @@ fn a_dismissed_set_comes_back_on_the_next_trigger_of_its_event() {
         .exercises
         .retain(|ex| boss.items.iter().all(|it| it.exercise_id != ex.id));
     s.apply_config(&changed, &mut r);
-    let fresh = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let fresh = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
     assert_ne!(
         fresh.items, boss.items,
         "the saved configuration replaces the removed exercises of the reserve"
@@ -162,8 +162,8 @@ fn dismissing_every_set_keeps_only_the_exercises_done() {
     let mut r = rng();
     let game = &cfg.games[0];
     let event = game.events.iter().find(|e| e.draws > 1).unwrap();
-    let started = s.draw(&cfg, &game.id, &event.id, &mut r).unwrap();
-    s.draw(&cfg, &game.id, &event.id, &mut r).unwrap();
+    let started = s.draw(&cfg, &game.id, &event.id, 0, &mut r).unwrap();
+    s.draw(&cfg, &game.id, &event.id, 0, &mut r).unwrap();
     let entry = s
         .complete_exercise(started.id, &started.items[0].exercise_id, 10)
         .unwrap();
@@ -182,7 +182,9 @@ fn dismissing_every_set_keeps_only_the_exercises_done() {
     );
 
     let mut untouched = Session::default();
-    untouched.draw(&cfg, &game.id, &event.id, &mut r).unwrap();
+    untouched
+        .draw(&cfg, &game.id, &event.id, 0, &mut r)
+        .unwrap();
     assert!(
         !untouched.dismiss_all(),
         "nothing done: nothing to end with"

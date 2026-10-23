@@ -152,3 +152,12 @@
     animation: none;
   }
 }
+/* Limit of the session, on its own line under the game and the intensity. */
+.play-limit {
+  flex-basis: 100%;
+}
+/* Its kind keeps the same width whichever is chosen, wide enough for the longest. */
+.play-limit .ts-wrapper {
+  flex: none;
+  width: 15em;
+}

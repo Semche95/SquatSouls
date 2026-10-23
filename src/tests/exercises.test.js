@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { emptySession, idleSession, responses, setup, openConfig, shownTip, expectTip, layOutControls, editDialog, save, savedConfig } from './app.js';
-import { openExercises, openTile, closeDialog, saveAndReopen } from './program.js';
+import { openExercises, openTile, closeDialog, saveAndReopen, openExerciseSettings, exerciseSettingsButton } from './program.js';
 
 describe('exercises', () => {
   layOutControls();
@@ -96,11 +96,30 @@ describe('exercises', () => {
     expect(savedConfig().exercises).toEqual([expect.objectContaining({ id: 'squat', enabled: false })]);
   });
 
+  it('sets the duration of a repetition for every exercise at once, in the dialog of the exercise settings', async () => {
+    setup({ save_config: (args) => ({ config: args.config }) });
+    const w = await openExercises({ dialog: false });
+    expect(exerciseSettingsButton(w).text()).toMatch(/Repetition 3 s$/);
+    const settings = await openExerciseSettings(w);
+    expect(settings.find('h2').text()).toBe('Exercise settings');
+    expect(settings.find('#cfg-rep-duration').element.value).toBe('3');
+    await settings.find('#cfg-rep-duration').setValue('5');
+    await closeDialog();
+    expect(exerciseSettingsButton(w).text()).toMatch(/Repetition 5 s$/);
+    expect(w.find('.unsaved').exists()).toBe(true);
+    await save(w).trigger('click');
+    await flushPromises();
+    expect(savedConfig().repDuration).toBe(5);
+  });
+
   it('sets the global recovery and an exercise\'s own recovery', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
-    const w = await openExercises();
+    const w = await openExercises({ dialog: false });
     const own = () => editDialog().find('#ex-recovery');
-    await w.find('#cfg-recovery').setValue(45);
+    await (await openExerciseSettings(w)).find('#cfg-recovery').setValue(45);
+    await closeDialog();
+    expect(exerciseSettingsButton(w).text()).toMatch(/^⚙\s*Recovery 45 s/);
+    await openTile(w.find('.tile-slot .tile'));
     expect(own().attributes('placeholder')).toBe('45');
     await own().setValue('90');
     expect(w.find('.tile-slot .tile').text()).toContain('recovery 90 s');

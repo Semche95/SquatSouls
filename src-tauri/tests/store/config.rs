@@ -57,6 +57,16 @@ fn timed_exercises_on_each_side_sound_and_timer_settings_are_saved() {
 }
 
 #[test]
+fn the_duration_of_a_repetition_is_saved() {
+    let mut s = store();
+    let mut cfg = s.config().unwrap();
+    assert_eq!(cfg.rep_duration, DEFAULT_REP_DURATION, "in a new database");
+    cfg.rep_duration = 5;
+    s.save_config(&cfg).unwrap();
+    assert_eq!(s.config().unwrap().rep_duration, 5);
+}
+
+#[test]
 fn update_settings_are_on_by_default_and_saved() {
     let mut s = store();
     let mut cfg = s.config().unwrap();
@@ -68,13 +78,14 @@ fn update_settings_are_on_by_default_and_saved() {
 }
 
 #[test]
-fn steam_tray_and_intensity_settings_are_saved() {
+fn steam_tray_intensity_and_limit_settings_are_saved() {
     let mut s = store();
     let mut cfg = default_config(Language::Fr);
     assert!(!cfg.steam_detection && cfg.steam_notify);
     assert!(!cfg.tray && !cfg.close_to_tray && !cfg.start_hidden);
-    assert!(!cfg.remember_intensity);
+    assert!(!cfg.remember_intensity && !cfg.remember_limit);
     cfg.remember_intensity = true;
+    cfg.remember_limit = true;
     cfg.steam_detection = true;
     cfg.steam_notify = false;
     cfg.tray = true;

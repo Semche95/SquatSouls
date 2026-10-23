@@ -23,7 +23,7 @@ fn intensity_scales_the_drawn_numbers() {
         let mut s = Session::default();
         s.set_intensity(intensity);
         for _ in 0..50 {
-            for it in s.draw(&cfg, "ds3", "boss", &mut r).unwrap().items {
+            for it in s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap().items {
                 let ex = cfg
                     .exercises
                     .iter()
@@ -41,7 +41,7 @@ fn intensity_scales_the_drawn_numbers() {
 fn a_new_intensity_rescales_the_amounts_to_do_from_the_drawn_ones() {
     let cfg = default_config(Language::Fr);
     let mut s = Session::default();
-    let boss = s.draw(&cfg, "ds3", "boss", &mut rng()).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut rng()).unwrap();
     s.complete_exercise(boss.id, &boss.items[0].exercise_id, 0)
         .unwrap();
     for intensity in [Intensity::Hard, Intensity::Easy, Intensity::Normal] {

@@ -24,6 +24,16 @@ export async function openExercises({ dialog = true } = {}) {
   if (dialog) await openTile(w.find('.tile-slot .tile'));
   return w;
 }
+// Button of the Exercises sub-tab's header: Share or Import.
+export const exercisesButton = (w, text) => w.findAll('.cfg-exercises .group-head button').find((b) => b.text().endsWith(text));
+// Button of the Exercises sub-tab's header showing the settings shared by every exercise.
+export const exerciseSettingsButton = (w) => w.find('.cfg-exercises .ex-settings');
+// Opens the settings shared by every exercise, in their dialog; returns the dialog.
+export async function openExerciseSettings(w) {
+  await exerciseSettingsButton(w).trigger('click');
+  await editDialogOpen();
+  return editDialog();
+}
 // Opens the edit dialog of an event or an exercise from its tile.
 export async function openTile(tile) {
   await tile.trigger('click');

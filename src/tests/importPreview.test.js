@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { config, setup, openConfig, expectTip, layOutControls, formDialog, formDialogOpen, formDialogClosed, savedConfig } from './app.js';
-import { shownGame, importButton } from './program.js';
+import { shownGame, importButton, exercisesButton } from './program.js';
 import { shareExercises, shareGame } from '../sharing/share.js';
 
 const saving = { save_config: (args) => ({ config: args.config }) };
@@ -13,7 +13,7 @@ async function openImport(w, button) {
 const importGame = (w) => openImport(w, importButton(w));
 async function importExercises(w) {
   await w.findAll('.subtabs button')[1].trigger('click');
-  await openImport(w, w.findAll('.cfg-exercises .group-head button')[1]);
+  await openImport(w, exercisesButton(w, 'Import'));
 }
 const paste = (text) => formDialog().find('textarea').setValue(text);
 const submit = () => formDialog().find('.cfg-import .primary');

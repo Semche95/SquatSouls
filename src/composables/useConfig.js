@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import { byName, clone, normalized, fieldError, withTabDraft } from '../config/configDraft.js';
+import { BOUNDS, byName, clone, isCount, normalized, fieldError, withTabDraft } from '../config/configDraft.js';
 import { errorText, t } from '../i18n/i18n.js';
 import { defineShared } from './shared.js';
 
@@ -37,6 +37,19 @@ export const [provideConfig, useConfig] = defineShared(() => {
   const gameId = ref('');
   // Intensity of the next session, normal at each launch unless the configuration remembers it.
   const intensity = ref('normal');
+  // Limit of the next session, as its field shows it: its kind, 'none' without a limit, and its value. None at each
+  // launch unless the configuration remembers it. `limit` is the last one filled correctly, null without a limit.
+  const limitKind = ref('none');
+  const limitValue = ref(undefined);
+  const limit = ref(null);
+  watch([limitKind, limitValue], ([kind, value]) => {
+    if (kind === 'none') limit.value = null;
+    else if (isCount(value, BOUNDS.amount)) limit.value = { kind, value };
+  });
+  function applyLimit(value) {
+    limitKind.value = value?.kind ?? 'none';
+    limitValue.value = value?.value;
+  }
 
   const noGame = computed(() => !config.value?.games.length);
   // A session is only played with an included exercise, on a game with an event.
@@ -60,6 +73,9 @@ export const [provideConfig, useConfig] = defineShared(() => {
   // Saved only while remembered, so that turning it on keeps the current intensity.
   watch([intensity, () => config.value?.rememberIntensity], ([value, remember]) => {
     if (remember) invoke('set_intensity', { intensity: value }).catch(() => {});
+  });
+  watch([limit, () => config.value?.rememberLimit], ([value, remember]) => {
+    if (remember) invoke('set_limit', { limit: value }).catch(() => {});
   });
   watch(draft, (d) => failedDraft !== null && JSON.stringify(d) !== failedDraft && fail(''), { deep: true });
   // Keeps the Program game select on the game actually edited (the first by name until one is chosen).
@@ -107,5 +123,5 @@ export const [provideConfig, useConfig] = defineShared(() => {
     }
   }
 
-  return { config, draft, configError, configMsg, notify, copy, tab, cfgTab, editedGameId, newGame, gameId, intensity, noGame, noExercise, playable, game, editedGame, tabDraft, tabDirty, shareBlocked, applyConfigView, store };
+  return { config, draft, configError, configMsg, notify, copy, tab, cfgTab, editedGameId, newGame, gameId, intensity, limitKind, limitValue, limit, applyLimit, noGame, noExercise, playable, game, editedGame, tabDraft, tabDirty, shareBlocked, applyConfigView, store };
 });

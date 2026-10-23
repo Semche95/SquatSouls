@@ -51,6 +51,21 @@
       "normal": "The exercises requested by the program",
       "hard": "One and a half times the exercises requested, rounded up"
     },
+    "limit": "Limit",
+    "limitKinds": {
+      "none": "None",
+      "exercises": "Exercises",
+      "playTime": "Play time",
+      "trainingTime": "Training time"
+    },
+    "minutes": "min",
+    "limitTips": {
+      "exercises": "Exercises asked, counted when their event is selected.",
+      "playTime": "Time of the session, without the time the app was closed.",
+      "trainingTime": "Estimated time of the exercises asked: the duration of a repetition set in {program}, the timer and the recovery included."
+    },
+    "limitExercises": "{used} / {n} exercise | {used} / {n} exercises",
+    "limitTime": "{used} / {max} min",
     "detected": "{name} detected.",
     "ignore": "Ignore",
     "recovery": "Recovery",
@@ -63,7 +78,9 @@
     "foldQueued": "Collapse",
     "capped": "{event}: session limit of {max} reached.",
     "limitReached": "Limit reached",
-    "limitTip": "Limit reached: this event asks for nothing more until the next session."
+    "limitTip": "Limit reached: this event asks for nothing more until the next session.",
+    "sessionLimitTip": "Session limit reached: events ask for nothing more. Raising it brings sets back.",
+    "sessionCapped": "{event}: session limit reached."
   },
   "draw": {
     "done": "done",
@@ -209,6 +226,9 @@
       "added": "{n} added | {n} added",
       "new": "New exercise",
       "defaultUnit": "reps",
+      "settings": "Exercise settings",
+      "settingsRecovery": "Recovery {n}",
+      "settingsRepDuration": "Repetition {n}",
       "recovery": "Recovery after each exercise",
       "unit": "Unit",
       "min": "Min",
@@ -241,6 +261,8 @@
       "enabledHint": "Switch an exercise off to stop it being asked for, without deleting it.",
       "included": "Included",
       "recoveryHint": "An exercise can have its own.",
+      "repDuration": "Duration of a repetition",
+      "repDurationHint": "Estimates the training time of a session limit, for the exercises not timed.",
       "ownRecoveryHint": "Leave blank to use the general recovery.",
       "range": "Range",
       "rangeValue": "{min}–{max}",
@@ -254,6 +276,8 @@
       "systemLanguage": "System language",
       "rememberIntensity": "Remember the intensity between launches",
       "rememberIntensityHint": "Otherwise, each launch starts at Normal.",
+      "rememberLimit": "Remember the session limit between launches",
+      "rememberLimitHint": "Otherwise, each launch starts without a limit.",
       "tray": "Notification area",
       "showIcon": "Show the icon in the notification area",
       "trayHint": "Keeps the app reachable from the system bar.",
@@ -287,6 +311,7 @@
     "tooSmall": "at least {min}",
     "tooLarge": "at most {max}",
     "globalRecovery": "Recovery after each exercise",
+    "repDuration": "Duration of a repetition",
     "minimum": "minimum",
     "maximum": "maximum",
     "recovery": "recovery",
@@ -412,6 +437,7 @@
     "exercise_range": "Invalid range for \"{name}\" ({min} to {max}): from 1 to {limit}, the minimum not above the maximum.",
     "exercise_recovery_too_long": "\"{name}\": the recovery must be {max} s or less.",
     "recovery_too_long": "The recovery after each exercise must be {max} s or less.",
+    "rep_duration_range": "The duration of a repetition must be between 1 and {max} s.",
     "timer_prep_too_long": "The countdown before the timer must be {max} s or less.",
     "game_empty": "A game has an empty id or name.",
     "game_duplicate": "Game \"{id}\" is defined twice.",

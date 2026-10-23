@@ -95,12 +95,14 @@ impl AppState {
         }
     }
 
-    /// Resumes the session in progress when the app closed, without the time it stayed closed. Under the default
+    /// Resumes the session in progress when the app closed, without the time it stayed closed, counting again what
+    /// it asked if it was saved before that was counted. Under the default
     /// configuration, used in place of an unreadable one, it adjusts to it as to a saved configuration.
     fn resume_session(&mut self) {
         match self.store.current_session() {
             Ok(Some((mut session, closed))) => {
                 session.resume(closed, now());
+                session.recount_asked(&self.config);
                 self.session = session;
                 if self.config_error.is_some() {
                     let config = self.config.clone();

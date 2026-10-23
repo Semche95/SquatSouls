@@ -8,6 +8,7 @@ import { i18n } from '../i18n/i18n.js';
 
 export const config = {
   recovery: 60,
+  repDuration: 3,
   steamDetection: false,
   steamNotify: true,
   tray: false,

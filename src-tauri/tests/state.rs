@@ -56,10 +56,10 @@ fn removing_the_sessions_game_ends_it_with_the_exercises_done() {
     let mut r = StdRng::seed_from_u64(42);
     let start = Local::now().timestamp() - 100;
     let boss = state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", &mut r))
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", 0, &mut r))
         .unwrap();
     state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", &mut r))
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", 0, &mut r))
         .unwrap();
     complete_first(&mut state, &boss, start);
 
@@ -104,7 +104,7 @@ fn removing_the_sessions_game_without_any_exercise_done_cancels_it() {
     let mut state = state();
     start(&mut state);
     state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", &mut StdRng::seed_from_u64(42)))
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", 0, &mut StdRng::seed_from_u64(42)))
         .unwrap();
 
     state.store_config(without_game(&state, "ds3")).unwrap();
@@ -120,7 +120,7 @@ fn removing_the_sessions_game_without_any_exercise_done_cancels_it() {
 fn switching_every_exercise_off_ends_the_session_with_the_exercises_done() {
     let mut state = state();
     let boss = state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", &mut StdRng::seed_from_u64(42)))
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", 0, &mut StdRng::seed_from_u64(42)))
         .unwrap();
     complete_first(&mut state, &boss, Local::now().timestamp() - 100);
 
@@ -173,11 +173,11 @@ fn the_session_resumes_as_it_was_at_the_next_launch() {
         })
         .unwrap();
     let boss = state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", &mut r))
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", 0, &mut r))
         .unwrap();
     complete_first(&mut state, &boss, start + 10);
     state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", &mut r))
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", 0, &mut r))
         .unwrap();
     let before = state.session().view();
 
@@ -201,7 +201,7 @@ fn the_session_resumes_as_it_was_at_the_next_launch() {
 fn an_ended_or_cancelled_session_does_not_resume() {
     let mut state = state();
     let boss = state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", &mut StdRng::seed_from_u64(42)))
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", 0, &mut StdRng::seed_from_u64(42)))
         .unwrap();
     for it in &boss.items {
         state
@@ -223,6 +223,32 @@ fn an_ended_or_cancelled_session_does_not_resume() {
     state.cancel_session().unwrap();
     let state = relaunch(state);
     assert_eq!(state.session().started_at, None);
+}
+
+#[test]
+fn a_session_saved_before_counting_what_it_asked_counts_it_again_at_launch() {
+    let path = temp_db("recount");
+    let mut state = AppState::new(Store::open(&path, Some("fr_FR.UTF-8")).unwrap(), None);
+    let mut r = StdRng::seed_from_u64(42);
+    start(&mut state);
+    state
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", 0, &mut r))
+        .unwrap();
+    let asked = state.session().view().asked;
+    drop(state);
+    let conn = rusqlite::Connection::open(&path).unwrap();
+    conn.execute(
+        "UPDATE current_session SET asked = 0, asked_time = 0, asked_known = 0",
+        [],
+    )
+    .unwrap();
+    drop(conn);
+    let state = AppState::new(Store::open(&path, Some("fr_FR.UTF-8")).unwrap(), None);
+    assert_eq!(state.session().view().asked, asked);
+    let state = relaunch(state);
+    assert_eq!(state.session().view().asked, asked, "saved once counted");
+    drop(state);
+    std::fs::remove_file(&path).unwrap();
 }
 
 #[test]
@@ -304,7 +330,7 @@ fn a_session_resumed_under_the_default_configuration_adjusts_to_it() {
     state.store_config(renamed).unwrap();
     start(&mut state);
     state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", &mut StdRng::seed_from_u64(42)))
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", 0, &mut StdRng::seed_from_u64(42)))
         .unwrap();
     assert_eq!(state.session().view().pending[0].game_name, "Renamed");
 
@@ -334,7 +360,7 @@ fn a_session_resumed_on_a_game_the_default_configuration_lacks_ends() {
     own.games.push(game);
     state.store_config(own).unwrap();
     let set = state
-        .change_session(|s, cfg| s.draw(cfg, "own", "mort", &mut StdRng::seed_from_u64(42)))
+        .change_session(|s, cfg| s.draw(cfg, "own", "mort", 0, &mut StdRng::seed_from_u64(42)))
         .unwrap();
     complete_first(&mut state, &set, Local::now().timestamp());
 

@@ -1,6 +1,6 @@
-//! Settings outside the configuration: language, last game, intensity and onboarding.
+//! Settings outside the configuration: language, last game, intensity, session limit and onboarding.
 
-use crate::app::{AppError, Intensity, LanguageSetting};
+use crate::app::{AppError, Intensity, LanguageSetting, SessionLimit};
 use crate::state::{lock, LanguageView, Shared};
 
 #[tauri::command]
@@ -48,6 +48,23 @@ pub(crate) fn set_intensity(state: Shared, intensity: Intensity) -> Result<(), A
         .store
         .set_intensity(intensity)
         .map_err(|e| AppError::internal("Intensity not saved", e))
+}
+
+#[tauri::command]
+pub(crate) fn get_limit(state: Shared) -> Result<Option<SessionLimit>, AppError> {
+    lock(&state)?
+        .store
+        .limit()
+        .map_err(|e| AppError::internal("Session limit unreadable", e))
+}
+
+#[tauri::command]
+pub(crate) fn set_limit(state: Shared, limit: Option<SessionLimit>) -> Result<(), AppError> {
+    let limit = limit.map(SessionLimit::checked).transpose()?;
+    lock(&state)?
+        .store
+        .set_limit(limit)
+        .map_err(|e| AppError::internal("Session limit not saved", e))
 }
 
 #[tauri::command]

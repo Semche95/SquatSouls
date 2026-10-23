@@ -51,6 +51,21 @@
       "normal": "Les exercices demandés par le programme",
       "hard": "Une fois et demie les exercices demandés, arrondie au-dessus"
     },
+    "limit": "Limite",
+    "limitKinds": {
+      "none": "Aucune",
+      "exercises": "Exercices",
+      "playTime": "Temps de jeu",
+      "trainingTime": "Temps d'entraînement"
+    },
+    "minutes": "min",
+    "limitTips": {
+      "exercises": "Exercices demandés, comptés dès que leur événement est sélectionné.",
+      "playTime": "Durée de la séance, sans le temps où l'appli était fermée.",
+      "trainingTime": "Durée estimée des exercices demandés : la durée d'une répétition réglée dans {program}, chrono et récupération compris."
+    },
+    "limitExercises": "{used} / {n} exercice | {used} / {n} exercices",
+    "limitTime": "{used} / {max} min",
     "detected": "{name} détecté.",
     "ignore": "Ignorer",
     "recovery": "Récup",
@@ -63,7 +78,9 @@
     "foldQueued": "Replier",
     "capped": "{event} : limite de {max} atteinte pour la séance.",
     "limitReached": "Limite atteinte",
-    "limitTip": "Limite atteinte : l'événement ne demande plus rien jusqu'à la prochaine séance."
+    "limitTip": "Limite atteinte : l'événement ne demande plus rien jusqu'à la prochaine séance.",
+    "sessionLimitTip": "Limite de séance atteinte : les événements ne demandent plus rien. La relever redonne des séries.",
+    "sessionCapped": "{event} : limite de séance atteinte."
   },
   "draw": {
     "done": "fait",
@@ -209,6 +226,9 @@
       "added": "{n} ajouté | {n} ajoutés",
       "new": "Nouvel exercice",
       "defaultUnit": "rép.",
+      "settings": "Réglages des exercices",
+      "settingsRecovery": "Récupération {n}",
+      "settingsRepDuration": "Répétition {n}",
       "recovery": "Récupération après chaque exercice",
       "unit": "Unité",
       "min": "Min",
@@ -241,6 +261,8 @@
       "enabledHint": "Désactive un exercice avec son interrupteur pour qu'il ne soit plus demandé, sans le supprimer.",
       "included": "Proposé",
       "recoveryHint": "Un exercice peut avoir la sienne.",
+      "repDuration": "Durée d'une répétition",
+      "repDurationHint": "Sert à estimer le temps d'entraînement d'une limite de séance, pour les exercices non chronométrés.",
       "ownRecoveryHint": "Par défaut, celle de tous les exercices.",
       "range": "Fourchette",
       "rangeValue": "{min}–{max}",
@@ -254,6 +276,8 @@
       "systemLanguage": "Langue du système",
       "rememberIntensity": "Garder l'intensité d'un lancement à l'autre",
       "rememberIntensityHint": "Sinon, l'intensité revient à Normale à chaque lancement.",
+      "rememberLimit": "Garder la limite de séance d'un lancement à l'autre",
+      "rememberLimitHint": "Sinon, chaque lancement démarre sans limite.",
       "tray": "Zone de notification",
       "showIcon": "Afficher l'icône dans la zone de notification",
       "trayHint": "L'appli reste accessible depuis la barre système.",
@@ -287,6 +311,7 @@
     "tooSmall": "au moins {min}",
     "tooLarge": "au plus {max}",
     "globalRecovery": "Récupération après chaque exercice",
+    "repDuration": "Durée d'une répétition",
     "minimum": "minimum",
     "maximum": "maximum",
     "recovery": "récupération",
@@ -412,6 +437,7 @@
     "exercise_range": "Plage invalide pour « {name} » ({min} à {max}) : de 1 à {limit}, le minimum ne dépassant pas le maximum.",
     "exercise_recovery_too_long": "« {name} » : la récupération doit être de {max} s au plus.",
     "recovery_too_long": "La récupération après chaque exercice doit être de {max} s au plus.",
+    "rep_duration_range": "La durée d'une répétition doit être comprise entre 1 et {max} s.",
     "timer_prep_too_long": "La préparation du minuteur doit être de {max} s au plus.",
     "game_empty": "Un jeu a un identifiant ou un nom vide.",
     "game_duplicate": "Le jeu « {id} » est défini deux fois.",

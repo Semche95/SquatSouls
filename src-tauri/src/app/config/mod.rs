@@ -97,6 +97,9 @@ pub struct Config {
     /// Recovery after each exercise done, in seconds, for exercises without their own recovery.
     #[serde(default = "default_recovery")]
     pub recovery: u32,
+    /// Estimated duration of a repetition of the exercises not timed, in seconds, for a limit in training time.
+    #[serde(default = "default_rep_duration")]
+    pub rep_duration: u32,
     /// Detection of the running Steam game, disabled by default.
     #[serde(default)]
     pub steam_detection: bool,
@@ -115,6 +118,9 @@ pub struct Config {
     /// The intensity chosen in Play is kept from one launch to the next, otherwise it starts at normal.
     #[serde(default)]
     pub remember_intensity: bool,
+    /// The session limit chosen in Play is kept from one launch to the next, otherwise each launch starts without.
+    #[serde(default)]
+    pub remember_limit: bool,
     /// Sounds of the timer and of the end of recovery.
     #[serde(default = "default_true")]
     pub sound: bool,

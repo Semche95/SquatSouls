@@ -2,7 +2,7 @@
 //! a crash. Its sets done are those of the history.
 
 use super::Store;
-use crate::app::{Draw, DrawItem, Intensity, Session};
+use crate::app::{Draw, DrawItem, Intensity, Session, SessionLimit};
 use rusqlite::types::Type;
 use rusqlite::{params, Connection, OptionalExtension, Result, Row, ToSql};
 use std::collections::HashMap;
@@ -22,8 +22,9 @@ impl Store {
         clear(&tx)?;
         tx.execute(
             "INSERT INTO current_session
-             (id, started_at, game, intensity, jokers, jokers_earned, jokers_spent, next_id, seen)
-             VALUES (1, ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+             (id, started_at, game, intensity, jokers, jokers_earned, jokers_spent, next_id, seen,
+              session_limit, asked, asked_time, limit_full, asked_known)
+             VALUES (1, ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
             params![
                 started_at,
                 game,
@@ -32,7 +33,12 @@ impl Store {
                 session.jokers_earned,
                 session.jokers_spent,
                 session.next_id as i64,
-                seen
+                seen,
+                session.limit.map(|l| l.to_string()),
+                session.asked,
+                session.asked_time,
+                session.limit_full,
+                !session.asked_unknown
             ],
         )?;
         {
@@ -43,7 +49,8 @@ impl Store {
             }
             let mut stmt = tx.prepare(
                 "INSERT INTO current_sets (id, position, game, game_name, event, event_name, jokers,
-                 trigger_count, max_per_session, spent) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
+                 trigger_count, max_per_session, spent, time, reduced)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
             )?;
             for (position, d) in session.pending.iter().enumerate() {
                 // SQLite integers are signed; ids stay far from their limit.
@@ -58,7 +65,9 @@ impl Store {
                     d.jokers,
                     d.trigger_count,
                     d.max_per_session,
-                    d.spent
+                    d.spent,
+                    d.time,
+                    d.reduced
                 ])?;
                 for (drawn, items) in [(false, &d.items), (true, &d.drawn)] {
                     insert_items(
@@ -130,20 +139,26 @@ impl Store {
         let Some((mut session, seen)) = self
             .conn
             .query_row(
-                "SELECT started_at, game, intensity, jokers, jokers_earned, jokers_spent, next_id, seen
-                 FROM current_session",
+                "SELECT started_at, game, intensity, jokers, jokers_earned, jokers_spent, next_id, seen,
+                 session_limit, asked, asked_time, limit_full, asked_known FROM current_session",
                 [],
                 |r| {
                     let session = Session {
                         started_at: Some(r.get(0)?),
                         game_id: Some(r.get(1)?),
-                        intensity: r.get::<_, String>(2)?.parse::<Intensity>().map_err(|_| {
-                            rusqlite::Error::FromSqlConversionFailure(
-                                2,
-                                Type::Text,
-                                "unknown intensity".into(),
-                            )
-                        })?,
+                        intensity: r
+                            .get::<_, String>(2)?
+                            .parse::<Intensity>()
+                            .map_err(|_| unknown(2, "unknown intensity"))?,
+                        limit: r
+                            .get::<_, Option<String>>(8)?
+                            .map(|l| l.parse::<SessionLimit>())
+                            .transpose()
+                            .map_err(|_| unknown(8, "unknown limit"))?,
+                        asked: r.get(9)?,
+                        asked_time: r.get(10)?,
+                        limit_full: r.get(11)?,
+                        asked_unknown: !r.get::<_, bool>(12)?,
                         jokers: r.get(3)?,
                         jokers_earned: r.get(4)?,
                         jokers_spent: r.get(5)?,
@@ -166,8 +181,8 @@ impl Store {
         session.pending = self
             .conn
             .prepare(
-                "SELECT id, game, game_name, event, event_name, jokers, trigger_count, max_per_session, spent
-                 FROM current_sets ORDER BY position",
+                "SELECT id, game, game_name, event, event_name, jokers, trigger_count, max_per_session, spent,
+                 time, reduced FROM current_sets ORDER BY position",
             )?
             .query_map([], |r| {
                 Ok(Draw {
@@ -178,12 +193,17 @@ impl Store {
                     event_name: r.get(4)?,
                     items: Vec::new(),
                     jokers: r.get(5)?,
-                    // A set over the event's limit is never kept to do.
+                    // A set over the event's limit, or the session's, is never kept to do.
                     capped: false,
+                    limit_reached: false,
                     trigger_count: r.get(6)?,
                     max_per_session: r.get(7)?,
                     drawn: Vec::new(),
                     spent: r.get(8)?,
+                    // Not saved: they are those drawn, read below.
+                    asked: 0,
+                    time: r.get(9)?,
+                    reduced: r.get(10)?,
                 })
             })?
             .collect::<Result<_>>()?;
@@ -198,6 +218,7 @@ impl Store {
             d.drawn = items
                 .query_map(params![id, true], |r| item(r, 0))?
                 .collect::<Result<_>>()?;
+            d.asked = d.drawn.len() as u32;
         }
         let reserved: Vec<((String, String), DrawItem)> = self
             .conn
@@ -248,6 +269,11 @@ fn clear(conn: &Connection) -> Result<()> {
          DELETE FROM current_reserved;
          DELETE FROM current_round;",
     )
+}
+
+/// Error of a column whose text is not a known value.
+fn unknown(column: usize, what: &str) -> rusqlite::Error {
+    rusqlite::Error::FromSqlConversionFailure(column, Type::Text, what.into())
 }
 
 /// Writes `items` in their order into `table`, under the two columns of `owner` telling where they belong.

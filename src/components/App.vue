@@ -8,6 +8,7 @@ import { vReveal } from '../ui/reveal.js';
 import { provideApi } from '../composables/useApi.js';
 import { provideConfig } from '../composables/useConfig.js';
 import { provideSession } from '../composables/useSession.js';
+import { provideSessionLimit } from '../composables/useSessionLimit.js';
 import { provideSteam } from '../composables/useSteam.js';
 import PlayTab from './PlayTab.vue';
 import HistoryTab from './HistoryTab.vue';
@@ -29,8 +30,9 @@ const restored = ref(false);
 const api = provideApi();
 const { error, call } = api;
 const cfg = provideConfig();
-const { config, configError, gameId, intensity, tab, applyConfigView } = cfg;
+const { config, configError, gameId, intensity, applyLimit, tab, applyConfigView } = cfg;
 const { session, resume, saveChange } = provideSession(api, cfg);
+provideSessionLimit({ session });
 provideSteam(cfg, { saveChange });
 
 onMounted(async () => {
@@ -40,6 +42,7 @@ onMounted(async () => {
     gameId.value = await invoke('get_last_game').catch(() => '');
     applyConfigView(await call('get_config'));
     if (config.value.rememberIntensity) intensity.value = await invoke('get_intensity').catch(() => 'normal');
+    if (config.value.rememberLimit) applyLimit(await invoke('get_limit').catch(() => null));
     await resume();
   } catch {
     /* error already shown */

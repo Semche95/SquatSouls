@@ -74,6 +74,7 @@ fn numbers_are_limited() {
     let mut cfg = default_config(Language::Fr);
     cfg.recovery = MAX_SECONDS;
     cfg.timer_prep = MAX_SECONDS;
+    cfg.rep_duration = MAX_SECONDS;
     cfg.exercises[0].min = MAX_AMOUNT;
     cfg.exercises[0].max = MAX_AMOUNT;
     cfg.exercises[0].recovery = Some(MAX_SECONDS);
@@ -103,6 +104,14 @@ fn numbers_are_limited() {
     too_long(
         |cfg| cfg.recovery = MAX_SECONDS + 1,
         AppError::new("recovery_too_long"),
+    );
+    too_long(
+        |cfg| cfg.rep_duration = MAX_SECONDS + 1,
+        AppError::new("rep_duration_range"),
+    );
+    too_long(
+        |cfg| cfg.rep_duration = 0,
+        AppError::new("rep_duration_range"),
     );
     too_long(
         |cfg| cfg.timer_prep = MAX_SECONDS + 1,

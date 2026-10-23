@@ -9,6 +9,9 @@ impl Config {
         if self.recovery > MAX_SECONDS {
             return Err(AppError::new("recovery_too_long").with("max", MAX_SECONDS));
         }
+        if !(1..=MAX_SECONDS).contains(&self.rep_duration) {
+            return Err(AppError::new("rep_duration_range").with("max", MAX_SECONDS));
+        }
         if self.timer_prep > MAX_SECONDS {
             return Err(AppError::new("timer_prep_too_long").with("max", MAX_SECONDS));
         }
@@ -93,6 +96,7 @@ impl Config {
     /// Steam Store, are cleaned too. Returns whether something changed.
     pub fn repair(&mut self) -> bool {
         let mut changed = clamp(&mut self.recovery, 0, MAX_SECONDS)
+            | clamp(&mut self.rep_duration, 1, MAX_SECONDS)
             | clamp(&mut self.timer_prep, 0, MAX_SECONDS)
             | (self.exercises.len() > MAX_ITEMS);
         self.exercises.truncate(MAX_ITEMS);
@@ -127,7 +131,8 @@ pub const MAX_NAME: usize = 300;
 pub const MAX_UNIT: usize = 50;
 pub const MAX_ITEMS: usize = 100;
 
-/// Largest minimum, maximum, per-session limit and jokers earned, and longest recovery or countdown in seconds:
+/// Largest minimum, maximum, per-session limit and jokers earned, and longest recovery, repetition or countdown in
+/// seconds:
 /// far above any training, they keep the numbers shown within their frames and the computations within `u32`.
 pub const MAX_AMOUNT: u32 = 9999;
 pub const MAX_SECONDS: u32 = 3600;

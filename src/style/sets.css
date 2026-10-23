@@ -176,3 +176,25 @@
     animation: none;
   }
 }
+/* Progress towards the session limit, next to the jokers: it fades once the limit is reached. */
+.session-limit {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-left: 12px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: normal;
+  font-variant-numeric: tabular-nums;
+}
+.session-limit .gauge {
+  height: 3px;
+}
+.session-limit .gauge > span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}
+.session-limit.full {
+  opacity: 0.6;
+}

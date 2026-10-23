@@ -1,6 +1,7 @@
 mod draw;
 mod intensity;
 mod jokers;
+mod limit;
 mod progress;
 mod refit;
 mod summary;
@@ -33,7 +34,7 @@ fn session_with_jokers() -> (Session, Draw) {
     let cfg = default_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
-    let nohit = s.draw(&cfg, "ds3", "boss-nohit", &mut r).unwrap();
+    let nohit = s.draw(&cfg, "ds3", "boss-nohit", 0, &mut r).unwrap();
     assert_eq!(nohit.items.len(), 2, "the reward comes with a set");
     assert_eq!(nohit.jokers, 2);
     assert_eq!(
@@ -43,7 +44,7 @@ fn session_with_jokers() -> (Session, Draw) {
     );
     assert_eq!(complete(&mut s, nohit.id, 10).unwrap().len(), 2);
     assert_eq!(s.view().jokers, 2, "earned on completion");
-    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
     (s, boss)
 }
 
@@ -52,7 +53,7 @@ fn session_with_jokers_on(event: &str) -> (Session, Draw) {
     let (mut s, boss) = session_with_jokers();
     s.dismiss(boss.id).unwrap();
     let cfg = default_config(Language::Fr);
-    let draw = s.draw(&cfg, "ds3", event, &mut rng()).unwrap();
+    let draw = s.draw(&cfg, "ds3", event, 0, &mut rng()).unwrap();
     (s, draw)
 }
 
@@ -74,7 +75,7 @@ fn session_waits_to_be_started() {
     let cfg = default_config(Language::Fr);
     let mut s = Session::default();
     assert_eq!(s.view().started_at, None);
-    let id = s.draw(&cfg, "ds1", "mort", &mut rng()).unwrap().id;
+    let id = s.draw(&cfg, "ds1", "mort", 0, &mut rng()).unwrap().id;
     let entries = complete(&mut s, id, 5).unwrap();
     assert_eq!(
         s.view().started_at,
@@ -98,12 +99,12 @@ fn nothing_starts_without_an_included_exercise() {
     let mut s = Session::default();
     assert_eq!(s.start(&cfg, &game, 5).unwrap_err(), refused);
     assert_eq!(
-        s.draw(&cfg, &game, &event, &mut rng()).unwrap_err(),
+        s.draw(&cfg, &game, &event, 0, &mut rng()).unwrap_err(),
         refused
     );
     cfg.exercises.clear();
     assert_eq!(
-        s.draw(&cfg, &game, &event, &mut rng()).unwrap_err(),
+        s.draw(&cfg, &game, &event, 0, &mut rng()).unwrap_err(),
         refused
     );
     let view = s.view();
@@ -139,7 +140,9 @@ fn a_session_starts_on_a_game_with_an_event_then_keeps_it() {
     );
     let event = &other.events[0].id;
     assert_eq!(
-        s.draw(&cfg, &other.id, event, &mut rng()).unwrap_err().code,
+        s.draw(&cfg, &other.id, event, 0, &mut rng())
+            .unwrap_err()
+            .code,
         "session_other_game",
         "locked from the start, before any event"
     );
@@ -150,7 +153,7 @@ fn a_session_ends_with_a_set_done_and_none_to_do() {
     let cfg = default_config(Language::Fr);
     let mut s = Session::default();
     assert_eq!(s.check_end().unwrap_err().code, "end_without_set");
-    let death = s.draw(&cfg, "ds3", "mort", &mut rng()).unwrap();
+    let death = s.draw(&cfg, "ds3", "mort", 0, &mut rng()).unwrap();
     assert_eq!(s.check_end().unwrap_err().code, "end_with_pending_sets");
     complete(&mut s, death.id, 10).unwrap();
     s.check_end().unwrap();

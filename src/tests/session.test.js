@@ -17,7 +17,7 @@ describe('session', () => {
     responses.get_session = emptySession({ pending: [draw], triggers: [{ gameId: 'er', eventId: 'death', count: 1 }] });
     await w.find('.event').trigger('click');
     await flushPromises();
-    expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'death', intensity: 'normal' });
+    expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'death', intensity: 'normal', limit: null });
     expect(w.find('.card.current').text()).toContain('Squats');
     expect(w.find('.event .count').text()).toBe('1 / 15');
     expect(w.find('#play-game').element.disabled).toBe(true);
@@ -163,7 +163,7 @@ describe('session', () => {
       await levels(w)[2].trigger('click');
       await w.find('.event').trigger('click');
       await flushPromises();
-      expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'death', intensity: 'hard' });
+      expect(invoke).toHaveBeenCalledWith('draw', { gameId: 'er', eventId: 'death', intensity: 'hard', limit: null });
       expect(invoke).not.toHaveBeenCalledWith('set_intensity', expect.anything());
     });
 
@@ -196,7 +196,7 @@ describe('session', () => {
       await levels(w)[2].trigger('click');
       await w.find('.session-actions .primary').trigger('click');
       await flushPromises();
-      expect(invoke).toHaveBeenCalledWith('start_session', { gameId: 'er', intensity: 'hard' });
+      expect(invoke).toHaveBeenCalledWith('start_session', { gameId: 'er', intensity: 'hard', limit: null });
       expect(w.find('.segmented .active').text()).toBe(tm('play.intensities').hard);
     });
 
@@ -238,7 +238,7 @@ describe('session', () => {
     expect(start.text()).toBe('Start the session');
     await start.trigger('click');
     await flushPromises();
-    expect(invoke).toHaveBeenCalledWith('start_session', { gameId: 'er', intensity: 'normal' });
+    expect(invoke).toHaveBeenCalledWith('start_session', { gameId: 'er', intensity: 'normal', limit: null });
     expect(w.find('.session-actions .primary').text()).toBe('End the session');
     expect(w.find('.session-actions .danger').element.disabled).toBe(false);
   });
@@ -254,7 +254,7 @@ describe('session', () => {
     responses.start_session = emptySession({ gameId: 'sekiro' });
     await start().trigger('click');
     await flushPromises();
-    expect(invoke).toHaveBeenCalledWith('start_session', { gameId: 'sekiro', intensity: 'normal' });
+    expect(invoke).toHaveBeenCalledWith('start_session', { gameId: 'sekiro', intensity: 'normal', limit: null });
     expect(w.find('#play-game').element.disabled).toBe(true);
     await expectTip(w.find('#play-game'), 'The game can\'t be changed during a session');
   });

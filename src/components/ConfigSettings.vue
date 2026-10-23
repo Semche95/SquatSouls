@@ -70,6 +70,13 @@ const status = computed(() => {
           </label>
           <p class="hint">{{ t('config.settings.rememberIntensityHint') }}</p>
         </div>
+        <div class="setting-row">
+          <label class="check">
+            {{ t('config.settings.rememberLimit') }}
+            <input v-model="draft.rememberLimit" type="checkbox" />
+          </label>
+          <p class="hint">{{ t('config.settings.rememberLimitHint') }}</p>
+        </div>
       </div>
     </section>
     <section class="setting">

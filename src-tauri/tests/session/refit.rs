@@ -6,7 +6,7 @@ fn removed_game_is_detected() {
     let mut cfg = default_config(Language::Fr);
     let mut s = Session::default();
     assert_eq!(s.end_cause(&cfg), None, "session not started yet");
-    s.draw(&cfg, "ds1", "mort", &mut rng()).unwrap();
+    s.draw(&cfg, "ds1", "mort", 0, &mut rng()).unwrap();
     assert_eq!(s.end_cause(&cfg), None);
     cfg.games.retain(|g| g.id != "ds2");
     assert_eq!(
@@ -60,7 +60,7 @@ fn an_event_asking_for_more_than_the_included_exercises_gets_all_of_them() {
     ev.draws = 4;
     let (game, event) = (cfg.games[0].id.clone(), cfg.games[0].events[0].id.clone());
     let draw = Session::default()
-        .draw(&cfg, &game, &event, &mut rng())
+        .draw(&cfg, &game, &event, 0, &mut rng())
         .unwrap();
     let ids: HashSet<_> = draw
         .items
@@ -76,7 +76,7 @@ fn a_saved_configuration_keeps_the_sets_to_do() {
     let mut cfg = default_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
-    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
     event_mut(&mut cfg, "ds3", "boss").name = "Boss defeated".into();
     cfg.recovery = 30;
     s.apply_config(&cfg, &mut r);
@@ -90,7 +90,7 @@ fn changing_the_draws_adjusts_the_sets_to_do() {
     let mut cfg = default_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
-    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
     event_mut(&mut cfg, "ds3", "boss").draws = 4;
     s.apply_config(&cfg, &mut r);
     let more = pending(&s, boss.id).unwrap();
@@ -127,7 +127,7 @@ fn new_bounds_clamp_the_amounts_to_do() {
     let mut cfg = default_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
-    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
     let id = boss.items[0].exercise_id.clone();
     let ex = cfg.exercises.iter_mut().find(|ex| ex.id == id).unwrap();
     ex.min = 100;
@@ -150,7 +150,7 @@ fn new_bounds_clamp_the_amounts_to_do_at_the_session_intensity() {
     let mut s = Session::default();
     let mut r = rng();
     s.set_intensity(Intensity::Hard);
-    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
     let id = boss.items[0].exercise_id.clone();
     let ex = cfg.exercises.iter_mut().find(|ex| ex.id == id).unwrap();
     ex.min = 100;
@@ -164,7 +164,7 @@ fn a_removed_exercise_is_replaced_in_the_sets_to_do() {
     let mut cfg = default_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
-    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
     let removed = boss.items[0].exercise_id.clone();
     cfg.exercises.retain(|ex| ex.id != removed);
     s.apply_config(&cfg, &mut r);
@@ -180,7 +180,7 @@ fn a_disabled_exercise_is_replaced_in_the_sets_to_do() {
     let mut cfg = default_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
-    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
     let disabled = boss.items[0].exercise_id.clone();
     cfg.exercises
         .iter_mut()
@@ -199,8 +199,8 @@ fn removed_events_and_new_jokers_apply_to_the_sets_to_do() {
     let mut cfg = default_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
-    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
-    let first = s.draw(&cfg, "ds3", "boss-premier", &mut r).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
+    let first = s.draw(&cfg, "ds3", "boss-premier", 0, &mut r).unwrap();
     event_mut(&mut cfg, "ds3", "boss-premier").jokers = 3;
     let ds3 = cfg.games.iter_mut().find(|g| g.id == "ds3").unwrap();
     ds3.events.retain(|e| e.id != "boss");
@@ -232,7 +232,7 @@ fn an_exercise_switched_off_without_replacement_leaves_the_set() {
     cfg.games[0].events[0].draws = 3;
     let (game, event) = (cfg.games[0].id.clone(), cfg.games[0].events[0].id.clone());
     let mut s = Session::default();
-    let draw = s.draw(&cfg, &game, &event, &mut rng()).unwrap();
+    let draw = s.draw(&cfg, &game, &event, 0, &mut rng()).unwrap();
     let (first, off) = (&draw.items[0], &draw.items[2]);
     s.complete_exercise(draw.id, &first.exercise_id, 5).unwrap();
     for id in [&first.exercise_id, &off.exercise_id] {

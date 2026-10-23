@@ -1,4 +1,4 @@
-/* Edit dialog of an event or an exercise. */
+/* Edit dialog of an event or an exercise, and of the settings shared by every exercise. */
 
 /* Edit dialog of an event or an exercise: its name under the kind of item, one row per setting, then a footer
    with the removal on the left and Close on the right. */
@@ -61,4 +61,8 @@
 .edit-foot-end {
   display: flex;
   gap: 8px;
+}
+/* Without a removal, Close stays on the right. */
+.edit-foot > :only-child {
+  margin-left: auto;
 }

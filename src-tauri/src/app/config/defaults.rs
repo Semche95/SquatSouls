@@ -12,6 +12,12 @@ pub(super) fn default_true() -> bool {
     true
 }
 
+pub const DEFAULT_REP_DURATION: u32 = 3;
+
+pub(super) fn default_rep_duration() -> u32 {
+    DEFAULT_REP_DURATION
+}
+
 pub const DEFAULT_TIMER_PREP: u32 = 3;
 
 pub(super) fn default_timer_prep() -> u32 {

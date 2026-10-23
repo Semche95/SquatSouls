@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { config, setup, mountApp, openConfig, openSettings, expectUnchanged, expectTip, layOutControls, editDialog, formDialog, formDialogOpen, formDialogClosed, save, discard, savedConfig } from './app.js';
-import { shownGame, gameButton, importButton, rename, openExercises, openTile, closeDialog } from './program.js';
+import { shownGame, gameButton, importButton, rename, openExercises, openTile, closeDialog, exercisesButton } from './program.js';
 import { shareExercise, shareExercises, shareGame } from '../sharing/share.js';
 
 describe('sharing', () => {
@@ -25,7 +25,7 @@ describe('sharing', () => {
     expect(writeText).toHaveBeenLastCalledWith(shareGame(config.games[0]));
     expect(w.find('.banner.ok').text()).toBe('Copied to the clipboard, ready to share.');
     await w.findAll('.subtabs button')[1].trigger('click');
-    await w.find('.cfg-exercises .group-head .ghost').trigger('click');
+    await exercisesButton(w, 'Share').trigger('click');
     expect(writeText).toHaveBeenLastCalledWith(shareExercises(config.exercises));
     vi.unstubAllGlobals();
   });
@@ -52,7 +52,7 @@ describe('sharing', () => {
   it('neither shares nor imports while Program has pending changes, until they are saved or discarded', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
-    const exercisesHead = () => w.findAll('.cfg-exercises .group-head button');
+    const exercisesHead = () => ['Share', 'Import'].map((text) => exercisesButton(w, text));
     await rename(w, 'Elden Ring DLC');
     for (const button of [gameButton(w, 'Share'), importButton(w)]) {
       expect(button.element.disabled).toBe(true);
@@ -116,7 +116,7 @@ describe('sharing', () => {
     await w.findAll('.tabs button')[2].trigger('click');
     expectUnchanged(w);
     await w.findAll('.subtabs button')[1].trigger('click');
-    await w.findAll('.cfg-exercises .group-head button')[1].trigger('click');
+    await exercisesButton(w, 'Import').trigger('click');
     await formDialogOpen();
     expect(formDialog().find('h3').text()).toBe('Import exercises');
     expect(document.activeElement).toBe(formDialog().find('textarea').element);

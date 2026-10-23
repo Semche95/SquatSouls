@@ -12,20 +12,20 @@ fn played(start: i64) -> (Session, Vec<LogEntry>) {
     s.start(&cfg, "ds3", start).unwrap();
     s.set_intensity(Intensity::Hard);
     let mut done = Vec::new();
-    let nohit = s.draw(&cfg, "ds3", "boss-nohit", &mut r).unwrap();
+    let nohit = s.draw(&cfg, "ds3", "boss-nohit", 0, &mut r).unwrap();
     for it in &nohit.items {
         done.push(
             s.complete_exercise(nohit.id, &it.exercise_id, start + 10)
                 .unwrap(),
         );
     }
-    let boss = s.draw(&cfg, "ds3", "boss", &mut r).unwrap();
+    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
     s.halve(boss.id, &boss.items[0].exercise_id).unwrap();
     done.push(
         s.complete_exercise(boss.id, &boss.items[0].exercise_id, start + 20)
             .unwrap(),
     );
-    let death = s.draw(&cfg, "ds3", "mort", &mut r).unwrap();
+    let death = s.draw(&cfg, "ds3", "mort", 0, &mut r).unwrap();
     s.dismiss(death.id).unwrap();
     (s, done)
 }
@@ -53,11 +53,118 @@ fn the_session_in_progress_is_read_back_as_it_was_saved() {
     for event in ["mort", "boss", "mort"] {
         let mut r = StdRng::seed_from_u64(7);
         assert_eq!(
-            read.draw(&cfg, "ds3", event, &mut r).unwrap(),
-            s.draw(&cfg, "ds3", event, &mut StdRng::seed_from_u64(7))
+            read.draw(&cfg, "ds3", event, 0, &mut r).unwrap(),
+            s.draw(&cfg, "ds3", event, 0, &mut StdRng::seed_from_u64(7))
                 .unwrap()
         );
     }
+}
+
+#[test]
+fn the_limit_of_the_session_in_progress_is_read_back() {
+    let mut store = store();
+    let mut cfg = default_config(Language::Fr);
+    // 40 s each, so that 3 exercises fit in 2 minutes: the second set is reduced, and the limit reached.
+    cfg.recovery = 10;
+    for ex in &mut cfg.exercises {
+        (ex.min, ex.max, ex.recovery, ex.timed) = (10, 10, None, None);
+    }
+    let limit = SessionLimit {
+        kind: LimitKind::TrainingTime,
+        value: 2,
+    };
+    let mut s = Session::default();
+    let mut r = StdRng::seed_from_u64(42);
+    s.set_limit(Some(limit)).unwrap();
+    s.start(&cfg, "ds3", 1000).unwrap();
+    s.draw(&cfg, "ds3", "boss", 1000, &mut r).unwrap();
+    assert_eq!(
+        s.draw(&cfg, "ds3", "boss", 1000, &mut r)
+            .unwrap()
+            .items
+            .len(),
+        1
+    );
+    save(&mut store, &s, &[], 1500);
+
+    let (mut read, _) = store.current_session().unwrap().unwrap();
+    assert_eq!(format!("{:?}", read.view()), format!("{:?}", s.view()));
+    assert_eq!(read.view().limit, Some(limit));
+    read.apply_config(&cfg, &mut r);
+    s.apply_config(&cfg, &mut r);
+    assert_eq!(format!("{:?}", read.view()), format!("{:?}", s.view()));
+}
+
+/// Saves the session in a database as one saved before the exercises asked were counted, and reads it back.
+fn saved_before_counting(name: &str, s: &Session, done: &[LogEntry]) -> Session {
+    let path = temp_db(name);
+    save(&mut Store::open(&path, LOCALE).unwrap(), s, done, 1500);
+    {
+        let conn = connect(&path);
+        conn.execute(
+            "UPDATE current_session SET asked = 0, asked_time = 0, asked_known = 0",
+            [],
+        )
+        .unwrap();
+        conn.execute("UPDATE current_sets SET time = 0", [])
+            .unwrap();
+    }
+    let read = Store::open(&path, LOCALE)
+        .unwrap()
+        .current_session()
+        .unwrap()
+        .unwrap()
+        .0;
+    std::fs::remove_file(&path).unwrap();
+    read
+}
+
+#[test]
+fn a_session_saved_before_counting_what_it_asked_counts_it_again() {
+    let cfg = default_config(Language::Fr);
+    let (s, done) = played(1000);
+    let mut read = saved_before_counting("recount", &s, &done);
+    assert_eq!(read.view().asked, 0);
+    read.recount_asked(&cfg);
+    assert_eq!(read.view().asked, s.view().asked);
+    assert_eq!(read.view().asked_time, s.view().asked_time);
+    // Its sets to do free their time again once dismissed.
+    let id = read.view().pending[0].id;
+    let mut live = s;
+    read.dismiss(id).unwrap();
+    live.dismiss(id).unwrap();
+    assert_eq!(read.view().asked_time, live.view().asked_time);
+    // Counted once only.
+    read.recount_asked(&cfg);
+    assert_eq!(read.view().asked_time, live.view().asked_time);
+}
+
+#[test]
+fn a_stopped_set_saved_before_counting_still_counts_its_exercises() {
+    let cfg = default_config(Language::Fr);
+    let (mut s, mut done) = played(1000);
+    let boss = s.view().pending[0].clone();
+    let rest = boss.items.iter().find(|it| !it.done).unwrap();
+    done.push(
+        s.complete_exercise(boss.id, &rest.exercise_id, 1030)
+            .unwrap(),
+    );
+    let stopped = s
+        .draw(&cfg, "ds3", "boss", 1040, &mut StdRng::seed_from_u64(1))
+        .unwrap();
+    done.push(
+        s.complete_exercise(stopped.id, &stopped.items[0].exercise_id, 1050)
+            .unwrap(),
+    );
+    s.dismiss(stopped.id).unwrap();
+    let mut read = saved_before_counting("recount-stopped", &s, &done);
+    read.recount_asked(&cfg);
+    assert_eq!(
+        read.view().asked,
+        s.view().asked,
+        "the exercise not done counts"
+    );
+    assert!(read.view().asked_time > 0);
 }
 
 #[test]

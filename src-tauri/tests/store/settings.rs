@@ -48,3 +48,17 @@ fn last_intensity_is_kept() {
     s.set_intensity(Intensity::Hard).unwrap();
     assert_eq!(s.intensity().unwrap(), Intensity::Hard);
 }
+
+#[test]
+fn last_limit_is_kept() {
+    let s = store();
+    assert_eq!(s.limit().unwrap(), None);
+    let limit = SessionLimit {
+        kind: LimitKind::PlayTime,
+        value: 90,
+    };
+    s.set_limit(Some(limit)).unwrap();
+    assert_eq!(s.limit().unwrap(), Some(limit));
+    s.set_limit(None).unwrap();
+    assert_eq!(s.limit().unwrap(), None);
+}

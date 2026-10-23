@@ -25,6 +25,7 @@ You configure your own games, events and exercises. The defaults are only a star
 - Exercises come out in rounds, so each one comes out before any comes back.
 - Per-session limit on each event, and jokers to halve or skip an exercise.
 - Intensity of the session (Easy, Normal, Hard) to scale the numbers on tired days, without touching the configuration.
+- Session limit in exercises, play time or estimated training time, to stop when planned.
 - Recovery countdown between exercises.
 - A timer for planks and other timed exercises, on each side if needed, that marks the exercise done when it ends.
 - The session in progress is saved as it goes and resumes after quitting or a crash.

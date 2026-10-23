@@ -1,13 +1,15 @@
-//! Settings outside the configuration (last game, intensity, onboarding, language) and setting access.
+//! Settings outside the configuration (last game, intensity, session limit, onboarding, language) and setting
+//! access.
 
 use super::Store;
-use crate::app::{Intensity, LanguageSetting};
+use crate::app::{Intensity, LanguageSetting, SessionLimit};
 use rusqlite::{Connection, Result};
 use std::str::FromStr;
 
 const LAST_GAME: &str = "last_game";
 const LANGUAGE: &str = "language";
 const INTENSITY: &str = "intensity";
+const LIMIT: &str = "session_limit";
 const ONBOARDING_SEEN: &str = "onboarding_seen";
 
 impl Store {
@@ -27,6 +29,17 @@ impl Store {
 
     pub fn set_intensity(&self, intensity: Intensity) -> Result<()> {
         set_setting(&self.conn, INTENSITY, intensity.as_str())
+    }
+
+    /// Last chosen session limit, none if missing or unknown.
+    pub fn limit(&self) -> Result<Option<SessionLimit>> {
+        Ok(self.setting(LIMIT)?.and_then(|v| v.parse().ok()))
+    }
+
+    /// Saves the chosen session limit, an empty value without one.
+    pub fn set_limit(&self, limit: Option<SessionLimit>) -> Result<()> {
+        let value = limit.map(|l| l.to_string()).unwrap_or_default();
+        set_setting(&self.conn, LIMIT, &value)
     }
 
     /// Whether the onboarding was closed once, false until then.

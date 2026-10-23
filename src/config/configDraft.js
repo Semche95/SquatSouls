@@ -5,7 +5,7 @@ export function clone(value) {
 }
 
 // Configuration fields edited in the Settings tab; the Program tab edits all the others.
-export const SETTINGS_FIELDS = ['rememberIntensity', 'sound', 'timerAutoDone', 'timerPrep', 'tray', 'closeToTray', 'startHidden', 'steamDetection', 'steamNotify', 'updateCheck', 'updateAuto'];
+export const SETTINGS_FIELDS = ['rememberIntensity', 'rememberLimit', 'sound', 'timerAutoDone', 'timerPrep', 'tray', 'closeToTray', 'startHidden', 'steamDetection', 'steamNotify', 'updateCheck', 'updateAuto'];
 
 // Saved configuration with the fields of one tab taken from the draft: each tab saves and resets only its own.
 export function withTabDraft(config, draft, settings) {
@@ -54,6 +54,7 @@ export const MAX_ITEMS = 100;
 const MAX_AMOUNT = 9999;
 export const BOUNDS = {
   seconds: { min: 0, max: 3600 },
+  repDuration: { min: 1, max: 3600 },
   amount: { min: 1, max: MAX_AMOUNT },
   jokers: { min: 0, max: MAX_AMOUNT },
   draws: { min: 1, max: MAX_ITEMS },
@@ -101,8 +102,8 @@ export function fieldError(cfg) {
   for (const g of cfg.games) names.push(...g.events.map((ev) => [ev.name, at(g.name, 'eventName')]));
   const unnamed = names.find(([name]) => !name.trim());
   if (unnamed) return t('fields.error', { field: unnamed[1], error: t('fields.empty') });
-  const { seconds, amount, jokers, draws } = BOUNDS;
-  const fields = [[cfg.recovery, seconds, at('globalRecovery')], [cfg.timerPrep, seconds, at('timerPrep')]];
+  const { seconds, repDuration, amount, jokers, draws } = BOUNDS;
+  const fields = [[cfg.recovery, seconds, at('globalRecovery')], [cfg.repDuration, repDuration, at('repDuration')], [cfg.timerPrep, seconds, at('timerPrep')]];
   for (const ex of cfg.exercises) {
     const range = rangeBounds(ex);
     fields.push([ex.min, range.min, at(ex.name, 'minimum')], [ex.max, range.max, at(ex.name, 'maximum')], [ex.recovery, seconds, at(ex.name, 'recovery')]);
@@ -126,6 +127,7 @@ const orZero = (v) => (v === '' || v === undefined ? 0 : v);
 export function normalized(cfg) {
   const c = clone(cfg);
   c.recovery = orZero(c.recovery);
+  c.repDuration = orZero(c.repDuration);
   c.timerPrep = orZero(c.timerPrep);
   for (const ex of c.exercises) {
     ex.min = orZero(ex.min);
