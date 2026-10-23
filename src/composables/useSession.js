@@ -14,6 +14,9 @@ export const SIDES = 2;
 export const [provideSession, useSession] = defineShared(({ call }, { config, draft, game, gameId, intensity, noExercise, store }) => {
   const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], countedTriggers: [], jokers: 0, jokersEarned: 0, jokersSpent: 0 });
   const notice = ref('');
+  // Set and event counter the user has just added by an event, until their animation has played: 0 and null otherwise.
+  const addedDraw = ref(0);
+  const addedTrigger = ref(null);
   // Encouragement shown once a session ends with exercises done, however it ends (End the session, or a saved
   // configuration it can no longer be played on), until the next one starts: index in `session.farewells`.
   const farewell = ref(-1);
@@ -181,6 +184,10 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
         notice.value = t('play.capped', { event: draw.eventName, max: draw.maxPerSession });
       }
       session.value = await call('get_session');
+      if (!draw.capped) {
+        addedDraw.value = draw.id;
+        addedTrigger.value = { eventId: ev.id, drawId: draw.id };
+      }
     } catch {
       /* error already shown */
     }
@@ -273,7 +280,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   return {
     session, notice, farewell, recoveryLeft, recoveryShare, skipRecovery, timing, timerLeft, timerShare, timerHeld, timedUnit, startTimer, stopTimer,
-    toggleTimer, resume, reload, saveNow, saveChange, trigger, act, confirmStop, started, dismiss, dismissNow, remaining, canAfford, setSkipCost,
+    toggleTimer, resume, reload, saveNow, saveChange, trigger, addedDraw, addedTrigger, act, confirmStop, started, dismiss, dismissNow, remaining, canAfford, setSkipCost,
     complete, halve, skipExercise, skipSet, startSession, endSession, cancelSession,
   };
 });

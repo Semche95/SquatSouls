@@ -29,6 +29,7 @@ Button and setting names are quoted as they appear in the English interface.
 - An exercise switched off in the configuration (switch in the corner of its tile, or **Included** in its dialog; a hint under the title of the Exercises tab says so, and the title counts the included exercises out of all of them) stays defined but is no longer drawn, until it is switched on again. The toggle is saved with **Save**, is not carried by exercise sharing, and an imported exercise arrives enabled (or keeps its state if it already existed).
 - Every exercise can be switched off or removed, the last one included, as every game can (see Session for what can then be played).
 - A draw becomes a set "to do". Sets to do are handled from the oldest to the most recent.
+- Selecting an event that gives a set, by its button or its key, briefly lights up the new set in the list and makes the event's counter grow for a moment. Nothing moves when the limit is reached, nor when the session is resumed, reloaded or changed in any other way, nor on coming back to Play. Both animations are off when the system asks for reduced motion.
 
 ## Intensity
 

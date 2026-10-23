@@ -118,3 +118,18 @@
   gap: 8px;
   margin-top: 12px;
 }
+/* Set just added by an event: lit up for a moment, then back to its usual look. */
+.card.added {
+  animation: card-added 1.2s ease-out;
+}
+@keyframes card-added {
+  from {
+    background: color-mix(in srgb, var(--gold) 16%, var(--panel));
+    box-shadow: 0 0 0 2px var(--gold), 0 0 24px rgba(201, 164, 92, 0.35);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card.added {
+    animation: none;
+  }
+}
