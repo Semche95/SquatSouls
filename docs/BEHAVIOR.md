@@ -18,7 +18,7 @@ Button and setting names are quoted as they appear in the English interface.
 
 ## Display
 
-- Any section opened or block shown by an action (a nested setting, a confirmation, a message after an action) that ends up partly hidden in the window or under the configuration's save bar scrolls just enough to show it entirely, or as much of it as fits, starting from its top.
+- Any section opened or block shown by an action (a nested setting, a confirmation, a message after an action) that ends up partly hidden in the window or under a bar at the bottom of the window (the configuration's save bar, the session buttons) scrolls just enough to show it entirely, or as much of it as fits, starting from its top.
 - What appears without an action from the user (update notice, Steam offer, new sets in the queue) never scrolls the window, so the page never moves under them.
 
 ## Draw
@@ -92,6 +92,7 @@ Button and setting names are quoted as they appear in the English interface.
 - The session in progress is saved at each change (sets triggered, exercises done, jokers, dismissed or stopped sets, intensity, saved configuration), and the time every minute. When the app closes during a session, after quitting as after a crash, the session resumes at the next launch as it was: its game, its intensity, its sets to do and done, its counters, its jokers, its reserve and its round. A running timer starts over from the beginning, as after Escape, and a running recovery counts as over, without the bell; a started set stays started. If the saved session cannot be read back, the app opens without it: it ends when the app was last known to be open, its exercises done staying in the history, and Play says "The session ended: it could not be resumed. Its exercises done stay in the history." until the next session starts.
 - **End the session** is only possible with at least one set done and no set to do (the backend refuses it otherwise). The end time is saved in the history.
 - **Cancel the session** resets everything (counters, jokers, sets to do and done) and removes the sets of this session from the history. The button stays disabled until the session has started. It asks for confirmation once the session has a set, done or to do; without any (for example after dismissing the only set), nothing is lost and it cancels right away.
+- The session buttons (**Start the session** or **End the session**, **Cancel the session**) sit under the sets to do; once the list runs past the bottom of the window, they stay at the bottom of the window, always visible, as the Program and Settings save bar does. A line above them sets them apart from the sets only while they sit at the bottom of the window.
 - A saved configuration applies immediately, without restarting. It touches neither the sets done nor the counters (renaming a game or an event keeps its counters). The sets to do stay as drawn, with up-to-date names, except:
   - a removed event removes its sets to do;
   - a changed number of drawn exercises (`draws`) adjusts its sets: the missing exercises are drawn, or exercises not done yet are removed; a set with nothing left to do is finished and earns its jokers;

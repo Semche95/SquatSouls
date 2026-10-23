@@ -42,12 +42,15 @@ describe('reveal', () => {
     expect(scrolled()).toEqual(['accordion', 'accordion']);
   });
 
-  it('scrolls a block further so the save bar does not cover it, its top staying in view', () => {
+  it.each([
+    ['save bar', '<main class="panel config"><div class="block">Death</div><div class="cfg-actions bottom-bar"></div></main>'],
+    ['session bar', '<main class="panel play"><div class="block">Squats</div><div class="session-actions bottom-bar"></div></main>'],
+  ])('scrolls a block further so the %s does not cover it, its top staying in view', (_, template) => {
     vi.spyOn(Element.prototype, 'scrollIntoView');
     const scrollBy = vi.spyOn(window, 'scrollBy').mockImplementation(() => {});
-    const w = mount({ template: '<main class="config"><div class="cfg-event">Death</div><div class="cfg-actions"></div></main>' });
+    const w = mount({ template });
     const box = (el, top, bottom) => vi.spyOn(el, 'getBoundingClientRect').mockReturnValue({ top, bottom });
-    const [block, bar] = [w.find('.cfg-event').element, w.find('.cfg-actions').element];
+    const [block, bar] = [w.find('.block').element, w.find('.bottom-bar').element];
     box(bar, 700, 780);
     for (const [top, bottom] of [[500, 690], [600, 760], [50, 900]]) {
       box(block, top, bottom);

@@ -44,9 +44,9 @@ globalThis.IntersectionObserver = class {
 };
 beforeEach(() => observers.clear());
 
-// Brings every observed element into view.
-export function intersect() {
+// Brings every observed element into view, entirely unless given the visible part.
+export function intersect(intersectionRatio = 1) {
   for (const o of observers) {
-    if (o.targets.size) o.callback([...o.targets].map((target) => ({ target, isIntersecting: true })));
+    if (o.targets.size) o.callback([...o.targets].map((target) => ({ target, isIntersecting: true, intersectionRatio })));
   }
 }

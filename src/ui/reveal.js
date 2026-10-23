@@ -1,8 +1,9 @@
 // Scrolls an element just enough to show it entirely in the window, or as much of it as fits.
-// The configuration's save bar stays at the bottom of the window: the element must clear it too, its top staying in view.
+// A tab's action bar (save, end of the session) stays at the bottom of the window: the element must clear it too,
+// its top staying in view.
 export function reveal(el) {
   el.scrollIntoView({ block: 'nearest' });
-  const bar = el.closest('.config')?.querySelector('.cfg-actions');
+  const bar = el.closest('.panel')?.querySelector('.bottom-bar');
   if (!bar || bar.contains(el)) return;
   const box = el.getBoundingClientRect();
   const hidden = Math.min(box.bottom - bar.getBoundingClientRect().top, box.top);

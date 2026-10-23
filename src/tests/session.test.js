@@ -3,6 +3,7 @@ import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { config, emptySession, idleSession, draw, rejection, responses, setup, mountApp, press, expectTip, layOutControls, confirmDialog, confirmDialogOpen, confirmDialogClosed } from './app.js';
 import { rt, tm } from '../i18n/i18n.js';
+import { intersect } from './setup.js';
 
 vi.mock('../session/sound.js', () => ({ chime: vi.fn(), recoveryEnd: vi.fn(), sideSignal: vi.fn(), startSignal: vi.fn() }));
 
@@ -364,6 +365,17 @@ describe('session', () => {
     await flushPromises();
     expect(invoke).toHaveBeenCalledWith('cancel_session', undefined);
     expect(invoke).not.toHaveBeenCalledWith('end_session', undefined);
+  });
+
+  it('marks the session actions stuck only while the window cuts them off at its bottom', async () => {
+    setup();
+    const w = await mountApp();
+    const bar = w.find('.session-actions');
+    expect(bar.classes()).not.toContain('stuck');
+    intersect(0.95);
+    expect(bar.classes()).toContain('stuck');
+    intersect();
+    expect(bar.classes()).not.toContain('stuck');
   });
 
   it('encourages next to the session actions once it ends, until the next one starts', async () => {

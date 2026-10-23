@@ -68,12 +68,15 @@
 .count.full {
   color: var(--muted);
 }
-/* Pushed to the bottom of the window, under the content of the Play tab. */
+/* Under the content of the Play tab. */
 .session-actions {
-  margin-top: auto;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+/* Its line only sets it apart from the content it covers, at the bottom of the window. */
+.session-actions:not(.stuck) {
+  border-top-color: transparent;
 }
 .session-actions > *,
 .session-actions .tip > button {
