@@ -82,8 +82,8 @@ function addExercise() {
       </EditRow>
     </div>
     <div class="tiles">
-      <ConfigExercise v-for="ex in draft.exercises" :key="ex.id" v-model:enabled="ex.enabled" :ex="ex" @edit="editExercise(ex)" />
       <button class="tile tile-new" @click="addExercise">{{ t('config.exercises.add') }}</button>
+      <ConfigExercise v-for="ex in draft.exercises" :key="ex.id" v-model:enabled="ex.enabled" :ex="ex" @edit="editExercise(ex)" />
     </div>
     <ExerciseDialog v-if="editing" :recovery="draft.recovery" />
   </section>

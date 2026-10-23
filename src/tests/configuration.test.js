@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { rejection, responses, setup, openConfig, expectUnchanged, expectTip, layOutControls, editDialog, save, discard, savedConfig } from './app.js';
-import { openExercises, openTile, closeDialog, shownGame, rename } from './program.js';
+import { openExercises, openTile, closeDialog, shownGame, rename, eventTiles } from './program.js';
 
 describe('configuration', () => {
   layOutControls();
@@ -11,7 +11,7 @@ describe('configuration', () => {
     const w = await openConfig();
     expectUnchanged(w);
     await expectTip(save(w), 'No pending changes.');
-    await openTile(w.find('.cfg-events .tile'));
+    await openTile(eventTiles(w)[0]);
     expect(document.activeElement).toBe(editDialog().find('.edit-foot .primary').element);
     await editDialog().find('input[aria-label="Name of the event"]').setValue('Brutal death');
     await closeDialog();

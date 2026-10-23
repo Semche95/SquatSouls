@@ -121,8 +121,8 @@ function addEvent(game) {
     <template v-if="editedGame">
       <h2 class="setting-title">{{ t('config.games.events') }}</h2>
       <div class="tiles cfg-events">
-        <ConfigEvent v-for="ev in editedGame.events" :key="ev.id" :ev="ev" @click="editEvent(ev)" />
         <button class="tile tile-new" @click="addEvent(editedGame)">{{ t('config.games.addEvent') }}</button>
+        <ConfigEvent v-for="ev in editedGame.events" :key="ev.id" :ev="ev" @click="editEvent(ev)" />
       </div>
     </template>
     <EventDialog v-if="editing" />
