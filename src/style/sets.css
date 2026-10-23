@@ -51,6 +51,11 @@
   border-radius: var(--radius);
   padding: 14px 16px;
 }
+/* Event and exercise names can be a single long word: it breaks rather than overflowing the set. */
+.queued-event,
+.queued-items {
+  overflow-wrap: anywhere;
+}
 .card.current {
   border-color: var(--gold);
   box-shadow: 0 0 0 1px var(--gold-soft), 0 8px 30px rgba(201, 164, 92, 0.08);
@@ -85,10 +90,6 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
-.card:not(.current) .amount {
-  font-size: 1.6rem;
-  color: var(--text);
-}
 .what {
   display: flex;
   flex-direction: column;
@@ -118,8 +119,54 @@
   gap: 8px;
   margin-top: 12px;
 }
-/* Set just added by an event: lit up for a moment, then back to its usual look. */
-.card.added {
+/* Queued set: event and its reward with Cancel beside them, then one exercise per line below on the whole width, so they never
+   squeeze into a narrow column. */
+.card.queued {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 8px 12px;
+}
+.queued-event {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.queued-items {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+/* The amount stays at the start of its line, the name wraps beside it. */
+.queued-items li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3em;
+}
+.queued-amount {
+  flex: none;
+  font-family: var(--font-title);
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+.card.queued button {
+  grid-row: 1;
+  grid-column: 2;
+  padding: 3px 10px;
+  font-size: 0.8rem;
+}
+.queue-more {
+  align-self: flex-start;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+}
+/* Set just added by an event, or the button showing it when folded: lit up for a moment, then back to its usual look. */
+.card.added,
+.queue-more.added {
   animation: card-added 1.2s ease-out;
 }
 @keyframes card-added {
@@ -129,7 +176,8 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .card.added {
+  .card.added,
+  .queue-more.added {
     animation: none;
   }
 }

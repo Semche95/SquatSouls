@@ -6,8 +6,8 @@ import { vReveal } from '../ui/reveal.js';
 import DisabledTip from './DisabledTip.vue';
 import CountdownSeal from './CountdownSeal.vue';
 
-// current: set at the head of the queue, the only one to do; the next ones can only be dismissed.
-const props = defineProps({ draw: Object, current: Boolean });
+// Set at the head of the queue, the only one to do: the next ones wait in the queue (QueuedDraw).
+const props = defineProps({ draw: Object });
 
 const { session, recoveryLeft, timing, timedUnit, startTimer, confirmStop, started, dismiss, dismissNow, remaining, canAfford, setSkipCost, complete, halve, skipExercise, skipSet } = useSession();
 // First remaining exercise of the current set: the only one to mark done or time, also targeted by shortcuts.
@@ -17,8 +17,8 @@ const busy = computed(() => (recoveryLeft.value ? t('draw.recovering') : timing.
 </script>
 
 <template>
-  <article class="card" :class="{ current }">
-    <CountdownSeal v-if="current" />
+  <article class="card current">
+    <CountdownSeal />
     <header class="card-head">
       <span>{{ draw.eventName }}</span>
     </header>
@@ -30,7 +30,7 @@ const busy = computed(() => (recoveryLeft.value ? t('draw.recovering') : timing.
           <strong>{{ it.name }}</strong>
           <span class="muted">{{ it.unit }}<template v-if="it.halved"> · {{ t('common.halved') }}</template><template v-if="it.done"> · {{ t('draw.done') }}</template></span>
         </span>
-        <span v-if="current && !it.done" class="item-actions">
+        <span v-if="!it.done" class="item-actions">
           <template v-if="it === keyed">
             <DisabledTip :tip="busy">
               <button class="primary" :disabled="!!busy" @click="complete(draw, it)">
@@ -64,13 +64,13 @@ const busy = computed(() => (recoveryLeft.value ? t('draw.recovering') : timing.
       </div>
     </footer>
     <footer v-else class="card-actions">
-      <DisabledTip v-if="current && session.jokers && remaining(draw).length > 1" :tip="canAfford(setSkipCost(draw)) ? '' : t('errors.not_enough_jokers')">
+      <DisabledTip v-if="session.jokers && remaining(draw).length > 1" :tip="canAfford(setSkipCost(draw)) ? '' : t('errors.not_enough_jokers')">
         <button class="ghost" :disabled="!canAfford(setSkipCost(draw))" @click="skipSet(draw)">
           {{ t('draw.skipSet', setSkipCost(draw)) }}
         </button>
       </DisabledTip>
       <button class="ghost" @click="dismiss(draw)">
-        {{ t(started(draw) ? 'draw.stop' : 'common.cancel') }} <kbd v-if="current">{{ t('keys.backspace') }}</kbd>
+        {{ t(started(draw) ? 'draw.stop' : 'common.cancel') }} <kbd>{{ t('keys.backspace') }}</kbd>
       </button>
     </footer>
   </article>

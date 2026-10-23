@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { t } from '../i18n/i18n.js';
 import { byName } from '../config/configDraft.js';
 import { vReveal } from '../ui/reveal.js';
@@ -9,6 +9,7 @@ import { useSession } from '../composables/useSession.js';
 import { useKeydown } from '../composables/useKeydown.js';
 import { useSteam } from '../composables/useSteam.js';
 import DrawCard from './DrawCard.vue';
+import QueuedDraw from './QueuedDraw.vue';
 import CountdownSeal from './CountdownSeal.vue';
 import SessionActions from './SessionActions.vue';
 import DisabledTip from './DisabledTip.vue';
@@ -34,8 +35,19 @@ function showProgram(sub) {
   tab.value = 'program';
   cfgTab.value = sub;
 }
-// Current set highlighted, then the queue of the next ones.
-const stage = computed(() => [session.value.pending.slice(0, 1), session.value.pending.slice(1)]);
+// Current set highlighted, then the queue of the next ones, oldest first: past a few, the rest is folded.
+// Folding is display only, never saved: it starts folded again on coming back to Play.
+const QUEUE_SHOWN = 3;
+const queue = computed(() => session.value.pending.slice(1));
+const queueOpen = ref(false);
+const folded = computed(() => Math.max(0, queue.value.length - QUEUE_SHOWN));
+const shownQueue = computed(() => (queueOpen.value ? queue.value : queue.value.slice(0, QUEUE_SHOWN)));
+// A set just added to the folded part lights up the button that shows it.
+const addedFolded = computed(() => !queueOpen.value && queue.value.slice(QUEUE_SHOWN).some((d) => d.id === addedDraw.value));
+// Once nothing is left to fold, the next long queue starts folded.
+watch(folded, (n) => {
+  if (!n) queueOpen.value = false;
+});
 
 function triggerCount(eventId) {
   const counted = session.value.triggers.find((tr) => tr.gameId === game.value?.id && tr.eventId === eventId);
@@ -209,15 +221,26 @@ useKeydown((e) => {
         <CountdownSeal />
       </p>
       <div v-if="session.pending.length" class="stage">
-        <div v-for="(col, c) in stage" v-show="col.length" :key="c" :class="c === 0 ? 'stage-current' : 'queue'">
+        <div class="stage-current">
           <DrawCard
-            v-for="d in col"
-            :key="d.id"
-            :draw="d"
-            :current="c === 0"
-            :class="{ added: d.id === addedDraw }"
+            :key="session.pending[0].id"
+            :draw="session.pending[0]"
+            :class="{ added: session.pending[0].id === addedDraw }"
             @animationend.self="addedDraw = 0"
           />
+        </div>
+        <div v-if="queue.length" class="queue">
+          <QueuedDraw v-for="d in shownQueue" :key="d.id" :draw="d" :class="{ added: d.id === addedDraw }" @animationend.self="addedDraw = 0" />
+          <button
+            v-if="folded"
+            class="ghost queue-more"
+            :class="{ added: addedFolded }"
+            :aria-expanded="queueOpen"
+            @click="queueOpen = !queueOpen"
+            @animationend.self="addedDraw = 0"
+          >
+            {{ queueOpen ? t('play.foldQueued') : t('play.moreQueued', folded) }}
+          </button>
         </div>
       </div>
     </section>

@@ -143,22 +143,6 @@
     padding: 11px 16px;
     font-size: 1.05rem;
   }
-  .queue .card {
-    padding: 10px 14px;
-  }
-  .queue .card-head {
-    margin-bottom: 4px;
-  }
-  .queue .reward {
-    font-size: 1.1rem;
-  }
-  .queue .card-actions {
-    margin-top: 8px;
-  }
-  .queue .card-actions button {
-    padding: 5px 12px;
-    font-size: 0.9rem;
-  }
 
   /* Summary: totals as tiles beside the log. */
   .session-detail {

@@ -105,7 +105,7 @@ describe('countdown', () => {
     it('stays shown once no set is left to do', async () => {
       const w = await completeOne();
       responses.dismiss = emptySession();
-      await w.findAll('.card')[1].find('.card-actions button').trigger('click');
+      await w.find('.queued button').trigger('click');
       await flushPromises();
       expect(w.find('.empty .countdown-seal').exists()).toBe(true);
     });

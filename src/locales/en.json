@@ -59,6 +59,8 @@
     "jokersTip": "H: Halve, J: Skip, on the first remaining exercise",
     "jokers": "no jokers | {n} joker | {n} jokers",
     "empty": "Nothing pending. Click an event (or type its number) when it happens in game.",
+    "moreQueued": "+{n} set waiting | +{n} sets waiting",
+    "foldQueued": "Collapse",
     "capped": "{event}: session limit of {max} reached.",
     "limitReached": "Limit reached",
     "limitTip": "Limit reached: this event asks for nothing more until the next session."

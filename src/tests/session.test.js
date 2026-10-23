@@ -23,15 +23,6 @@ describe('session', () => {
     expect(w.find('#play-game').element.disabled).toBe(true);
   });
 
-  it('only offers to dismiss queued sets', async () => {
-    const both = { ...draw, items: [...draw.items, { exerciseId: 'push-ups', name: 'Push-ups', amount: 8, unit: 'reps', halveCost: 1, skipCost: 2 }] };
-    setup({ get_session: emptySession({ pending: [draw, { ...both, id: 8 }], jokers: 5 }) });
-    const w = await mountApp();
-    const queued = w.find('.queue .card');
-    expect(queued.find('.item-actions').exists()).toBe(false);
-    expect(queued.findAll('.card-actions button').map((b) => b.text())).toEqual(['Cancel']);
-  });
-
   it('marks each exercise of a set done', async () => {
     setup({
       get_session: emptySession({ pending: [draw], jokers: 1 }),
