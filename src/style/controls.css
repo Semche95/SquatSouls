@@ -17,12 +17,11 @@
 .field .tip {
   color: inherit;
 }
-/* Tooltip container of a field's input, which takes the remaining width. */
-.field .tip.grow {
-  flex: 1;
-}
+/* Tooltip container of a field's input, which takes the remaining width, and no more: a long name chosen is cut. */
+.field .tip.grow,
 .field .ts-wrapper {
   flex: 1;
+  min-width: 0;
 }
 .field .ts-control {
   padding: 8px 10px;

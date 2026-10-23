@@ -51,11 +51,6 @@
   border-radius: var(--radius);
   padding: 14px 16px;
 }
-/* Event and exercise names can be a single long word: it breaks rather than overflowing the set. */
-.queued-event,
-.queued-items {
-  overflow-wrap: anywhere;
-}
 .card.current {
   border-color: var(--gold);
   box-shadow: 0 0 0 1px var(--gold-soft), 0 8px 30px rgba(201, 164, 92, 0.08);

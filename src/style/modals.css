@@ -67,7 +67,8 @@
 }
 .game-fields {
   display: grid;
-  grid-template-columns: max-content 1fr;
+  /* The field takes the remaining width, and no more: a long name chosen is cut. */
+  grid-template-columns: max-content minmax(0, 1fr);
   align-items: center;
   gap: 12px;
 }

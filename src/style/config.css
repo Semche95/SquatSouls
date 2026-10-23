@@ -132,9 +132,6 @@
 .import-group li label:hover {
   background: var(--panel);
 }
-.import-name {
-  overflow-wrap: anywhere;
-}
 .import-detail {
   display: flex;
   flex-wrap: wrap;
@@ -153,6 +150,7 @@
 .cfg-game-bar .field {
   flex: 1 1 auto;
   flex-wrap: wrap;
+  min-width: 0;
 }
 .config .cfg-game-bar :is(.ts-wrapper, input) {
   flex: 0 1 260px;

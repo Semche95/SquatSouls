@@ -13,6 +13,8 @@ body {
   -webkit-user-select: none;
   user-select: none;
   cursor: default;
+  /* Names (game, event, exercise, unit) can be a single long word: it breaks rather than overflowing its frame. */
+  overflow-wrap: anywhere;
 }
 img {
   -webkit-user-drag: none;
