@@ -22,9 +22,11 @@
   }
   .panel.config {
     flex: 1;
+  }
+  .panel:has(> .bottom-bar) {
     padding-bottom: 0;
   }
-  .cfg-actions {
+  .bottom-bar {
     padding-bottom: var(--edge);
   }
   .top {

@@ -157,15 +157,9 @@
 .config .cfg-game-bar :is(.ts-wrapper, input) {
   flex: 0 1 260px;
 }
-/* Save bar of the whole tab, set apart from the sections above it, always at the bottom of the window. */
+/* Save bar of the whole tab. */
 .cfg-actions {
   align-items: center;
-  position: sticky;
-  bottom: 0;
-  margin-top: auto;
-  padding: 14px 0 24px;
-  border-top: 1px solid var(--line);
-  background: var(--bg);
 }
 .unsaved {
   display: flex;

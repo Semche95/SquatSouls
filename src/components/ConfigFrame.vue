@@ -43,7 +43,7 @@ function discardChanges() {
 
     <slot v-if="draft" />
 
-    <div class="row cfg-actions">
+    <div class="row cfg-actions bottom-bar">
       <DisabledTip :tip="dirty ? draftError : t('config.noChanges')" :error="dirty">
         <button class="primary" :disabled="!dirty || !!draftError" @click="saveConfig">{{ t('config.save') }}</button>
       </DisabledTip>

@@ -68,3 +68,13 @@
   flex-direction: column;
   gap: 18px;
 }
+/* Action bar of a tab, set apart from the content above it: in its place under a short content, at the bottom
+   of the window, always visible, as soon as the content runs past it. */
+.bottom-bar {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding: 14px 0 24px;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+}
