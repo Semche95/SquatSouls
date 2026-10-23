@@ -59,7 +59,9 @@
     "jokersTip": "H: Halve, J: Skip, on the first remaining exercise",
     "jokers": "no jokers | {n} joker | {n} jokers",
     "empty": "Nothing pending. Click an event (or type its number) when it happens in game.",
-    "capped": "{event}: limit of {max} reached for the session, no set."
+    "capped": "{event}: session limit of {max} reached.",
+    "limitReached": "Limit reached",
+    "limitTip": "Limit reached: this event asks for nothing more until the next session."
   },
   "draw": {
     "done": "done",

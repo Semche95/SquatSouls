@@ -62,7 +62,7 @@
     },
     "play": {
       "type": "object",
-      "required": ["game", "gameLocked", "noEvent", "chooseGame", "noGame", "noExercise", "intensity", "intensities", "intensityTips", "detected", "ignore", "recovery", "skipRecovery", "todo", "jokersTip", "jokers", "empty", "capped"],
+      "required": ["game", "gameLocked", "noEvent", "chooseGame", "noGame", "noExercise", "intensity", "intensities", "intensityTips", "detected", "ignore", "recovery", "skipRecovery", "todo", "jokersTip", "jokers", "empty", "capped", "limitReached", "limitTip"],
       "additionalProperties": false,
       "properties": {
         "game": { "$ref": "#/$defs/text" },
@@ -100,7 +100,9 @@
         "jokersTip": { "$ref": "#/$defs/text" },
         "jokers": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\|" }] },
         "empty": { "$ref": "#/$defs/text" },
-        "capped": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:event|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{event\\}" }, { "pattern": "\\{max\\}" }] }
+        "capped": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:event|max)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{event\\}" }, { "pattern": "\\{max\\}" }] },
+        "limitReached": { "$ref": "#/$defs/text" },
+        "limitTip": { "$ref": "#/$defs/text" }
       }
     },
     "draw": {

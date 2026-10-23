@@ -82,6 +82,15 @@ kbd.dark {
   border-color: rgba(0, 0, 0, 0.35);
   color: #2a2113;
 }
+/* Read by screen readers only (announcement of what is shown elsewhere). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 /* Progress bar along the bottom edge of its container (gauge of an event, update download). */
 .edge-bar {
   position: absolute;

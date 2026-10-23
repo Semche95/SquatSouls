@@ -29,7 +29,7 @@ Button and setting names are quoted as they appear in the English interface.
 - An exercise switched off in the configuration (switch in the corner of its tile, or **Included** in its dialog; a hint under the title of the Exercises tab says so, and the title counts the included exercises out of all of them) stays defined but is no longer drawn, until it is switched on again. The toggle is saved with **Save**, is not carried by exercise sharing, and an imported exercise arrives enabled (or keeps its state if it already existed).
 - Every exercise can be switched off or removed, the last one included, as every game can (see Session for what can then be played).
 - A draw becomes a set "to do". Sets to do are handled from the oldest to the most recent.
-- Selecting an event that gives a set, by its button or its key, briefly lights up the new set in the list and makes the event's counter grow for a moment. Nothing moves when the limit is reached, nor when the session is resumed, reloaded or changed in any other way, nor on coming back to Play. Both animations are off when the system asks for reduced motion.
+- Selecting an event that gives a set, by its button or its key, briefly lights up the new set in the list and makes the event's counter grow for a moment. Nothing lights up when the limit is reached (see Per-session limit), and nothing moves when the session is resumed, reloaded or changed in any other way, nor on coming back to Play. Both animations are off when the system asks for reduced motion.
 
 ## Intensity
 
@@ -43,7 +43,7 @@ Button and setting names are quoted as they appear in the English interface.
 ## Per-session limit
 
 - Each trigger of an event is counted for the session, per game and per event.
-- Beyond `maxPerSession` triggers, the event no longer gives a set: a message says the limit is reached. The trigger counter then stays stuck at the limit.
+- Beyond `maxPerSession` triggers, the event no longer gives a set. The trigger counter then stays stuck at the limit and fades, and a tooltip on the tile says the event asks for nothing more until the next session; the tile stays selectable. Selecting it, by its button or its key, shows "Limit reached" over the tile for a moment and shakes its counter, without moving the rest of the screen; screen readers announce it, and the counter does not shake when the system asks for reduced motion. This cue is not replayed when the session is resumed or reloaded, nor on coming back to Play, and ends with the session.
 
 ## Handling a set to do
 

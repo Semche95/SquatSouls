@@ -1,7 +1,7 @@
 import { onScopeDispose, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { clone } from '../config/configDraft.js';
-import { t, tm } from '../i18n/i18n.js';
+import { tm } from '../i18n/i18n.js';
 import { chime, recoveryEnd, sideSignal, startSignal } from '../session/sound.js';
 import { defineShared } from './shared.js';
 import { useCountdown } from './useCountdown.js';
@@ -13,10 +13,12 @@ export const SIDES = 2;
 
 export const [provideSession, useSession] = defineShared(({ call }, { config, draft, game, gameId, intensity, noExercise, store }) => {
   const session = ref({ pending: [], sets: 0, totals: [], log: [], triggers: [], countedTriggers: [], jokers: 0, jokersEarned: 0, jokersSpent: 0 });
-  const notice = ref('');
   // Set and event counter the user has just added by an event, until their animation has played: 0 and null otherwise.
   const addedDraw = ref(0);
   const addedTrigger = ref(null);
+  // Event just selected beyond its limit, until its cue has played: `n` grows at each selection to replay it.
+  const cappedTrigger = ref(null);
+  let cappedCount = 0;
   // Encouragement shown once a session ends with exercises done, however it ends (End the session, or a saved
   // configuration it can no longer be played on), until the next one starts: index in `session.farewells`.
   const farewell = ref(-1);
@@ -177,14 +179,13 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   // Whatever triggers it (button, key), an event needs an included exercise, like the session's start.
   async function trigger(ev) {
     if (noExercise.value) return;
-    notice.value = '';
+    cappedTrigger.value = null;
     try {
       const draw = await call('draw', { gameId: game.value.id, eventId: ev.id, intensity: intensity.value });
-      if (draw.capped) {
-        notice.value = t('play.capped', { event: draw.eventName, max: draw.maxPerSession });
-      }
       session.value = await call('get_session');
-      if (!draw.capped) {
+      if (draw.capped) {
+        cappedTrigger.value = { eventId: ev.id, eventName: draw.eventName, max: draw.maxPerSession, n: ++cappedCount };
+      } else {
         addedDraw.value = draw.id;
         addedTrigger.value = { eventId: ev.id, drawId: draw.id };
       }
@@ -261,7 +262,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   }
 
   async function endSession() {
-    notice.value = '';
+    cappedTrigger.value = null;
     try {
       session.value = await call('end_session');
     } catch {
@@ -270,7 +271,7 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   }
 
   async function cancelSession() {
-    notice.value = '';
+    cappedTrigger.value = null;
     try {
       session.value = await call('cancel_session');
     } catch {
@@ -279,8 +280,8 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
   }
 
   return {
-    session, notice, farewell, recoveryLeft, recoveryShare, skipRecovery, timing, timerLeft, timerShare, timerHeld, timedUnit, startTimer, stopTimer,
-    toggleTimer, resume, reload, saveNow, saveChange, trigger, addedDraw, addedTrigger, act, confirmStop, started, dismiss, dismissNow, remaining, canAfford, setSkipCost,
+    session, farewell, recoveryLeft, recoveryShare, skipRecovery, timing, timerLeft, timerShare, timerHeld, timedUnit, startTimer, stopTimer,
+    toggleTimer, resume, reload, saveNow, saveChange, trigger, addedDraw, addedTrigger, cappedTrigger, act, confirmStop, started, dismiss, dismissNow, remaining, canAfford, setSkipCost,
     complete, halve, skipExercise, skipSet, startSession, endSession, cancelSession,
   };
 });

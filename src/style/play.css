@@ -64,6 +64,10 @@
   font-size: 0.85rem;
   white-space: nowrap;
 }
+/* Event at its limit: still selectable, its counter fades. */
+.count.full {
+  color: var(--muted);
+}
 /* Pushed to the bottom of the window, under the content of the Play tab. */
 .session-actions {
   margin-top: auto;
@@ -96,8 +100,48 @@
     text-shadow: 0 0 8px var(--gold);
   }
 }
+/* Event selected beyond its limit: its counter shakes, and the tile says so for a moment over a darkened face,
+   without moving its content. */
+.count.refused {
+  animation: count-refused 0.4s ease-in-out;
+}
+@keyframes count-refused {
+  20%,
+  60% {
+    transform: translateX(-3px);
+  }
+  40%,
+  80% {
+    transform: translateX(3px);
+  }
+}
+.limit-reached {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  text-align: center;
+  background: rgba(18, 17, 15, 0.85);
+  color: var(--muted);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  animation: limit-reached 1.6s ease-in-out forwards;
+}
+@keyframes limit-reached {
+  from,
+  to {
+    opacity: 0;
+  }
+  15%,
+  80% {
+    opacity: 1;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .count.added {
+  .count.added,
+  .count.refused {
     animation: none;
   }
 }

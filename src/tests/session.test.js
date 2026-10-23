@@ -31,14 +31,6 @@ describe('session', () => {
     expect(queued.findAll('.card-actions button').map((b) => b.text())).toEqual(['Cancel']);
   });
 
-  it('warns when the per-session limit is reached', async () => {
-    setup({ draw: { capped: true, eventName: 'Death', maxPerSession: 15 } });
-    const w = await mountApp();
-    await w.find('.event').trigger('click');
-    await flushPromises();
-    expect(w.find('.banner.info').text()).toBe('Death: limit of 15 reached for the session, no set.');
-  });
-
   it('marks each exercise of a set done', async () => {
     setup({
       get_session: emptySession({ pending: [draw], jokers: 1 }),

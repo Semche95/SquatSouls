@@ -14,7 +14,7 @@ import SessionActions from './SessionActions.vue';
 import DisabledTip from './DisabledTip.vue';
 
 const { config, tab, cfgTab, gameId, intensity, noGame, noExercise, game } = useConfig();
-const { session, notice, skipRecovery, stopTimer, startTimer, toggleTimer, timing, trigger, confirmStop, dismiss, remaining, addedDraw, addedTrigger, complete, halve, skipExercise } = useSession();
+const { session, skipRecovery, stopTimer, startTimer, toggleTimer, timing, trigger, confirmStop, dismiss, remaining, addedDraw, addedTrigger, cappedTrigger, complete, halve, skipExercise } = useSession();
 const { detected, selectDetected, addGame, ignoreDetected } = useSteam();
 
 const INTENSITIES = ['easy', 'normal', 'hard'];
@@ -41,12 +41,19 @@ function triggerCount(eventId) {
   const counted = session.value.triggers.find((tr) => tr.gameId === game.value?.id && tr.eventId === eventId);
   return counted?.count ?? 0;
 }
+const atLimit = (ev) => ev.maxPerSession && triggerCount(ev.id) >= ev.maxPerSession;
 // Counter of the event just selected: recreated at each selection, by its key, to replay its animation.
 const bumped = (eventId) => addedTrigger.value?.eventId === eventId;
+const capped = (eventId) => cappedTrigger.value?.eventId === eventId;
+function countKey(eventId) {
+  if (bumped(eventId)) return addedTrigger.value.drawId;
+  return capped(eventId) ? `capped-${cappedTrigger.value.n}` : 0;
+}
 // Leaving Play ends the animations: coming back does not replay them.
 onBeforeUnmount(() => {
   addedDraw.value = 0;
   addedTrigger.value = null;
+  cappedTrigger.value = null;
 });
 
 useKeydown((e) => {
@@ -142,7 +149,11 @@ useKeydown((e) => {
     </p>
 
     <div v-if="game" class="events">
-      <DisabledTip v-for="(ev, i) in game.events" :key="ev.id" :tip="noExercise ? t('session.noExercise') : ''">
+      <DisabledTip
+        v-for="(ev, i) in game.events"
+        :key="ev.id"
+        :tip="noExercise ? t('session.noExercise') : atLimit(ev) ? t('play.limitTip') : ''"
+      >
         <button class="event" :disabled="noExercise" @click="trigger(ev)">
           <kbd v-if="i < 9">{{ i + 1 }}</kbd>
           <span class="event-name">
@@ -151,9 +162,9 @@ useKeydown((e) => {
           </span>
           <span
             v-if="triggerCount(ev.id)"
-            :key="bumped(ev.id) ? addedTrigger.drawId : 0"
+            :key="countKey(ev.id)"
             class="count"
-            :class="{ added: bumped(ev.id) }"
+            :class="{ added: bumped(ev.id), full: atLimit(ev), refused: capped(ev.id) }"
             @animationend="addedTrigger = null"
           >
             <template v-if="ev.maxPerSession">{{ Math.min(triggerCount(ev.id), ev.maxPerSession) }} / {{ ev.maxPerSession }}</template>
@@ -161,6 +172,15 @@ useKeydown((e) => {
           </span>
           <span v-if="ev.maxPerSession" class="edge-bar gauge">
             <span :style="{ width: `${Math.min(100, (100 * triggerCount(ev.id)) / ev.maxPerSession)}%` }"></span>
+          </span>
+          <span
+            v-if="capped(ev.id)"
+            :key="cappedTrigger.n"
+            class="limit-reached"
+            aria-hidden="true"
+            @animationend="cappedTrigger = null"
+          >
+            {{ t('play.limitReached') }}
           </span>
         </button>
       </DisabledTip>
@@ -172,7 +192,9 @@ useKeydown((e) => {
       <template #program><button class="link" @click="showProgram('exercises')">{{ t('app.tabs.program') }}</button></template>
     </i18n-t>
 
-    <p v-if="notice" v-reveal class="banner info">{{ notice }}</p>
+    <p class="sr-only" aria-live="polite">
+      <template v-if="cappedTrigger">{{ t('play.capped', { event: cappedTrigger.eventName, max: cappedTrigger.max }) }}</template>
+    </p>
     <p v-if="session.ended?.cause" v-reveal class="banner info">{{ t(`session.endCause.${session.ended.cause}`) }}</p>
 
     <section class="pending">
