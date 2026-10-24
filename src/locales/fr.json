@@ -207,6 +207,15 @@
       "importedClamped": "{name} importé, limité à {n} exercice par événement. | {name} importé, limité à {n} exercices par événement.",
       "events": "Événements"
     },
+    "catalog": {
+      "open": "Catalogue de jeux",
+      "openShort": "Catalogue",
+      "intro": "Des jeux prêts à jouer, avec leurs événements. Choisis-en un pour voir ce qu'il ajoute avant de l'importer.",
+      "loading": "Chargement du catalogue…",
+      "added": "Déjà présent · {n} événement | Déjà présent · {n} événements",
+      "back": "← Retour au catalogue",
+      "newer": "Ce catalogue demande une version plus récente de Squat Souls : la mettre à jour pour voir ses jeux."
+    },
     "event": {
       "perSet": "{n} exercice par série | {n} exercices par série",
       "maxPerSession": "{n} fois max par séance",
@@ -475,6 +484,8 @@
     "start_without_exercise": "Aucun exercice proposé : la séance ne peut pas démarrer.",
     "end_without_set": "Aucune série faite : rien à terminer.",
     "end_with_pending_sets": "Des séries sont encore à faire : les finir ou les annuler avant de terminer la séance.",
-    "update_during_session": "La mise à jour s'installe une fois la séance terminée."
+    "update_during_session": "La mise à jour s'installe une fois la séance terminée.",
+    "catalog_unavailable": "Le catalogue de jeux n'a pas pu être récupéré. Vérifier la connexion, puis réessayer.",
+    "catalog_invalid": "Le catalogue de jeux reçu est illisible. Réessayer plus tard."
   }
 }

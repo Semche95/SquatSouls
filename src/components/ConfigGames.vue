@@ -4,8 +4,10 @@ import { byName, newId } from '../config/configDraft.js';
 import { t } from '../i18n/i18n.js';
 import { vSelect } from '../ui/select.js';
 import { wide } from '../ui/wide.js';
+import { useCatalog } from '../composables/useCatalog.js';
 import { useConfig } from '../composables/useConfig.js';
 import { provideEditDialog } from '../composables/useEditDialog.js';
+import CatalogDialog from './CatalogDialog.vue';
 import ConfigEvent from './ConfigEvent.vue';
 import EventDialog from './EventDialog.vue';
 import GameDialog from './GameDialog.vue';
@@ -16,6 +18,7 @@ import DisabledTip from './DisabledTip.vue';
 const { draft, editedGameId, editedGame, newGame, shareBlocked } = useConfig();
 // Import of a shared game, in the same modal as creation.
 const importing = ref(false);
+const { browse } = useCatalog();
 // Event in its edit dialog.
 const { item: editing, edit: editEvent } = provideEditDialog(() => editedGame.value.events);
 
@@ -34,7 +37,7 @@ function addEvent(game) {
 <template>
   <!-- The wide window lists every game beside the edited one, the narrow one chooses it in a select above. -->
   <section class="group" :class="{ 'cfg-games-wide': wide }">
-    <GameList v-if="wide" @new="openNewGame" @import="importing = true" />
+    <GameList v-if="wide" @new="openNewGame" @import="importing = true" @catalog="browse" />
     <header v-else class="row cfg-game-bar">
       <div v-if="draft.games.length" class="field">
         <select id="cfg-game" v-select="{ search: t('config.games.filter'), none: t('config.games.noMatch') }" :value="editedGame?.id ?? ''" :aria-label="t('play.game')" @change="editedGameId = $event.target.value">
@@ -45,6 +48,9 @@ function addEvent(game) {
       <button class="primary" @click="openNewGame">{{ t('config.games.new') }}</button>
       <DisabledTip :tip="shareBlocked">
         <button :disabled="!!shareBlocked" @click="importing = true">{{ t('common.import') }}</button>
+      </DisabledTip>
+      <DisabledTip :tip="shareBlocked">
+        <button :disabled="!!shareBlocked" @click="browse">{{ t('config.catalog.openShort') }}</button>
       </DisabledTip>
     </header>
     <div class="cfg-game">
@@ -60,5 +66,6 @@ function addEvent(game) {
     </div>
     <EventDialog v-if="editing" />
     <GameDialog v-model:importing="importing" />
+    <CatalogDialog />
   </section>
 </template>

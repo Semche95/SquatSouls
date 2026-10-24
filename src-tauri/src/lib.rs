@@ -152,6 +152,7 @@ pub fn run() {
             commands::count_active_days,
             commands::running_steam_app,
             commands::steam_game_name,
+            commands::game_catalog,
             commands::notify
         ])
         .build(context)

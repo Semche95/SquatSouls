@@ -75,6 +75,13 @@
 .game-fields span {
   color: var(--muted);
 }
+/* Catalog: its list lower than in the wide window, under the title and the intro; the way back to it left aligned. */
+.form-dialog .cfg-game-list {
+  max-height: max(160px, min(360px, calc(100vh - 300px)));
+}
+.catalog-back {
+  align-self: flex-start;
+}
 /* Import: Cancel on the left and Import on the right, like the other modals. */
 .cfg-import .row {
   flex-direction: row-reverse;

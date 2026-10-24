@@ -10,18 +10,21 @@ import ImportPreview from './ImportPreview.vue';
 // `parse` reads the pasted text and throws an error if it is not importable; `changes` lists what its
 // content changes (`importChanges.js`), `summary` sums up an item, `blocked` tells why the import cannot
 // go ahead ('' when it can). Shown in a modal: Escape cancels. Emits the content and the chosen changes.
+// A text given in `shared` (a game of the catalog) is imported instead of a pasted one: the `source` slot
+// takes the place of the paste field.
 const props = defineProps({
   parse: { type: Function, required: true },
   changes: { type: Function, required: true },
   summary: { type: Function, required: true },
   blocked: { type: Function, default: () => '' },
+  shared: { type: String, default: null },
 });
 const emit = defineEmits(['import', 'cancel']);
 const { shareBlocked } = useConfig();
 
-const text = ref('');
+const text = ref(props.shared ?? '');
 const input = ref(null);
-onMounted(() => input.value.focus());
+onMounted(() => input.value?.focus());
 
 // Content of the pasted text, or the error that prevents importing it.
 const result = computed(() => {
@@ -42,7 +45,7 @@ const list = computed((previous) => {
   return previous && !differ(previous, next) ? previous : next;
 });
 const chosen = ref(new Set());
-watch(list, (changes) => (chosen.value = defaultChoice(changes)));
+watch(list, (changes) => (chosen.value = defaultChoice(changes)), { immediate: true });
 
 // Why the import cannot go ahead, '' when it can.
 const tip = computed(() => {
@@ -56,7 +59,8 @@ const tip = computed(() => {
 
 <template>
   <form class="cfg-import" @submit.prevent="tip || emit('import', result, chosen)">
-    <textarea ref="input" v-model="text" rows="5" :aria-label="t('share.text')" :placeholder="t('share.placeholder')" :aria-invalid="invalid"></textarea>
+    <slot v-if="shared !== null" name="source" />
+    <textarea v-else ref="input" v-model="text" rows="5" :aria-label="t('share.text')" :placeholder="t('share.placeholder')" :aria-invalid="invalid"></textarea>
     <p v-if="invalid" v-reveal class="banner error" role="alert">{{ result.message }}</p>
     <template v-else-if="importable">
       <slot :result="result" />

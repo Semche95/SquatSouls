@@ -1,5 +1,6 @@
 <script setup>
-// Games of the wide window, all listed with their number of events to choose the edited one, then their creation and import.
+// Games of the wide window, all listed with their number of events to choose the edited one, then their creation,
+// import and catalog.
 import { ref, watch } from 'vue';
 import { nameMatches } from '../config/configDraft.js';
 import { t } from '../i18n/i18n.js';
@@ -7,7 +8,7 @@ import { useConfig } from '../composables/useConfig.js';
 import DisabledTip from './DisabledTip.vue';
 import GamePicker from './GamePicker.vue';
 
-defineEmits(['new', 'import']);
+defineEmits(['new', 'import', 'catalog']);
 const { draft, editedGameId, editedGame, shareBlocked } = useConfig();
 const filter = ref('');
 
@@ -29,6 +30,9 @@ watch(
     <button class="tile tile-new" @click="$emit('new')">{{ t('config.games.addGame') }}</button>
     <DisabledTip :tip="shareBlocked">
       <button class="ghost" :disabled="!!shareBlocked" @click="$emit('import')">{{ t('config.games.import') }}</button>
+    </DisabledTip>
+    <DisabledTip :tip="shareBlocked">
+      <button class="ghost" :disabled="!!shareBlocked" @click="$emit('catalog')">{{ t('config.catalog.open') }}</button>
     </DisabledTip>
   </aside>
 </template>

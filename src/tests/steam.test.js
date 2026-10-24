@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, setup, mountApp, openSettings, layOutControls, formDialog, formDialogOpen, save, savedConfig } from './app.js';
+import { config, emptySession, setup, mountApp, openSettings, layOutControls, expectTip, formDialog, formDialogOpen, formDialogClosed, save, savedConfig } from './app.js';
+import { shareGame } from '../sharing/share.js';
 
 // Configuration with detection enabled, Elden Ring carrying its Steam AppId.
 const steamConfig = (extra = {}) => ({
@@ -137,16 +138,52 @@ describe('Steam game detection', () => {
     expect(banner(w).exists()).toBe(false);
   });
 
-  it('adds an unknown game with its name and AppId', async () => {
+  it('adds an unknown game absent from the catalog with its name and AppId', async () => {
     setupSteam({ running_steam_app: 367520, steam_game_name: 'Hollow Knight' });
     const w = await mountApp();
     expect(banner(w).text()).toContain('Hollow Knight detected.');
+    expect(invoke.mock.calls.some(([cmd]) => cmd === 'game_catalog')).toBe(false);
     await banner(w).find('.primary').trigger('click');
     await formDialogOpen();
+    expect(formDialog().find('h3').text()).toBe('New game');
     expect(formDialog().find('input[aria-label="Name of the new game"]').element.value).toBe('Hollow Knight');
     await formDialog().find('form').trigger('submit');
     await flushPromises();
     expect(savedConfig().games.at(-1)).toMatchObject({ name: 'Hollow Knight', steamAppId: 367520 });
+  });
+
+  it('imports an unknown game from the catalog when a game there carries its AppId', async () => {
+    const catalog = [shareGame({ name: 'Hollow Knight', steamAppId: 367520, events: [{ name: 'Death', draws: 1, jokers: 0 }] })];
+    setupSteam({ running_steam_app: 367520, steam_game_name: 'Hollow Knight', game_catalog: catalog });
+    const w = await mountApp();
+    await banner(w).find('.primary').trigger('click');
+    await flushPromises();
+    await formDialogOpen();
+    expect(formDialog().find('h3').text()).toBe('Game catalog');
+    expect(formDialog().find('#import-game').text()).toBe('Hollow Knight');
+    await formDialog().find('.cfg-import').trigger('submit');
+    await flushPromises();
+    await formDialogClosed();
+    expect(savedConfig().games.at(-1)).toEqual({ id: 'hollow-knight', name: 'Hollow Knight', steamAppId: 367520, events: [{ id: 'death', name: 'Death', draws: 1, jokers: 0 }] });
+  });
+
+  it('waits for the catalog before adding, then creates the game when it cannot be fetched', async () => {
+    let fail;
+    // The catalog answers once the test says so.
+    const pending = () =>
+      new Promise((resolve, reject) => {
+        fail = reject;
+      });
+    setupSteam({ running_steam_app: 367520, steam_game_name: 'Hollow Knight', game_catalog: pending });
+    const w = await mountApp();
+    await banner(w).find('.primary').trigger('click');
+    const add = banner(w).find('.primary');
+    expect(add.element.disabled).toBe(true);
+    await expectTip(add, 'Loading the catalog…');
+    fail({ code: 'catalog_unavailable', params: {} });
+    await flushPromises();
+    await formDialogOpen();
+    expect(formDialog().find('input[aria-label="Name of the new game"]').element.value).toBe('Hollow Knight');
   });
 
   it('ignores an unknown game, lists it in the settings and can remove it from there', async () => {

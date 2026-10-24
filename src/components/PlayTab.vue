@@ -19,7 +19,7 @@ import DisabledTip from './DisabledTip.vue';
 
 const { config, tab, cfgTab, gameId, intensity, noGame, noExercise, game } = useConfig();
 const { session, skipRecovery, stopTimer, startTimer, toggleTimer, timing, trigger, confirmStop, dismiss, remaining, addedDraw, addedTrigger, cappedTrigger, complete, halve, skipExercise } = useSession();
-const { detected, selectDetected, addGame, ignoreDetected } = useSteam();
+const { detected, selectDetected, adding, addGame, ignoreDetected } = useSteam();
 const { reached: limitReached } = useSessionLimit();
 
 const INTENSITIES = ['easy', 'normal', 'hard'];
@@ -164,7 +164,9 @@ useKeydown((e) => {
           </DisabledTip>
         </template>
         <template v-else>
-          <button class="primary" @click="addGame(detected)">{{ t('common.add') }}</button>
+          <DisabledTip :tip="adding ? t('config.catalog.loading') : ''">
+            <button class="primary" :disabled="adding" @click="addGame(detected)">{{ t('common.add') }}</button>
+          </DisabledTip>
           <button class="ghost" @click="ignoreDetected">{{ t('play.ignore') }}</button>
         </template>
       </span>

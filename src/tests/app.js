@@ -64,6 +64,7 @@ export function setup(over = {}) {
     get_language: { setting: 'system', language: 'en' },
     set_language: ({ setting }) => ({ setting, language: setting === 'fr' ? 'fr' : 'en' }),
     set_native_texts: undefined,
+    game_catalog: [],
     ...over,
   };
   invoke.mockImplementation(async (cmd, args) => {

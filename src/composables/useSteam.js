@@ -9,7 +9,7 @@ const SCAN_MS = 10000;
 // Backend refusal when the Steam Store rate-limited requests: no more calls for a while.
 const BLOCKED = 'blocked';
 
-export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfgTab, newGame }, { saveChange }) => {
+export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfgTab, newGame }, { saveChange, catalog }) => {
   // Running Steam game: `games` lists the configured games matching it (empty if it is unknown),
   // `name` is absent until the Steam Store has given it. Null without a running Steam game.
   const detected = ref(null);
@@ -88,11 +88,18 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
     });
   }
 
-  // Opens game creation, prefilled with the Steam game's name and AppId.
-  function addGame({ appId, name }) {
+  // A game being added waits for the catalog.
+  const adding = ref(false);
+  // Opens the import of the catalog's game carrying the Steam game's AppId, otherwise game creation, prefilled
+  // with its name and AppId. The catalog is only fetched then, never while detecting.
+  async function addGame({ appId, name }) {
+    adding.value = true;
+    const game = await catalog.find(appId);
+    adding.value = false;
     tab.value = 'program';
     cfgTab.value = 'games';
-    newGame.value = { name, source: '', steamAppId: appId };
+    if (game) catalog.show(game);
+    else newGame.value = { name, source: '', steamAppId: appId };
   }
 
   function ignoreDetected() {
@@ -109,5 +116,5 @@ export const [provideSteam, useSteam] = defineShared(({ config, gameId, tab, cfg
     });
   }
 
-  return { detected, storeBlocked, selectDetected, addGame, ignoreDetected, unignore };
+  return { detected, storeBlocked, selectDetected, adding, addGame, ignoreDetected, unignore };
 });

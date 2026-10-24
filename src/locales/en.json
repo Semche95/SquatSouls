@@ -207,6 +207,15 @@
       "importedClamped": "{name} imported, limited to {n} exercise per event. | {name} imported, limited to {n} exercises per event.",
       "events": "Events"
     },
+    "catalog": {
+      "open": "Game catalog",
+      "openShort": "Catalog",
+      "intro": "Ready-to-play games, with their events. Choose one to see what it adds before importing it.",
+      "loading": "Loading the catalog…",
+      "added": "Already added · {n} event | Already added · {n} events",
+      "back": "← Back to the catalog",
+      "newer": "This catalog needs a newer version of Squat Souls: update it to see its games."
+    },
     "event": {
       "perSet": "{n} exercise per set | {n} exercises per set",
       "maxPerSession": "{n} times max per session",
@@ -475,6 +484,8 @@
     "start_without_exercise": "No exercise included: the session cannot start.",
     "end_without_set": "No set done: nothing to end.",
     "end_with_pending_sets": "There are sets left to do: finish or cancel them before ending the session.",
-    "update_during_session": "The update installs once the session is over."
+    "update_during_session": "The update installs once the session is over.",
+    "catalog_unavailable": "The game catalog could not be fetched. Check the connection, then try again.",
+    "catalog_invalid": "The game catalog received is unreadable. Try again later."
   }
 }

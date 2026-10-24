@@ -77,11 +77,12 @@
 .plugin-dropdown_input.focus.dropdown-active .ts-control {
   border-color: var(--gold);
 }
-/* Filter field at the top of a list of games, the select's as the list beside the edited game: `.config` wins over
-   its fields, framed and gold once focused; only a line separates it from the list. */
+/* Filter field at the top of a list of games, the select's as the list beside the edited game or in the catalog:
+   `.config` and `.form-dialog` win over their fields, framed and gold once focused; only a line separates it from
+   the list. */
 .config .ts-dropdown .dropdown-input,
 .ts-dropdown .dropdown-input,
-.config .cfg-game-filter {
+:is(.config, .form-dialog) .cfg-game-filter {
   border: none;
   border-bottom: 1px solid var(--line);
   border-radius: 0;

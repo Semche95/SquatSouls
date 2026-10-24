@@ -88,7 +88,7 @@ The app forces `GDK_BACKEND=x11` and `WEBKIT_DISABLE_DMABUF_RENDERER=1`, because
 
 ## Privacy
 
-Everything stays on your computer: no account, no telemetry. The app only goes online to look for an update on GitHub at launch, and, when Steam detection is on, to ask the Steam Store for the name of a game missing from your configuration. Steam detection only checks which game is running among open programs: the app never interacts with the game.
+Everything stays on your computer: no account, no telemetry. The app only goes online to look for an update on GitHub at launch, to fetch the game catalog from GitHub when you open it or add a detected game, and, when Steam detection is on, to ask the Steam Store for the name of a game missing from your configuration. Steam detection only checks which game is running among open programs: the app never interacts with the game.
 
 ## Report a problem
 

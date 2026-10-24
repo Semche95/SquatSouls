@@ -6,6 +6,7 @@ import { t } from '../i18n/i18n.js';
 import { formatTime } from '../i18n/format.js';
 import { vReveal } from '../ui/reveal.js';
 import { provideApi } from '../composables/useApi.js';
+import { provideCatalog } from '../composables/useCatalog.js';
 import { provideConfig } from '../composables/useConfig.js';
 import { provideSession } from '../composables/useSession.js';
 import { provideSessionLimit } from '../composables/useSessionLimit.js';
@@ -33,7 +34,7 @@ const cfg = provideConfig();
 const { config, configError, gameId, intensity, applyLimit, tab, applyConfigView } = cfg;
 const { session, resume, saveChange } = provideSession(api, cfg);
 provideSessionLimit({ session });
-provideSteam(cfg, { saveChange });
+provideSteam(cfg, { saveChange, catalog: provideCatalog() });
 
 onMounted(async () => {
   restored.value = await invoke('was_restored').catch(() => false);

@@ -1,5 +1,6 @@
 <script setup>
 // Import of a shared game, saved right away: replacing a game or as a new one. Emits `close` once imported or cancelled.
+// A game of the catalog comes as `shared`, the `source` slot in place of the paste field.
 import { shallowRef } from 'vue';
 import { BOUNDS, byName, clone, MAX_NAME, sameName } from '../config/configDraft.js';
 import { t } from '../i18n/i18n.js';
@@ -13,6 +14,7 @@ import { useSession } from '../composables/useSession.js';
 import ShareImport from './ShareImport.vue';
 import DisabledTip from './DisabledTip.vue';
 
+defineProps({ shared: { type: String, default: null } });
 const emit = defineEmits(['close']);
 const { config, draft, editedGameId, notify } = useConfig();
 const { saveNow } = useSession();
@@ -72,7 +74,8 @@ async function importShared(shared, chosen) {
 </script>
 
 <template>
-  <ShareImport :parse="parseGame" :changes="changesOf" :summary="eventSummary" :blocked="importBlocked" @import="importShared" @cancel="emit('close')">
+  <ShareImport :parse="parseGame" :changes="changesOf" :summary="eventSummary" :blocked="importBlocked" :shared="shared" @import="importShared" @cancel="emit('close')">
+    <template #source><slot name="source" /></template>
     <template #default="{ result }">
       <div class="import-mode">
         <span id="import-game">{{ importLine(result) }}</span>
