@@ -1,10 +1,32 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import { catalog, languages } from './scripts/catalog.js';
 
 const host = process.env.TAURI_DEV_HOST;
 
+// Serves the catalog of the local seed at /catalog.<language>.json, where the development build reads it.
+const devCatalog = {
+  name: 'dev-catalog',
+  apply: 'serve',
+  configureServer(server) {
+    server.middlewares.use(async (req, res, next) => {
+      const language = req.url.match(/^\/catalog\.(\w+)\.json$/)?.[1];
+      if (!languages.includes(language)) {
+        next();
+        return;
+      }
+      try {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(await catalog(server, language));
+      } catch (e) {
+        next(e);
+      }
+    });
+  },
+};
+
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), devCatalog],
   // Tauri expects a fixed port and shows its own errors.
   clearScreen: false,
   server: {

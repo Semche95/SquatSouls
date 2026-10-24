@@ -6,10 +6,16 @@ use crate::app::{AppError, Language};
 /// Largest catalog read, far above the one published: an answer from the network is never trusted.
 pub const MAX_CATALOG_SIZE: u64 = 1024 * 1024;
 
-/// Catalog in `language` of the latest release of `repository`.
-pub fn catalog_url(repository: &str, language: Language) -> String {
+/// Address of the catalogs of the latest release of `repository`.
+pub fn release_catalogs(repository: &str) -> String {
+    format!("{repository}/releases/latest/download")
+}
+
+/// Catalog in `language` among those published at `base`, with or without a trailing slash.
+pub fn catalog_url(base: &str, language: Language) -> String {
     format!(
-        "{repository}/releases/latest/download/catalog.{}.json",
+        "{}/catalog.{}.json",
+        base.trim_end_matches('/'),
         language.as_str()
     )
 }
