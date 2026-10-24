@@ -42,7 +42,9 @@ const createBlocked = computed(() => {
 async function createGame() {
   const { name, source, steamAppId } = form.value;
   const model = draft.value.games.find((g) => g.id === source);
-  const game = { id: newId(name, draft.value.games), name: name.trim(), events: model ? clone(model.events) : [] };
+  // Events copied from the model receive their own ids: no id is shared between two games.
+  const events = model ? clone(model.events).map((ev) => ({ ...ev, id: newId() })) : [];
+  const game = { id: newId(), name: name.trim(), events };
   if (steamAppId) game.steamAppId = steamAppId;
   const created = await saveChange((cfg) => {
     cfg.games.push(clone(game));

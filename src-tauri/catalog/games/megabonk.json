@@ -1,48 +1,48 @@
 {
-  "id": "megabonk",
+  "id": "01a16eb0-2b48-72dc-bf52-6542510d79a8",
   "name": "Megabonk",
   "steamAppId": 3405340,
   "events": [
     {
-      "id": "mort",
+      "id": "01a16eb0-2b48-72dc-bf52-68f78e666d6e",
       "name": { "en": "Death", "fr": "Mort" },
       "draws": 1,
       "jokers": 0
     },
     {
-      "id": "boss-portail",
+      "id": "01a16eb0-2b48-72dc-bf52-6d0a39a9e4c5",
       "name": { "en": "Portal boss defeated", "fr": "Boss du portail vaincu" },
       "draws": 2,
       "jokers": 0
     },
     {
-      "id": "boss-final",
+      "id": "01a16eb0-2b48-72dc-bf52-708685298e27",
       "name": { "en": "Final boss defeated (Tier 3)", "fr": "Boss final vaincu (Tier 3)" },
       "draws": 2,
       "jokers": 1
     },
     {
-      "id": "mini-boss",
+      "id": "01a16eb0-2b48-72dc-bf52-74b58ad999c3",
       "name": { "en": "Mini-boss defeated", "fr": "Mini-boss vaincu" },
       "draws": 1,
       "maxPerSession": 10,
       "jokers": 0
     },
     {
-      "id": "legendaire",
+      "id": "01a16eb0-2b48-72dc-bf52-786715d985e6",
       "name": { "en": "Legendary obtained (item or upgrade)", "fr": "Élément légendaire obtenu (objet ou amélioration)" },
       "draws": 1,
       "maxPerSession": 10,
       "jokers": 0
     },
     {
-      "id": "vague-finale",
+      "id": "01a16eb0-2b48-72dc-bf52-7ee62b33015d",
       "name": { "en": "Final swarm triggered before the boss", "fr": "Vague finale déclenchée avant le boss" },
       "draws": 2,
       "jokers": 0
     },
     {
-      "id": "defi",
+      "id": "01a16eb0-2b48-72dc-bf52-81e4f3aee2da",
       "name": { "en": "Challenge completed", "fr": "Défi accompli" },
       "draws": 2,
       "jokers": 1

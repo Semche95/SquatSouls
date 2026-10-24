@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
-import { config, setup, mountApp, openConfig, openSettings, expectUnchanged, expectTip, layOutControls, editDialog, formDialog, formDialogOpen, formDialogClosed, save, discard, savedConfig } from './app.js';
+import { config, setup, mountApp, openConfig, openSettings, expectUnchanged, expectTip, layOutControls, editDialog, formDialog, formDialogOpen, formDialogClosed, save, discard, savedConfig, newId } from './app.js';
 import { shownGame, gameButton, importButton, rename, openExercises, openTile, closeDialog, exercisesButton } from './program.js';
 import { shareExercise, shareExercises, shareGame } from '../sharing/share.js';
 
@@ -93,7 +93,7 @@ describe('sharing', () => {
     await flushPromises();
     await formDialogClosed();
     expect(savedConfig().games.map((g) => g.id)).toEqual(['er', 'sekiro']);
-    expect(savedConfig().games[1]).toEqual({ id: 'sekiro', name: 'Sekiro', events: [{ id: 'death', name: 'Death', draws: 100, jokers: 1 }] });
+    expect(savedConfig().games[1]).toEqual({ id: 'sekiro', name: 'Sekiro', events: [{ id: newId(), name: 'Death', draws: 100, jokers: 1 }] });
     expect(w.find('.banner.ok').text()).toBe('Sekiro imported, limited to 100 exercises per event.');
     expect(shownGame(w)).toBe('Sekiro');
     expectUnchanged(w);
@@ -104,7 +104,7 @@ describe('sharing', () => {
     await formDialog().find('.cfg-import').trigger('submit');
     await flushPromises();
     await formDialogClosed();
-    expect(savedConfig().games.map((g) => g.id)).toEqual(['er', 'sekiro', 'nioh']);
+    expect(savedConfig().games.map((g) => g.id)).toEqual(['er', 'sekiro', newId()]);
     expect(w.find('.banner.ok').text()).toBe('Nioh imported.');
   });
 
@@ -131,7 +131,7 @@ describe('sharing', () => {
     await formDialogClosed();
     expect(savedConfig().exercises).toEqual([
       { id: 'squat', name: 'Squats', enabled: true, unit: 'reps', min: 12, max: 20 },
-      { id: 'push-ups', name: 'Push-ups', enabled: true, unit: 'reps', min: 8, max: 12 },
+      { id: newId(), name: 'Push-ups', enabled: true, unit: 'reps', min: 8, max: 12 },
     ]);
     expect(savedConfig().sound).toBe(config.sound);
     expect(w.find('.banner.ok').text()).toBe('Exercises imported: 1 added, 1 updated.');

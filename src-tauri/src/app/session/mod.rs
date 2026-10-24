@@ -21,12 +21,15 @@ pub use summary::*;
 use super::{AppError, Config, Game};
 use serde::Serialize;
 use std::collections::HashMap;
+use uuid::Uuid;
 
 /// Fields are visible to the store, which saves the session in progress and reads it back at launch.
 #[derive(Debug, Default)]
 pub struct Session {
     /// Absent until the session is started, by its button or its first event.
     pub started_at: Option<i64>,
+    /// Id of the session, a UUIDv7 given when it starts: empty until then.
+    pub id: String,
     /// Game of the session, set at the latest when it starts and locked until the next session.
     pub(crate) game_id: Option<String>,
     pub(crate) intensity: Intensity,
@@ -53,7 +56,6 @@ pub struct Session {
     pub(crate) last: Vec<String>,
     /// Exercises of dismissed sets, by game and event: the next trigger gives them back.
     pub(crate) reserved: HashMap<(String, String), Vec<DrawItem>>,
-    pub(crate) next_id: u64,
     /// Seconds the session lasted in the periods the app was open before the current one.
     pub(crate) counted: i64,
     /// Start of the current period the app is open in the session: its start, then each reopening.
@@ -106,6 +108,7 @@ impl Session {
     /// Start of the session, started at `now` unless it already is.
     fn started(&mut self, now: i64) -> i64 {
         *self.started_at.get_or_insert_with(|| {
+            self.id = Uuid::now_v7().to_string();
             self.opened_at = now;
             now
         })
@@ -160,7 +163,7 @@ impl Session {
         Ok(())
     }
 
-    fn pending_pos(&self, id: u64) -> Result<usize, AppError> {
+    fn pending_pos(&self, id: &str) -> Result<usize, AppError> {
         self.pending
             .iter()
             .position(|d| d.id == id)
@@ -168,24 +171,28 @@ impl Session {
     }
 
     /// Position of the set, which must be the oldest one: sets are done in the order they were drawn.
-    fn current_pos(&self, id: u64) -> Result<usize, AppError> {
+    fn current_pos(&self, id: &str) -> Result<usize, AppError> {
         match self.pending_pos(id)? {
             0 => Ok(0),
             _ => Err(AppError::new("set_not_current")),
         }
     }
 
-    fn pending_draw(&self, id: u64) -> Result<&Draw, AppError> {
+    fn pending_draw(&self, id: &str) -> Result<&Draw, AppError> {
         Ok(&self.pending[self.pending_pos(id)?])
     }
 
-    fn take_pending(&mut self, id: u64) -> Result<Draw, AppError> {
+    fn take_pending(&mut self, id: &str) -> Result<Draw, AppError> {
         let pos = self.pending_pos(id)?;
         Ok(self.pending.remove(pos))
     }
 
     /// Pending set and position in it of the exercise, still to do.
-    fn pending_item(&mut self, id: u64, exercise_id: &str) -> Result<(&mut Draw, usize), AppError> {
+    fn pending_item(
+        &mut self,
+        id: &str,
+        exercise_id: &str,
+    ) -> Result<(&mut Draw, usize), AppError> {
         let pos = self.current_pos(id)?;
         let draw = &mut self.pending[pos];
         let item = draw

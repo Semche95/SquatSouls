@@ -23,7 +23,17 @@ fn intensity_scales_the_drawn_numbers() {
         let mut s = Session::default();
         s.set_intensity(intensity);
         for _ in 0..50 {
-            for it in s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap().items {
+            for it in s
+                .draw(
+                    &cfg,
+                    &game_id("ds3"),
+                    &event_id("ds3", "Boss defeated"),
+                    0,
+                    &mut r,
+                )
+                .unwrap()
+                .items
+            {
                 let ex = cfg
                     .exercises
                     .iter()
@@ -41,13 +51,21 @@ fn intensity_scales_the_drawn_numbers() {
 fn a_new_intensity_rescales_the_amounts_to_do_from_the_drawn_ones() {
     let cfg = catalog_config(Language::Fr);
     let mut s = Session::default();
-    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut rng()).unwrap();
-    s.complete_exercise(boss.id, &boss.items[0].exercise_id, 0)
+    let boss = s
+        .draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            0,
+            &mut rng(),
+        )
+        .unwrap();
+    s.complete_exercise(&boss.id, &boss.items[0].exercise_id, 0)
         .unwrap();
     for intensity in [Intensity::Hard, Intensity::Easy, Intensity::Normal] {
         s.set_intensity(intensity);
         assert_eq!(s.view().intensity, intensity);
-        let draw = pending(&s, boss.id).unwrap();
+        let draw = pending(&s, &boss.id).unwrap();
         assert_eq!(draw.items[0].amount, boss.items[0].amount, "already done");
         assert_eq!(draw.items[1].amount, intensity.scale(boss.items[1].amount));
     }
@@ -57,10 +75,10 @@ fn a_new_intensity_rescales_the_amounts_to_do_from_the_drawn_ones() {
 fn a_new_intensity_rescales_a_halved_amount_from_the_halved_drawn_one() {
     let (mut s, boss) = session_with_jokers();
     let item = &boss.items[0];
-    s.halve(boss.id, &item.exercise_id).unwrap();
+    s.halve(&boss.id, &item.exercise_id).unwrap();
     for intensity in [Intensity::Hard, Intensity::Easy] {
         s.set_intensity(intensity);
-        let halved = &pending(&s, boss.id).unwrap().items[0];
+        let halved = &pending(&s, &boss.id).unwrap().items[0];
         assert_eq!(halved.amount, intensity.scale(intensity.halve(item.amount)));
         assert_eq!(halved.halve_cost, None, "still halved");
     }
@@ -70,10 +88,10 @@ fn a_new_intensity_rescales_a_halved_amount_from_the_halved_drawn_one() {
 fn halving_at_easy_rounds_down() {
     let (mut s, boss) = session_with_jokers();
     s.set_intensity(Intensity::Easy);
-    let item = pending(&s, boss.id).unwrap().items[0].clone();
-    s.halve(boss.id, &item.exercise_id).unwrap();
+    let item = pending(&s, &boss.id).unwrap().items[0].clone();
+    s.halve(&boss.id, &item.exercise_id).unwrap();
     assert_eq!(
-        pending(&s, boss.id).unwrap().items[0].amount,
+        pending(&s, &boss.id).unwrap().items[0].amount,
         item.amount / 2
     );
 }

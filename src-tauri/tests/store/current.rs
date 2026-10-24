@@ -9,31 +9,49 @@ fn played(start: i64) -> (Session, Vec<LogEntry>) {
     let cfg = catalog_config(Language::Fr);
     let mut s = Session::default();
     let mut r = StdRng::seed_from_u64(42);
-    s.start(&cfg, "ds3", start).unwrap();
+    s.start(&cfg, &game_id("ds3"), start).unwrap();
     s.set_intensity(Intensity::Hard);
     let mut done = Vec::new();
-    let nohit = s.draw(&cfg, "ds3", "boss-nohit", 0, &mut r).unwrap();
+    let nohit = s
+        .draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated without getting hit"),
+            0,
+            &mut r,
+        )
+        .unwrap();
     for it in &nohit.items {
         done.push(
-            s.complete_exercise(nohit.id, &it.exercise_id, start + 10)
+            s.complete_exercise(&nohit.id, &it.exercise_id, start + 10)
                 .unwrap(),
         );
     }
-    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
-    s.halve(boss.id, &boss.items[0].exercise_id).unwrap();
+    let boss = s
+        .draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            0,
+            &mut r,
+        )
+        .unwrap();
+    s.halve(&boss.id, &boss.items[0].exercise_id).unwrap();
     done.push(
-        s.complete_exercise(boss.id, &boss.items[0].exercise_id, start + 20)
+        s.complete_exercise(&boss.id, &boss.items[0].exercise_id, start + 20)
             .unwrap(),
     );
-    let death = s.draw(&cfg, "ds3", "mort", 0, &mut r).unwrap();
-    s.dismiss(death.id).unwrap();
+    let death = s
+        .draw(&cfg, &game_id("ds3"), &event_id("ds3", "Death"), 0, &mut r)
+        .unwrap();
+    s.dismiss(&death.id).unwrap();
     (s, done)
 }
 
-/// Saves the session as the app does, with its exercises done in the history.
+/// Saves the session as the app does, which records it, with its exercises done in the history.
 fn save(store: &mut Store, s: &Session, done: &[LogEntry], seen: i64) {
-    store.append_history(done).unwrap();
     store.save_current_session(s, seen).unwrap();
+    store.append_history(done).unwrap();
 }
 
 #[test]
@@ -48,14 +66,22 @@ fn the_session_in_progress_is_read_back_as_it_was_saved() {
         .expect("a session in progress");
     assert_eq!(seen, 1500);
     assert_eq!(format!("{:?}", read.view()), format!("{:?}", s.view()));
-    // Round, last set, reserve and set ids carry on as if the app had never closed.
+    // Round, last set and reserve carry on as if the app had never closed; each set receives its own id.
     let cfg = catalog_config(Language::Fr);
-    for event in ["mort", "boss", "mort"] {
+    for name in ["Death", "Boss defeated", "Death"] {
+        let (game, event) = (game_id("ds3"), event_id("ds3", name));
         let mut r = StdRng::seed_from_u64(7);
+        let (resumed, live) = (
+            read.draw(&cfg, &game, &event, 0, &mut r).unwrap(),
+            s.draw(&cfg, &game, &event, 0, &mut StdRng::seed_from_u64(7))
+                .unwrap(),
+        );
         assert_eq!(
-            read.draw(&cfg, "ds3", event, 0, &mut r).unwrap(),
-            s.draw(&cfg, "ds3", event, 0, &mut StdRng::seed_from_u64(7))
-                .unwrap()
+            Draw {
+                id: live.id.clone(),
+                ..resumed
+            },
+            live
         );
     }
 }
@@ -76,13 +102,26 @@ fn the_limit_of_the_session_in_progress_is_read_back() {
     let mut s = Session::default();
     let mut r = StdRng::seed_from_u64(42);
     s.set_limit(Some(limit)).unwrap();
-    s.start(&cfg, "ds3", 1000).unwrap();
-    s.draw(&cfg, "ds3", "boss", 1000, &mut r).unwrap();
+    s.start(&cfg, &game_id("ds3"), 1000).unwrap();
+    s.draw(
+        &cfg,
+        &game_id("ds3"),
+        &event_id("ds3", "Boss defeated"),
+        1000,
+        &mut r,
+    )
+    .unwrap();
     assert_eq!(
-        s.draw(&cfg, "ds3", "boss", 1000, &mut r)
-            .unwrap()
-            .items
-            .len(),
+        s.draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            1000,
+            &mut r
+        )
+        .unwrap()
+        .items
+        .len(),
         1
     );
     save(&mut store, &s, &[], 1500);
@@ -129,10 +168,10 @@ fn a_session_saved_before_counting_what_it_asked_counts_it_again() {
     assert_eq!(read.view().asked, s.view().asked);
     assert_eq!(read.view().asked_time, s.view().asked_time);
     // Its sets to do free their time again once dismissed.
-    let id = read.view().pending[0].id;
+    let id = read.view().pending[0].id.clone();
     let mut live = s;
-    read.dismiss(id).unwrap();
-    live.dismiss(id).unwrap();
+    read.dismiss(&id).unwrap();
+    live.dismiss(&id).unwrap();
     assert_eq!(read.view().asked_time, live.view().asked_time);
     // Counted once only.
     read.recount_asked(&cfg);
@@ -146,17 +185,23 @@ fn a_stopped_set_saved_before_counting_still_counts_its_exercises() {
     let boss = s.view().pending[0].clone();
     let rest = boss.items.iter().find(|it| !it.done).unwrap();
     done.push(
-        s.complete_exercise(boss.id, &rest.exercise_id, 1030)
+        s.complete_exercise(&boss.id, &rest.exercise_id, 1030)
             .unwrap(),
     );
     let stopped = s
-        .draw(&cfg, "ds3", "boss", 1040, &mut StdRng::seed_from_u64(1))
+        .draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            1040,
+            &mut StdRng::seed_from_u64(1),
+        )
         .unwrap();
     done.push(
-        s.complete_exercise(stopped.id, &stopped.items[0].exercise_id, 1050)
+        s.complete_exercise(&stopped.id, &stopped.items[0].exercise_id, 1050)
             .unwrap(),
     );
-    s.dismiss(stopped.id).unwrap();
+    s.dismiss(&stopped.id).unwrap();
     let mut read = saved_before_counting("recount-stopped", &s, &done);
     read.recount_asked(&cfg);
     assert_eq!(
@@ -214,12 +259,12 @@ fn the_duration_leaves_out_the_time_the_app_was_closed() {
     let boss = s.view().pending.remove(0);
     let next = boss.items.iter().find(|it| !it.done).unwrap();
     let entry = s
-        .complete_exercise(boss.id, &next.exercise_id, 5030)
+        .complete_exercise(&boss.id, &next.exercise_id, 5030)
         .unwrap();
     save(&mut store, &s, &[entry], 5030);
     assert_eq!(today(&store), 90, "then from the reopening");
 
-    store.end_session(1000, 5100).unwrap();
+    store.end_session(&s.id, 5100).unwrap();
     assert_eq!(today(&store), 160, "until its end");
 }
 

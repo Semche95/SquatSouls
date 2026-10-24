@@ -28,7 +28,7 @@ export const [provideCatalog, useCatalog] = defineShared(({ shareBlocked }) => {
       const read = texts.flatMap((text) => {
         try {
           const game = parseGame(text);
-          return [{ ...game, id: newId(game.name, []), text }];
+          return [{ ...game, id: newId(), text }];
         } catch {
           return [];
         }

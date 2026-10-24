@@ -9,8 +9,8 @@ use std::collections::HashMap;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct LogEntry {
     pub at: i64,
-    /// Start of the session.
-    pub session: i64,
+    /// Id of the session.
+    pub session: String,
     pub game: String,
     pub event: String,
     pub exercise: String,

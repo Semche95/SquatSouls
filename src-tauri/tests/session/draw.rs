@@ -7,7 +7,15 @@ fn draws_stay_in_range_and_are_distinct() {
     let mut s = Session::default();
     let mut r = rng();
     for _ in 0..200 {
-        let d = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
+        let d = s
+            .draw(
+                &cfg,
+                &game_id("ds3"),
+                &event_id("ds3", "Boss defeated"),
+                0,
+                &mut r,
+            )
+            .unwrap();
         assert_eq!(d.items.len(), 2);
         let ids: HashSet<_> = d.items.iter().map(|i| i.exercise_id.as_str()).collect();
         assert_eq!(
@@ -33,7 +41,15 @@ fn every_option_can_be_drawn() {
     let mut r = rng();
     let mut seen = HashSet::new();
     for _ in 0..100 {
-        let d = s.draw(&cfg, "elden-ring", "repos", 0, &mut r).unwrap();
+        let d = s
+            .draw(
+                &cfg,
+                &game_id("elden-ring"),
+                &event_id("elden-ring", "Rest at a known Site of Grace"),
+                0,
+                &mut r,
+            )
+            .unwrap();
         seen.insert(d.items[0].exercise_id.clone());
     }
     assert_eq!(seen.len(), cfg.exercises.len());
@@ -48,9 +64,15 @@ fn each_exercise_comes_out_once_per_round() {
     for _ in 0..20 {
         let round: HashSet<_> = (0..n)
             .map(|_| {
-                s.draw(&cfg, "elden-ring", "repos", 0, &mut r)
-                    .unwrap()
-                    .items[0]
+                s.draw(
+                    &cfg,
+                    &game_id("elden-ring"),
+                    &event_id("elden-ring", "Rest at a known Site of Grace"),
+                    0,
+                    &mut r,
+                )
+                .unwrap()
+                .items[0]
                     .exercise_id
                     .clone()
             })
@@ -70,8 +92,14 @@ fn a_new_round_does_not_start_with_the_last_set() {
     let mut r = rng();
     let mut last: Vec<String> = Vec::new();
     for _ in 0..200 {
-        let event = if last.len() == 1 { "boss" } else { "repos" };
-        let d = s.draw(&cfg, "ds3", event, 0, &mut r).unwrap();
+        let name = if last.len() == 1 {
+            "Boss defeated"
+        } else {
+            "Rest at a known bonfire"
+        };
+        let d = s
+            .draw(&cfg, &game_id("ds3"), &event_id("ds3", name), 0, &mut r)
+            .unwrap();
         let ids: Vec<String> = d.items.into_iter().map(|it| it.exercise_id).collect();
         assert!(
             ids.iter().all(|id| !last.contains(id)),
@@ -89,10 +117,25 @@ fn a_draw_across_two_rounds_stays_distinct() {
     let n = cfg.exercises.len();
     let mut s = Session::default();
     let mut r = rng();
-    s.draw(&cfg, "ds3", "repos", 0, &mut r).unwrap();
+    s.draw(
+        &cfg,
+        &game_id("ds3"),
+        &event_id("ds3", "Rest at a known bonfire"),
+        0,
+        &mut r,
+    )
+    .unwrap();
     let mut out: Vec<String> = Vec::new();
     for _ in 0..50 {
-        let d = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
+        let d = s
+            .draw(
+                &cfg,
+                &game_id("ds3"),
+                &event_id("ds3", "Boss defeated"),
+                0,
+                &mut r,
+            )
+            .unwrap();
         assert_ne!(d.items[0].exercise_id, d.items[1].exercise_id);
         out.extend(d.items.into_iter().map(|it| it.exercise_id));
     }
@@ -108,25 +151,35 @@ fn death_cap_applies_per_game_and_session() {
     let mut s = Session::default();
     let mut r = rng();
     for n in 1..=15 {
-        let d = s.draw(&cfg, "ds1", "mort", 0, &mut r).unwrap();
+        let d = s
+            .draw(&cfg, &game_id("ds1"), &event_id("ds1", "Death"), 0, &mut r)
+            .unwrap();
         assert!(!d.capped);
         assert_eq!(d.trigger_count, n);
     }
     for _ in 0..3 {
-        let d = s.draw(&cfg, "ds1", "mort", 0, &mut r).unwrap();
+        let d = s
+            .draw(&cfg, &game_id("ds1"), &event_id("ds1", "Death"), 0, &mut r)
+            .unwrap();
         assert!(d.capped && d.items.is_empty());
         assert_eq!(d.trigger_count, 15, "the counter stops at the limit");
     }
     assert_eq!(s.view().pending.len(), 15, "a capped draw is not queued");
     // The session stays on its game.
     assert_eq!(
-        s.draw(&cfg, "ds2", "mort", 0, &mut r).unwrap_err().code,
+        s.draw(&cfg, &game_id("ds2"), &event_id("ds2", "Death"), 0, &mut r)
+            .unwrap_err()
+            .code,
         "session_other_game"
     );
-    assert_eq!(s.view().game_id.as_deref(), Some("ds1"));
+    assert_eq!(s.view().game_id.as_deref(), Some(game_id("ds1").as_str()));
     // A new session resets everything.
     let mut s2 = Session::default();
-    assert!(!s2.draw(&cfg, "ds1", "mort", 0, &mut r).unwrap().capped);
+    assert!(
+        !s2.draw(&cfg, &game_id("ds1"), &event_id("ds1", "Death"), 0, &mut r)
+            .unwrap()
+            .capped
+    );
 }
 
 #[test]
@@ -137,7 +190,15 @@ fn a_disabled_exercise_is_never_drawn() {
     let mut s = Session::default();
     let mut r = rng();
     for _ in 0..100 {
-        let d = s.draw(&cfg, "elden-ring", "repos", 0, &mut r).unwrap();
+        let d = s
+            .draw(
+                &cfg,
+                &game_id("elden-ring"),
+                &event_id("elden-ring", "Rest at a known Site of Grace"),
+                0,
+                &mut r,
+            )
+            .unwrap();
         assert_ne!(d.items[0].exercise_id, disabled);
     }
 }

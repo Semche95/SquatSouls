@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
-import { emptySession, idleSession, responses, setup, openConfig, shownTip, expectTip, layOutControls, editDialog, save, savedConfig } from './app.js';
+import { emptySession, idleSession, responses, setup, openConfig, shownTip, expectTip, layOutControls, editDialog, save, savedConfig, newId } from './app.js';
 import { openExercises, openTile, closeDialog, saveAndReopen, openExerciseSettings, exerciseSettingsButton } from './program.js';
 
 describe('exercises', () => {
@@ -8,7 +8,7 @@ describe('exercises', () => {
   // Choice of the timer in the open exercise dialog.
   const timer = (text) => editDialog().findAll('[role="radio"]').find((b) => b.text() === text);
 
-  it('adds an exercise with an id derived from the name, its dialog open with the name selected', async () => {
+  it('adds an exercise with its own id, its dialog open with the name selected', async () => {
     setup();
     const w = await openConfig();
     await w.findAll('.subtabs button')[1].trigger('click');
@@ -24,7 +24,7 @@ describe('exercises', () => {
     responses.save_config = (args) => ({ config: args.config });
     await save(w).trigger('click');
     await flushPromises();
-    expect(savedConfig().exercises.map((e) => e.id)).toEqual(['squat', 'new-exercise', 'new-exercise-2']);
+    expect(savedConfig().exercises.map((e) => e.id)).toEqual(['squat', newId(), newId()]);
   });
 
   it('removes the last exercise', async () => {

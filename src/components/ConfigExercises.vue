@@ -40,7 +40,7 @@ async function importShared(imported, chosen) {
 function addExercise() {
   const list = draft.value.exercises;
   const name = t('config.exercises.new');
-  list.push({ id: newId(name, list), name, enabled: true, unit: t('config.exercises.defaultUnit'), min: 5, max: 10 });
+  list.push({ id: newId(), name, enabled: true, unit: t('config.exercises.defaultUnit'), min: 5, max: 10 });
   editExercise(list.at(-1), true);
 }
 </script>

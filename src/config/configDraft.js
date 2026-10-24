@@ -1,3 +1,4 @@
+import { v7 } from 'uuid';
 import { language, t } from '../i18n/i18n.js';
 
 export function clone(value) {
@@ -19,17 +20,11 @@ export function withTabDraft(config, draft, settings) {
   return cfg;
 }
 
-// Name without accents nor case, to derive an id from it or to find it from a part typed.
-const folded = (name) => name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+// Name without accents nor case, to find it from a part typed or to shorten it into a label.
+export const folded = (name) => name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
-// Ids stay internal: derived from the name on creation, then fixed even when renamed.
-export function newId(name, items) {
-  const base = folded(name).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'id';
-  const taken = new Set(items.map((it) => it.id));
-  let id = base;
-  for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
-  return id;
-}
+// Ids stay internal and never depend on the name nor the language: a UUIDv7, unique without comparing it to the others.
+export const newId = () => v7();
 
 // Name compared to others, without case nor surrounding spaces.
 export const nameKey = (name) => name.trim().toLowerCase();

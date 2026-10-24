@@ -1,6 +1,6 @@
 mod catalog_config;
 
-use catalog_config::catalog_config;
+use catalog_config::{catalog_config, event_id, game_id};
 use chrono::Local;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
@@ -36,14 +36,14 @@ fn ended(saved: bool, cause: EndCause) -> SessionEnd {
 /// Starts the session on "ds3" now.
 fn start(state: &mut AppState) -> i64 {
     state
-        .change_session(|s, cfg| s.start(cfg, "ds3", Local::now().timestamp()))
+        .change_session(|s, cfg| s.start(cfg, &game_id("ds3"), Local::now().timestamp()))
         .unwrap()
 }
 
 /// Marks done at `at` the first exercise of `set`.
 fn complete_first(state: &mut AppState, set: &Draw, at: i64) {
     state
-        .change_session(|s, _| s.complete_exercise(set.id, &set.items[0].exercise_id, at))
+        .change_session(|s, _| s.complete_exercise(&set.id, &set.items[0].exercise_id, at))
         .unwrap();
 }
 
@@ -65,21 +65,31 @@ fn removing_the_sessions_game_ends_it_with_the_exercises_done() {
     let mut r = StdRng::seed_from_u64(42);
     let start = Local::now().timestamp() - 100;
     let boss = state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", 0, &mut r))
+        .change_session(|s, cfg| {
+            s.draw(
+                cfg,
+                &game_id("ds3"),
+                &event_id("ds3", "Boss defeated"),
+                0,
+                &mut r,
+            )
+        })
         .unwrap();
     state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", 0, &mut r))
+        .change_session(|s, cfg| s.draw(cfg, &game_id("ds3"), &event_id("ds3", "Death"), 0, &mut r))
         .unwrap();
     complete_first(&mut state, &boss, start);
 
-    state.store_config(without_game(&state, "ds3")).unwrap();
+    state
+        .store_config(without_game(&state, &game_id("ds3")))
+        .unwrap();
     assert_eq!(state.session().started_at, None, "the next session waits");
     assert_eq!(
         state.session().view().ended,
         Some(ended(true, EndCause::GameRemoved))
     );
     state
-        .change_session(|s, cfg| s.start(cfg, "ds1", start + 200))
+        .change_session(|s, cfg| s.start(cfg, &game_id("ds1"), start + 200))
         .unwrap();
     assert_eq!(
         state.session().view().ended,
@@ -113,10 +123,20 @@ fn removing_the_sessions_game_without_any_exercise_done_cancels_it() {
     let mut state = state();
     start(&mut state);
     state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", 0, &mut StdRng::seed_from_u64(42)))
+        .change_session(|s, cfg| {
+            s.draw(
+                cfg,
+                &game_id("ds3"),
+                &event_id("ds3", "Death"),
+                0,
+                &mut StdRng::seed_from_u64(42),
+            )
+        })
         .unwrap();
 
-    state.store_config(without_game(&state, "ds3")).unwrap();
+    state
+        .store_config(without_game(&state, &game_id("ds3")))
+        .unwrap();
     assert_eq!(state.session().started_at, None);
     assert_eq!(
         state.session().view().ended,
@@ -129,7 +149,15 @@ fn removing_the_sessions_game_without_any_exercise_done_cancels_it() {
 fn switching_every_exercise_off_ends_the_session_with_the_exercises_done() {
     let mut state = state();
     let boss = state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", 0, &mut StdRng::seed_from_u64(42)))
+        .change_session(|s, cfg| {
+            s.draw(
+                cfg,
+                &game_id("ds3"),
+                &event_id("ds3", "Boss defeated"),
+                0,
+                &mut StdRng::seed_from_u64(42),
+            )
+        })
         .unwrap();
     complete_first(&mut state, &boss, Local::now().timestamp() - 100);
 
@@ -166,7 +194,9 @@ fn removing_every_exercise_without_any_exercise_done_cancels_the_session() {
 fn removing_another_game_keeps_the_session() {
     let mut state = state();
     let start = start(&mut state);
-    state.store_config(without_game(&state, "ds1")).unwrap();
+    state
+        .store_config(without_game(&state, &game_id("ds1")))
+        .unwrap();
     assert_eq!(state.session().started_at, Some(start));
 }
 
@@ -178,22 +208,30 @@ fn the_session_resumes_as_it_was_at_the_next_launch() {
     state
         .change_session(|s, cfg| {
             s.set_intensity(Intensity::Easy);
-            s.start(cfg, "ds3", start)
+            s.start(cfg, &game_id("ds3"), start)
         })
         .unwrap();
     let boss = state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", 0, &mut r))
+        .change_session(|s, cfg| {
+            s.draw(
+                cfg,
+                &game_id("ds3"),
+                &event_id("ds3", "Boss defeated"),
+                0,
+                &mut r,
+            )
+        })
         .unwrap();
     complete_first(&mut state, &boss, start + 10);
     state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", 0, &mut r))
+        .change_session(|s, cfg| s.draw(cfg, &game_id("ds3"), &event_id("ds3", "Death"), 0, &mut r))
         .unwrap();
     let before = state.session().view();
 
     let state = relaunch(state);
     let after = state.session().view();
     assert_eq!(after.started_at, Some(start));
-    assert_eq!(after.game_id.as_deref(), Some("ds3"));
+    assert_eq!(after.game_id.as_deref(), Some(game_id("ds3").as_str()));
     assert_eq!(after.intensity, Intensity::Easy, "its own intensity");
     assert_eq!(after.pending, before.pending);
     assert_eq!(after.log, before.log);
@@ -210,12 +248,20 @@ fn the_session_resumes_as_it_was_at_the_next_launch() {
 fn an_ended_or_cancelled_session_does_not_resume() {
     let mut state = state();
     let boss = state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", 0, &mut StdRng::seed_from_u64(42)))
+        .change_session(|s, cfg| {
+            s.draw(
+                cfg,
+                &game_id("ds3"),
+                &event_id("ds3", "Boss defeated"),
+                0,
+                &mut StdRng::seed_from_u64(42),
+            )
+        })
         .unwrap();
     for it in &boss.items {
         state
             .change_session(|s, _| {
-                s.complete_exercise(boss.id, &it.exercise_id, Local::now().timestamp())
+                s.complete_exercise(&boss.id, &it.exercise_id, Local::now().timestamp())
             })
             .unwrap();
     }
@@ -241,7 +287,15 @@ fn a_session_saved_before_counting_what_it_asked_counts_it_again_at_launch() {
     let mut r = StdRng::seed_from_u64(42);
     start(&mut state);
     state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "boss", 0, &mut r))
+        .change_session(|s, cfg| {
+            s.draw(
+                cfg,
+                &game_id("ds3"),
+                &event_id("ds3", "Boss defeated"),
+                0,
+                &mut r,
+            )
+        })
         .unwrap();
     let asked = state.session().view().asked;
     drop(state);
@@ -303,8 +357,8 @@ fn relaunch_with_invalid_config(state: AppState, path: &std::path::Path) -> AppS
     drop(state);
     let conn = rusqlite::Connection::open(path).unwrap();
     conn.execute(
-        "UPDATE games SET name = (SELECT name FROM games WHERE id = 'ds1') WHERE id = 'ds3'",
-        [],
+        "UPDATE games SET name = (SELECT name FROM games WHERE id = ?1) WHERE id = ?2",
+        [game_id("ds1"), game_id("ds3")],
     )
     .unwrap();
     drop(conn);
@@ -330,7 +384,15 @@ fn a_session_resumed_under_the_default_configuration_ends() {
     let path = temp_db("invalid-config");
     let mut state = seeded(Store::open(&path, Some("fr_FR.UTF-8")).unwrap());
     let set = state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", 0, &mut StdRng::seed_from_u64(42)))
+        .change_session(|s, cfg| {
+            s.draw(
+                cfg,
+                &game_id("ds3"),
+                &event_id("ds3", "Death"),
+                0,
+                &mut StdRng::seed_from_u64(42),
+            )
+        })
         .unwrap();
     complete_first(&mut state, &set, Local::now().timestamp());
 

@@ -1,53 +1,53 @@
 {
-  "id": "ds3",
+  "id": "01a16eb0-2b48-72dc-bf52-1f5d13bce74c",
   "name": "Dark Souls III",
   "steamAppId": 374320,
   "events": [
     {
-      "id": "mort",
+      "id": "01a16eb0-2b48-72dc-bf52-2266126a89ed",
       "name": { "en": "Death", "fr": "Mort" },
       "draws": 1,
       "maxPerSession": 15,
       "jokers": 0
     },
     {
-      "id": "repos",
+      "id": "01a16eb0-2b48-72dc-bf52-265886b4b997",
       "name": { "en": "Rest at a known bonfire", "fr": "Repos à un feu connu" },
       "draws": 1,
       "jokers": 0
     },
     {
-      "id": "decouverte",
+      "id": "01a16eb0-2b48-72dc-bf52-2ac82120c9a7",
       "name": { "en": "New bonfire lit", "fr": "Nouveau feu allumé" },
       "draws": 1,
       "jokers": 0
     },
     {
-      "id": "niveau",
+      "id": "01a16eb0-2b48-72dc-bf52-2d46584d3f4b",
       "name": { "en": "Level up", "fr": "Montée de niveau" },
       "draws": 1,
       "jokers": 0
     },
     {
-      "id": "perte",
+      "id": "01a16eb0-2b48-72dc-bf52-30c41fd97977",
       "name": { "en": "Souls lost", "fr": "Âmes perdues" },
       "draws": 1,
       "jokers": 0
     },
     {
-      "id": "boss",
+      "id": "01a16eb0-2b48-72dc-bf52-36cf515bc134",
       "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
       "draws": 2,
       "jokers": 0
     },
     {
-      "id": "boss-premier",
+      "id": "01a16eb0-2b48-72dc-bf52-3bd4561ae211",
       "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
       "draws": 2,
       "jokers": 1
     },
     {
-      "id": "boss-nohit",
+      "id": "01a16eb0-2b48-72dc-bf52-3fe89e27791f",
       "name": { "en": "Boss defeated without getting hit", "fr": "Boss vaincu sans prendre un coup" },
       "draws": 2,
       "jokers": 2

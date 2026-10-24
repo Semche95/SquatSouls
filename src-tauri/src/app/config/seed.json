@@ -2,70 +2,70 @@
   "recovery": 60,
   "exercises": [
     {
-      "id": "pompes",
+      "id": "01a16eb0-2b43-762e-8bc8-42efc0e252ac",
       "name": { "en": "Push-ups", "fr": "Pompes" },
       "unit": { "en": "reps", "fr": "rép." },
       "min": 8,
       "max": 12
     },
     {
-      "id": "pompes-mur",
+      "id": "01a16eb0-2b45-70a0-9ffa-feb67b526f66",
       "name": { "en": "Wall push-ups", "fr": "Pompes contre un mur" },
       "unit": { "en": "reps", "fr": "rép." },
       "min": 10,
       "max": 15
     },
     {
-      "id": "tractions",
+      "id": "01a16eb0-2b45-70a0-9ffb-03067e592fbc",
       "name": { "en": "Pull-ups", "fr": "Tractions" },
       "unit": { "en": "reps", "fr": "rép." },
       "min": 2,
       "max": 4
     },
     {
-      "id": "squats",
+      "id": "01a16eb0-2b46-729c-bc2a-5b8e869fba66",
       "name": { "en": "Squats", "fr": "Squats" },
       "unit": { "en": "reps", "fr": "rép." },
       "min": 12,
       "max": 18
     },
     {
-      "id": "assis-debout",
+      "id": "01a16eb0-2b46-729c-bc2a-5fe4c9e1b105",
       "name": { "en": "Sit-to-stands", "fr": "Assis-debout" },
       "unit": { "en": "reps", "fr": "rép." },
       "min": 8,
       "max": 12
     },
     {
-      "id": "fentes",
+      "id": "01a16eb0-2b46-729c-bc2a-60f89f74f2db",
       "name": { "en": "Lunges", "fr": "Fentes" },
       "unit": { "en": "reps per leg", "fr": "rép. par jambe" },
       "min": 5,
       "max": 8
     },
     {
-      "id": "extensions-jambes",
+      "id": "01a16eb0-2b46-729c-bc2a-6709aed6b479",
       "name": { "en": "Seated leg extensions", "fr": "Extensions de jambes sur une chaise" },
       "unit": { "en": "reps per leg", "fr": "rép. par jambe" },
       "min": 10,
       "max": 15
     },
     {
-      "id": "montees-genoux",
+      "id": "01a16eb0-2b46-729c-bc2a-6b7ce6d72236",
       "name": { "en": "Seated knee raises", "fr": "Montées de genoux sur une chaise" },
       "unit": { "en": "reps per leg", "fr": "rép. par jambe" },
       "min": 10,
       "max": 15
     },
     {
-      "id": "mollets",
+      "id": "01a16eb0-2b46-729c-bc2a-6eba6b8de1b8",
       "name": { "en": "Calf raises (holding a chair)", "fr": "Élévations des mollets (appui sur une chaise)" },
       "unit": { "en": "reps", "fr": "rép." },
       "min": 12,
       "max": 20
     },
     {
-      "id": "gainage",
+      "id": "01a16eb0-2b46-729c-bc2a-7300b6491d02",
       "name": { "en": "Plank", "fr": "Gainage (planche)" },
       "unit": { "en": "s", "fr": "s" },
       "min": 20,
@@ -73,7 +73,7 @@
       "timed": "seconds"
     },
     {
-      "id": "gainage-genoux",
+      "id": "01a16eb0-2b46-729c-bc2a-7679b2c3b498",
       "name": { "en": "Knee plank", "fr": "Gainage sur les genoux" },
       "unit": { "en": "s", "fr": "s" },
       "min": 15,
@@ -81,28 +81,28 @@
       "timed": "seconds"
     },
     {
-      "id": "superman",
+      "id": "01a16eb0-2b46-729c-bc2a-7802ae27e3d2",
       "name": { "en": "Superman", "fr": "Superman" },
       "unit": { "en": "reps", "fr": "rép." },
       "min": 10,
       "max": 15
     },
     {
-      "id": "montees-bassin",
+      "id": "01a16eb0-2b46-729c-bc2a-7e8fb840e286",
       "name": { "en": "Lying hip raises", "fr": "Pont fessier" },
       "unit": { "en": "reps", "fr": "rép." },
       "min": 12,
       "max": 18
     },
     {
-      "id": "glisses-bras-mur",
+      "id": "01a16eb0-2b46-729c-bc2a-83ecfc52df5e",
       "name": { "en": "Arm slides against a wall", "fr": "Glissés de bras contre un mur" },
       "unit": { "en": "reps", "fr": "rép." },
       "min": 8,
       "max": 12
     },
     {
-      "id": "etirement-hanche",
+      "id": "01a16eb0-2b46-729c-bc2a-855db3f5c746",
       "name": { "en": "Kneeling hip stretch", "fr": "Étirement de hanche à genou" },
       "unit": { "en": "s per leg", "fr": "s par jambe" },
       "min": 20,
@@ -111,21 +111,21 @@
       "eachSide": true
     },
     {
-      "id": "leves-bras-ventre",
+      "id": "01a16eb0-2b46-729c-bc2a-8a77e4fc14b2",
       "name": { "en": "Face-down arm raises", "fr": "Levés de bras à plat ventre" },
       "unit": { "en": "reps", "fr": "rép." },
       "min": 8,
       "max": 12
     },
     {
-      "id": "menton-rentre",
+      "id": "01a16eb0-2b46-729c-bc2a-8c0d80ab3c9b",
       "name": { "en": "Chin tucks against a wall", "fr": "Menton rentré contre un mur" },
       "unit": { "en": "reps", "fr": "rép." },
       "min": 8,
       "max": 12
     },
     {
-      "id": "cercles-bras",
+      "id": "01a16eb0-2b46-729c-bc2a-91e5e1fca880",
       "name": { "en": "Arm circles", "fr": "Cercles de bras" },
       "unit": { "en": "s", "fr": "s" },
       "min": 20,

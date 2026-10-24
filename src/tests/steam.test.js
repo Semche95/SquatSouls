@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
-import { config, emptySession, setup, mountApp, openSettings, layOutControls, expectTip, formDialog, formDialogOpen, formDialogClosed, save, savedConfig } from './app.js';
+import { config, emptySession, setup, mountApp, openSettings, layOutControls, expectTip, formDialog, formDialogOpen, formDialogClosed, save, savedConfig, newId } from './app.js';
 import { shareGame } from '../sharing/share.js';
 
 // Configuration with detection enabled, Elden Ring carrying its Steam AppId.
@@ -164,7 +164,7 @@ describe('Steam game detection', () => {
     await formDialog().find('.cfg-import').trigger('submit');
     await flushPromises();
     await formDialogClosed();
-    expect(savedConfig().games.at(-1)).toEqual({ id: 'hollow-knight', name: 'Hollow Knight', steamAppId: 367520, events: [{ id: 'death', name: 'Death', draws: 1, jokers: 0 }] });
+    expect(savedConfig().games.at(-1)).toEqual({ id: newId(), name: 'Hollow Knight', steamAppId: 367520, events: [{ id: newId(), name: 'Death', draws: 1, jokers: 0 }] });
   });
 
   it('waits for the catalog before adding, then creates the game when it cannot be fetched', async () => {

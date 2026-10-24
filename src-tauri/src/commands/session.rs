@@ -43,44 +43,44 @@ pub(crate) fn set_session_limit(
 #[tauri::command]
 pub(crate) fn complete_exercise(
     state: Shared,
-    draw_id: u64,
+    draw_id: String,
     exercise_id: String,
 ) -> Result<SessionView, AppError> {
     change(&state, |session, _| {
         session
-            .complete_exercise(draw_id, &exercise_id, now())
+            .complete_exercise(&draw_id, &exercise_id, now())
             .map(drop)
     })
 }
 
 #[tauri::command]
-pub(crate) fn dismiss(state: Shared, draw_id: u64) -> Result<SessionView, AppError> {
-    change(&state, |session, _| session.dismiss(draw_id))
+pub(crate) fn dismiss(state: Shared, draw_id: String) -> Result<SessionView, AppError> {
+    change(&state, |session, _| session.dismiss(&draw_id))
 }
 
 #[tauri::command]
 pub(crate) fn halve(
     state: Shared,
-    draw_id: u64,
+    draw_id: String,
     exercise_id: String,
 ) -> Result<SessionView, AppError> {
-    change(&state, |session, _| session.halve(draw_id, &exercise_id))
+    change(&state, |session, _| session.halve(&draw_id, &exercise_id))
 }
 
 #[tauri::command]
 pub(crate) fn skip_exercise(
     state: Shared,
-    draw_id: u64,
+    draw_id: String,
     exercise_id: String,
 ) -> Result<SessionView, AppError> {
     change(&state, |session, _| {
-        session.skip_exercise(draw_id, &exercise_id)
+        session.skip_exercise(&draw_id, &exercise_id)
     })
 }
 
 #[tauri::command]
-pub(crate) fn skip_set(state: Shared, draw_id: u64) -> Result<SessionView, AppError> {
-    change(&state, |session, _| session.skip_set(draw_id))
+pub(crate) fn skip_set(state: Shared, draw_id: String) -> Result<SessionView, AppError> {
+    change(&state, |session, _| session.skip_set(&draw_id))
 }
 
 #[tauri::command]

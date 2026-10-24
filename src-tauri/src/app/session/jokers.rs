@@ -17,7 +17,7 @@ pub struct Jokers {
 
 impl Session {
     /// Halves an exercise (rounded as the intensity does): the other half is not done.
-    pub fn halve(&mut self, id: u64, exercise_id: &str) -> Result<(), AppError> {
+    pub fn halve(&mut self, id: &str, exercise_id: &str) -> Result<(), AppError> {
         let (jokers, intensity) = (self.jokers, self.intensity);
         let (draw, pos) = self.pending_item(id, exercise_id)?;
         let item = &mut draw.items[pos];
@@ -37,7 +37,7 @@ impl Session {
     }
 
     /// Skips an exercise: the rest of the set remains to do, unless nothing is left.
-    pub fn skip_exercise(&mut self, id: u64, exercise_id: &str) -> Result<(), AppError> {
+    pub fn skip_exercise(&mut self, id: &str, exercise_id: &str) -> Result<(), AppError> {
         let jokers = self.jokers;
         let (draw, pos) = self.pending_item(id, exercise_id)?;
         if jokers < draw.items[pos].skip_cost {
@@ -51,7 +51,7 @@ impl Session {
     }
 
     /// Skips what is left of a set: the trigger stays counted.
-    pub fn skip_set(&mut self, id: u64) -> Result<(), AppError> {
+    pub fn skip_set(&mut self, id: &str) -> Result<(), AppError> {
         let draw = &self.pending[self.current_pos(id)?];
         let cost = skip_set_cost(draw);
         if self.jokers < cost {

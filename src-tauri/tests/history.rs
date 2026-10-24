@@ -2,10 +2,11 @@ use chrono::{Duration, Local, NaiveDate};
 use squat_souls_lib::app::*;
 use std::collections::HashMap;
 
-fn entry(at: i64, session: i64, game: &str, amount: u32) -> LogEntry {
+/// Set done at `at` of the session started at `start`, whose id is its start written out.
+fn entry(at: i64, start: i64, game: &str, amount: u32) -> LogEntry {
     LogEntry {
         at,
-        session,
+        session: start.to_string(),
         game: game.into(),
         event: "Death".into(),
         exercise: "Squats".into(),
@@ -14,32 +15,48 @@ fn entry(at: i64, session: i64, game: &str, amount: u32) -> LogEntry {
     }
 }
 
+/// Records of the sessions of `entries`: their start, the rest given by `records`.
+fn with_starts(entries: &[LogEntry], records: SessionRecords) -> SessionRecords {
+    let starts = entries
+        .iter()
+        .map(|e| (e.session.clone(), e.session.parse().unwrap()));
+    SessionRecords {
+        starts: starts.collect(),
+        ..records
+    }
+}
+
 #[test]
 fn sessions_grouped_by_session_and_game() {
+    let entries = [
+        entry(100, 90, "Dark Souls", 10),
+        entry(300, 250, "Sekiro", 8),
+        entry(120, 90, "Dark Souls", 12),
+    ];
     let groups = sessions(
-        &[
-            entry(100, 90, "Dark Souls", 10),
-            entry(300, 250, "Sekiro", 8),
-            entry(120, 90, "Dark Souls", 12),
-        ],
-        &SessionRecords {
-            ends: HashMap::from([(90, 400)]),
-            events: HashMap::from([(
-                90,
-                vec![EventCount {
-                    event: "Death".into(),
-                    count: 2,
-                }],
-            )]),
-            jokers: HashMap::from([(
-                90,
-                Jokers {
-                    earned: 1,
-                    spent: 0,
-                },
-            )]),
-            durations: HashMap::new(),
-        },
+        &entries,
+        &with_starts(
+            &entries,
+            SessionRecords {
+                ends: HashMap::from([("90".into(), 400)]),
+                events: HashMap::from([(
+                    "90".into(),
+                    vec![EventCount {
+                        event: "Death".into(),
+                        count: 2,
+                    }],
+                )]),
+                jokers: HashMap::from([(
+                    "90".into(),
+                    Jokers {
+                        earned: 1,
+                        spent: 0,
+                    },
+                )]),
+                durations: HashMap::new(),
+                starts: HashMap::new(),
+            },
+        ),
     );
     assert_eq!(groups.len(), 2);
     assert_eq!((groups[0].game.as_str(), groups[0].sets), ("Sekiro", 1));
@@ -75,7 +92,7 @@ fn days_window_and_active_days() {
         entry(t, t, "Dark Souls", 12),
         entry(t, t, "Dark Souls", 15),
     ];
-    let records = SessionRecords::default();
+    let records = with_starts(&entries, SessionRecords::default());
 
     let days = last_days(&entries, &records, 7, today);
     assert_eq!(days.len(), 7);
@@ -91,7 +108,7 @@ fn days_window_and_active_days() {
         vec![2, 1, 1]
     );
     assert_eq!(
-        count_days(&entries.map(|e| e.session)),
+        count_days(&entries.map(|e| e.session.parse().unwrap())),
         3,
         "one per day, however many sets"
     );
@@ -153,10 +170,13 @@ fn a_session_past_midnight_stays_on_the_day_it_started() {
         entry(at(yesterday, 23) + 600, start, "Dark Souls", 10),
         entry(at(today, 1), start, "Dark Souls", 12),
     ];
-    let records = SessionRecords {
-        ends: HashMap::from([(start, at(today, 2))]),
-        ..Default::default()
-    };
+    let records = with_starts(
+        &entries,
+        SessionRecords {
+            ends: HashMap::from([(start.to_string(), at(today, 2))]),
+            ..Default::default()
+        },
+    );
     let days = last_days(&entries, &records, 2, today);
     assert_eq!(days.iter().map(|d| d.sets).collect::<Vec<_>>(), vec![0, 2]);
     let session = &days[1].sessions[0];
@@ -168,9 +188,10 @@ fn a_session_past_midnight_stays_on_the_day_it_started() {
 #[test]
 fn a_session_lasts_the_time_the_app_was_open() {
     let records = |opened| SessionRecords {
-        ends: HashMap::from([(1000, 9000)]),
+        starts: HashMap::from([("1000".into(), 1000)]),
+        ends: HashMap::from([("1000".into(), 9000)]),
         durations: HashMap::from([(
-            1000,
+            "1000".into(),
             SessionDuration {
                 counted: 60,
                 opened,

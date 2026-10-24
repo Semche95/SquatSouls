@@ -29,7 +29,7 @@ function openNewGame() {
 // Event added to fill in: one exercise per set, no joker.
 function addEvent(game) {
   const name = t('config.games.newEvent');
-  game.events.push({ id: newId(name, game.events), name, draws: 1, jokers: 0 });
+  game.events.push({ id: newId(), name, draws: 1, jokers: 0 });
   editEvent(game.events.at(-1), true);
 }
 </script>

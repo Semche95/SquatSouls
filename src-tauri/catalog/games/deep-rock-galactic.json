@@ -1,57 +1,57 @@
 {
-  "id": "deep-rock-galactic",
+  "id": "01a16eb0-2b47-73b1-908b-3b274d80d12d",
   "name": "Deep Rock Galactic",
   "steamAppId": 548430,
   "events": [
     {
-      "id": "a-terre",
+      "id": "01a16eb0-2b47-73b1-908b-3fd97963836a",
       "name": { "en": "Dwarf down", "fr": "Nain à terre" },
       "draws": 1,
       "maxPerSession": 15,
       "jokers": 0
     },
     {
-      "id": "niveau",
+      "id": "01a16eb0-2b47-73b1-908b-40efa6fc8fcc",
       "name": { "en": "Class level up", "fr": "Montée de niveau de classe" },
       "draws": 1,
       "maxPerSession": 10,
       "jokers": 0
     },
     {
-      "id": "mission",
+      "id": "01a16eb0-2b47-73b1-908b-458e39de96ce",
       "name": { "en": "Mission complete", "fr": "Mission accomplie" },
       "draws": 1,
       "maxPerSession": 10,
       "jokers": 0
     },
     {
-      "id": "laisse",
+      "id": "01a16eb0-2b47-73b1-908b-4933dd618856",
       "name": { "en": "Left behind at extraction", "fr": "Extraction manquée" },
       "draws": 2,
       "maxPerSession": 5,
       "jokers": 0
     },
     {
-      "id": "echec",
+      "id": "01a16eb0-2b47-73b1-908b-4ffef2e5eaa8",
       "name": { "en": "Mission failed", "fr": "Mission échouée" },
       "draws": 2,
       "maxPerSession": 5,
       "jokers": 0
     },
     {
-      "id": "dreadnought",
+      "id": "01a16eb0-2b47-73b1-908b-536b305f0a36",
       "name": { "en": "Dreadnought killed", "fr": "Dreadnought vaincu" },
       "draws": 2,
       "jokers": 0
     },
     {
-      "id": "deep-dive",
+      "id": "01a16eb0-2b47-73b1-908b-57f19fc004f0",
       "name": { "en": "Deep Dive completed", "fr": "Deep Dive terminée" },
       "draws": 3,
       "jokers": 1
     },
     {
-      "id": "elite-deep-dive",
+      "id": "01a16eb0-2b47-73b1-908b-59ce6a9db5da",
       "name": { "en": "Elite Deep Dive completed", "fr": "Elite Deep Dive terminée" },
       "draws": 3,
       "jokers": 2

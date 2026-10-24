@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { BOUNDS, byName, countError, extendsName, newId, normalized, fieldError, parseCount, rangeBounds } from '../config/configDraft.js';
+import { UUID_V7 } from './app.js';
 
 describe('newId', () => {
-  it('derives the id from the name without accents and avoids duplicates', () => {
-    expect(newId('Déjà Vu Event', [])).toBe('deja-vu-event');
-    expect(newId('Death', [{ id: 'death' }, { id: 'death-2' }])).toBe('death-3');
-    expect(newId('!!', [])).toBe('id');
+  it('gives a UUIDv7, a new one each time, in the order they were given', () => {
+    const ids = Array.from({ length: 100 }, newId);
+    expect(ids.every((id) => UUID_V7.test(id))).toBe(true);
+    expect(new Set(ids).size).toBe(100);
+    expect([...ids].sort()).toEqual(ids);
   });
 });
 

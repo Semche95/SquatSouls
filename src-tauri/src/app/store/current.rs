@@ -18,21 +18,21 @@ impl Store {
         let (Some(started_at), Some(game)) = (session.started_at, &session.game_id) else {
             return Ok(());
         };
+        self.record_session(&session.id, started_at)?;
         let tx = self.conn.savepoint()?;
         clear(&tx)?;
         tx.execute(
             "INSERT INTO current_session
-             (id, started_at, game, intensity, jokers, jokers_earned, jokers_spent, next_id, seen,
+             (session, game, intensity, jokers, jokers_earned, jokers_spent, seen,
               session_limit, asked, asked_time, limit_full, asked_known)
-             VALUES (1, ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
             params![
-                started_at,
+                session.id,
                 game,
                 session.intensity.as_str(),
                 session.jokers,
                 session.jokers_earned,
                 session.jokers_spent,
-                session.next_id as i64,
                 seen,
                 session.limit.map(|l| l.to_string()),
                 session.asked,
@@ -53,10 +53,8 @@ impl Store {
                  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
             )?;
             for (position, d) in session.pending.iter().enumerate() {
-                // SQLite integers are signed; ids stay far from their limit.
-                let id = d.id as i64;
                 stmt.execute(params![
-                    id,
+                    d.id,
                     position as i64,
                     d.game_id,
                     d.game_name,
@@ -73,7 +71,7 @@ impl Store {
                     insert_items(
                         &tx,
                         "current_set_items",
-                        [("set_id", &id), ("drawn", &drawn)],
+                        [("set_id", &d.id), ("drawn", &drawn)],
                         items,
                     )?;
                 }
@@ -97,7 +95,7 @@ impl Store {
         }
         tx.execute(
             "INSERT OR REPLACE INTO session_durations (session, counted, opened) VALUES (?1, ?2, ?3)",
-            params![started_at, session.counted, session.opened_at],
+            params![session.id, session.counted, session.opened_at],
         )?;
         tx.commit()
     }
@@ -115,18 +113,18 @@ impl Store {
     }
 
     /// Ends the session in progress that could not be read back, at the last moment the app was known to be open,
-    /// and forgets it. Its start and that moment are read on their own, so that the rest being unreadable does not
+    /// and forgets it. Its id and that moment are read on their own, so that the rest being unreadable does not
     /// keep it from ending; if they are unreadable too, it is only forgotten.
     pub fn end_unreadable_session(&mut self) -> Result<()> {
         self.atomically(|store| {
-            let times = store
+            let seen = store
                 .conn
-                .query_row("SELECT started_at, seen FROM current_session", [], |r| {
-                    Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?))
+                .query_row("SELECT session, seen FROM current_session", [], |r| {
+                    Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)?))
                 })
                 .optional();
-            match times {
-                Ok(Some((started_at, seen))) => store.end_session(started_at, seen)?,
+            match seen {
+                Ok(Some((session, seen))) => store.end_session(&session, seen)?,
                 Ok(None) => {}
                 Err(e) => log::error!("Unreadable session not ended in the history: {e}"),
             }
@@ -139,12 +137,14 @@ impl Store {
         let Some((mut session, seen)) = self
             .conn
             .query_row(
-                "SELECT started_at, game, intensity, jokers, jokers_earned, jokers_spent, next_id, seen,
-                 session_limit, asked, asked_time, limit_full, asked_known FROM current_session",
+                "SELECT started_at, game, intensity, jokers, jokers_earned, jokers_spent, id, seen,
+                 session_limit, asked, asked_time, limit_full, asked_known
+                 FROM current_session JOIN sessions ON sessions.id = current_session.session",
                 [],
                 |r| {
                     let session = Session {
                         started_at: Some(r.get(0)?),
+                        id: r.get(6)?,
                         game_id: Some(r.get(1)?),
                         intensity: r
                             .get::<_, String>(2)?
@@ -162,7 +162,6 @@ impl Store {
                         jokers: r.get(3)?,
                         jokers_earned: r.get(4)?,
                         jokers_spent: r.get(5)?,
-                        next_id: r.get::<_, i64>(6)? as u64,
                         ..Session::default()
                     };
                     Ok((session, r.get(7)?))
@@ -186,7 +185,7 @@ impl Store {
             )?
             .query_map([], |r| {
                 Ok(Draw {
-                    id: r.get::<_, i64>(0)? as u64,
+                    id: r.get(0)?,
                     game_id: r.get(1)?,
                     game_name: r.get(2)?,
                     event_id: r.get(3)?,
@@ -211,12 +210,11 @@ impl Store {
             "SELECT {ITEM_COLUMNS} FROM current_set_items WHERE set_id = ?1 AND drawn = ?2 ORDER BY position"
         ))?;
         for d in &mut session.pending {
-            let id = d.id as i64;
             d.items = items
-                .query_map(params![id, false], |r| item(r, 0))?
+                .query_map(params![d.id, false], |r| item(r, 0))?
                 .collect::<Result<_>>()?;
             d.drawn = items
-                .query_map(params![id, true], |r| item(r, 0))?
+                .query_map(params![d.id, true], |r| item(r, 0))?
                 .collect::<Result<_>>()?;
             d.asked = d.drawn.len() as u32;
         }
@@ -245,13 +243,13 @@ impl Store {
             }
             .push(exercise);
         }
-        session.done = self.sets_of(started_at, started_at)?;
+        session.done = self.session_sets(&session.id)?;
         session.recorded = session.done.len();
         (session.counted, session.opened_at) = self
             .conn
             .query_row(
                 "SELECT counted, opened FROM session_durations WHERE session = ?1",
-                [started_at],
+                [&session.id],
                 |r| Ok((r.get(0)?, r.get::<_, Option<i64>>(1)?.unwrap_or(seen))),
             )
             .optional()?

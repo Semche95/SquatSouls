@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
-import { config, setup, openConfig, expectTip, layOutControls, formDialog, formDialogOpen, formDialogClosed, savedConfig } from './app.js';
+import { config, setup, openConfig, expectTip, layOutControls, formDialog, formDialogOpen, formDialogClosed, savedConfig, newId } from './app.js';
 import { shownGame, importButton, exercisesButton } from './program.js';
 import { shareExercises, shareGame } from '../sharing/share.js';
 
@@ -69,7 +69,7 @@ describe('import preview', () => {
     expect(savedConfig().games[0].events).toEqual([
       config.games[0].events[0],
       config.games[0].events[1],
-      { id: 'grace', name: 'Grace', draws: 1, jokers: 0, maxPerSession: 3 },
+      { id: newId(), name: 'Grace', draws: 1, jokers: 0, maxPerSession: 3 },
     ]);
   });
 

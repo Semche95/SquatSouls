@@ -76,7 +76,8 @@ impl DrawItem {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Draw {
-    pub id: u64,
+    /// A UUIDv7, given when the set is drawn.
+    pub id: String,
     pub game_id: String,
     pub game_name: String,
     pub event_id: String,

@@ -137,19 +137,19 @@ impl AppState {
         changed
     }
 
-    /// Saves at once the started session as it is now, its sets done not saved yet, the events and jokers of its
-    /// summary, and its duration.
+    /// Saves at once the started session as it is now, which records it first, its sets done not saved yet, the
+    /// events and jokers of its summary, and its duration.
     fn save_session(&mut self) {
-        let Some(started_at) = self.session.started_at else {
+        if self.session.started_at.is_none() {
             return;
-        };
+        }
         let events = self.session.event_counts(&self.config);
         let jokers = self.session.jokers();
         let session = &self.session;
         let saved = self.store.atomically(|store| {
+            store.save_current_session(session, now())?;
             store.append_history(&session.done[session.recorded..])?;
-            store.save_session_summary(started_at, &events, jokers)?;
-            store.save_current_session(session, now())
+            store.save_session_summary(&session.id, &events, jokers)
         });
         match saved {
             Ok(()) => self.session.recorded = self.session.done.len(),
@@ -231,9 +231,10 @@ impl AppState {
     /// Saves the end of the started session, by itself for `cause` or else with **End the session**; the next one
     /// waits to be started.
     pub fn end_session(&mut self, cause: Option<EndCause>) {
-        if let Some(started_at) = self.session.started_at {
+        if self.session.started_at.is_some() {
+            let session = &self.session.id;
             let ended = self.store.atomically(|store| {
-                store.end_session(started_at, now())?;
+                store.end_session(session, now())?;
                 store.clear_current_session()
             });
             if let Err(e) = ended {
@@ -245,10 +246,11 @@ impl AppState {
 
     /// Removes the current session's sets from the history; the next one waits to be started.
     pub fn cancel_session(&mut self) -> Result<(), AppError> {
-        if let Some(started_at) = self.session.started_at {
+        if self.session.started_at.is_some() {
+            let session = &self.session.id;
             self.store
                 .atomically(|store| {
-                    store.remove_session(started_at)?;
+                    store.remove_session(session)?;
                     store.clear_current_session()
                 })
                 .map_err(|e| AppError::internal("History not modified", e))?;

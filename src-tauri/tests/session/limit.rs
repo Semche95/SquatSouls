@@ -22,13 +22,38 @@ fn a_limit_in_exercises_reduces_the_last_set_then_gives_none() {
     let mut s = limited(LimitKind::Exercises, 3);
     let mut r = rng();
     assert_eq!(
-        s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap().items.len(),
+        s.draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            0,
+            &mut r
+        )
+        .unwrap()
+        .items
+        .len(),
         2
     );
-    let reduced = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
+    let reduced = s
+        .draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            0,
+            &mut r,
+        )
+        .unwrap();
     assert_eq!(reduced.items.len(), 1, "only the exercise left fits");
     assert!(!reduced.limit_reached);
-    let refused = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
+    let refused = s
+        .draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            0,
+            &mut r,
+        )
+        .unwrap();
     assert!(refused.items.is_empty());
     assert!(refused.limit_reached && !refused.capped);
     assert_eq!(refused.trigger_count, 2, "a refused trigger is not counted");
@@ -42,15 +67,31 @@ fn dismissing_a_set_frees_its_room_and_stopping_one_does_not() {
     let cfg = even_config();
     let mut s = limited(LimitKind::Exercises, 2);
     let mut r = rng();
-    let first = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
-    assert!(s.limit_reached(0));
-    s.dismiss(first.id).unwrap();
-    assert!(!s.limit_reached(0), "a dismissed set is no longer counted");
-    let again = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
-    assert_eq!(again.items, first.items, "the reserve is given back");
-    s.complete_exercise(again.id, &again.items[0].exercise_id, 1)
+    let first = s
+        .draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            0,
+            &mut r,
+        )
         .unwrap();
-    s.dismiss(again.id).unwrap();
+    assert!(s.limit_reached(0));
+    s.dismiss(&first.id).unwrap();
+    assert!(!s.limit_reached(0), "a dismissed set is no longer counted");
+    let again = s
+        .draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            0,
+            &mut r,
+        )
+        .unwrap();
+    assert_eq!(again.items, first.items, "the reserve is given back");
+    s.complete_exercise(&again.id, &again.items[0].exercise_id, 1)
+        .unwrap();
+    s.dismiss(&again.id).unwrap();
     assert!(s.limit_reached(1), "a stopped set stays counted");
 }
 
@@ -59,12 +100,30 @@ fn a_dismissed_set_frees_what_it_asked_even_once_a_saved_configuration_changed_i
     let mut cfg = even_config();
     let mut s = limited(LimitKind::Exercises, 20);
     let mut r = rng();
-    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
-    event_mut(&mut cfg, "ds3", "boss").draws = 1;
+    let boss = s
+        .draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            0,
+            &mut r,
+        )
+        .unwrap();
+    let ds3 = cfg
+        .games
+        .iter_mut()
+        .find(|g| g.id == game_id("ds3"))
+        .unwrap();
+    let ev = ds3
+        .events
+        .iter_mut()
+        .find(|e| e.id == event_id("ds3", "Boss defeated"))
+        .unwrap();
+    ev.draws = 1;
     s.apply_config(&cfg, &mut r);
     assert_eq!(s.view().pending[0].items.len(), 1);
     assert_eq!(s.view().asked, 2, "a saved configuration never recounts");
-    s.dismiss(boss.id).unwrap();
+    s.dismiss(&boss.id).unwrap();
     assert_eq!(s.view().asked, 0, "the set frees all it asked");
 }
 
@@ -76,15 +135,19 @@ fn a_reserved_set_reduced_by_the_limit_gives_the_rest_back_to_the_round() {
     }
     let mut s = limited(LimitKind::Exercises, 3);
     let mut r = rng();
-    let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
-    s.dismiss(boss.id).unwrap();
+    let mut draw = |s: &mut Session, name| {
+        s.draw(&cfg, &game_id("ds3"), &event_id("ds3", name), 0, &mut r)
+            .unwrap()
+    };
+    let boss = draw(&mut s, "Boss defeated");
+    s.dismiss(&boss.id).unwrap();
     // The two other exercises of the round.
-    s.draw(&cfg, "ds3", "boss-premier", 0, &mut r).unwrap();
-    let reduced = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
+    draw(&mut s, "Boss defeated on the first try");
+    let reduced = draw(&mut s, "Boss defeated");
     assert_eq!(reduced.items, boss.items[..1], "the reserve, reduced");
     s.set_limit(None).unwrap();
     assert_eq!(
-        s.draw(&cfg, "ds3", "mort", 0, &mut r).unwrap().items[0].exercise_id,
+        draw(&mut s, "Death").items[0].exercise_id,
         boss.items[1].exercise_id,
         "the exercise left out comes out before the round starts over"
     );
@@ -95,7 +158,14 @@ fn changing_the_limit_applies_to_the_next_triggers_only() {
     let cfg = even_config();
     let mut s = limited(LimitKind::Exercises, 2);
     let mut r = rng();
-    s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
+    s.draw(
+        &cfg,
+        &game_id("ds3"),
+        &event_id("ds3", "Boss defeated"),
+        0,
+        &mut r,
+    )
+    .unwrap();
     s.set_limit(Some(SessionLimit {
         kind: LimitKind::Exercises,
         value: 1,
@@ -112,12 +182,30 @@ fn changing_the_limit_applies_to_the_next_triggers_only() {
     }))
     .unwrap();
     assert_eq!(
-        s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap().items.len(),
+        s.draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            0,
+            &mut r
+        )
+        .unwrap()
+        .items
+        .len(),
         2
     );
     s.set_limit(None).unwrap();
     assert_eq!(
-        s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap().items.len(),
+        s.draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            0,
+            &mut r
+        )
+        .unwrap()
+        .items
+        .len(),
         2
     );
 }
@@ -140,18 +228,32 @@ fn a_limit_in_play_time_counts_only_the_time_the_app_was_open() {
     let cfg = even_config();
     let mut s = limited(LimitKind::PlayTime, 10);
     let mut r = rng();
-    s.start(&cfg, "ds3", 1000).unwrap();
+    s.start(&cfg, &game_id("ds3"), 1000).unwrap();
     assert!(
-        !s.draw(&cfg, "ds3", "boss", 1000 + 599, &mut r)
-            .unwrap()
-            .limit_reached
+        !s.draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            1000 + 599,
+            &mut r
+        )
+        .unwrap()
+        .limit_reached
     );
     s.resume(1000 + 300, 5000);
     assert!(
         !s.limit_reached(5000 + 299),
         "the time closed does not count"
     );
-    let refused = s.draw(&cfg, "ds3", "boss", 5000 + 300, &mut r).unwrap();
+    let refused = s
+        .draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            5000 + 300,
+            &mut r,
+        )
+        .unwrap();
     assert!(refused.limit_reached && refused.items.is_empty());
 }
 
@@ -161,16 +263,38 @@ fn a_limit_in_training_time_keeps_the_exercises_that_fit() {
     // 40 s each: 3 exercises fit in 2 minutes.
     let mut s = limited(LimitKind::TrainingTime, 2);
     let mut r = rng();
-    let first = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
+    let first = s
+        .draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            0,
+            &mut r,
+        )
+        .unwrap();
     assert_eq!(first.items.len(), 2);
-    let reduced = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
+    let reduced = s
+        .draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            0,
+            &mut r,
+        )
+        .unwrap();
     assert_eq!(reduced.items.len(), 1);
     assert_eq!(s.view().asked_time, 120);
     assert!(s.view().limit_full && s.limit_reached(0));
     assert!(
-        s.draw(&cfg, "ds3", "boss", 0, &mut r)
-            .unwrap()
-            .limit_reached
+        s.draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            0,
+            &mut r
+        )
+        .unwrap()
+        .limit_reached
     );
 }
 
@@ -181,7 +305,16 @@ fn a_set_that_does_not_fit_at_all_reaches_the_limit_in_training_time() {
     let mut s = limited(LimitKind::TrainingTime, 1);
     let mut r = rng();
     assert_eq!(
-        s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap().items.len(),
+        s.draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            0,
+            &mut r
+        )
+        .unwrap()
+        .items
+        .len(),
         1
     );
     assert!(
@@ -189,9 +322,15 @@ fn a_set_that_does_not_fit_at_all_reaches_the_limit_in_training_time() {
         "a set that did not fit entirely reaches the limit"
     );
     assert!(
-        s.draw(&cfg, "ds3", "boss", 0, &mut r)
-            .unwrap()
-            .limit_reached
+        s.draw(
+            &cfg,
+            &game_id("ds3"),
+            &event_id("ds3", "Boss defeated"),
+            0,
+            &mut r
+        )
+        .unwrap()
+        .limit_reached
     );
 }
 
@@ -226,8 +365,22 @@ fn a_saved_configuration_never_fills_a_reduced_set_again() {
     let cfg = even_config();
     let mut s = limited(LimitKind::Exercises, 3);
     let mut r = rng();
-    s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
-    s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
+    s.draw(
+        &cfg,
+        &game_id("ds3"),
+        &event_id("ds3", "Boss defeated"),
+        0,
+        &mut r,
+    )
+    .unwrap();
+    s.draw(
+        &cfg,
+        &game_id("ds3"),
+        &event_id("ds3", "Boss defeated"),
+        0,
+        &mut r,
+    )
+    .unwrap();
     s.apply_config(&cfg, &mut r);
     let sizes: Vec<_> = s.view().pending.iter().map(|d| d.items.len()).collect();
     assert_eq!(sizes, [2, 1]);

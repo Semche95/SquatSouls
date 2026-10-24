@@ -3,7 +3,7 @@ use super::*;
 /// French catalog configuration, Elden Ring first: the errors below name its first event.
 fn config() -> Config {
     let mut cfg = catalog_config(Language::Fr);
-    cfg.games.sort_by_key(|game| game.id != "elden-ring");
+    cfg.games.sort_by_key(|g| g.id != game_id("elden-ring"));
     cfg
 }
 
@@ -31,10 +31,10 @@ fn validation_catches_mistakes() {
     );
 
     let mut cfg = config();
-    cfg.games[1].id = "elden-ring".into();
+    cfg.games[1].id = game_id("elden-ring");
     assert_eq!(
         cfg.validate().unwrap_err(),
-        AppError::new("game_duplicate").with("id", "elden-ring")
+        AppError::new("game_duplicate").with("id", game_id("elden-ring"))
     );
 
     let mut cfg = config();

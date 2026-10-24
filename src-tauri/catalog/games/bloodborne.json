@@ -1,52 +1,52 @@
 {
-  "id": "bloodborne",
+  "id": "01a16eb0-2b47-73b1-908b-14137e3aec9d",
   "name": "Bloodborne",
   "events": [
     {
-      "id": "mort",
+      "id": "01a16eb0-2b47-73b1-908b-18fa54f75fc6",
       "name": { "en": "Death", "fr": "Mort" },
       "draws": 1,
       "maxPerSession": 15,
       "jokers": 0
     },
     {
-      "id": "repos",
+      "id": "01a16eb0-2b47-73b1-908b-1d5d12deec34",
       "name": { "en": "Rest at a known lantern", "fr": "Repos à une lanterne connue" },
       "draws": 1,
       "jokers": 0
     },
     {
-      "id": "decouverte",
+      "id": "01a16eb0-2b47-73b1-908b-22ad20d452a2",
       "name": { "en": "Lantern lit", "fr": "Lanterne allumée" },
       "draws": 1,
       "jokers": 0
     },
     {
-      "id": "niveau",
+      "id": "01a16eb0-2b47-73b1-908b-27a1ee1bfb6b",
       "name": { "en": "Level up", "fr": "Montée de niveau" },
       "draws": 1,
       "jokers": 0
     },
     {
-      "id": "perte",
+      "id": "01a16eb0-2b47-73b1-908b-2a803626c95f",
       "name": { "en": "Blood Echoes lost", "fr": "Échos de sang perdus" },
       "draws": 1,
       "jokers": 0
     },
     {
-      "id": "boss",
+      "id": "01a16eb0-2b47-73b1-908b-2ef7c1cb4e47",
       "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
       "draws": 2,
       "jokers": 0
     },
     {
-      "id": "boss-premier",
+      "id": "01a16eb0-2b47-73b1-908b-330569674653",
       "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
       "draws": 2,
       "jokers": 1
     },
     {
-      "id": "boss-nohit",
+      "id": "01a16eb0-2b47-73b1-908b-3742a320f193",
       "name": { "en": "Boss defeated without getting hit", "fr": "Boss vaincu sans prendre un coup" },
       "draws": 2,
       "jokers": 2

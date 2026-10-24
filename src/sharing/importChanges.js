@@ -51,10 +51,10 @@ export function importGame(games, { name, steamAppId, events }, chosen, target) 
     byKey.delete(key);
     if (!chosen.has(key)) {
       if (before) kept.push(before);
-    } else kept.push({ ...ev, id: before?.id ?? newId(ev.name, [...old, ...kept]), name: before?.name ?? ev.name });
+    } else kept.push({ ...ev, id: before?.id ?? newId(), name: before?.name ?? ev.name });
   }
   for (const [key, ev] of byKey) if (chosen.has(key)) kept.push(ev);
-  const game = withOptional({ id: existing?.id ?? newId(name, games), name: existing?.name ?? name, events: kept }, 'steamAppId', steamAppId ?? existing?.steamAppId);
+  const game = withOptional({ id: existing?.id ?? newId(), name: existing?.name ?? name, events: kept }, 'steamAppId', steamAppId ?? existing?.steamAppId);
   return existing ? games.map((g) => (g === existing ? game : g)) : [...games, game];
 }
 
@@ -70,7 +70,7 @@ export function mergeExercises(exercises, imported, chosen) {
     const ex = merged[i];
     const shared = (item) => ({ ...item, ...sharedSettings(settings) });
     if (!ex) {
-      merged.push(shared({ id: newId(name, merged), name: name.trim(), enabled: true }));
+      merged.push(shared({ id: newId(), name: name.trim(), enabled: true }));
       added++;
     } else if (differ(sharedSettings(ex), sharedSettings(settings))) {
       merged[i] = shared({ id: ex.id, name: ex.name, enabled: ex.enabled });

@@ -1,10 +1,16 @@
 use super::*;
 use chrono::{Local, NaiveDate};
 
-fn entry(at: i64, session: i64, exercise: &str, amount: u32) -> LogEntry {
+/// Id of the session started at `start`: its start written out.
+fn session(start: i64) -> String {
+    start.to_string()
+}
+
+/// Set done at `at` of the session started at `start`.
+fn entry(at: i64, start: i64, exercise: &str, amount: u32) -> LogEntry {
     LogEntry {
         at,
-        session,
+        session: session(start),
         game: "Dark Souls".into(),
         event: "Death".into(),
         exercise: exercise.into(),
@@ -13,22 +19,35 @@ fn entry(at: i64, session: i64, exercise: &str, amount: u32) -> LogEntry {
     }
 }
 
+/// Appends `entries` to the history, as the app does once their sessions are recorded.
+fn append(s: &mut Store, entries: &[LogEntry]) {
+    for e in entries {
+        s.record_session(&e.session, e.session.parse().unwrap())
+            .unwrap();
+    }
+    s.append_history(entries).unwrap();
+}
+
 #[test]
 fn history_and_sessions_are_stored() {
     let mut s = store();
     let now = Local::now();
     let today = now.date_naive();
     let t = now.timestamp();
-    s.append_history(&[
-        entry(t, t - 60, "Squats", 12),
-        entry(t, t - 60, "Squats", 15),
-        entry(t, t - 60, "Push-ups", 10),
-    ])
-    .unwrap();
-    s.append_history(&[entry(t - 86_400 * 2, t - 86_400 * 2, "Push-ups", 8)])
-        .unwrap();
-    s.append_history(&[entry(t, t, "Squats", 5)]).unwrap();
-    s.end_session(t - 60, t + 600).unwrap();
+    append(
+        &mut s,
+        &[
+            entry(t, t - 60, "Squats", 12),
+            entry(t, t - 60, "Squats", 15),
+            entry(t, t - 60, "Push-ups", 10),
+        ],
+    );
+    append(
+        &mut s,
+        &[entry(t - 86_400 * 2, t - 86_400 * 2, "Push-ups", 8)],
+    );
+    append(&mut s, &[entry(t, t, "Squats", 5)]);
+    s.end_session(&session(t - 60), t + 600).unwrap();
 
     let days = s.history(7, today).unwrap();
     assert_eq!(days[0].sets, 4);
@@ -69,9 +88,9 @@ fn history_and_sessions_are_stored() {
         earned: 3,
         spent: 2,
     };
-    s.save_session_summary(t - 60, &[death(1)], Jokers::default())
+    s.save_session_summary(&session(t - 60), &[death(1)], Jokers::default())
         .unwrap();
-    s.save_session_summary(t - 60, &[death(2), boss.clone()], jokers)
+    s.save_session_summary(&session(t - 60), &[death(2), boss.clone()], jokers)
         .unwrap();
     assert_eq!(
         summed(&s).events,
@@ -80,16 +99,16 @@ fn history_and_sessions_are_stored() {
     );
     assert_eq!(summed(&s).jokers, Some(jokers));
 
-    s.remove_session(t).unwrap();
+    s.remove_session(&session(t)).unwrap();
     assert_eq!(
         s.history(1, today).unwrap()[0].sets,
         3,
         "last session deleted"
     );
-    s.remove_session(t - 60).unwrap();
+    s.remove_session(&session(t - 60)).unwrap();
     assert_eq!(s.full_history(None, usize::MAX).unwrap().len(), 1);
     assert_eq!(s.active_day_count().unwrap(), 1);
-    s.append_history(&[entry(t, t - 60, "Squats", 12)]).unwrap();
+    append(&mut s, &[entry(t, t - 60, "Squats", 12)]);
     let again = s.history(1, today).unwrap()[0].sessions[0].clone();
     assert!(
         again.events.is_empty() && again.jokers.is_none(),
@@ -110,12 +129,11 @@ fn full_history_is_read_by_pages() {
             .timestamp()
     };
     for day in [2, 5, 6, 9] {
-        s.append_history(&[entry(noon(day), noon(day), "Squats", 10)])
-            .unwrap();
+        append(&mut s, &[entry(noon(day), noon(day), "Squats", 10)]);
     }
-    s.append_history(&[entry(noon(6) + 60, noon(6) + 60, "Squats", 12)])
+    append(&mut s, &[entry(noon(6) + 60, noon(6) + 60, "Squats", 12)]);
+    s.end_session(&session(noon(6) + 60), noon(6) + 600)
         .unwrap();
-    s.end_session(noon(6) + 60, noon(6) + 600).unwrap();
     let dates = |before: Option<u32>, days| {
         s.full_history(
             before.map(|day| NaiveDate::from_ymd_opt(2026, 3, day).unwrap()),

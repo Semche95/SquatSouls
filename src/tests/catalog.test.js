@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { deflateSync, strToU8 } from 'fflate';
-import { config, setup, mountApp, openConfig, expectTip, expectUnchanged, layOutControls, rejection, formDialog, formDialogOpen, formDialogClosed, savedConfig } from './app.js';
+import { config, setup, mountApp, openConfig, expectTip, expectUnchanged, layOutControls, rejection, formDialog, formDialogOpen, formDialogClosed, savedConfig, newId } from './app.js';
 import { rename } from './program.js';
 import { shareGame, toBase64 } from '../sharing/share.js';
 import { wide } from '../ui/wide.js';
@@ -135,7 +135,7 @@ describe('game catalog', () => {
     await formDialog().find('.cfg-import').trigger('submit');
     await flushPromises();
     await formDialogClosed();
-    expect(savedConfig().games[0]).toEqual({ ...config.games[0], steamAppId: 1245620, events: [...config.games[0].events, { id: 'grace-found', name: 'Grace found', draws: 1, jokers: 0 }] });
+    expect(savedConfig().games[0]).toEqual({ ...config.games[0], steamAppId: 1245620, events: [...config.games[0].events, { id: newId(), name: 'Grace found', draws: 1, jokers: 0 }] });
     expect(w.find('.banner.ok').text()).toBe('Elden Ring imported.');
     expectUnchanged(w);
   });

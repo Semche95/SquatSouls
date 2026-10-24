@@ -8,7 +8,7 @@ mod schema;
 mod settings;
 mod steam;
 
-use catalog_config::catalog_config;
+use catalog_config::{catalog_config, event_id, game_id};
 use squat_souls_lib::app::*;
 
 /// System locale of the tests: new databases receive the French default configuration.

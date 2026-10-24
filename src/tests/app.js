@@ -34,6 +34,10 @@ export const config = {
   ],
 };
 
+// Id given to something created or imported: a UUIDv7.
+export const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+export const newId = () => expect.stringMatching(UUID_V7);
+
 // Session waiting to be started, as at launch and after each end or cancellation.
 export function idleSession(extra = {}) {
   return { startedAt: null, countedFrom: null, gameId: null, pending: [], sets: 0, totals: [], log: [], triggers: [], countedTriggers: [], jokers: 0, jokersEarned: 0, jokersSpent: 0, ...extra };

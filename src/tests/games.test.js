@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
-import { config, emptySession, idleSession, responses, setup, openConfig, expectUnchanged, expectTip, layOutControls, formDialog, formDialogOpen, formDialogClosed, confirmDialog, confirmDialogOpen, confirmDialogClosed, save, savedConfig } from './app.js';
+import { config, emptySession, idleSession, responses, setup, openConfig, expectUnchanged, expectTip, layOutControls, formDialog, formDialogOpen, formDialogClosed, confirmDialog, confirmDialogOpen, confirmDialogClosed, save, savedConfig, newId } from './app.js';
 import { shownGame, gameButton, newGameButton, rename } from './program.js';
 
 // Games offered by the select of the Program tab.
@@ -72,9 +72,9 @@ describe('games', () => {
       expectUnchanged(w);
       return savedGames().at(-1);
     }
-    expect(await create('Nioh', 'sekiro')).toMatchObject({ id: 'nioh', events: config.games[1].events });
-    expect(await create('Lies of P', '')).toMatchObject({ id: 'lies-of-p', events: [] });
-    expect(savedGames().map((g) => g.id)).toEqual(['er', 'sekiro', 'nioh', 'lies-of-p']);
+    expect(await create('Nioh', 'sekiro')).toMatchObject({ id: newId(), events: config.games[1].events.map((ev) => ({ ...ev, id: newId() })) });
+    expect(await create('Lies of P', '')).toMatchObject({ id: newId(), events: [] });
+    expect(savedGames().map((g) => g.id)).toEqual(['er', 'sekiro', newId(), newId()]);
     expect(gameNames(w)).toEqual(['Elden Ring', 'Lies of P', 'Nioh', 'Sekiro']);
   });
 

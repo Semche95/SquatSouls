@@ -2,7 +2,7 @@ import { deflateSync, strToU8 } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { MAX_ITEMS, MAX_NAME, MAX_UNIT } from '../config/configDraft.js';
 import { parseExercises, parseGame, shareExercise, shareExercises, shareGame, toBase64, unpack } from '../sharing/share.js';
-import { config } from './app.js';
+import { config, newId } from './app.js';
 
 // Shared text written in a given format version, with the content of `shared`.
 function packed(version, shared, data = unpack(shared).data) {
@@ -16,6 +16,9 @@ const exercises = [
   { id: 'plank', name: 'Plank', enabled: true, unit: 'hold', min: 20, max: 45, timed: 'seconds', eachSide: true },
 ];
 
+// Game read from a shared text, its events receiving new ids each time.
+const withNewIds = (game) => ({ ...game, events: game.events.map((ev) => ({ ...ev, id: newId() })) });
+
 describe('game sharing', () => {
   it('shares the name and events without ids or exercises, then reads them back', () => {
     const text = shareGame(config.games[0]);
@@ -24,8 +27,8 @@ describe('game sharing', () => {
     expect(parseGame(text)).toEqual({
       name: 'Elden Ring',
       events: [
-        { id: 'death', name: 'Death', draws: 1, jokers: 0, maxPerSession: 15 },
-        { id: 'boss-defeated', name: 'Boss defeated', draws: 1, jokers: 2 },
+        { id: newId(), name: 'Death', draws: 1, jokers: 0, maxPerSession: 15 },
+        { id: newId(), name: 'Boss defeated', draws: 1, jokers: 2 },
       ],
       clamped: [],
     });
@@ -34,8 +37,8 @@ describe('game sharing', () => {
   it('ignores the identifier placed in front of the compressed text', () => {
     const text = shareGame(config.games[0]);
     const payload = text.slice(text.indexOf(':') + 1);
-    expect(parseGame(`squatsouls/exercises:${payload}`)).toEqual(parseGame(text));
-    expect(parseGame(payload)).toEqual(parseGame(text));
+    expect(parseGame(`squatsouls/exercises:${payload}`)).toEqual(withNewIds(parseGame(text)));
+    expect(parseGame(payload)).toEqual(withNewIds(parseGame(text)));
   });
 
   it('shares the game\'s Steam AppId and reads a version 1 text, which has none', () => {
@@ -43,7 +46,7 @@ describe('game sharing', () => {
     expect(parseGame(shareGame(game)).steamAppId).toBe(1245620);
     const { steamAppId, ...v1 } = unpack(shareGame(game)).data;
     const read = parseGame(packed(1, shareGame(game), v1));
-    expect(read).toEqual(parseGame(shareGame(config.games[0])));
+    expect(read).toEqual(withNewIds(parseGame(shareGame(config.games[0]))));
     expect(read).not.toHaveProperty('steamAppId');
   });
 

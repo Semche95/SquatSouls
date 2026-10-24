@@ -3,6 +3,7 @@
 use super::{estimate, Draw, DrawItem, Session};
 use crate::app::{AppError, Config, Exercise};
 use rand::Rng;
+use uuid::Uuid;
 
 impl Session {
     /// Draws a set for the event at `now`. Beyond the event's limit or the session's, it gives none and the trigger
@@ -41,9 +42,8 @@ impl Session {
         let time = items.iter().map(|it| estimate(config, it)).sum();
         let items_len = items.len() as u32;
 
-        self.next_id += 1;
         let draw = Draw {
-            id: self.next_id,
+            id: Uuid::now_v7().to_string(),
             game_id: game.id.clone(),
             game_name: game.name.clone(),
             event_id: ev.id.clone(),

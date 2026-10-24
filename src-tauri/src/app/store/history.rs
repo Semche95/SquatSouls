@@ -1,4 +1,4 @@
-//! History: sets done, session ends, events, jokers and durations, and their reading by day.
+//! History: sessions and their sets done, ends, events, jokers and durations, and their reading by day.
 
 use super::Store;
 use crate::app::{
@@ -6,20 +6,43 @@ use crate::app::{
     LogEntry, SessionDuration, SessionRecords,
 };
 use chrono::NaiveDate;
-use rusqlite::{params, Result, Row};
+use rusqlite::{params, Params, Result, Row};
 use std::collections::HashMap;
+use uuid::Uuid;
+
+/// Columns of a set done, in the order of `LogEntry`.
+const SET_COLUMNS: &str = "at, session, game, event, exercise, unit, amount";
+
+/// Sessions started between `?1` and `?2` (included).
+const STARTED_BETWEEN: &str = "FROM sessions WHERE started_at BETWEEN ?1 AND ?2";
 
 impl Store {
+    /// Records the session `id` started at `started_at`, before anything of it is saved; already recorded, it stays.
+    pub fn record_session(&self, id: &str, started_at: i64) -> Result<()> {
+        self.conn.execute(
+            "INSERT OR IGNORE INTO sessions (id, started_at) VALUES (?1, ?2)",
+            params![id, started_at],
+        )?;
+        Ok(())
+    }
+
+    /// Appends sets done of recorded sessions, each with its own UUIDv7.
     pub fn append_history(&mut self, entries: &[LogEntry]) -> Result<()> {
         let tx = self.conn.savepoint()?;
         {
-            let mut stmt = tx.prepare(
-                "INSERT INTO sets (at, session, game, event, exercise, unit, amount)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-            )?;
+            let mut stmt = tx.prepare(&format!(
+                "INSERT INTO sets (id, {SET_COLUMNS}) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)"
+            ))?;
             for e in entries {
                 stmt.execute(params![
-                    e.at, e.session, e.game, e.event, e.exercise, e.unit, e.amount
+                    Uuid::now_v7().to_string(),
+                    e.at,
+                    e.session,
+                    e.game,
+                    e.event,
+                    e.exercise,
+                    e.unit,
+                    e.amount
                 ])?;
             }
         }
@@ -27,7 +50,7 @@ impl Store {
     }
 
     /// Saves the end of a session, which closes the period it was open in.
-    pub fn end_session(&mut self, session: i64, ended: i64) -> Result<()> {
+    pub fn end_session(&mut self, session: &str, ended: i64) -> Result<()> {
         let tx = self.conn.savepoint()?;
         tx.execute(
             "INSERT OR REPLACE INTO session_ends (session, ended) VALUES (?1, ?2)",
@@ -44,7 +67,7 @@ impl Store {
     /// Replaces the events triggered and the jokers saved for a session.
     pub fn save_session_summary(
         &mut self,
-        session: i64,
+        session: &str,
         events: &[EventCount],
         jokers: Jokers,
     ) -> Result<()> {
@@ -65,22 +88,11 @@ impl Store {
         tx.commit()
     }
 
-    /// Removes a session's sets, end, events, jokers and duration from the history.
-    pub fn remove_session(&mut self, session: i64) -> Result<()> {
-        let tx = self.conn.savepoint()?;
-        for table in [
-            "sets",
-            "session_ends",
-            "session_events",
-            "session_jokers",
-            "session_durations",
-        ] {
-            tx.execute(
-                &format!("DELETE FROM {table} WHERE session = ?1"),
-                [session],
-            )?;
-        }
-        tx.commit()
+    /// Removes a session from the history, with its sets, end, events, jokers and duration.
+    pub fn remove_session(&mut self, session: &str) -> Result<()> {
+        self.conn
+            .execute("DELETE FROM sessions WHERE id = ?1", [session])?;
+        Ok(())
     }
 
     /// Totals of the last `days` days (today included), most recent first.
@@ -107,7 +119,7 @@ impl Store {
     /// Starts of the sessions with sets done.
     fn session_starts(&self) -> Result<Vec<i64>> {
         self.conn
-            .prepare("SELECT DISTINCT session FROM sets")?
+            .prepare("SELECT started_at FROM sessions WHERE id IN (SELECT session FROM sets)")?
             .query_map([], |r| r.get(0))?
             .collect()
     }
@@ -115,11 +127,19 @@ impl Store {
     /// Sets of the sessions started between `from` and `to` (included), and what is kept of
     /// those sessions.
     fn sets_between(&self, from: i64, to: i64) -> Result<(Vec<LogEntry>, SessionRecords)> {
-        let entries = self.sets_of(from, to)?;
+        let entries = self.sets_where(
+            &format!("session IN (SELECT id {STARTED_BETWEEN})"),
+            [from, to],
+        )?;
+        let starts = self
+            .conn
+            .prepare(&format!("SELECT id, started_at {STARTED_BETWEEN}"))?
+            .query_map([from, to], |r| Ok((r.get(0)?, r.get(1)?)))?
+            .collect::<Result<_>>()?;
         let ends = self.session_rows("SELECT session, ended FROM session_ends", from, to, |r| {
             r.get(1)
         })?;
-        let mut events: HashMap<i64, Vec<EventCount>> = HashMap::new();
+        let mut events: HashMap<String, Vec<EventCount>> = HashMap::new();
         for (session, event) in self.session_rows(
             "SELECT session, event, count FROM session_events",
             from,
@@ -156,6 +176,7 @@ impl Store {
             },
         )?;
         let records = SessionRecords {
+            starts,
             ends: ends.into_iter().collect(),
             events,
             jokers: jokers.into_iter().collect(),
@@ -164,14 +185,18 @@ impl Store {
         Ok((entries, records))
     }
 
-    /// Sets of the sessions started between `from` and `to` (included), in the order they were done.
-    pub(super) fn sets_of(&self, from: i64, to: i64) -> Result<Vec<LogEntry>> {
+    /// Sets of the session `id`, in the order they were done.
+    pub(super) fn session_sets(&self, id: &str) -> Result<Vec<LogEntry>> {
+        self.sets_where("session = ?1", [id])
+    }
+
+    /// Sets matching `condition`, in the order they were done: their UUIDv7 keep the order of a same second.
+    fn sets_where(&self, condition: &str, params: impl Params) -> Result<Vec<LogEntry>> {
         self.conn
-            .prepare(
-                "SELECT at, session, game, event, exercise, unit, amount FROM sets
-                 WHERE session BETWEEN ?1 AND ?2 ORDER BY at, id",
-            )?
-            .query_map([from, to], |r| {
+            .prepare(&format!(
+                "SELECT {SET_COLUMNS} FROM sets WHERE {condition} ORDER BY at, id"
+            ))?
+            .query_map(params, |r| {
                 Ok(LogEntry {
                     at: r.get(0)?,
                     session: r.get(1)?,
@@ -193,10 +218,10 @@ impl Store {
         from: i64,
         to: i64,
         value: impl Fn(&Row) -> Result<T>,
-    ) -> Result<Vec<(i64, T)>> {
+    ) -> Result<Vec<(String, T)>> {
         self.conn
             .prepare(&format!(
-                "{select} WHERE session BETWEEN ?1 AND ?2 ORDER BY rowid"
+                "{select} WHERE session IN (SELECT id {STARTED_BETWEEN}) ORDER BY rowid"
             ))?
             .query_map([from, to], |r| Ok((r.get(0)?, value(r)?)))?
             .collect()

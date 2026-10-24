@@ -39,9 +39,12 @@ describe('seed and catalog', () => {
 
   it('seed.json follows the schema', () => check('seed', seed, 'seed.json'));
 
-  it.each(catalogFiles())('games/%s follows the schema and is named after its game', (file) => {
-    check('catalog', catalog, `games/${file}`);
-    expect(`${read(catalog, `games/${file}`).id}.json`).toBe(file);
+  it.each(catalogFiles())('games/%s follows the schema', (file) => check('catalog', catalog, `games/${file}`));
+
+  it('never gives the same id twice', () => {
+    const games = catalogFiles().map((file) => read(catalog, `games/${file}`));
+    const ids = [...read(seed, 'seed.json').exercises, ...games, ...games.flatMap((game) => game.events)].map((item) => item.id);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 
   it('is written at least in English and French', () => {

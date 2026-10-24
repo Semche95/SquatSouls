@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { nameKey } from '../config/configDraft.js';
 import { appliedCount, defaultChoice, eventChanges, exerciseChanges, importGame, mergeExercises } from '../sharing/importChanges.js';
-import { config } from './app.js';
+import { config, newId } from './app.js';
 
 const exercises = [
   { id: 'squat', name: 'Squats', enabled: false, unit: 'reps', min: 10, max: 15 },
@@ -53,17 +53,18 @@ describe('game import changes', () => {
     const [game] = importGame(config.games, imported, new Set(['grace', 'death']), 'er');
     expect(game.id).toBe('er');
     expect(game.name).toBe('Elden Ring');
-    expect(game.events).toEqual([eldenRing.events[0], eldenRing.events[1], imported.events[2]]);
+    expect(game.events).toEqual([eldenRing.events[0], eldenRing.events[1], { ...imported.events[2], id: newId() }]);
     expect(importGame(config.games, imported, new Set(['boss defeated']), 'er')[0].events).toEqual([
       eldenRing.events[0],
       { id: 'boss', name: 'Boss defeated', draws: 2, jokers: 2 },
     ]);
   });
 
-  it('gives a new event an id that no event of the replaced game holds', () => {
+  it('gives a new event its own id, never the imported one', () => {
     const games = [{ id: 'er', name: 'Elden Ring', events: [{ id: 'grace', name: 'Site of grace', draws: 1, jokers: 0 }] }];
     const [game] = importGame(games, imported, new Set(['grace', 'site of grace']), 'er');
-    expect(game.events.map((ev) => ev.id)).toEqual(['grace-2', 'grace']);
+    expect(game.events.map((ev) => ev.id)).toEqual([newId(), 'grace']);
+    expect(game.events[0].id).not.toBe(imported.events[2].id);
   });
 
   it('replaces the chosen game whatever the imported name, keeping its id, name and place', () => {
@@ -78,7 +79,7 @@ describe('game import changes', () => {
 
   it('adds the game without target, with its chosen events only', () => {
     const games = importGame(config.games, { ...imported, name: 'Nioh' }, new Set(['grace']));
-    expect(games.at(-1)).toEqual({ id: 'nioh', name: 'Nioh', events: [imported.events[2]] });
+    expect(games.at(-1)).toEqual({ id: newId(), name: 'Nioh', events: [{ ...imported.events[2], id: newId() }] });
   });
 
   it('takes the imported Steam AppId, or else the replaced game\'s, even if carried by another game', () => {
@@ -116,7 +117,7 @@ describe('exercise import changes', () => {
         { id: 'squat', name: 'Squats', enabled: false, unit: 's', min: 20, max: 30, recovery: 45 },
         exercises[1],
         exercises[2],
-        { id: 'lunges', name: 'Lunges', enabled: true, unit: 'reps', min: 5, max: 8 },
+        { id: newId(), name: 'Lunges', enabled: true, unit: 'reps', min: 5, max: 8 },
       ],
       added: 1,
       updated: 1,
@@ -137,6 +138,6 @@ describe('exercise import changes', () => {
       { name: 'Squats', unit: 'reps', min: 20, max: 30 },
       { name: 'Lunges', unit: 'reps', min: 5, max: 8 },
     ];
-    expect(mergeExercises(exercises, shared, new Set(['lunges']))).toMatchObject({ exercises: [exercises[0], exercises[1], exercises[2], { id: 'lunges' }], added: 1, updated: 0 });
+    expect(mergeExercises(exercises, shared, new Set(['lunges']))).toMatchObject({ exercises: [exercises[0], exercises[1], exercises[2], { id: newId(), name: 'Lunges' }], added: 1, updated: 0 });
   });
 });

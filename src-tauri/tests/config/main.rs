@@ -4,7 +4,7 @@ mod repair;
 mod schemas;
 mod validation;
 
-use catalog_config::catalog_config;
+use catalog_config::{catalog_config, game_id};
 use squat_souls_lib::app::*;
 
 /// The games of the catalog, with the seed's exercises, make a valid configuration in every language.

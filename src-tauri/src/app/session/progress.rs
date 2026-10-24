@@ -7,12 +7,13 @@ impl Session {
     /// Marks an exercise done, in the order of the set: it moves to the sets done. The finished set earns its jokers.
     pub fn complete_exercise(
         &mut self,
-        id: u64,
+        id: &str,
         exercise_id: &str,
         now: i64,
     ) -> Result<LogEntry, AppError> {
         // The set's draw already gave the session its game.
-        let session = self.started(now);
+        self.started(now);
+        let session = self.id.clone();
         let (draw, pos) = self.pending_item(id, exercise_id)?;
         if draw.items[..pos].iter().any(|it| !it.done) {
             return Err(AppError::new("exercise_not_next"));
@@ -34,7 +35,7 @@ impl Session {
     }
 
     /// Removes the set when nothing is left to do, with the jokers it still earns.
-    pub(super) fn finish_if_done(&mut self, id: u64) -> Result<(), AppError> {
+    pub(super) fn finish_if_done(&mut self, id: &str) -> Result<(), AppError> {
         if self.pending_draw(id)?.items.iter().all(|it| it.done) {
             let draw = self.take_pending(id)?;
             self.earn(draw.jokers);
@@ -45,7 +46,7 @@ impl Session {
     /// Dismisses a set. Not started, it is a misclick: the trigger is no longer counted, its exercises as drawn
     /// are reserved for the next trigger of the same event, and the jokers spent on it never count. Started, it
     /// stops there: its exercises done stay counted, as does the trigger, without the jokers of the set.
-    pub fn dismiss(&mut self, id: u64) -> Result<(), AppError> {
+    pub fn dismiss(&mut self, id: &str) -> Result<(), AppError> {
         let draw = self.take_pending(id)?;
         self.dismissed(draw);
         Ok(())
