@@ -18,8 +18,8 @@ Button and setting names are quoted as they appear in the English interface.
 
 ## Display
 
-- Any section opened or block shown by an action (a nested setting, a confirmation, a message after an action) that ends up partly hidden in the window or under a bar at the bottom of the window (the configuration's save bar, the session buttons) scrolls just enough to show it entirely, or as much of it as fits, starting from its top.
-- What appears without an action from the user (update notice, Steam offer, new sets in the queue) never scrolls the window, so the page never moves under them.
+- Any section opened or block shown by an action (a nested setting, a confirmation, a message after an action, the set an event adds, or the button of the folded queue when it goes there) that ends up partly hidden in the window or under a bar at the bottom of the window (the configuration's save bar, the session buttons) scrolls just enough to show it entirely, or as much of it as fits, starting from its top.
+- What appears without an action from the user (update notice, Steam offer) never scrolls the window, so the page never moves under them.
 
 ## Draw
 

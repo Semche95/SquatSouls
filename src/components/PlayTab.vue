@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { t } from '../i18n/i18n.js';
 import { byName } from '../config/configDraft.js';
-import { vReveal } from '../ui/reveal.js';
+import { reveal, vReveal } from '../ui/reveal.js';
 import { vSelect } from '../ui/select.js';
 import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
@@ -55,6 +55,17 @@ const folded = computed(() => Math.max(0, queue.value.length - QUEUE_SHOWN));
 const shownQueue = computed(() => (queueOpen.value ? queue.value : queue.value.slice(0, QUEUE_SHOWN)));
 // A set just added to the folded part lights up the button that shows it.
 const addedFolded = computed(() => !queueOpen.value && queue.value.slice(QUEUE_SHOWN).some((d) => d.id === addedDraw.value));
+// A set added by an event, by its tile or its key, is brought into view like any block an action shows: its card,
+// its row or the button of the folded part, whichever lights up.
+const pending = ref(null);
+watch(
+  addedDraw,
+  (id) => {
+    const added = id && pending.value?.querySelector('.added');
+    if (added) reveal(added);
+  },
+  { flush: 'post' },
+);
 // Once nothing is left to fold, the next long queue starts folded.
 watch(folded, (n) => {
   if (!n) queueOpen.value = false;
@@ -232,7 +243,7 @@ useKeydown((e) => {
     </p>
     <p v-if="session.ended?.cause" v-reveal class="banner info">{{ t(`session.endCause.${session.ended.cause}`) }}</p>
 
-    <section class="pending">
+    <section ref="pending" class="pending">
       <h2>
         {{ t('play.todo') }}
         <DisabledTip :tip="t('play.jokersTip')">

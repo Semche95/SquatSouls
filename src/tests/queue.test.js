@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { invoke } from '@tauri-apps/api/core';
 import { emptySession, draw, responses, setup, mountApp, press } from './app.js';
@@ -126,5 +126,49 @@ describe('queue cues', () => {
     setup({ get_session: withQueue(5) });
     const w = await mountApp();
     expect(w.find('.added').exists()).toBe(false);
+  });
+});
+
+describe('added set in view', () => {
+  afterEach(() => vi.restoreAllMocks());
+  const watchScroll = () => vi.spyOn(Element.prototype, 'scrollIntoView');
+  const scrolled = () => Element.prototype.scrollIntoView.mock.contexts;
+
+  it('scrolls to the set an event makes current', async () => {
+    setup();
+    const w = await mountApp();
+    watchScroll();
+    responses.draw = { ...draw, capped: false };
+    responses.get_session = emptySession({ pending: [draw] });
+    await w.find('.event').trigger('click');
+    await flushPromises();
+    expect(scrolled()).toEqual([w.find('.card').element]);
+  });
+
+  it('scrolls to its row when it waits in the queue', async () => {
+    setup({ get_session: withQueue(1) });
+    const w = await mountApp();
+    watchScroll();
+    drawsNext(20, 1);
+    await press('Digit1');
+    expect(scrolled()).toEqual([rows(w).at(-1).element]);
+  });
+
+  it('scrolls to the fold button when it goes to the folded part', async () => {
+    setup({ get_session: withQueue(3) });
+    const w = await mountApp();
+    watchScroll();
+    drawsNext(20, 3);
+    await press('Digit1');
+    expect(scrolled()).toEqual([more(w).element]);
+  });
+
+  it('scrolls nowhere for a resumed session, nor for an event at its limit', async () => {
+    watchScroll();
+    setup({ get_session: withQueue(5), draw: { capped: true, eventName: 'Death', maxPerSession: 15 } });
+    const w = await mountApp();
+    await w.find('.event').trigger('click');
+    await flushPromises();
+    expect(scrolled()).toEqual([]);
   });
 });
