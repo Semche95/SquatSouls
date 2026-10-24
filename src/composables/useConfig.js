@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import { BOUNDS, byName, clone, isCount, normalized, fieldError, withTabDraft } from '../config/configDraft.js';
+import { BOUNDS, byName, clone, isCount, normalized, fieldError, sameContent, withTabDraft } from '../config/configDraft.js';
 import { errorText, t } from '../i18n/i18n.js';
 import { defineShared } from './shared.js';
 
@@ -61,7 +61,7 @@ export const [provideConfig, useConfig] = defineShared(() => {
   const tabDraft = (settings) => draft.value && withTabDraft(config.value, draft.value, settings);
   function tabDirty(settings) {
     const cfg = tabDraft(settings);
-    return !!cfg && JSON.stringify(cfg) !== JSON.stringify(config.value);
+    return !!cfg && !sameContent(cfg, config.value);
   }
   // Sharing and importing work on the saved program: not while Program has pending changes, which a share
   // would leave out and an import would have to merge. Why they are not possible, '' when they are.

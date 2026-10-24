@@ -4,6 +4,11 @@ export function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+// Same content whatever the order of the keys: the backend sends its fields in the order of its structures, an
+// object built here may list them in another.
+const sortedKeys = (_, v) => (v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => (a < b ? -1 : 1))) : v);
+export const sameContent = (a, b) => JSON.stringify(a, sortedKeys) === JSON.stringify(b, sortedKeys);
+
 // Configuration fields edited in the Settings tab; the Program tab edits all the others.
 export const SETTINGS_FIELDS = ['rememberIntensity', 'rememberLimit', 'sound', 'timerAutoDone', 'timerPrep', 'tray', 'closeToTray', 'startHidden', 'steamDetection', 'steamNotify', 'updateCheck', 'updateAuto'];
 

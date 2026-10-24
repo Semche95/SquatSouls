@@ -23,8 +23,14 @@ const catalogCalls = () => invoke.mock.calls.filter(([cmd]) => cmd === 'game_cat
 // the wide one.
 const catalogButton = (w) => w.findAll('.cfg-game-bar button, .cfg-games button').find((b) => ['Catalog', 'Game catalog'].includes(b.text()));
 
+// Saved configuration as the backend sends it back, its fields in the order of its structures.
+const backendOrder = (cfg) => ({
+  ...cfg,
+  games: cfg.games.map(({ id, name, steamAppId, events }) => ({ id, name, ...(steamAppId && { steamAppId }), events: events.map((ev) => ({ id: ev.id, name: ev.name, draws: ev.draws, ...(ev.maxPerSession && { maxPerSession: ev.maxPerSession }), jokers: ev.jokers })) })),
+});
+
 async function openCatalog(over = {}) {
-  setup({ game_catalog: catalog, save_config: (args) => ({ config: args.config }), ...over });
+  setup({ game_catalog: catalog, save_config: (args) => ({ config: backendOrder(args.config) }), ...over });
   const w = await openConfig();
   await catalogButton(w).trigger('click');
   await flushPromises();
@@ -116,7 +122,7 @@ describe('game catalog', () => {
     expect(formDialog().find('.banner.error').text()).toBe('This catalog needs a newer version of Squat Souls: update it to see its games.');
   });
 
-  it('imports a game of the catalog with its Steam AppId, after going back to the list', async () => {
+  it('imports a game of the catalog with its Steam AppId, after going back to the list, leaving nothing to save', async () => {
     const w = await openCatalog();
     await listButton('Hollow Knight').trigger('click');
     expect(formDialog().find('#import-game').text()).toBe('Hollow Knight');
