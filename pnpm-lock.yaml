@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  floating-vue@5.4.0: 2dc59de0c3426705979e84081cc9d0081e08b6de0b2035a6e0d7c6c09c01a16a
+
 importers:
 
   .:
@@ -22,7 +25,7 @@ importers:
         version: 0.8.3
       floating-vue:
         specifier: ^5.4.0
-        version: 5.4.0(vue@3.5.43(typescript@6.0.3))
+        version: 5.4.0(patch_hash=2dc59de0c3426705979e84081cc9d0081e08b6de0b2035a6e0d7c6c09c01a16a)(vue@3.5.43(typescript@6.0.3))
       tom-select:
         specifier: ^2.6.2
         version: 2.6.2
@@ -1938,7 +1941,7 @@ snapshots:
 
   flatted@3.4.4: {}
 
-  floating-vue@5.4.0(vue@3.5.43(typescript@6.0.3)):
+  floating-vue@5.4.0(patch_hash=2dc59de0c3426705979e84081cc9d0081e08b6de0b2035a6e0d7c6c09c01a16a)(vue@3.5.43(typescript@6.0.3)):
     dependencies:
       '@floating-ui/dom': 1.8.0
       vue: 3.5.43(typescript@6.0.3)

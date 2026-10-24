@@ -1,0 +1,26 @@
+diff --git a/dist/floating-vue.mjs b/dist/floating-vue.mjs
+index dadfa0ae5b1244f60834caa566ac411cadfb257b..76763957bc88c2d8dee3a4917d499cf5fa3a4b9c 100644
+--- a/dist/floating-vue.mjs
++++ b/dist/floating-vue.mjs
+@@ -1440,7 +1440,7 @@ const TooltipDirective = defineComponent({
+ 		},
+ 		async finalContent() {
+ 			await this.$nextTick();
+-			this.$refs.popper.onResize();
++			this.$refs.popper?.onResize();
+ 		}
+ 	},
+ 	created() {
+diff --git a/dist/floating-vue.umd.js b/dist/floating-vue.umd.js
+index 938da488d698327089945b979b6eea455bf8cbe5..e800d03c43ef7b9ffa46b1d144aa92150a627b34 100644
+--- a/dist/floating-vue.umd.js
++++ b/dist/floating-vue.umd.js
+@@ -1449,7 +1449,7 @@
+ 			},
+ 			async finalContent() {
+ 				await this.$nextTick();
+-				this.$refs.popper.onResize();
++				this.$refs.popper?.onResize();
+ 			}
+ 		},
+ 		created() {

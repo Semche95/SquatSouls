@@ -1,0 +1,2 @@
+patchedDependencies:
+  floating-vue@5.4.0: patches/floating-vue@5.4.0.patch

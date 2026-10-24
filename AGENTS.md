@@ -20,6 +20,7 @@ The business rules are described in `docs/BEHAVIOR.md`, which is the reference.
 - `src/tests/`: interface tests (Vitest), one file per tab or module; `app.js` shared data, mounting and the save bar, `program.js` the Program tab's game, sub-tabs and edit dialogs, `setup.js` Tauri backend mock, `schemas.test.js` the language files against their schemas.
 - `src-tauri/tests/`: backend tests (Cargo integration tests on the public API of `app`, and of `state` for what links the session to the store), one file per module.
 - `site/`: presentation site published on GitHub Pages by `.github/workflows/site.yml`, which adds `src/style/theme.css` (palette and fonts shared with the app), `src/splash/slogans.js`, the icon and `docs/screenshots/`. Its texts are in `site/locales/en.json` and `site/locales/fr.json`, following `site/locales/schema.json`; the workflow writes the English ones into `index.html` with `scripts/site-english.js`, so the page reads before its JavaScript runs.
+- `patches/`: fixes of dependencies applied by pnpm on install (`pnpm patch`), listed in `pnpm-workspace.yaml`, one per bug not fixed upstream yet: `floating-vue` resizing a tooltip already gone (covered by `src/tests/tooltip.test.js`). Check whether a new version of the dependency still needs it before upgrading it.
 
 ## Commands
 
