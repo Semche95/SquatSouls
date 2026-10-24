@@ -3,7 +3,7 @@ use super::*;
 /// A configuration saved before the limits is brought within them at load rather than refused.
 #[test]
 fn repair_brings_a_configuration_within_the_limits() {
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     assert!(!cfg.repair());
 
     cfg.games[0].name = format!("Elden\u{200B} Ring\n{}", "!".repeat(MAX_NAME));
@@ -32,7 +32,7 @@ fn repair_brings_a_configuration_within_the_limits() {
     assert_eq!(cfg.ignored_games[0].name, "Nioh");
 
     // Numbers out of bounds are brought to the nearest bound, the maximum never below the minimum.
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     cfg.recovery = u32::MAX;
     cfg.timer_prep = u32::MAX;
     cfg.rep_duration = 0;

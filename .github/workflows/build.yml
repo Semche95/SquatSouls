@@ -92,7 +92,7 @@ jobs:
             src-tauri/target/**/release/bundle/dmg/*.dmg
           if-no-files-found: error
 
-  # Games of the default configuration as share texts, read by the app at
+  # Games of the seed as share texts, read by the app at
   # releases/latest/download/catalog.<language>.json: published with the release, so the catalog is always written
   # in the share format of the latest release, which the apps up to date can read.
   catalog:

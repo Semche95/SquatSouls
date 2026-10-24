@@ -1,4 +1,4 @@
-// Default configuration of one language, assembled from src-tauri/src/app/seed/ as the backend does it
+// Seed of one language, its exercises and every game of the catalog, assembled from src-tauri/src/app/seed/ as the backend does it
 // (app/config/seed.rs): exercises.json and every file of games/ in the order of their names, keeping only
 // that language in the texts (`name`, `unit`).
 import { readdirSync, readFileSync } from 'node:fs';

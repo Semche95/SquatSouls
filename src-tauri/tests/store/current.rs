@@ -6,7 +6,7 @@ use rand::SeedableRng;
 /// exercise halved then done, and a death set dismissed before being started, kept in reserve; with the
 /// exercises done.
 fn played(start: i64) -> (Session, Vec<LogEntry>) {
-    let cfg = default_config(Language::Fr);
+    let cfg = seed_config(Language::Fr);
     let mut s = Session::default();
     let mut r = StdRng::seed_from_u64(42);
     s.start(&cfg, "ds3", start).unwrap();
@@ -49,7 +49,7 @@ fn the_session_in_progress_is_read_back_as_it_was_saved() {
     assert_eq!(seen, 1500);
     assert_eq!(format!("{:?}", read.view()), format!("{:?}", s.view()));
     // Round, last set, reserve and set ids carry on as if the app had never closed.
-    let cfg = default_config(Language::Fr);
+    let cfg = seed_config(Language::Fr);
     for event in ["mort", "boss", "mort"] {
         let mut r = StdRng::seed_from_u64(7);
         assert_eq!(
@@ -63,7 +63,7 @@ fn the_session_in_progress_is_read_back_as_it_was_saved() {
 #[test]
 fn the_limit_of_the_session_in_progress_is_read_back() {
     let mut store = store();
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     // 40 s each, so that 3 exercises fit in 2 minutes: the second set is reduced, and the limit reached.
     cfg.recovery = 10;
     for ex in &mut cfg.exercises {
@@ -121,7 +121,7 @@ fn saved_before_counting(name: &str, s: &Session, done: &[LogEntry]) -> Session 
 
 #[test]
 fn a_session_saved_before_counting_what_it_asked_counts_it_again() {
-    let cfg = default_config(Language::Fr);
+    let cfg = seed_config(Language::Fr);
     let (s, done) = played(1000);
     let mut read = saved_before_counting("recount", &s, &done);
     assert_eq!(read.view().asked, 0);
@@ -141,7 +141,7 @@ fn a_session_saved_before_counting_what_it_asked_counts_it_again() {
 
 #[test]
 fn a_stopped_set_saved_before_counting_still_counts_its_exercises() {
-    let cfg = default_config(Language::Fr);
+    let cfg = seed_config(Language::Fr);
     let (mut s, mut done) = played(1000);
     let boss = s.view().pending[0].clone();
     let rest = boss.items.iter().find(|it| !it.done).unwrap();

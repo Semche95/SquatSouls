@@ -5,9 +5,9 @@ mod validation;
 use squat_souls_lib::app::*;
 
 #[test]
-fn default_configs_are_valid_and_roundtrip() {
+fn seeds_are_valid_and_roundtrip() {
     for language in [Language::En, Language::Fr] {
-        let cfg = default_config(language);
+        let cfg = seed_config(language);
         cfg.validate().unwrap();
         let json = serde_json::to_string_pretty(&cfg).unwrap();
         assert!(json.contains("maxPerSession"));
@@ -18,9 +18,9 @@ fn default_configs_are_valid_and_roundtrip() {
 
 /// Both seeds only differ by their texts: names of exercises and events, and units.
 #[test]
-fn default_configs_have_the_same_structure() {
+fn seeds_have_the_same_structure() {
     let untranslated = |language| {
-        let mut cfg = default_config(language);
+        let mut cfg = seed_config(language);
         for ex in &mut cfg.exercises {
             ex.name.clear();
             ex.unit.clear();
@@ -31,12 +31,23 @@ fn default_configs_have_the_same_structure() {
         cfg
     };
     assert_eq!(untranslated(Language::En), untranslated(Language::Fr));
-    assert_ne!(default_config(Language::En), default_config(Language::Fr));
+    assert_ne!(seed_config(Language::En), seed_config(Language::Fr));
+}
+
+/// Games are chosen from the catalog or created: the default configuration only holds the seed's exercises.
+#[test]
+fn default_configs_hold_the_seed_without_games() {
+    for language in [Language::En, Language::Fr] {
+        let cfg = default_config(language);
+        cfg.validate().unwrap();
+        assert!(cfg.games.is_empty());
+        assert_eq!(cfg.exercises, seed_config(language).exercises);
+    }
 }
 
 #[test]
 fn exercises_are_enabled_by_default() {
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     assert!(cfg.exercises.iter().all(|ex| ex.enabled));
     cfg.exercises[0].enabled = false;
     let json = serde_json::to_value(&cfg).unwrap();

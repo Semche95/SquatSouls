@@ -45,12 +45,12 @@ function addEvent(game) {
           <option v-for="g in byName(draft.games)" :key="g.id" :value="g.id">{{ g.name }}</option>
         </select>
       </div>
-      <button class="primary" @click="openNewGame">{{ t('config.games.new') }}</button>
+      <DisabledTip :tip="shareBlocked">
+        <button class="primary" :disabled="!!shareBlocked" @click="browse">{{ t('config.catalog.openShort') }}</button>
+      </DisabledTip>
+      <button @click="openNewGame">{{ t('config.games.new') }}</button>
       <DisabledTip :tip="shareBlocked">
         <button :disabled="!!shareBlocked" @click="importing = true">{{ t('common.import') }}</button>
-      </DisabledTip>
-      <DisabledTip :tip="shareBlocked">
-        <button :disabled="!!shareBlocked" @click="browse">{{ t('config.catalog.openShort') }}</button>
       </DisabledTip>
     </header>
     <div class="cfg-game">

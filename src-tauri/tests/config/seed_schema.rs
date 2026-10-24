@@ -88,7 +88,7 @@ fn game_and_event_follow_the_structure() {
 #[test]
 fn seed_fields_belong_to_the_configuration() {
     let schema = schema();
-    let config = serde_json::to_value(default_config(Language::En)).unwrap();
+    let config = serde_json::to_value(seed_config(Language::En)).unwrap();
     for key in def(&schema, "exercisesFile")["properties"]
         .as_object()
         .unwrap()

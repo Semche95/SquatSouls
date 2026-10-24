@@ -31,7 +31,7 @@ impl Store {
     }
 
     /// Updates the schema and fills a database just created with the default configuration, in the effective
-    /// language. An existing database is never filled, even without any game.
+    /// language. An existing database is never filled.
     fn init(mut conn: Connection, system_locale: Option<&str>) -> Result<Self> {
         conn.execute_batch("PRAGMA foreign_keys = ON")?;
         let created: bool =

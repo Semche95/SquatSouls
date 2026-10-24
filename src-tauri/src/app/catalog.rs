@@ -1,4 +1,4 @@
-//! Catalog of games published with each release (`scripts/catalog.js`, from the default configuration): its
+//! Catalog of games published with each release (`scripts/catalog.js`, from the seed's games): its
 //! address and the reading of its content, a list of share texts.
 
 use crate::app::{AppError, Language};

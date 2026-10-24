@@ -34,7 +34,7 @@ const cfg = provideConfig();
 const { config, configError, gameId, intensity, applyLimit, tab, applyConfigView } = cfg;
 const { session, resume, saveChange } = provideSession(api, cfg);
 provideSessionLimit({ session });
-provideSteam(cfg, { saveChange, catalog: provideCatalog() });
+provideSteam(cfg, { saveChange, catalog: provideCatalog(cfg) });
 
 onMounted(async () => {
   restored.value = await invoke('was_restored').catch(() => false);

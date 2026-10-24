@@ -3,7 +3,7 @@ use super::*;
 #[test]
 fn config_changes_are_saved() {
     let mut s = store();
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     cfg.exercises.swap(0, 1);
     cfg.exercises[0].max = 30;
     cfg.exercises[1].enabled = false;
@@ -25,7 +25,7 @@ fn config_changes_are_saved() {
 #[test]
 fn recoveries_are_saved() {
     let mut s = store();
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     assert_eq!(cfg.recovery, DEFAULT_RECOVERY);
     cfg.recovery = 90;
     cfg.exercises[0].recovery = Some(120);
@@ -80,7 +80,7 @@ fn update_settings_are_on_by_default_and_saved() {
 #[test]
 fn steam_tray_intensity_and_limit_settings_are_saved() {
     let mut s = store();
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     assert!(!cfg.steam_detection && cfg.steam_notify);
     assert!(!cfg.tray && !cfg.close_to_tray && !cfg.start_hidden);
     assert!(!cfg.remember_intensity && !cfg.remember_limit);
@@ -112,7 +112,7 @@ fn steam_tray_intensity_and_limit_settings_are_saved() {
 #[test]
 fn removed_game_takes_its_events_along() {
     let mut s = store();
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     let removed = cfg.games.remove(0);
     s.save_config(&cfg).unwrap();
     // Recreating a game with the same id starts from an empty event list.

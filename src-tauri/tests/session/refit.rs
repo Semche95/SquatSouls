@@ -3,7 +3,7 @@ use std::collections::HashSet;
 
 #[test]
 fn removed_game_is_detected() {
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     let mut s = Session::default();
     assert_eq!(s.end_cause(&cfg), None, "session not started yet");
     s.draw(&cfg, "ds1", "mort", 0, &mut rng()).unwrap();
@@ -20,7 +20,7 @@ fn removed_game_is_detected() {
 
 #[test]
 fn removed_game_is_detected_for_a_session_started_by_its_button() {
-    let mut cfg = default_config(Language::En);
+    let mut cfg = seed_config(Language::En);
     let mut s = Session::default();
     s.start(&cfg, "ds1", 5).unwrap();
     cfg.games.retain(|g| g.id != "ds2");
@@ -35,11 +35,11 @@ fn removed_game_is_detected_for_a_session_started_by_its_button() {
 
 #[test]
 fn a_session_without_included_exercise_is_detected() {
-    let mut cfg = default_config(Language::En);
+    let mut cfg = seed_config(Language::En);
     let mut s = Session::default();
     cfg.exercises.iter_mut().for_each(|ex| ex.enabled = false);
     assert_eq!(s.end_cause(&cfg), None, "session not started yet");
-    let cfg_on = default_config(Language::En);
+    let cfg_on = seed_config(Language::En);
     s.start(&cfg_on, "ds1", 5).unwrap();
     cfg.exercises[0].enabled = true;
     assert_eq!(s.end_cause(&cfg), None, "one included exercise is enough");
@@ -51,7 +51,7 @@ fn a_session_without_included_exercise_is_detected() {
 
 #[test]
 fn an_event_asking_for_more_than_the_included_exercises_gets_all_of_them() {
-    let mut cfg = default_config(Language::En);
+    let mut cfg = seed_config(Language::En);
     cfg.exercises
         .iter_mut()
         .skip(3)
@@ -73,7 +73,7 @@ fn an_event_asking_for_more_than_the_included_exercises_gets_all_of_them() {
 
 #[test]
 fn a_saved_configuration_keeps_the_sets_to_do() {
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
@@ -87,7 +87,7 @@ fn a_saved_configuration_keeps_the_sets_to_do() {
 
 #[test]
 fn changing_the_draws_adjusts_the_sets_to_do() {
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
@@ -124,7 +124,7 @@ fn changing_the_draws_adjusts_the_sets_to_do() {
 
 #[test]
 fn new_bounds_clamp_the_amounts_to_do() {
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
@@ -146,7 +146,7 @@ fn new_bounds_clamp_the_amounts_to_do() {
 
 #[test]
 fn new_bounds_clamp_the_amounts_to_do_at_the_session_intensity() {
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     s.set_intensity(Intensity::Hard);
@@ -161,7 +161,7 @@ fn new_bounds_clamp_the_amounts_to_do_at_the_session_intensity() {
 
 #[test]
 fn a_removed_exercise_is_replaced_in_the_sets_to_do() {
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
@@ -177,7 +177,7 @@ fn a_removed_exercise_is_replaced_in_the_sets_to_do() {
 
 #[test]
 fn a_disabled_exercise_is_replaced_in_the_sets_to_do() {
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
@@ -196,7 +196,7 @@ fn a_disabled_exercise_is_replaced_in_the_sets_to_do() {
 
 #[test]
 fn removed_events_and_new_jokers_apply_to_the_sets_to_do() {
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
@@ -215,7 +215,7 @@ fn removed_events_and_new_jokers_apply_to_the_sets_to_do() {
 #[test]
 fn a_set_with_spent_jokers_still_earns_nothing() {
     let (mut s, boss) = session_with_jokers();
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     s.halve(boss.id, &boss.items[0].exercise_id).unwrap();
     event_mut(&mut cfg, "ds3", "boss").jokers = 2;
     s.apply_config(&cfg, &mut rng());
@@ -224,7 +224,7 @@ fn a_set_with_spent_jokers_still_earns_nothing() {
 
 #[test]
 fn an_exercise_switched_off_without_replacement_leaves_the_set() {
-    let mut cfg = default_config(Language::En);
+    let mut cfg = seed_config(Language::En);
     cfg.exercises
         .iter_mut()
         .skip(3)

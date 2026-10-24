@@ -8,6 +8,7 @@ import { useConfig } from '../composables/useConfig.js';
 import { useSession } from '../composables/useSession.js';
 import { useKeydown } from '../composables/useKeydown.js';
 import { useSteam } from '../composables/useSteam.js';
+import { useCatalog } from '../composables/useCatalog.js';
 import { useSessionLimit } from '../composables/useSessionLimit.js';
 import DrawCard from './DrawCard.vue';
 import QueuedDraw from './QueuedDraw.vue';
@@ -20,6 +21,7 @@ import DisabledTip from './DisabledTip.vue';
 const { config, tab, cfgTab, gameId, intensity, noGame, noExercise, game } = useConfig();
 const { session, skipRecovery, stopTimer, startTimer, toggleTimer, timing, trigger, confirmStop, dismiss, remaining, addedDraw, addedTrigger, cappedTrigger, complete, halve, skipExercise } = useSession();
 const { detected, selectDetected, adding, addGame, ignoreDetected } = useSteam();
+const { browse } = useCatalog();
 const { reached: limitReached } = useSessionLimit();
 
 const INTENSITIES = ['easy', 'normal', 'hard'];
@@ -38,6 +40,11 @@ const steamOffer = computed(() => {
 function showProgram(sub) {
   tab.value = 'program';
   cfgTab.value = sub;
+}
+// Games are first added from the catalog, over the Games sub-tab.
+function showCatalog() {
+  showProgram('games');
+  browse();
 }
 // Current set highlighted, then the queue of the next ones, oldest first: past a few, the rest is folded.
 // Folding is display only, never saved: it starts folded again on coming back to Play.
@@ -126,7 +133,7 @@ useKeydown((e) => {
     <div class="play-head">
       <div class="field">
         <label for="play-game">{{ t('play.game') }}</label>
-        <DisabledTip class="grow" :tip="gameLocked ? t('play.gameLocked') : noGame ? t('play.noGame', { program: t('app.tabs.program') }) : ''">
+        <DisabledTip class="grow" :tip="gameLocked ? t('play.gameLocked') : noGame ? t('play.noGame', { catalog: t('play.catalog'), program: t('app.tabs.program') }) : ''">
           <select id="play-game" v-model="gameId" v-select :disabled="gameLocked || noGame">
             <option value="" disabled>{{ t('play.chooseGame') }}</option>
             <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id" :disabled="!g.events.length">
@@ -212,6 +219,7 @@ useKeydown((e) => {
       </DisabledTip>
     </div>
     <i18n-t v-else-if="noGame" keypath="play.noGame" tag="p" class="empty" scope="global">
+      <template #catalog><button class="link" @click="showCatalog">{{ t('play.catalog') }}</button></template>
       <template #program><button class="link" @click="showProgram('games')">{{ t('app.tabs.program') }}</button></template>
     </i18n-t>
     <i18n-t v-if="noExercise" keypath="play.noExercise" tag="p" class="empty" scope="global">

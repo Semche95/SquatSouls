@@ -1,5 +1,5 @@
 // Writes the catalog of games published with each release into the folder given as argument: one
-// catalog.<language>.json per language of the default configuration, the list of its games as share texts
+// catalog.<language>.json per language of the seed, the list of its games as share texts
 // (src/sharing/share.js), so the app imports them as a pasted text, in the share format of that release.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';

@@ -83,10 +83,10 @@ describe('game list', () => {
     await expectTip(importGame(), 'Save or discard the changes first');
   });
 
-  it('offers only creation and import without any game', async () => {
+  it('offers only the catalog, creation and import without any game', async () => {
     const w = await openWide({ get_config: { config: { ...config, games: [] } } });
     expect(w.find('.cfg-game-list').exists()).toBe(false);
-    expect(w.find('.config .empty').text()).toBe('No game yet.');
-    expect([asideButton(w, '+ New game'), asideButton(w, 'Import a game')].every(Boolean)).toBe(true);
+    expect(w.find('.config .empty').text()).toBe('No game yet. The catalog has ready-to-play games, with their events; a game can also be created or imported.');
+    expect([asideButton(w, 'Game catalog'), asideButton(w, '+ New game'), asideButton(w, 'Import a game')].every(Boolean)).toBe(true);
   });
 });

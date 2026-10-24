@@ -38,7 +38,8 @@
     "gameLocked": "The game can't be changed during a session",
     "noEvent": "{name} (no event)",
     "chooseGame": "Choose a game",
-    "noGame": "No game yet. Games are created and imported in {program}.",
+    "noGame": "No game yet. Games are added from the {catalog}, or created and imported in {program}.",
+    "catalog": "game catalog",
     "noExercise": "No exercise included yet. Exercises are created and included in {program}.",
     "intensity": "Intensity",
     "intensities": {
@@ -197,7 +198,7 @@
       "gameName": "Name of the game",
       "rename": "Rename",
       "renameDone": "Done",
-      "none": "No game yet.",
+      "none": "No game yet. The catalog has ready-to-play games, with their events; a game can also be created or imported.",
       "confirmRemove": "Delete {name} and all its events?",
       "thisGame": "this game",
       "keepGame": "Keep the game",
@@ -392,7 +393,7 @@
     "yourProgram": {
       "title": "Craft your build",
       "lines": [
-        "You fill in the program. The exercises already there are only examples: adjust them to your level before you start."
+        "Add your games from the catalog, events included, or create your own. The exercises already there are only examples: adjust them to your level before you start."
       ]
     },
     "safety": "Take care of yourself",

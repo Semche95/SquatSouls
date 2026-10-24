@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn complete_dismiss_and_totals() {
-    let cfg = default_config(Language::Fr);
+    let cfg = seed_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     let a = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
@@ -36,7 +36,7 @@ fn complete_dismiss_and_totals() {
 #[test]
 fn sets_are_done_in_the_order_they_were_drawn() {
     let (mut s, boss) = session_with_jokers();
-    let cfg = default_config(Language::Fr);
+    let cfg = seed_config(Language::Fr);
     let death = s.draw(&cfg, "ds3", "mort", 0, &mut rng()).unwrap();
     let id = &death.items[0].exercise_id;
     for refused in [
@@ -92,7 +92,7 @@ fn exercises_are_done_one_by_one() {
     assert!(v.pending.is_empty());
     assert_eq!(v.log[0].at, 30);
 
-    let cfg = default_config(Language::Fr);
+    let cfg = seed_config(Language::Fr);
     let boss = s.draw(&cfg, "ds3", "boss", 0, &mut rng()).unwrap();
     s.complete_exercise(boss.id, &boss.items[0].exercise_id, 40)
         .unwrap();
@@ -109,7 +109,7 @@ fn exercises_are_done_one_by_one() {
 
 #[test]
 fn dismissing_a_started_set_keeps_its_done_exercises() {
-    let cfg = default_config(Language::Fr);
+    let cfg = seed_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     let started = s.draw(&cfg, "ds3", "boss-nohit", 0, &mut r).unwrap();
@@ -131,7 +131,7 @@ fn dismissing_a_started_set_keeps_its_done_exercises() {
 
 #[test]
 fn a_dismissed_set_comes_back_on_the_next_trigger_of_its_event() {
-    let cfg = default_config(Language::Fr);
+    let cfg = seed_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
@@ -157,7 +157,7 @@ fn a_dismissed_set_comes_back_on_the_next_trigger_of_its_event() {
 
 #[test]
 fn dismissing_every_set_keeps_only_the_exercises_done() {
-    let cfg = default_config(Language::En);
+    let cfg = seed_config(Language::En);
     let mut s = Session::default();
     let mut r = rng();
     let game = &cfg.games[0];

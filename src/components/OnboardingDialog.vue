@@ -27,10 +27,10 @@ function closed() {
   invoke('set_onboarding_seen').catch(() => {});
 }
 
-// The example exercises are the first thing to adjust.
+// A new database has no game: they are the first thing to add.
 function showProgram() {
   tab.value = 'program';
-  cfgTab.value = 'exercises';
+  cfgTab.value = 'games';
   open.value = false;
 }
 </script>

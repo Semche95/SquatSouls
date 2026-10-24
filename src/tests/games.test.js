@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
 import { config, emptySession, idleSession, responses, setup, openConfig, expectUnchanged, expectTip, layOutControls, formDialog, formDialogOpen, formDialogClosed, confirmDialog, confirmDialogOpen, confirmDialogClosed, save, savedConfig } from './app.js';
-import { shownGame, gameButton, rename } from './program.js';
+import { shownGame, gameButton, newGameButton, rename } from './program.js';
 
 // Games offered by the select of the Program tab.
 const gameNames = (w) => w.findAll('#cfg-game option').map((o) => o.text());
@@ -58,7 +58,7 @@ describe('games', () => {
     const w = await openConfig();
     const savedGames = () => savedConfig().games;
     async function create(name, source) {
-      await w.find('.cfg-game-bar > .primary').trigger('click');
+      await newGameButton(w).trigger('click');
       await formDialogOpen();
       expect(formDialog().find('.primary').element.disabled).toBe(true);
       const nameInput = formDialog().find('input[aria-label="Name of the new game"]');
@@ -81,7 +81,7 @@ describe('games', () => {
   it('offers to copy the events of each game, and closes the modal without creating anything on Cancel', async () => {
     setup();
     const w = await openConfig();
-    await w.find('.cfg-game-bar > .primary').trigger('click');
+    await newGameButton(w).trigger('click');
     await formDialogOpen();
     expect(formDialog().text()).toContain('Copy the events of');
     expect(formDialog().findAll('select option').map((o) => o.text())).toEqual(['Copy nothing', 'Elden Ring', 'Sekiro']);
@@ -95,7 +95,7 @@ describe('games', () => {
   it('shows the new game form unchanged while the modal closes, the game being saved', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
-    await w.find('.cfg-game-bar > .primary').trigger('click');
+    await newGameButton(w).trigger('click');
     await formDialogOpen();
     await formDialog().find('input[aria-label="Name of the new game"]').setValue('Nioh');
     await formDialog().find('form').trigger('submit');
@@ -108,7 +108,7 @@ describe('games', () => {
   it('refuses to create a game with a name already taken', async () => {
     setup();
     const w = await openConfig();
-    await w.find('.cfg-game-bar > .primary').trigger('click');
+    await newGameButton(w).trigger('click');
     await formDialogOpen();
     await formDialog().find('input[aria-label="Name of the new game"]').setValue(' sekiro ');
     expect(formDialog().text()).toContain('A game already has this name.');
@@ -165,17 +165,17 @@ describe('games', () => {
     await flushPromises();
     expect(savedConfig().games).toEqual([]);
     expect(w.find('#cfg-game').exists()).toBe(false);
-    expect(w.find('.config .empty').text()).toBe('No game yet.');
+    expect(w.find('.config .empty').text()).toBe('No game yet. The catalog has ready-to-play games, with their events; a game can also be created or imported.');
     await w.findAll('.tabs button')[0].trigger('click');
     expect(w.find('#play-game').element.disabled).toBe(true);
-    await expectTip(w.find('#play-game'), 'No game yet. Games are created and imported in Program.');
-    expect(w.find('.play-head + .empty').text()).toBe('No game yet. Games are created and imported in Program.');
+    await expectTip(w.find('#play-game'), 'No game yet. Games are added from the game catalog, or created and imported in Program.');
+    expect(w.find('.play-head + .empty').text()).toBe('No game yet. Games are added from the game catalog, or created and imported in Program.');
     const start = w.find('.session-actions .primary');
     expect(start.text()).toBe('Start the session');
     expect(start.element.disabled).toBe(true);
     await expectTip(start, 'No game with events');
     expect(w.find('.session-actions .danger').element.disabled).toBe(true);
-    await w.find('.play-head + .empty .link').trigger('click');
+    await w.findAll('.play-head + .empty .link').find((l) => l.text() === 'Program').trigger('click');
     expect(w.find('.cfg-game-bar').exists()).toBe(true);
     await confirmDialogClosed();
   });

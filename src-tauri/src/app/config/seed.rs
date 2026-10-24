@@ -1,5 +1,5 @@
-//! Default configuration, assembled from `app/seed/`: `exercises.json` and one file per game, whose texts are
-//! written in each language.
+//! Seed, assembled from `app/seed/`: `exercises.json` and one file per game, whose texts are written in each
+//! language. Its exercises are the default configuration, its games the catalog.
 
 use crate::app::{Config, Language};
 use serde_json::Value;
@@ -28,9 +28,9 @@ fn localize(value: &mut Value, language: &str) {
     }
 }
 
-/// Default configuration in `language`, written to a new database and used if the saved
-/// configuration is invalid. Every language has the same ids, numbers and AppIds: only names and units differ.
-pub fn default_config(language: Language) -> Config {
+/// Whole seed in `language`: its exercises and every game of the catalog. Every language has the same ids, numbers
+/// and AppIds: only names and units differ.
+pub fn seed_config(language: Language) -> Config {
     let mut seed: Value = serde_json::from_str(EXERCISES).expect("invalid seed exercises");
     seed["games"] = GAMES
         .iter()
@@ -38,4 +38,13 @@ pub fn default_config(language: Language) -> Config {
         .collect();
     localize(&mut seed, language.as_str());
     serde_json::from_value(seed).expect("invalid seed")
+}
+
+/// Default configuration in `language`, written to a new database and used if the saved configuration is invalid:
+/// the seed's exercises, without any game, each chosen from the catalog or created.
+pub fn default_config(language: Language) -> Config {
+    Config {
+        games: Vec::new(),
+        ..seed_config(language)
+    }
 }

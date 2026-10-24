@@ -7,7 +7,7 @@ import { defineShared } from './shared.js';
 
 // Catalog of games published with each release, fetched when first shown and kept for the effective language,
 // and its modal over the Games tab: the list, then the import of the chosen game.
-export const [provideCatalog, useCatalog] = defineShared(() => {
+export const [provideCatalog, useCatalog] = defineShared(({ shareBlocked }) => {
   // Games of the catalog, read as pasted texts, each with its text: null until fetched.
   const games = ref(null);
   // Why the catalog could not be fetched, '' otherwise.
@@ -48,7 +48,9 @@ export const [provideCatalog, useCatalog] = defineShared(() => {
     return fetching;
   }
 
+  // Not over pending changes of Program: the import, saved right away, would have to merge with them.
   function browse() {
+    if (shareBlocked.value) return;
     picked.value = null;
     open.value = true;
     load();

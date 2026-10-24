@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "seed",
-  "title": "Default configuration",
-  "description": "The default configuration is split into exercises.json (the global recovery and the exercises) and one file per game in games/, which follow exercisesFile and game, checked by the tests. Every text shown (names of exercises and events, units) is written in each language (text); game names, ids, numbers and Steam AppIds are written once. It mirrors the configuration read by the backend (app/config/mod.rs) and the limits of its validation (app/config/validation.rs); the backend tests check that it follows their fields, required fields and limits.",
+  "title": "Seed",
+  "description": "The seed is split into exercises.json (the global recovery and the exercises, the default configuration a new database receives) and one file per game of the catalog in games/, which follow exercisesFile and game, checked by the tests. Every text shown (names of exercises and events, units) is written in each language (text); game names, ids, numbers and Steam AppIds are written once. It mirrors the configuration read by the backend (app/config/mod.rs) and the limits of its validation (app/config/validation.rs); the backend tests check that it follows their fields, required fields and limits.",
   "$defs": {
     "exercisesFile": {
       "type": "object",

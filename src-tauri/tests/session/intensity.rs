@@ -17,7 +17,7 @@ fn intensity_scales_the_drawn_numbers() {
     for intensity in [Intensity::Normal, Intensity::Hard] {
         assert_eq!([2, 3, 9].map(|n| intensity.halve(n)), [1, 2, 5]);
     }
-    let cfg = default_config(Language::Fr);
+    let cfg = seed_config(Language::Fr);
     let mut r = rng();
     for intensity in [Intensity::Easy, Intensity::Hard] {
         let mut s = Session::default();
@@ -39,7 +39,7 @@ fn intensity_scales_the_drawn_numbers() {
 
 #[test]
 fn a_new_intensity_rescales_the_amounts_to_do_from_the_drawn_ones() {
-    let cfg = default_config(Language::Fr);
+    let cfg = seed_config(Language::Fr);
     let mut s = Session::default();
     let boss = s.draw(&cfg, "ds3", "boss", 0, &mut rng()).unwrap();
     s.complete_exercise(boss.id, &boss.items[0].exercise_id, 0)

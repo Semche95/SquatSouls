@@ -34,7 +34,7 @@ src-tauri/src/           Rust backend
   lib.rs                 startup and log files
   commands/              Tauri commands, by domain
   tray.rs                notification area icon
-  app/                   business logic, default configuration (seed/, one file per game) and its schema
+  app/                   business logic, seed (seed/: default exercises, one file per catalog game) and its schema
 src-tauri/migrations/    SQL schema migrations
 src-tauri/tests/         backend tests
 docs/                    behavior reference, data and logs

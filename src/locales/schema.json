@@ -62,14 +62,15 @@
     },
     "play": {
       "type": "object",
-      "required": ["game", "gameLocked", "noEvent", "chooseGame", "noGame", "noExercise", "intensity", "intensities", "intensityTips", "limit", "limitKinds", "minutes", "limitTips", "limitExercises", "limitTime", "detected", "ignore", "recovery", "skipRecovery", "todo", "jokersTip", "jokers", "empty", "moreQueued", "foldQueued", "capped", "limitReached", "limitTip", "sessionLimitTip", "sessionCapped"],
+      "required": ["game", "gameLocked", "noEvent", "chooseGame", "noGame", "catalog", "noExercise", "intensity", "intensities", "intensityTips", "limit", "limitKinds", "minutes", "limitTips", "limitExercises", "limitTime", "detected", "ignore", "recovery", "skipRecovery", "todo", "jokersTip", "jokers", "empty", "moreQueued", "foldQueued", "capped", "limitReached", "limitTip", "sessionLimitTip", "sessionCapped"],
       "additionalProperties": false,
       "properties": {
         "game": { "$ref": "#/$defs/text" },
         "gameLocked": { "$ref": "#/$defs/text" },
         "noEvent": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },
         "chooseGame": { "$ref": "#/$defs/text" },
-        "noGame": { "type": "string", "pattern": "^[^{}]*(?:\\{program\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{program\\}" }] },
+        "noGame": { "type": "string", "pattern": "^[^{}]*(?:\\{(?:catalog|program)\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{catalog\\}" }, { "pattern": "\\{program\\}" }] },
+        "catalog": { "$ref": "#/$defs/text" },
         "noExercise": { "type": "string", "pattern": "^[^{}]*(?:\\{program\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{program\\}" }] },
         "intensity": { "$ref": "#/$defs/text" },
         "intensities": {

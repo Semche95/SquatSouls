@@ -4,9 +4,15 @@ use rand::SeedableRng;
 use squat_souls_lib::app::*;
 use squat_souls_lib::state::AppState;
 
-/// State on a new database, with the French default configuration.
+/// State on `store` holding the French seed, games included: a new database has none.
+fn seeded(mut store: Store) -> AppState {
+    store.save_config(&seed_config(Language::Fr)).unwrap();
+    AppState::new(store, None)
+}
+
+/// State on a new database, with the French seed.
 fn state() -> AppState {
-    AppState::new(Store::open_in_memory(Some("fr_FR.UTF-8")).unwrap(), None)
+    seeded(Store::open_in_memory(Some("fr_FR.UTF-8")).unwrap())
 }
 
 /// Configuration of `state` without the game `id`.
@@ -228,7 +234,7 @@ fn an_ended_or_cancelled_session_does_not_resume() {
 #[test]
 fn a_session_saved_before_counting_what_it_asked_counts_it_again_at_launch() {
     let path = temp_db("recount");
-    let mut state = AppState::new(Store::open(&path, Some("fr_FR.UTF-8")).unwrap(), None);
+    let mut state = seeded(Store::open(&path, Some("fr_FR.UTF-8")).unwrap());
     let mut r = StdRng::seed_from_u64(42);
     start(&mut state);
     state
@@ -254,7 +260,7 @@ fn a_session_saved_before_counting_what_it_asked_counts_it_again_at_launch() {
 #[test]
 fn an_unreadable_session_in_progress_is_told_at_the_next_launch() {
     let path = temp_db("unreadable");
-    let mut state = AppState::new(Store::open(&path, Some("fr_FR.UTF-8")).unwrap(), None);
+    let mut state = seeded(Store::open(&path, Some("fr_FR.UTF-8")).unwrap());
     start(&mut state);
     drop(state);
     let conn = rusqlite::Connection::open(&path).unwrap();
@@ -317,50 +323,11 @@ fn temp_db(name: &str) -> std::path::PathBuf {
 }
 
 #[test]
-fn a_session_resumed_under_the_default_configuration_adjusts_to_it() {
+fn a_session_resumed_under_the_default_configuration_ends() {
     let path = temp_db("invalid-config");
-    let mut state = AppState::new(Store::open(&path, Some("fr_FR.UTF-8")).unwrap(), None);
-    let mut renamed = state.config.clone();
-    renamed
-        .games
-        .iter_mut()
-        .find(|g| g.id == "ds3")
-        .unwrap()
-        .name = "Renamed".into();
-    state.store_config(renamed).unwrap();
-    start(&mut state);
-    state
-        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", 0, &mut StdRng::seed_from_u64(42)))
-        .unwrap();
-    assert_eq!(state.session().view().pending[0].game_name, "Renamed");
-
-    let state = relaunch_with_invalid_config(state, &path);
-    let view = state.session().view();
-    assert_eq!(view.game_id.as_deref(), Some("ds3"), "resumed");
-    let default_name = &state
-        .config
-        .games
-        .iter()
-        .find(|g| g.id == "ds3")
-        .unwrap()
-        .name;
-    assert_eq!(&view.pending[0].game_name, default_name, "adjusted");
-    drop(state);
-    std::fs::remove_file(&path).unwrap();
-}
-
-#[test]
-fn a_session_resumed_on_a_game_the_default_configuration_lacks_ends() {
-    let path = temp_db("invalid-config-game");
-    let mut state = AppState::new(Store::open(&path, Some("fr_FR.UTF-8")).unwrap(), None);
-    let mut own = state.config.clone();
-    let mut game = own.games.iter().find(|g| g.id == "ds3").unwrap().clone();
-    game.id = "own".into();
-    game.name = "Own game".into();
-    own.games.push(game);
-    state.store_config(own).unwrap();
+    let mut state = seeded(Store::open(&path, Some("fr_FR.UTF-8")).unwrap());
     let set = state
-        .change_session(|s, cfg| s.draw(cfg, "own", "mort", 0, &mut StdRng::seed_from_u64(42)))
+        .change_session(|s, cfg| s.draw(cfg, "ds3", "mort", 0, &mut StdRng::seed_from_u64(42)))
         .unwrap();
     complete_first(&mut state, &set, Local::now().timestamp());
 

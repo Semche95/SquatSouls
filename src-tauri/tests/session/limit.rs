@@ -1,8 +1,8 @@
 use super::*;
 
-/// Default configuration where every exercise asks 10 repetitions, with a 10 s recovery: 40 s each.
+/// Seed where every exercise asks 10 repetitions, with a 10 s recovery: 40 s each.
 fn even_config() -> Config {
-    let mut cfg = default_config(Language::Fr);
+    let mut cfg = seed_config(Language::Fr);
     cfg.recovery = 10;
     for ex in &mut cfg.exercises {
         (ex.min, ex.max, ex.recovery, ex.timed, ex.each_side) = (10, 10, None, None, false);

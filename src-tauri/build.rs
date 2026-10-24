@@ -1,6 +1,6 @@
 use std::{env, fs, path::Path};
 
-/// Lists the game files of the default configuration, in the order of their names, so that adding a game
+/// Lists the game files of the seed, the games of the catalog, in the order of their names, so that adding a game
 /// only takes its file.
 fn seed_games() {
     println!("cargo:rerun-if-changed=src/app/seed/games");

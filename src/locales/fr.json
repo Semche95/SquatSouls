@@ -38,7 +38,8 @@
     "gameLocked": "On ne peut plus changer de jeu pendant la séance",
     "noEvent": "{name} (aucun événement)",
     "chooseGame": "Choisir un jeu",
-    "noGame": "Aucun jeu pour l'instant. Les jeux se créent et s'importent dans {program}.",
+    "noGame": "Aucun jeu pour l'instant. Les jeux s'ajoutent depuis le {catalog}, ou se créent et s'importent dans {program}.",
+    "catalog": "catalogue de jeux",
     "noExercise": "Aucun exercice proposé pour l'instant. Les exercices se créent et se proposent dans {program}.",
     "intensity": "Intensité",
     "intensities": {
@@ -197,7 +198,7 @@
       "gameName": "Nom du jeu",
       "rename": "Renommer",
       "renameDone": "Valider",
-      "none": "Aucun jeu pour l'instant.",
+      "none": "Aucun jeu pour l'instant. Des jeux prêts à jouer, avec leurs événements, attendent dans le catalogue. Un jeu peut aussi se créer ou s'importer.",
       "confirmRemove": "Supprimer {name} et tous ses événements ?",
       "thisGame": "ce jeu",
       "keepGame": "Garder le jeu",
@@ -392,7 +393,7 @@
     "yourProgram": {
       "title": "Fais ton build",
       "lines": [
-        "C'est toi qui remplis le programme. Les exercices déjà en place ne sont que des exemples : ajuste-les à ton niveau avant de commencer."
+        "Ajoute tes jeux depuis le catalogue, événements compris, ou crée les tiens. Les exercices déjà en place ne sont que des exemples : ajuste-les à ton niveau avant de commencer."
       ]
     },
     "safety": "Prends soin de toi",

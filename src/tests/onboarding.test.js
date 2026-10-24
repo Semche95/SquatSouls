@@ -66,13 +66,13 @@ describe('onboarding', () => {
     expect(screen()).toBeNull();
   });
 
-  it('opens the example exercises of the program', async () => {
+  it('opens the games of the program, none on a new database', async () => {
     const w = await firstLaunch();
     await toLastStep();
     button('See the program').click();
     await closed();
     expect(w.find('.tabs .active').text()).toBe('Program');
-    expect(w.find('.subtabs .active').text()).toBe('Exercises');
+    expect(w.find('.subtabs .active').text()).toBe('Games');
   });
 
 });

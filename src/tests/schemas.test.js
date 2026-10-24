@@ -25,8 +25,8 @@ describe.each(kinds)('$name', ({ folder, file, schema }) => {
   });
 });
 
-// The default configuration is written once, each text in every language: its files follow the parts of its schema.
-describe('default configuration', () => {
+// The seed is written once, each text in every language: its files follow the parts of its schema.
+describe('seed', () => {
   const folder = '../../src-tauri/src/app/seed/';
   const ajv = new Ajv({ allErrors: true }).addSchema(read(folder, 'schema.json'));
   const check = (part, file) => {
