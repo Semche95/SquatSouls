@@ -1,10 +1,10 @@
-//! Schema of the seeds, written apart from the structures it describes: it must follow their fields and limits.
+//! Schema of the seed files, written apart from the structures it describes: it must follow their fields and limits.
 
 use serde_json::{json, Map, Value};
 use squat_souls_lib::app::*;
 
 fn schema() -> Value {
-    serde_json::from_str(include_str!("../../src/app/seed.schema.json")).unwrap()
+    serde_json::from_str(include_str!("../../src/app/seed/schema.json")).unwrap()
 }
 
 fn def<'a>(schema: &'a Value, name: &str) -> &'a Value {
@@ -84,12 +84,16 @@ fn game_and_event_follow_the_structure() {
     check::<Game>("game", serde_json::to_value(game).unwrap());
 }
 
-/// A seed only holds the program: its fields are fields of the configuration.
+/// The seed only holds the program: the fields of its exercises file are fields of the configuration.
 #[test]
 fn seed_fields_belong_to_the_configuration() {
     let schema = schema();
     let config = serde_json::to_value(default_config(Language::En)).unwrap();
-    for key in schema["properties"].as_object().unwrap().keys() {
+    for key in def(&schema, "exercisesFile")["properties"]
+        .as_object()
+        .unwrap()
+        .keys()
+    {
         assert!(config.get(key).is_some(), "{key}");
     }
 }
@@ -99,11 +103,11 @@ fn limits_follow_the_validation() {
     let schema = schema();
     assert_eq!(def(&schema, "name")["maxLength"], json!(MAX_NAME));
     assert_eq!(
-        def(&schema, "exercise")["properties"]["unit"]["maxLength"],
+        def(&schema, "unit")["additionalProperties"]["maxLength"],
         json!(MAX_UNIT)
     );
     assert_eq!(
-        schema["properties"]["exercises"]["maxItems"],
+        def(&schema, "exercisesFile")["properties"]["exercises"]["maxItems"],
         json!(MAX_ITEMS)
     );
     assert_eq!(
@@ -120,4 +124,16 @@ fn limits_follow_the_validation() {
         assert_eq!(def(&schema, bound)["minimum"], json!(min), "{bound}");
         assert_eq!(def(&schema, bound)["maximum"], json!(max), "{bound}");
     }
+}
+
+/// Every text of the seed files is written in each language of the interface.
+#[test]
+fn texts_follow_the_languages() {
+    let schema = schema();
+    let languages = json!([Language::En.as_str(), Language::Fr.as_str()]);
+    assert_eq!(def(&schema, "languages")["required"], languages);
+    assert_eq!(
+        def(&schema, "languages")["propertyNames"]["enum"],
+        languages
+    );
 }

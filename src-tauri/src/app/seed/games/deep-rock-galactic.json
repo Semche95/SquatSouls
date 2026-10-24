@@ -1,0 +1,60 @@
+{
+  "id": "deep-rock-galactic",
+  "name": "Deep Rock Galactic",
+  "steamAppId": 548430,
+  "events": [
+    {
+      "id": "a-terre",
+      "name": { "en": "Dwarf down", "fr": "Nain à terre" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "niveau",
+      "name": { "en": "Class level up", "fr": "Montée de niveau de classe" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "mission",
+      "name": { "en": "Mission complete", "fr": "Mission accomplie" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "laisse",
+      "name": { "en": "Left behind at extraction", "fr": "Extraction manquée" },
+      "draws": 2,
+      "maxPerSession": 5,
+      "jokers": 0
+    },
+    {
+      "id": "echec",
+      "name": { "en": "Mission failed", "fr": "Mission échouée" },
+      "draws": 2,
+      "maxPerSession": 5,
+      "jokers": 0
+    },
+    {
+      "id": "dreadnought",
+      "name": { "en": "Dreadnought killed", "fr": "Dreadnought vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "deep-dive",
+      "name": { "en": "Deep Dive completed", "fr": "Deep Dive terminée" },
+      "draws": 3,
+      "jokers": 1
+    },
+    {
+      "id": "elite-deep-dive",
+      "name": { "en": "Elite Deep Dive completed", "fr": "Elite Deep Dive terminée" },
+      "draws": 3,
+      "jokers": 2
+    }
+  ]
+}

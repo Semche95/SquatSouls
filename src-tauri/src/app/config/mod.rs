@@ -1,10 +1,14 @@
-//! Configuration: exercises, games and events, their validation and the default configuration
-//! (`seed.en.json`, `seed.fr.json`).
+//! Configuration: exercises, games and events.
+//! - `defaults`: default values of its fields.
+//! - `seed`: default configuration, assembled in one language from the files of `app/seed/`.
+//! - `validation`: limits and validation.
 
 mod defaults;
+mod seed;
 mod validation;
 
 pub use defaults::*;
+pub use seed::*;
 pub use validation::*;
 
 use serde::{Deserialize, Serialize};

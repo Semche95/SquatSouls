@@ -1,0 +1,51 @@
+{
+  "id": "megabonk",
+  "name": "Megabonk",
+  "steamAppId": 3405340,
+  "events": [
+    {
+      "id": "mort",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "boss-portail",
+      "name": { "en": "Portal boss defeated", "fr": "Boss du portail vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "boss-final",
+      "name": { "en": "Final boss defeated (Tier 3)", "fr": "Boss final vaincu (Tier 3)" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "mini-boss",
+      "name": { "en": "Mini-boss defeated", "fr": "Mini-boss vaincu" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "legendaire",
+      "name": { "en": "Legendary obtained (item or upgrade)", "fr": "Élément légendaire obtenu (objet ou amélioration)" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "vague-finale",
+      "name": { "en": "Final swarm triggered before the boss", "fr": "Vague finale déclenchée avant le boss" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "defi",
+      "name": { "en": "Challenge completed", "fr": "Défi accompli" },
+      "draws": 2,
+      "jokers": 1
+    }
+  ]
+}

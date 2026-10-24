@@ -1,0 +1,56 @@
+{
+  "id": "ds3",
+  "name": "Dark Souls III",
+  "steamAppId": 374320,
+  "events": [
+    {
+      "id": "mort",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "repos",
+      "name": { "en": "Rest at a known bonfire", "fr": "Repos à un feu connu" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "decouverte",
+      "name": { "en": "New bonfire lit", "fr": "Nouveau feu allumé" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "niveau",
+      "name": { "en": "Level up", "fr": "Montée de niveau" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "perte",
+      "name": { "en": "Souls lost", "fr": "Âmes perdues" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "boss",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "boss-premier",
+      "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "boss-nohit",
+      "name": { "en": "Boss defeated without getting hit", "fr": "Boss vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}

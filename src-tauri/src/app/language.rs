@@ -11,6 +11,15 @@ pub enum Language {
     Fr,
 }
 
+impl Language {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Language::En => "en",
+            Language::Fr => "fr",
+        }
+    }
+}
+
 /// Language chosen in the settings: the system's, or a fixed one.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize)]
 #[serde(rename_all = "lowercase")]

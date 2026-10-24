@@ -1,0 +1,136 @@
+{
+  "recovery": 60,
+  "exercises": [
+    {
+      "id": "pompes",
+      "name": { "en": "Push-ups", "fr": "Pompes" },
+      "unit": { "en": "reps", "fr": "rép." },
+      "min": 8,
+      "max": 12
+    },
+    {
+      "id": "pompes-mur",
+      "name": { "en": "Wall push-ups", "fr": "Pompes contre un mur" },
+      "unit": { "en": "reps", "fr": "rép." },
+      "min": 10,
+      "max": 15
+    },
+    {
+      "id": "tractions",
+      "name": { "en": "Pull-ups", "fr": "Tractions" },
+      "unit": { "en": "reps", "fr": "rép." },
+      "min": 2,
+      "max": 4
+    },
+    {
+      "id": "squats",
+      "name": { "en": "Squats", "fr": "Squats" },
+      "unit": { "en": "reps", "fr": "rép." },
+      "min": 12,
+      "max": 18
+    },
+    {
+      "id": "assis-debout",
+      "name": { "en": "Sit-to-stands", "fr": "Assis-debout" },
+      "unit": { "en": "reps", "fr": "rép." },
+      "min": 8,
+      "max": 12
+    },
+    {
+      "id": "fentes",
+      "name": { "en": "Lunges", "fr": "Fentes" },
+      "unit": { "en": "reps per leg", "fr": "rép. par jambe" },
+      "min": 5,
+      "max": 8
+    },
+    {
+      "id": "extensions-jambes",
+      "name": { "en": "Seated leg extensions", "fr": "Extensions de jambes sur une chaise" },
+      "unit": { "en": "reps per leg", "fr": "rép. par jambe" },
+      "min": 10,
+      "max": 15
+    },
+    {
+      "id": "montees-genoux",
+      "name": { "en": "Seated knee raises", "fr": "Montées de genoux sur une chaise" },
+      "unit": { "en": "reps per leg", "fr": "rép. par jambe" },
+      "min": 10,
+      "max": 15
+    },
+    {
+      "id": "mollets",
+      "name": { "en": "Calf raises (holding a chair)", "fr": "Élévations des mollets (appui sur une chaise)" },
+      "unit": { "en": "reps", "fr": "rép." },
+      "min": 12,
+      "max": 20
+    },
+    {
+      "id": "gainage",
+      "name": { "en": "Plank", "fr": "Gainage (planche)" },
+      "unit": { "en": "s", "fr": "s" },
+      "min": 20,
+      "max": 45,
+      "timed": "seconds"
+    },
+    {
+      "id": "gainage-genoux",
+      "name": { "en": "Knee plank", "fr": "Gainage sur les genoux" },
+      "unit": { "en": "s", "fr": "s" },
+      "min": 15,
+      "max": 30,
+      "timed": "seconds"
+    },
+    {
+      "id": "superman",
+      "name": { "en": "Superman", "fr": "Superman" },
+      "unit": { "en": "reps", "fr": "rép." },
+      "min": 10,
+      "max": 15
+    },
+    {
+      "id": "montees-bassin",
+      "name": { "en": "Lying hip raises", "fr": "Pont fessier" },
+      "unit": { "en": "reps", "fr": "rép." },
+      "min": 12,
+      "max": 18
+    },
+    {
+      "id": "glisses-bras-mur",
+      "name": { "en": "Arm slides against a wall", "fr": "Glissés de bras contre un mur" },
+      "unit": { "en": "reps", "fr": "rép." },
+      "min": 8,
+      "max": 12
+    },
+    {
+      "id": "etirement-hanche",
+      "name": { "en": "Kneeling hip stretch", "fr": "Étirement de hanche à genou" },
+      "unit": { "en": "s per leg", "fr": "s par jambe" },
+      "min": 20,
+      "max": 30,
+      "timed": "seconds",
+      "eachSide": true
+    },
+    {
+      "id": "leves-bras-ventre",
+      "name": { "en": "Face-down arm raises", "fr": "Levés de bras à plat ventre" },
+      "unit": { "en": "reps", "fr": "rép." },
+      "min": 8,
+      "max": 12
+    },
+    {
+      "id": "menton-rentre",
+      "name": { "en": "Chin tucks against a wall", "fr": "Menton rentré contre un mur" },
+      "unit": { "en": "reps", "fr": "rép." },
+      "min": 8,
+      "max": 12
+    },
+    {
+      "id": "cercles-bras",
+      "name": { "en": "Arm circles", "fr": "Cercles de bras" },
+      "unit": { "en": "s", "fr": "s" },
+      "min": 20,
+      "max": 40,
+      "timed": "seconds"
+    }
+  ]
+}

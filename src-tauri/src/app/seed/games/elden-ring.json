@@ -1,0 +1,56 @@
+{
+  "id": "elden-ring",
+  "name": "Elden Ring",
+  "steamAppId": 1245620,
+  "events": [
+    {
+      "id": "mort",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "repos",
+      "name": { "en": "Rest at a known Site of Grace", "fr": "Repos à un site de grâce connu" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "decouverte",
+      "name": { "en": "Site of Grace discovered", "fr": "Site de grâce découvert" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "niveau",
+      "name": { "en": "Level up", "fr": "Montée de niveau" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "perte",
+      "name": { "en": "Runes lost", "fr": "Runes perdues" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "boss",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "boss-premier",
+      "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "boss-nohit",
+      "name": { "en": "Boss defeated without getting hit", "fr": "Boss vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}

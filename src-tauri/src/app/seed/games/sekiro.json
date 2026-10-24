@@ -1,0 +1,56 @@
+{
+  "id": "sekiro",
+  "name": "Sekiro",
+  "steamAppId": 814380,
+  "events": [
+    {
+      "id": "mort",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "repos",
+      "name": { "en": "Rest at a Sculptor's Idol", "fr": "Repos à une statue du Sculpteur" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "decouverte",
+      "name": { "en": "Sculptor's Idol discovered", "fr": "Statue du Sculpteur découverte" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "niveau",
+      "name": { "en": "Skill point earned", "fr": "Point de compétence gagné" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "perte",
+      "name": { "en": "Sen and experience lost", "fr": "Sen et expérience perdus" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "boss",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "boss-premier",
+      "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "boss-nohit",
+      "name": { "en": "Boss defeated without getting hit", "fr": "Boss vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}
