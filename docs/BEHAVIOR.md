@@ -194,6 +194,7 @@ Button and setting names are quoted as they appear in the English interface.
 ## Launch
 
 - The app runs only once: launching it again, with its window hidden in the notification area for instance, shows the window already open. The development app is apart and can run beside the installed one.
+- The window opens with the size and at the position it had when the app last quit, maximized if it was. A position on a screen no longer connected is left out. The minimal window below neither takes nor changes them.
 - At each launch, the database is checked, then copied for the next launch before receiving its migrations. While the app runs, the copy is renewed every hour, as long as the database is still intact.
 - A damaged database is set aside, only the 3 most recent ones being kept, and replaced by the copy of the previous launch if that copy is intact. The app then opens as usual, with a banner, closed by its cross: "A problem prevented reading the data. The copy saved at the previous launch was restored, so the latest changes may be missing."
 - When the database cannot be opened, the app opens a small minimal window instead of quitting: the title, the reason in the system language, and under it the update banner. The database is left as it is. As the update settings are in the database, the app looks for an update and downloads it as when they are on, and installs it on quitting or with **Restart now**. The reasons:

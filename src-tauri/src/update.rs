@@ -3,6 +3,7 @@
 //! installed on quitting or on request, never during a session. The `.deb` and `.rpm` packages are only told.
 
 use crate::app::AppError;
+use crate::main_window;
 use crate::state::{lock, AppState};
 use serde::Serialize;
 use std::sync::{Mutex, MutexGuard};
@@ -235,6 +236,8 @@ pub(crate) fn install_and_restart(app: &AppHandle) -> Result<(), AppError> {
         .state::<PendingUpdate>()
         .take()
         .ok_or_else(|| AppError::internal("Update not installed", "no update downloaded"))?;
+    // The restart, and on Windows the installer, quit without the app's exit, which saves the window otherwise.
+    main_window::save(app);
     update
         .install(bytes)
         .map_err(|e| AppError::internal("Update not installed", e))?;

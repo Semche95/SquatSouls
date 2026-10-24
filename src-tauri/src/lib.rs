@@ -1,5 +1,6 @@
 pub mod app;
 mod commands;
+mod main_window;
 mod session_clock;
 mod startup;
 pub mod state;
@@ -102,11 +103,13 @@ pub fn run() {
             app.manage(Mutex::new(store.steam_names()?));
             // The tray icon waits for the interface's texts (`set_native_texts`).
             let state = AppState::new(store, system_locale);
-            if !(state.config.tray && state.config.start_hidden) {
-                tray::show_main(app.handle());
-            }
+            let shown = !(state.config.tray && state.config.start_hidden);
             let (update_check, update_auto) = (state.config.update_check, state.config.update_auto);
             app.manage(Mutex::new(state));
+            main_window::create(app.handle(), true)?;
+            if shown {
+                tray::show_main(app.handle());
+            }
             startup::copy_regularly(app.handle());
             session_clock::record_regularly(app.handle());
             update::apply(app.handle(), update_check, update_auto);

@@ -4,7 +4,7 @@
 
 use crate::app::{AppError, Language, LanguageSetting, LaunchError, Launched, OpenFailure, Store};
 use crate::state::AppState;
-use crate::{tray, update};
+use crate::{main_window, tray, update};
 use serde::Serialize;
 use std::sync::Mutex;
 use std::time::Duration;
@@ -74,11 +74,14 @@ fn fail(app: &AppHandle, e: &LaunchError, system_locale: Option<&str>) {
         error: AppError::new(e.failure.code()),
         language: LanguageSetting::System.resolve(system_locale),
     });
-    if let Some(window) = app.get_webview_window("main") {
-        let size = LogicalSize::new(WIDTH, HEIGHT);
-        let _ = window.set_min_size(Some(size));
-        let _ = window.set_size(size);
-        let _ = window.center();
+    match main_window::create(app, false) {
+        Ok(window) => {
+            let size = LogicalSize::new(WIDTH, HEIGHT);
+            let _ = window.set_min_size(Some(size));
+            let _ = window.set_size(size);
+            let _ = window.center();
+        }
+        Err(e) => log::error!("Minimal window not created: {e}"),
     }
     tray::show_main(app);
     update::apply(app, true, true);

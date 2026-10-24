@@ -2,6 +2,7 @@
 //! confirmed by the interface during a session, which resumes at the next launch, installing the downloaded
 //! update otherwise.
 
+use crate::main_window;
 use crate::state::{in_session, AppState, NativeTexts};
 use crate::update;
 use std::sync::Mutex;
@@ -17,7 +18,7 @@ const QUIT_REQUESTED: &str = "quit-requested";
 
 /// Shows the main window in the foreground.
 pub(crate) fn show_main(app: &AppHandle) {
-    if let Some(window) = app.get_webview_window("main") {
+    if let Some(window) = app.get_webview_window(main_window::LABEL) {
         let _ = window.unminimize();
         let _ = window.show();
         let _ = window.set_focus();

@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "create": false,
         "title": "Squat Souls",
         "width": 1100,
         "height": 800,

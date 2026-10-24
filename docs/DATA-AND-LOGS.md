@@ -16,6 +16,10 @@ At each launch, the intact database is copied to `squatsouls.previous.db` before
 
 On save, only the modified exercises, games and events are rewritten.
 
+## Window
+
+The size and position of the window and whether it is maximized are saved on quitting in `squatsouls.window.json`, beside the database (`squatsouls-dev.window.json` for the development app).
+
 ## Migrations
 
 The schema lives in `src-tauri/migrations/`, one `V<n>__<name>.sql` file per migration. At launch, the database receives the schema migrations it is missing, each dated when applied. A migration is never modified once created: every schema change adds a new one. A database created by a newer version of the app is refused: the app then opens a minimal window that looks for the update (see `docs/BEHAVIOR.md`). Updates and reinstalls never touch the database folder, so the data is kept from one version to the next.
