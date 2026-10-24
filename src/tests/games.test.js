@@ -18,7 +18,17 @@ describe('games', () => {
     expect(w.findAll('.cfg-events .tile-name').map((n) => n.text())).toEqual([config.games[1].events[0].name]);
   });
 
-  it('renames the game from the end of its name, the new name waiting for save', async () => {
+  it('filters the games of the select with a search field, which the select of Play does not have', async () => {
+    setup();
+    const w = await openConfig();
+    await flushPromises();
+    expect(w.find('#cfg-game').element.tomselect.control_input.placeholder).toBe('Filter the games');
+    await w.findAll('.tabs button')[0].trigger('click');
+    await flushPromises();
+    expect(w.find('#play-game').element.tomselect.settings.plugins).toEqual([]);
+  });
+
+  it('renames the game in place of its title from the end of its name, the new name waiting for save', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
     await gameButton(w, 'Rename').trigger('click');
@@ -26,8 +36,8 @@ describe('games', () => {
     const input = w.find('input[aria-label="Name of the game"]');
     expect(document.activeElement).toBe(input.element);
     expect([input.element.selectionStart, input.element.selectionEnd]).toEqual([10, 10]);
-    expect(w.find('#cfg-game').element.tagName).toBe('INPUT');
-    const done = () => w.find('.cfg-game-bar form .primary');
+    expect(w.find('.cfg-game-title').exists()).toBe(false);
+    const done = () => w.find('.cfg-game-head form .primary');
     await input.setValue(' ');
     await expectTip(done(), 'Give the game a name');
     await input.setValue(' sekiro ');
@@ -111,7 +121,7 @@ describe('games', () => {
   it('asks for confirmation before removing a game, then saves right away', async () => {
     setup({ save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
-    const remove = () => w.find('.cfg-game-bar .danger');
+    const remove = () => w.find('.cfg-game-head .danger');
     await remove().trigger('click');
     await confirmDialogOpen();
     expect(confirmDialog().text()).toContain('Delete Elden Ring and all its events?');
@@ -133,7 +143,7 @@ describe('games', () => {
     const w = await openConfig();
     // The backend ends the session of the removed game, with its exercises done.
     responses.get_session = idleSession({ ended: { saved: true, cause: 'gameRemoved' } });
-    await w.find('.cfg-game-bar .danger').trigger('click');
+    await w.find('.cfg-game-head .danger').trigger('click');
     await confirmDialogOpen();
     await confirmDialog().find('.danger').trigger('click');
     await flushPromises();
@@ -149,7 +159,7 @@ describe('games', () => {
   it('removes the last game and says there is none, in Program as in Play, where the session cannot start', async () => {
     setup({ get_config: { config: { ...config, games: config.games.slice(0, 1) } }, get_session: idleSession(), save_config: (args) => ({ config: args.config }) });
     const w = await openConfig();
-    await w.find('.cfg-game-bar .danger').trigger('click');
+    await w.find('.cfg-game-head .danger').trigger('click');
     await confirmDialogOpen();
     await confirmDialog().find('.danger').trigger('click');
     await flushPromises();

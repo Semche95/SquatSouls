@@ -32,16 +32,46 @@ const snapshot = (el) => JSON.stringify([el.value, el.disabled, [...el.options].
 // the empty option ("Choose a game", "Copy nothing") shown like the others rather than as a placeholder.
 const settings = { controlInput: null, openOnFocus: false, allowEmptyOption: true };
 
+// With `v-select="{ search, none }"`, a field at the top of the list filters it, `search` its placeholder and `none`
+// what it says when no option matches. The options keep their order while filtered, without highlighting the text typed,
+// like the list of the games in a wide window.
+const searchSettings = ({ none }) => ({
+  ...settings,
+  controlInput: '<input type="text" autocomplete="off" size="1" />',
+  plugins: ['dropdown_input'],
+  sortField: '$order',
+  highlight: false,
+  render: {
+    no_results: () => {
+      const p = document.createElement('div');
+      p.className = 'no-results';
+      p.textContent = none;
+      return p;
+    },
+  },
+});
+
+// Texts of the search field, following the language.
+function searchTexts(el, binding) {
+  const ts = el.tomselect;
+  if (!ts || !binding.value) return;
+  ts.control_input.placeholder = binding.value.search;
+  ts.control_input.setAttribute('aria-label', binding.value.search);
+  ts.settings.render.no_results = searchSettings(binding.value).render.no_results;
+}
+
 export const vSelect = {
   // After the next tick, once v-model has selected the model's option.
-  mounted: (el) =>
+  mounted: (el, binding) =>
     nextTick(() => {
       if (!el.isConnected) return;
-      new Select(el, settings);
+      new Select(el, binding.value ? searchSettings(binding.value) : settings);
+      searchTexts(el, binding);
       el.snapshot = snapshot(el);
     }),
-  updated: (el) =>
+  updated: (el, binding) =>
     nextTick(() => {
+      searchTexts(el, binding);
       const ts = el.tomselect;
       if (!ts || el.snapshot === snapshot(el)) return;
       el.snapshot = snapshot(el);

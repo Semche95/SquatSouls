@@ -176,6 +176,10 @@
     "games": {
       "import": "Import a game",
       "new": "New game",
+      "addGame": "+ New game",
+      "filter": "Filter the games",
+      "noMatch": "No game matches.",
+      "eventCount": "{n} event | {n} events",
       "newName": "Name of the new game",
       "nameTaken": "A game already has this name.",
       "exists": "{name} already exists.",

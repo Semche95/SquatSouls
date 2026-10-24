@@ -93,7 +93,7 @@ describe('countdown', () => {
       responses.save_config = (args) => ({ config: args.config });
       responses.get_session = idleSession();
       await w.findAll('.tabs button')[2].trigger('click');
-      await w.find('.cfg-game-bar .danger').trigger('click');
+      await w.find('.cfg-game-head .danger').trigger('click');
       await confirmDialogOpen();
       await confirmDialog().find('.danger').trigger('click');
       await flushPromises();

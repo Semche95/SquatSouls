@@ -14,9 +14,12 @@ export function withTabDraft(config, draft, settings) {
   return cfg;
 }
 
+// Name without accents nor case, to derive an id from it or to find it from a part typed.
+const folded = (name) => name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
 // Ids stay internal: derived from the name on creation, then fixed even when renamed.
 export function newId(name, items) {
-  const base = name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'id';
+  const base = folded(name).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'id';
   const taken = new Set(items.map((it) => it.id));
   let id = base;
   for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
@@ -36,6 +39,11 @@ export function sameName(a, b) {
 export function extendsName(name, base) {
   const [n, b] = [name, base].map((s) => s.trim().toLowerCase());
   return n.startsWith(b) && !/\p{L}/u.test(n[b.length] ?? '');
+}
+
+// A name containing the text typed, ignoring case, accents and the text's surrounding spaces.
+export function nameMatches(name, text) {
+  return folded(name).includes(folded(text.trim()));
 }
 
 // Games are displayed by name, whatever the saved order, their numbers in order ("Dark Souls 2" before "Dark Souls 10").

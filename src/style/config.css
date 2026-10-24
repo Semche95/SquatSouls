@@ -171,18 +171,130 @@
   content: '·';
   margin: 0 6px;
 }
-/* Games: the edited game and its actions on the left, creation and import on the right. */
+/* Games, narrow window: the select of the edited game on the left, creation and import on the right. */
 .cfg-game-bar {
   align-items: center;
 }
-/* The game's actions go to the next line rather than out of the window when it is narrow. */
 .cfg-game-bar .field {
   flex: 1 1 auto;
-  flex-wrap: wrap;
   min-width: 0;
 }
-.config .cfg-game-bar :is(.ts-wrapper, input) {
+.config .cfg-game-bar .ts-wrapper {
   flex: 0 1 260px;
+}
+/* Wide window: the list of the games in a column, the edited game beside it. */
+.cfg-games-wide {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  align-items: start;
+  column-gap: 24px;
+}
+.cfg-games {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+/* Import takes the width of the column, like creation. */
+.cfg-games .tip > button {
+  flex: 1;
+}
+.cfg-games .tile-new {
+  align-items: center;
+  min-height: 0;
+  padding: 10px;
+}
+/* Past the height of the window, minus the sub-tabs above and the two buttons and the save bar below,
+   the list scrolls inside its frame: creation and import stay in view whatever the number of games. */
+.cfg-game-list {
+  display: flex;
+  flex-direction: column;
+  max-height: max(160px, calc(100vh - 290px));
+  overflow: hidden;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+/* Its text in line with the names of the list, set in by the frame of the list. */
+.cfg-game-list .cfg-game-filter {
+  flex: none;
+  padding-inline: 13px;
+}
+.cfg-game-list nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 3px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+.cfg-game-list nav button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  border: none;
+  background: transparent;
+  padding: 7px 10px;
+  color: var(--muted);
+  text-align: left;
+}
+.cfg-game-list nav button:hover:not(.active) {
+  background: var(--gold-soft);
+  color: var(--text);
+}
+.cfg-game-list nav button.active {
+  background: var(--panel-2);
+  color: var(--text);
+}
+.cfg-game-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cfg-game-count {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.active .cfg-game-count {
+  color: var(--gold);
+}
+/* The edited game: its name as the title of its events, renamed with the pen beside it, shared or removed on the right. */
+.cfg-game {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cfg-game-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.cfg-game-head form {
+  flex: 1;
+}
+.config .cfg-game-head input {
+  flex: 0 1 320px;
+}
+.cfg-game-title {
+  margin: 0;
+  min-width: 0;
+  font-family: var(--font-title);
+  font-size: 1.5rem;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+}
+.cfg-game-pen {
+  display: inline-flex;
+  padding: 6px 8px;
+  border-color: transparent;
+  color: var(--muted);
+}
+.cfg-game-actions {
+  margin-left: auto;
 }
 /* Save bar of the whole tab. */
 .cfg-actions {

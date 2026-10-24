@@ -259,11 +259,15 @@
         "copied": { "$ref": "#/$defs/text" },
         "games": {
           "type": "object",
-          "required": ["import", "new", "newName", "nameTaken", "exists", "replace", "replaceTarget", "noReplace", "importAsNew", "importName", "nameNeeded", "copyEvents", "newEvents", "noCopy", "create", "shareEmpty", "gameName", "rename", "renameDone", "none", "confirmRemove", "thisGame", "keepGame", "addEvent", "newEvent", "imported", "importedClamped", "events"],
+          "required": ["import", "new", "addGame", "filter", "noMatch", "eventCount", "newName", "nameTaken", "exists", "replace", "replaceTarget", "noReplace", "importAsNew", "importName", "nameNeeded", "copyEvents", "newEvents", "noCopy", "create", "shareEmpty", "gameName", "rename", "renameDone", "none", "confirmRemove", "thisGame", "keepGame", "addEvent", "newEvent", "imported", "importedClamped", "events"],
           "additionalProperties": false,
           "properties": {
             "import": { "$ref": "#/$defs/text" },
             "new": { "$ref": "#/$defs/text" },
+            "addGame": { "$ref": "#/$defs/text" },
+            "filter": { "$ref": "#/$defs/text" },
+            "noMatch": { "$ref": "#/$defs/text" },
+            "eventCount": { "type": "string", "pattern": "^[^{}]*(?:\\{n\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{n\\}" }, { "pattern": "\\|" }] },
             "newName": { "$ref": "#/$defs/text" },
             "nameTaken": { "$ref": "#/$defs/text" },
             "exists": { "type": "string", "pattern": "^[^{}]*(?:\\{name\\}[^{}]*)*$", "allOf": [{ "pattern": "\\{name\\}" }] },

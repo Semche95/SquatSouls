@@ -72,3 +72,26 @@
   background: var(--gold-soft);
   color: var(--text);
 }
+/* Search field at the top of a select's list (the games of Program in a narrow window): the app's colors rather than
+   Tom Select's, the field staying gold while the list is open. */
+.plugin-dropdown_input.focus.dropdown-active .ts-control {
+  border-color: var(--gold);
+}
+/* Filter field at the top of a list of games, the select's as the list beside the edited game: `.config` wins over
+   its fields, framed and gold once focused; only a line separates it from the list. */
+.config .ts-dropdown .dropdown-input,
+.ts-dropdown .dropdown-input,
+.config .cfg-game-filter {
+  border: none;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background-color: transparent;
+  padding: 8px 10px;
+}
+/* Line saying no game matches the filter. */
+.ts-dropdown .no-results,
+.cfg-game-none {
+  margin: 0;
+  padding: 6px 10px;
+  color: var(--muted);
+}

@@ -4,13 +4,13 @@ import { nextTick, ref } from 'vue';
 import { vSelect } from '../ui/select.js';
 
 // A select drawn by Tom Select, its options and state given by the test.
-const mountSelect = async (options, { value = '', disabled = false } = {}) => {
-  const state = { options: ref(options), value: ref(value), disabled: ref(disabled) };
+const mountSelect = async (options, { value = '', disabled = false, search = null } = {}) => {
+  const state = { options: ref(options), value: ref(value), disabled: ref(disabled), search: ref(search) };
   const w = mount(
     {
       directives: { select: vSelect },
       setup: () => state,
-      template: `<select v-select v-model="value" :disabled="disabled">
+      template: `<select v-select="search" v-model="value" :disabled="disabled">
         <option v-for="o in options" :key="o.value" :value="o.value" :disabled="o.disabled">{{ o.text }}</option>
       </select>`,
     },
@@ -82,6 +82,31 @@ describe('select', () => {
     for (const keyCode of [8, 46]) ts.control.dispatchEvent(new KeyboardEvent('keydown', { keyCode, bubbles: true }));
     await flushPromises();
     expect(value.value).toBe('er');
+    w.unmount();
+  });
+
+  it('filters its list with a search field when asked, keeping the order, and says when nothing matches', async () => {
+    const options = [{ value: 'ds', text: 'Dark Souls' }, { value: 'ds3', text: 'Dark Souls III' }, { value: 'poke', text: 'Pokémon' }, { value: 'er', text: 'Elden Ring' }];
+    const { w, value, search, ts } = await mountSelect(options, { value: 'er', search: { search: 'Filter the games', none: 'No game matches.' } });
+    expect(ts.control_input.placeholder).toBe('Filter the games');
+    ts.control.click();
+    ts.setTextboxValue('souls');
+    ts.refreshOptions();
+    expect([...ts.dropdown_content.querySelectorAll('.option')].map((o) => o.textContent)).toEqual(['Dark Souls', 'Dark Souls III']);
+    ts.setTextboxValue('pokemon');
+    ts.refreshOptions();
+    expect([...ts.dropdown_content.querySelectorAll('.option')].map((o) => o.textContent)).toEqual(['Pokémon']);
+    ts.setTextboxValue('zelda');
+    ts.refreshOptions();
+    expect(ts.dropdown_content.querySelector('.no-results').textContent).toBe('No game matches.');
+    search.value = { search: 'Filtrer les jeux', none: 'Aucun jeu ne correspond.' };
+    await flushPromises();
+    expect(ts.control_input.placeholder).toBe('Filtrer les jeux');
+    ts.setTextboxValue('souls');
+    ts.refreshOptions();
+    ts.setValue('ds3');
+    await flushPromises();
+    expect(value.value).toBe('ds3');
     w.unmount();
   });
 });

@@ -5,7 +5,8 @@ import { openConfig, save, editDialog, editDialogOpen, editDialogClosed } from '
 
 // Game shown in the select of the Program tab.
 export const shownGame = (w) => w.find('#cfg-game option:checked').text();
-export const gameButton = (w, text) => w.findAll('.cfg-game-bar .field button').find((b) => b.text() === text);
+// Button of the edited game, over its events: Share, Remove, or the pen named Rename.
+export const gameButton = (w, text) => w.findAll('.cfg-game-head button').find((b) => (b.text() || b.attributes('aria-label')) === text);
 // Event tiles of the edited game, without the New event tile placed before them.
 export const eventTiles = (w) => w.findAll('.cfg-events .tile:not(.tile-new)');
 // Import of the Games tab, next to New game.
@@ -14,7 +15,7 @@ export const importButton = (w) => w.findAll('.cfg-game-bar button').find((b) =>
 export async function rename(w, name) {
   await gameButton(w, 'Rename').trigger('click');
   await w.find('input[aria-label="Name of the game"]').setValue(name);
-  await w.find('.cfg-game-bar form').trigger('submit');
+  await w.find('.cfg-game-head form').trigger('submit');
 }
 
 // Exercises sub-tab, with the first exercise's dialog open unless asked otherwise.
