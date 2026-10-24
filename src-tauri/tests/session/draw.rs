@@ -3,7 +3,7 @@ use std::collections::HashSet;
 
 #[test]
 fn draws_stay_in_range_and_are_distinct() {
-    let cfg = seed_config(Language::Fr);
+    let cfg = catalog_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     for _ in 0..200 {
@@ -28,7 +28,7 @@ fn draws_stay_in_range_and_are_distinct() {
 
 #[test]
 fn every_option_can_be_drawn() {
-    let cfg = seed_config(Language::Fr);
+    let cfg = catalog_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     let mut seen = HashSet::new();
@@ -41,7 +41,7 @@ fn every_option_can_be_drawn() {
 
 #[test]
 fn each_exercise_comes_out_once_per_round() {
-    let cfg = seed_config(Language::Fr);
+    let cfg = catalog_config(Language::Fr);
     let n = cfg.exercises.len();
     let mut s = Session::default();
     let mut r = rng();
@@ -65,7 +65,7 @@ fn each_exercise_comes_out_once_per_round() {
 
 #[test]
 fn a_new_round_does_not_start_with_the_last_set() {
-    let cfg = seed_config(Language::Fr);
+    let cfg = catalog_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     let mut last: Vec<String> = Vec::new();
@@ -83,7 +83,7 @@ fn a_new_round_does_not_start_with_the_last_set() {
 
 #[test]
 fn a_draw_across_two_rounds_stays_distinct() {
-    let mut cfg = seed_config(Language::Fr);
+    let mut cfg = catalog_config(Language::Fr);
     // A single drawn exercise shifts the round: with an even number of exercises, draws of 2 then straddle two rounds.
     cfg.exercises.truncate(cfg.exercises.len() / 2 * 2);
     let n = cfg.exercises.len();
@@ -104,7 +104,7 @@ fn a_draw_across_two_rounds_stays_distinct() {
 
 #[test]
 fn death_cap_applies_per_game_and_session() {
-    let cfg = seed_config(Language::Fr);
+    let cfg = catalog_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     for n in 1..=15 {
@@ -131,7 +131,7 @@ fn death_cap_applies_per_game_and_session() {
 
 #[test]
 fn a_disabled_exercise_is_never_drawn() {
-    let mut cfg = seed_config(Language::Fr);
+    let mut cfg = catalog_config(Language::Fr);
     let disabled = cfg.exercises[0].id.clone();
     cfg.exercises[0].enabled = false;
     let mut s = Session::default();

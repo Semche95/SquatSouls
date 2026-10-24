@@ -1,6 +1,6 @@
 //! Configuration: exercises, games and events.
 //! - `defaults`: default values of its fields.
-//! - `seed`: seed and default configuration, assembled in one language from the files of `app/seed/`.
+//! - `seed`: default configuration, read in one language from the seed `seed.json`.
 //! - `validation`: limits and validation.
 
 mod defaults;

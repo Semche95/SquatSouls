@@ -34,7 +34,8 @@ src-tauri/src/           Rust backend
   lib.rs                 startup and log files
   commands/              Tauri commands, by domain
   tray.rs                notification area icon
-  app/                   business logic, seed (seed/: default exercises, one file per catalog game) and its schema
+  app/                   business logic, seed (config/seed.json: default exercises) and its schema
+src-tauri/catalog/       catalog of games, one file per game, and its schema
 src-tauri/migrations/    SQL schema migrations
 src-tauri/tests/         backend tests
 docs/                    behavior reference, data and logs
@@ -46,7 +47,7 @@ site/                    presentation site, published on GitHub Pages by the Sit
 1. Add `src/locales/<code>.json` following `src/locales/schema.json` (the tests check it), and register it in `src/i18n/i18n.js` (with its plural rule if it differs from English).
 2. Add it to the language list in `src/components/ConfigSettings.vue` and to the Steam Store languages in `src/i18n/locale.js`.
 3. In `src-tauri/src/app/language.rs`, add it to `Language` and `LanguageSetting`, and to the system locale resolution.
-4. Add it to the `languages` of `src-tauri/src/app/seed/schema.json`, then write its text beside the others in every name and unit of `src-tauri/src/app/seed/`.
+4. Add it to the `languages` of `src-tauri/src/app/config/seed.schema.json`, then write its text beside the others in every name and unit of `src-tauri/src/app/config/seed.json` and `src-tauri/catalog/games/`.
 5. For the site, add `site/locales/<code>.json` following `site/locales/schema.json`, its button in `site/index.html` and its code in `site/language.js`.
 6. Update the Language section of [docs/BEHAVIOR.md](docs/BEHAVIOR.md).
 

@@ -4,7 +4,7 @@ use super::*;
 fn summary_counts_events_in_game_order_and_jokers() {
     let (mut s, boss) = session_with_jokers();
     s.dismiss(boss.id).unwrap();
-    let cfg = seed_config(Language::Fr);
+    let cfg = catalog_config(Language::Fr);
     let death = s.draw(&cfg, "ds3", "mort", 0, &mut rng()).unwrap();
     s.skip_set(death.id).unwrap();
     let names: Vec<_> = s
@@ -32,7 +32,7 @@ fn summary_counts_events_in_game_order_and_jokers() {
 
 #[test]
 fn summary_leaves_out_the_sets_to_do_not_started() {
-    let cfg = seed_config(Language::Fr);
+    let cfg = catalog_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     let boss = s.draw(&cfg, "ds3", "boss", 0, &mut r).unwrap();
@@ -83,7 +83,7 @@ fn the_jokers_spent_on_a_set_dismissed_before_being_started_never_count() {
 
 #[test]
 fn the_duration_counts_from_the_start_without_the_time_the_app_was_closed() {
-    let cfg = seed_config(Language::Fr);
+    let cfg = catalog_config(Language::Fr);
     let mut s = Session::default();
     assert_eq!(s.view().counted_from, None, "not started");
     s.start(&cfg, "ds3", 1000).unwrap();

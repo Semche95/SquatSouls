@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "catalog",
+  "title": "Catalog game",
+  "description": "A game of the catalog, one file per game in games/, published with each release by scripts/catalog.js. Every text shown (names of events) is written in each language (text of the seed schema, src-tauri/src/app/config/seed.schema.json, which holds the definitions shared with the seed); game names, ids, numbers and Steam AppIds are written once. It mirrors the games of the configuration read by the backend (src-tauri/src/app/config/mod.rs) and the limits of its validation (src-tauri/src/app/config/validation.rs); the backend tests check that it follows their fields, required fields and limits.",
+  "type": "object",
+  "required": ["id", "name", "events"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "$ref": "seed#/$defs/id" },
+    "name": { "$ref": "seed#/$defs/name" },
+    "steamAppId": { "$ref": "#/$defs/positive" },
+    "events": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/event" } }
+  },
+  "$defs": {
+    "positive": { "type": "integer", "minimum": 1, "maximum": 4294967295 },
+    "count": { "type": "integer", "minimum": 0, "maximum": 9999 },
+    "draws": { "type": "integer", "minimum": 1, "maximum": 100 },
+    "event": {
+      "type": "object",
+      "required": ["id", "name", "draws"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "seed#/$defs/id" },
+        "name": { "$ref": "seed#/$defs/text" },
+        "draws": { "$ref": "#/$defs/draws" },
+        "maxPerSession": { "$ref": "seed#/$defs/amount" },
+        "jokers": { "$ref": "#/$defs/count" }
+      }
+    }
+  }
+}

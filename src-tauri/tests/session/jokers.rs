@@ -7,7 +7,7 @@ fn skipping_a_set_costs_its_exercises() {
     assert!(s.skip_set(boss.id).is_err(), "two exercises cost 4 jokers");
 
     s.dismiss(boss.id).unwrap();
-    let cfg = seed_config(Language::Fr);
+    let cfg = catalog_config(Language::Fr);
     let death = s.draw(&cfg, "ds3", "mort", 0, &mut rng()).unwrap();
     s.skip_set(death.id).unwrap();
     let v = s.view();
@@ -108,7 +108,7 @@ fn skipping_every_exercise_removes_the_set() {
 
 #[test]
 fn a_single_unit_cannot_be_halved() {
-    let mut cfg = seed_config(Language::Fr);
+    let mut cfg = catalog_config(Language::Fr);
     for ex in &mut cfg.exercises {
         ex.min = 1;
         ex.max = 1;

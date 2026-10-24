@@ -4,7 +4,7 @@ import { catalog, languages } from './scripts/catalog.js';
 
 const host = process.env.TAURI_DEV_HOST;
 
-// Serves the catalog of the local seed at /catalog.<language>.json, where the development build reads it.
+// Serves the local catalog, src-tauri/catalog/, at /catalog.<language>.json, where the development build reads it.
 const devCatalog = {
   name: 'dev-catalog',
   apply: 'serve',

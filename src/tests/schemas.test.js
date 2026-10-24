@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
 import Ajv from 'ajv/dist/2020.js';
-import { gameFiles } from '../../scripts/seed.js';
+import { catalogFiles } from '../../scripts/localized.js';
 
 // Files of each language, found by name so that a new language is checked too, and the schema they all follow:
 // the structure of a language comes from its schema, never from another language.
@@ -25,24 +25,26 @@ describe.each(kinds)('$name', ({ folder, file, schema }) => {
   });
 });
 
-// The seed is written once, each text in every language: its files follow the parts of its schema.
-describe('seed', () => {
-  const folder = '../../src-tauri/src/app/seed/';
-  const ajv = new Ajv({ allErrors: true }).addSchema(read(folder, 'schema.json'));
-  const check = (part, file) => {
-    const validate = ajv.getSchema(`seed#/$defs/${part}`);
+// The seed and the catalog are written once, each text in every language: their files follow their schemas, the
+// catalog's sharing the definitions of the seed's.
+describe('seed and catalog', () => {
+  const seed = '../../src-tauri/src/app/config/';
+  const catalog = '../../src-tauri/catalog/';
+  const ajv = new Ajv({ allErrors: true }).addSchema(read(seed, 'seed.schema.json')).addSchema(read(catalog, 'schema.json'));
+  const check = (schema, folder, file) => {
+    const validate = ajv.getSchema(schema);
     validate(read(folder, file));
     expect(validate.errors ?? []).toEqual([]);
   };
 
-  it('exercises.json follows the schema', () => check('exercisesFile', 'exercises.json'));
+  it('seed.json follows the schema', () => check('seed', seed, 'seed.json'));
 
-  it.each(gameFiles())('games/%s follows the schema and is named after its game', (file) => {
-    check('game', `games/${file}`);
-    expect(`${read(folder, `games/${file}`).id}.json`).toBe(file);
+  it.each(catalogFiles())('games/%s follows the schema and is named after its game', (file) => {
+    check('catalog', catalog, `games/${file}`);
+    expect(`${read(catalog, `games/${file}`).id}.json`).toBe(file);
   });
 
   it('is written at least in English and French', () => {
-    expect(read(folder, 'schema.json').$defs.languages.required).toEqual(expect.arrayContaining(['en', 'fr']));
+    expect(read(seed, 'seed.schema.json').$defs.languages.required).toEqual(expect.arrayContaining(['en', 'fr']));
   });
 });

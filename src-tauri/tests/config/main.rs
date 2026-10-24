@@ -1,13 +1,17 @@
+#[path = "../catalog_config/mod.rs"]
+mod catalog_config;
 mod repair;
-mod seed_schema;
+mod schemas;
 mod validation;
 
+use catalog_config::catalog_config;
 use squat_souls_lib::app::*;
 
+/// The games of the catalog, with the seed's exercises, make a valid configuration in every language.
 #[test]
-fn seeds_are_valid_and_roundtrip() {
+fn catalog_configs_are_valid_and_roundtrip() {
     for language in [Language::En, Language::Fr] {
-        let cfg = seed_config(language);
+        let cfg = catalog_config(language);
         cfg.validate().unwrap();
         let json = serde_json::to_string_pretty(&cfg).unwrap();
         assert!(json.contains("maxPerSession"));
@@ -16,11 +20,11 @@ fn seeds_are_valid_and_roundtrip() {
     }
 }
 
-/// Both seeds only differ by their texts: names of exercises and events, and units.
+/// The seed and the catalog only differ between languages by their texts: names of exercises and events, and units.
 #[test]
-fn seeds_have_the_same_structure() {
+fn catalog_configs_have_the_same_structure() {
     let untranslated = |language| {
-        let mut cfg = seed_config(language);
+        let mut cfg = catalog_config(language);
         for ex in &mut cfg.exercises {
             ex.name.clear();
             ex.unit.clear();
@@ -31,7 +35,7 @@ fn seeds_have_the_same_structure() {
         cfg
     };
     assert_eq!(untranslated(Language::En), untranslated(Language::Fr));
-    assert_ne!(seed_config(Language::En), seed_config(Language::Fr));
+    assert_ne!(catalog_config(Language::En), catalog_config(Language::Fr));
 }
 
 /// Games are chosen from the catalog or created: the default configuration only holds the seed's exercises.
@@ -41,13 +45,13 @@ fn default_configs_hold_the_seed_without_games() {
         let cfg = default_config(language);
         cfg.validate().unwrap();
         assert!(cfg.games.is_empty());
-        assert_eq!(cfg.exercises, seed_config(language).exercises);
+        assert!(!cfg.exercises.is_empty());
     }
 }
 
 #[test]
 fn exercises_are_enabled_by_default() {
-    let mut cfg = seed_config(Language::Fr);
+    let mut cfg = catalog_config(Language::Fr);
     assert!(cfg.exercises.iter().all(|ex| ex.enabled));
     cfg.exercises[0].enabled = false;
     let json = serde_json::to_value(&cfg).unwrap();

@@ -1,16 +1,19 @@
+mod catalog_config;
+
+use catalog_config::catalog_config;
 use chrono::Local;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
 use squat_souls_lib::app::*;
 use squat_souls_lib::state::AppState;
 
-/// State on `store` holding the French seed, games included: a new database has none.
+/// State on `store` holding the French catalog configuration, games included: a new database has none.
 fn seeded(mut store: Store) -> AppState {
-    store.save_config(&seed_config(Language::Fr)).unwrap();
+    store.save_config(&catalog_config(Language::Fr)).unwrap();
     AppState::new(store, None)
 }
 
-/// State on a new database, with the French seed.
+/// State on a new database, with the French catalog configuration.
 fn state() -> AppState {
     seeded(Store::open_in_memory(Some("fr_FR.UTF-8")).unwrap())
 }

@@ -1,8 +1,8 @@
 use super::*;
 
-/// French seed, Elden Ring first: the errors below name its first event.
+/// French catalog configuration, Elden Ring first: the errors below name its first event.
 fn config() -> Config {
-    let mut cfg = seed_config(Language::Fr);
+    let mut cfg = catalog_config(Language::Fr);
     cfg.games.sort_by_key(|game| game.id != "elden-ring");
     cfg
 }
@@ -50,7 +50,7 @@ fn validation_catches_mistakes() {
     cfg.validate().unwrap();
 
     // Without any game, the configuration is saved: Play and Program say so.
-    let mut cfg = seed_config(Language::En);
+    let mut cfg = catalog_config(Language::En);
     cfg.games.clear();
     cfg.validate().unwrap();
 

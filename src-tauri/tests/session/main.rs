@@ -1,3 +1,5 @@
+#[path = "../catalog_config/mod.rs"]
+mod catalog_config;
 mod draw;
 mod intensity;
 mod jokers;
@@ -8,6 +10,7 @@ mod summary;
 
 use rand::rngs::StdRng;
 use rand::SeedableRng;
+use catalog_config::catalog_config;
 use squat_souls_lib::app::*;
 
 fn rng() -> StdRng {
@@ -31,7 +34,7 @@ fn complete(s: &mut Session, id: u64, now: i64) -> Result<Vec<LogEntry>, AppErro
 
 /// Session where a completed "boss no hit" earned 2 jokers, with a two-exercise boss set pending.
 fn session_with_jokers() -> (Session, Draw) {
-    let cfg = seed_config(Language::Fr);
+    let cfg = catalog_config(Language::Fr);
     let mut s = Session::default();
     let mut r = rng();
     let nohit = s.draw(&cfg, "ds3", "boss-nohit", 0, &mut r).unwrap();
@@ -52,12 +55,12 @@ fn session_with_jokers() -> (Session, Draw) {
 fn session_with_jokers_on(event: &str) -> (Session, Draw) {
     let (mut s, boss) = session_with_jokers();
     s.dismiss(boss.id).unwrap();
-    let cfg = seed_config(Language::Fr);
+    let cfg = catalog_config(Language::Fr);
     let draw = s.draw(&cfg, "ds3", event, 0, &mut rng()).unwrap();
     (s, draw)
 }
 
-/// Event of the seed, to modify.
+/// Event of the catalog, to modify.
 fn event_mut<'a>(cfg: &'a mut Config, game: &str, event: &str) -> &'a mut GameEvent {
     cfg.games
         .iter_mut()
@@ -72,7 +75,7 @@ fn pending(s: &Session, id: u64) -> Option<Draw> {
 
 #[test]
 fn session_waits_to_be_started() {
-    let cfg = seed_config(Language::Fr);
+    let cfg = catalog_config(Language::Fr);
     let mut s = Session::default();
     assert_eq!(s.view().started_at, None);
     let id = s.draw(&cfg, "ds1", "mort", 0, &mut rng()).unwrap().id;
@@ -92,7 +95,7 @@ fn session_waits_to_be_started() {
 
 #[test]
 fn nothing_starts_without_an_included_exercise() {
-    let mut cfg = seed_config(Language::En);
+    let mut cfg = catalog_config(Language::En);
     cfg.exercises.iter_mut().for_each(|ex| ex.enabled = false);
     let (game, event) = (cfg.games[0].id.clone(), cfg.games[0].events[0].id.clone());
     let refused = AppError::new("start_without_exercise");
@@ -117,7 +120,7 @@ fn nothing_starts_without_an_included_exercise() {
 
 #[test]
 fn a_session_starts_on_a_game_with_an_event_then_keeps_it() {
-    let mut cfg = seed_config(Language::En);
+    let mut cfg = catalog_config(Language::En);
     let mut s = Session::default();
     assert_eq!(
         s.start(&cfg, "nioh", 5).unwrap_err(),
@@ -130,7 +133,7 @@ fn a_session_starts_on_a_game_with_an_event_then_keeps_it() {
         AppError::new("start_without_event").with("game", name.as_str())
     );
     assert_eq!(s.view().started_at, None, "refused, not started");
-    let cfg = seed_config(Language::En);
+    let cfg = catalog_config(Language::En);
     assert_eq!(s.start(&cfg, &game, 5).unwrap(), 5);
     assert_eq!(s.view().game_id.as_deref(), Some(game.as_str()));
     let other = &cfg.games[1];
@@ -150,7 +153,7 @@ fn a_session_starts_on_a_game_with_an_event_then_keeps_it() {
 
 #[test]
 fn a_session_ends_with_a_set_done_and_none_to_do() {
-    let cfg = seed_config(Language::Fr);
+    let cfg = catalog_config(Language::Fr);
     let mut s = Session::default();
     assert_eq!(s.check_end().unwrap_err().code, "end_without_set");
     let death = s.draw(&cfg, "ds3", "mort", 0, &mut rng()).unwrap();

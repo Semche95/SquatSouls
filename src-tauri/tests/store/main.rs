@@ -1,3 +1,5 @@
+#[path = "../catalog_config/mod.rs"]
+mod catalog_config;
 mod config;
 mod current;
 mod history;
@@ -6,6 +8,7 @@ mod schema;
 mod settings;
 mod steam;
 
+use catalog_config::catalog_config;
 use squat_souls_lib::app::*;
 
 /// System locale of the tests: new databases receive the French default configuration.
