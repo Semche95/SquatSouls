@@ -22,9 +22,9 @@ const kind = computed({
 </script>
 
 <template>
-  <div class="field play-limit">
+  <div class="play-field play-limit">
     <label for="play-limit-kind">{{ t('play.limit') }}</label>
-    <div class="row">
+    <div class="play-limit-value">
       <select id="play-limit-kind" v-model="kind" v-select>
         <option v-for="k in LIMIT_KINDS" :key="k" :value="k">{{ t(`play.limitKinds.${k}`) }}</option>
       </select>
@@ -36,6 +36,10 @@ const kind = computed({
         :unit="kind === 'exercises' ? '' : t('play.minutes')"
         :aria-label="t(`play.limitKinds.${kind}`)"
       />
+      <!-- Without a limit, its place stays kept: choosing one never moves the layout. -->
+      <span v-else class="limit-room" inert aria-hidden="true">
+        <CountStepper :model-value="START.playTime" :bounds="BOUNDS.amount" :unit="t('play.minutes')" />
+      </span>
     </div>
   </div>
 </template>

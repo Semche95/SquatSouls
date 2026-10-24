@@ -1,7 +1,6 @@
 /* Form controls: buttons, fields, switches, steppers and tooltips. */
 
-.field,
-.play-head {
+.field {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -17,8 +16,7 @@
 .field .tip {
   color: inherit;
 }
-/* Tooltip container of a field's input, which takes the remaining width, and no more: a long name chosen is cut. */
-.field .tip.grow,
+/* A field's select takes the remaining width, and no more: a long name chosen is cut. */
 .field .ts-wrapper {
   flex: 1;
   min-width: 0;

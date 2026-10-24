@@ -142,9 +142,9 @@ useKeydown((e) => {
 <template>
   <main class="panel play">
     <div class="play-head">
-      <div class="field">
+      <div class="play-game" :class="{ locked: gameLocked }">
         <label for="play-game">{{ t('play.game') }}</label>
-        <DisabledTip class="grow" :tip="gameLocked ? t('play.gameLocked') : noGame ? t('play.noGame', { catalog: t('play.catalog'), program: t('app.tabs.program') }) : ''">
+        <DisabledTip :tip="gameLocked ? t('play.gameLocked') : noGame ? t('play.noGame', { catalog: t('play.catalog'), program: t('app.tabs.program') }) : ''">
           <select id="play-game" v-model="gameId" v-select :disabled="gameLocked || noGame">
             <option value="" disabled>{{ t('play.chooseGame') }}</option>
             <option v-for="g in byName(config?.games ?? [])" :key="g.id" :value="g.id" :disabled="!g.events.length">
@@ -153,22 +153,24 @@ useKeydown((e) => {
           </select>
         </DisabledTip>
       </div>
-      <div class="field">
-        <span id="play-intensity">{{ t('play.intensity') }}</span>
-        <div class="segmented" role="radiogroup" aria-labelledby="play-intensity">
-          <DisabledTip v-for="level in INTENSITIES" :key="level" :tip="t(`play.intensityTips.${level}`)">
-            <button
-              role="radio"
-              :aria-checked="intensity === level"
-              :class="{ active: intensity === level }"
-              @click="intensity = level"
-            >
-              {{ t(`play.intensities.${level}`) }}
-            </button>
-          </DisabledTip>
+      <div class="play-options">
+        <div class="play-field">
+          <span id="play-intensity">{{ t('play.intensity') }}</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="play-intensity">
+            <DisabledTip v-for="level in INTENSITIES" :key="level" :tip="t(`play.intensityTips.${level}`)">
+              <button
+                role="radio"
+                :aria-checked="intensity === level"
+                :class="{ active: intensity === level }"
+                @click="intensity = level"
+              >
+                {{ t(`play.intensities.${level}`) }}
+              </button>
+            </DisabledTip>
+          </div>
         </div>
+        <LimitField />
       </div>
-      <LimitField />
     </div>
 
     <p v-if="steamOffer" class="banner steam">

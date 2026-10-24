@@ -97,9 +97,6 @@
   }
 
   /* Play: larger event tiles, current set large and queue beside it. */
-  .play-head {
-    max-width: 600px;
-  }
   .events {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 10px;
