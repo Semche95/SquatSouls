@@ -15,6 +15,11 @@ describe('byName', () => {
     expect(byName(games).map((g) => g.name)).toEqual(['Bloodborne', 'Élden Ring', 'sekiro']);
     expect(games[0].name).toBe('sekiro');
   });
+
+  it('sorts the numbers of the names in order', () => {
+    const games = [{ name: 'Game 10' }, { name: 'Game 2' }, { name: 'Game 1' }];
+    expect(byName(games).map((g) => g.name)).toEqual(['Game 1', 'Game 2', 'Game 10']);
+  });
 });
 
 describe('extendsName', () => {

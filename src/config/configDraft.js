@@ -38,9 +38,9 @@ export function extendsName(name, base) {
   return n.startsWith(b) && !/\p{L}/u.test(n[b.length] ?? '');
 }
 
-// Games are displayed by name, whatever the saved order.
+// Games are displayed by name, whatever the saved order, their numbers in order ("Dark Souls 2" before "Dark Souls 10").
 export function byName(games) {
-  return [...games].sort((a, b) => a.name.localeCompare(b.name, language.value, { sensitivity: 'base' }));
+  return [...games].sort((a, b) => a.name.localeCompare(b.name, language.value, { sensitivity: 'base', numeric: true }));
 }
 
 // Limits checked by the backend: longest name and unit, in characters, and most exercises or events in a game.
