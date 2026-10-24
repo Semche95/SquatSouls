@@ -1,0 +1,52 @@
+{
+  "id": "01a16ed9-87fb-77de-8da0-0eb9d99ae9e0",
+  "name": "Hades II",
+  "steamAppId": 1145350,
+  "events": [
+    {
+      "id": "01a16ed9-87fb-77de-8da0-1321997457ff",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8da0-174c9d5b3703",
+      "name": { "en": "Legendary Boon obtained", "fr": "Bienfait légendaire obtenu" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8da0-1a5886d91409",
+      "name": { "en": "Duo Boon obtained", "fr": "Bienfait Duo obtenu" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8da0-1d75984ad3f6",
+      "name": { "en": "Guardian defeated", "fr": "Gardien vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8da0-20175ec9b82b",
+      "name": { "en": "Chronos defeated", "fr": "Cronos vaincu" },
+      "draws": 3,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8da0-276fe22a7d36",
+      "name": { "en": "Typhon defeated", "fr": "Typhon vaincu" },
+      "draws": 3,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8da0-2a32efdc3d45",
+      "name": { "en": "Victory at a new Fear level", "fr": "Victoire à un nouveau niveau de Terreur" },
+      "draws": 3,
+      "jokers": 2
+    }
+  ]
+}

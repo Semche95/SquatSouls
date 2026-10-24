@@ -1,0 +1,50 @@
+{
+  "id": "01a16ed9-87fc-766a-9610-5aa2d199ff17",
+  "name": "Hollow Knight: Silksong",
+  "steamAppId": 1030300,
+  "events": [
+    {
+      "id": "01a16ed9-87fc-766a-9610-5fe846a7ccf2",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-627072d4e288",
+      "name": { "en": "Rest at a known bench", "fr": "Repos à un banc connu" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-65f706473885",
+      "name": { "en": "Rosaries lost", "fr": "Rosaires perdus" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-6b37edbfe161",
+      "name": { "en": "Mask Shard found", "fr": "Fragment de masque trouvé" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-6e3d30dbacd2",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-7307b1ae9504",
+      "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-742dc04ea57f",
+      "name": { "en": "Boss defeated without getting hit", "fr": "Boss vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "id": "01a16ed9-87fa-7769-b88d-8796376dd99d",
+  "name": "Blasphemous",
+  "steamAppId": 774361,
+  "events": [
+    {
+      "id": "01a16ed9-87fa-7769-b88d-8be2904cb8ef",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-8f056b4eadde",
+      "name": { "en": "Rest at a known Prie Dieu", "fr": "Repos à un prie-dieu connu" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-92ab68ac1258",
+      "name": { "en": "Guilt Fragment recovered", "fr": "Fragment de culpabilité récupéré" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-9525eebbcb93",
+      "name": { "en": "Rosary Bead found", "fr": "Perle de rosaire trouvée" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-9bef3e82bcd9",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-9daa1d237a3e",
+      "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-a327c021fdf6",
+      "name": { "en": "Boss defeated without getting hit", "fr": "Boss vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "01a16ed9-87f6-71e8-a35b-0aa7d507361c",
+  "name": "Black Myth: Wukong",
+  "steamAppId": 2358720,
+  "events": [
+    {
+      "id": "01a16ed9-87fa-7769-b88d-673e967a0f6d",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-68a67af38b53",
+      "name": { "en": "Rest at a known Keeper's Shrine", "fr": "Repos à un autel du gardien connu" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-6ed8b20dc6a5",
+      "name": { "en": "Keeper's Shrine discovered", "fr": "Autel du gardien découvert" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-718e4ea6b2e9",
+      "name": { "en": "Level up", "fr": "Montée de niveau" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-7570163c2697",
+      "name": { "en": "Yaoguai chief defeated", "fr": "Chef yaoguai vaincu" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-7b683dd35330",
+      "name": { "en": "Yaoguai king defeated", "fr": "Roi yaoguai vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-7c71203f6b93",
+      "name": { "en": "Yaoguai king defeated on the first try", "fr": "Roi yaoguai vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-83d10fc1a29a",
+      "name": { "en": "Yaoguai king defeated without getting hit", "fr": "Roi yaoguai vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}

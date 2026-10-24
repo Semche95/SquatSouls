@@ -1,0 +1,56 @@
+{
+  "id": "01a16ed9-87fc-766a-9611-8c6ad37cccc0",
+  "name": "Salt and Sanctuary",
+  "steamAppId": 283640,
+  "events": [
+    {
+      "id": "01a16ed9-87fc-766a-9611-916f055c95c2",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-94c6b754c6f3",
+      "name": { "en": "Rest at a known sanctuary", "fr": "Repos à un sanctuaire connu" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-99acee8a45f1",
+      "name": { "en": "Sanctuary consecrated", "fr": "Sanctuaire consacré" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-9fd56d040cb8",
+      "name": { "en": "Level up", "fr": "Montée de niveau" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-a3ee99265127",
+      "name": { "en": "Salt lost", "fr": "Sel perdu" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-a4c0c532f938",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-aab5af2bd122",
+      "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-ae51a79a45b7",
+      "name": { "en": "Boss defeated without getting hit", "fr": "Boss vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}

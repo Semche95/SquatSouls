@@ -1,0 +1,51 @@
+{
+  "id": "01a16ed9-87fa-7769-b88d-c797ba45c3f9",
+  "name": "Celeste",
+  "steamAppId": 504230,
+  "events": [
+    {
+      "id": "01a16ed9-87fa-7769-b88d-cb1c45e6877d",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-cc76c5925a0f",
+      "name": { "en": "Strawberry collected", "fr": "Fraise ramassée" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-d1d1ee75995e",
+      "name": { "en": "Cassette found", "fr": "Cassette trouvée" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-d59c2c5c93c0",
+      "name": { "en": "Chapter completed", "fr": "Chapitre terminé" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-d8a2d6fd5d77",
+      "name": { "en": "Crystal Heart obtained", "fr": "Cœur de cristal obtenu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-de78915c2cda",
+      "name": { "en": "B-Side completed", "fr": "Face B terminée" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fa-7769-b88d-e18508342940",
+      "name": { "en": "Golden Strawberry collected", "fr": "Fraise dorée ramassée" },
+      "draws": 3,
+      "jokers": 2
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "01a16ed9-87fc-766a-9611-b0c33db9beb0",
+  "name": "Wo Long: Fallen Dynasty",
+  "steamAppId": 1448440,
+  "events": [
+    {
+      "id": "01a16ed9-87fc-766a-9611-b75c84740b31",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-babb164e5492",
+      "name": { "en": "Rest at a known Battle Flag", "fr": "Repos à un drapeau de combat connu" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-bddf77237d75",
+      "name": { "en": "Battle Flag raised", "fr": "Drapeau de combat hissé" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-c1d8e29fb4b4",
+      "name": { "en": "Level up", "fr": "Montée de niveau" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fd-7245-895b-d4c3ecf23cd7",
+      "name": { "en": "Genuine Qi lost", "fr": "Qi perdu" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fd-7245-895b-d8f35f003f4e",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fd-7245-895b-df2698bc1917",
+      "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fd-7245-895b-e1fb579834d8",
+      "name": { "en": "Boss defeated without getting hit", "fr": "Boss vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}

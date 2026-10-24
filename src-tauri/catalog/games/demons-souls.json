@@ -1,0 +1,49 @@
+{
+  "id": "01a16ed9-87fb-77de-8d9f-d34577d29a33",
+  "name": "Demon's Souls",
+  "events": [
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-d5f879febca4",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-d86f75196edb",
+      "name": { "en": "Body form restored", "fr": "Forme vivante retrouvée" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-dff4fffb6fe1",
+      "name": { "en": "Level up", "fr": "Montée de niveau" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-e07717350cc0",
+      "name": { "en": "Souls lost", "fr": "Âmes perdues" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-e7764796e996",
+      "name": { "en": "Demon defeated", "fr": "Démon vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-e90e0cd94407",
+      "name": { "en": "Demon defeated on the first try", "fr": "Démon vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-ef87045772d6",
+      "name": { "en": "Demon defeated without getting hit", "fr": "Démon vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}

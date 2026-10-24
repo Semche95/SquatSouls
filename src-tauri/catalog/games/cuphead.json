@@ -1,0 +1,44 @@
+{
+  "id": "01a16ed9-87fb-77de-8d9f-90f105d192b9",
+  "name": "Cuphead",
+  "steamAppId": 268910,
+  "events": [
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-97f88c918ae7",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-9967a125f567",
+      "name": { "en": "Run 'n Gun level completed", "fr": "Niveau Run & Gun terminé" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-9c7368ab0aa1",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-a0211489a536",
+      "name": { "en": "Boss defeated in Expert mode", "fr": "Boss vaincu en mode Expert" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-a52463c084fa",
+      "name": { "en": "Run 'n Gun level completed with a P rank", "fr": "Niveau Run & Gun terminé avec le rang P" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-a9488e47796d",
+      "name": { "en": "Boss defeated with an S rank", "fr": "Boss vaincu avec le rang S" },
+      "draws": 3,
+      "jokers": 2
+    }
+  ]
+}

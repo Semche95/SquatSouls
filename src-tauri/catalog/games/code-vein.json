@@ -1,0 +1,56 @@
+{
+  "id": "01a16ed9-87fa-7769-b88d-e74d5ad3d0a7",
+  "name": "Code Vein",
+  "steamAppId": 678960,
+  "events": [
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-73c7f88e7e3c",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-754ac9d6cea5",
+      "name": { "en": "Rest at a known Mistle", "fr": "Repos à une pousse connue" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-7825fcf2903b",
+      "name": { "en": "Mistle activated", "fr": "Pousse activée" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-7faaa231c00d",
+      "name": { "en": "Level up", "fr": "Montée de niveau" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-815056678b76",
+      "name": { "en": "Haze lost", "fr": "Nuées perdues" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-874fef4ce16b",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-89d55be3ad97",
+      "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-8d108d011942",
+      "name": { "en": "Boss defeated without getting hit", "fr": "Boss vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "id": "01a16ed9-87fc-766a-9611-7162c213307f",
+  "name": "Returnal",
+  "steamAppId": 1649240,
+  "events": [
+    {
+      "id": "01a16ed9-87fc-766a-9611-772e5ed54233",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-79cda4579fc2",
+      "name": { "en": "Suit malfunction", "fr": "Dysfonctionnement de la combinaison" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-7fbeb8237172",
+      "name": { "en": "Maximum adrenaline level reached", "fr": "Adrénaline au niveau maximum" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-82fde1b6f095",
+      "name": { "en": "Biome boss defeated", "fr": "Boss de biome vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-84086855ab48",
+      "name": { "en": "Biome boss defeated on the first try", "fr": "Boss de biome vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-8835658a24f4",
+      "name": { "en": "Biome boss defeated without getting hit", "fr": "Boss de biome vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}

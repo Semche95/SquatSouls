@@ -1,0 +1,63 @@
+{
+  "id": "01a16ed9-87fc-766a-9610-9ea790389dbe",
+  "name": "Lords of the Fallen",
+  "steamAppId": 1501750,
+  "events": [
+    {
+      "id": "01a16ed9-87fc-766a-9610-a23ac6e7532a",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-a5cfccca87d8",
+      "name": { "en": "Rest at a known Vestige", "fr": "Repos à un Vestige connu" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-a997b929c2c8",
+      "name": { "en": "Vestige Seedling planted", "fr": "Pousse de Vestige plantée" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-af9c261d6421",
+      "name": { "en": "Level up", "fr": "Montée de niveau" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-b09291ce3d93",
+      "name": { "en": "Vigor lost", "fr": "Vigueur perdue" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-b772601abb8c",
+      "name": { "en": "Crossing into Umbral", "fr": "Passage dans l'Umbral" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-bbf3873363fa",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-bcef1bf576c5",
+      "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-c22f73c3d3c8",
+      "name": { "en": "Boss defeated without getting hit", "fr": "Boss vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}

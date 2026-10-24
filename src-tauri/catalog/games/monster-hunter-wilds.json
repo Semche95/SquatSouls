@@ -1,0 +1,53 @@
+{
+  "id": "01a16ed9-87fc-766a-9610-c6ae7ada38ec",
+  "name": "Monster Hunter Wilds",
+  "steamAppId": 2246340,
+  "events": [
+    {
+      "id": "01a16ed9-87fc-766a-9610-c8baae9a4fc5",
+      "name": { "en": "Faint", "fr": "K.O." },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-cd041eac8fd4",
+      "name": { "en": "Quest completed", "fr": "Quête terminée" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-d0a022442629",
+      "name": { "en": "Monster captured", "fr": "Monstre capturé" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-d511e8ff85c6",
+      "name": { "en": "Quest failed", "fr": "Quête échouée" },
+      "draws": 2,
+      "maxPerSession": 5,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-d8a20e94699a",
+      "name": { "en": "Quest completed without fainting", "fr": "Quête terminée sans K.O." },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-df43b08a3c37",
+      "name": { "en": "Tempered monster hunted", "fr": "Monstre alpha chassé" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-e20377e8de4f",
+      "name": { "en": "Arch-Tempered monster hunted", "fr": "Monstre alpha suprême chassé" },
+      "draws": 3,
+      "jokers": 2
+    }
+  ]
+}

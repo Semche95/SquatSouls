@@ -1,0 +1,51 @@
+{
+  "id": "01a16ed9-87fc-766a-9611-51aa881c3e6c",
+  "name": "Remnant II",
+  "steamAppId": 1282100,
+  "events": [
+    {
+      "id": "01a16ed9-87fc-766a-9611-5655bb93ab45",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-5b3f7dd42c33",
+      "name": { "en": "Rest at a known Worldstone", "fr": "Repos à une pierre-monde connue" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-5da179d81b72",
+      "name": { "en": "Trait point earned", "fr": "Point de trait gagné" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-63156e336b5d",
+      "name": { "en": "Ring or amulet found", "fr": "Anneau ou amulette trouvé" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-656695e73e53",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-6ae6f011f14e",
+      "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-6d884301a01d",
+      "name": { "en": "World boss defeated", "fr": "Boss de monde vaincu" },
+      "draws": 3,
+      "jokers": 1
+    }
+  ]
+}

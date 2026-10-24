@@ -1,0 +1,58 @@
+{
+  "id": "01a16ed9-87fb-77de-8d9f-af8da71bc415",
+  "name": "Dead Cells",
+  "steamAppId": 588650,
+  "events": [
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-b2cc9e8024e0",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-b496b7b84c28",
+      "name": { "en": "Biome completed", "fr": "Biome terminé" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-b8939271c6ac",
+      "name": { "en": "Elite defeated", "fr": "Monstre d'élite vaincu" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-bcb97b8a5264",
+      "name": { "en": "Cursed chest opened", "fr": "Coffre maudit ouvert" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-c0b218e04e70",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-c41d0f14d768",
+      "name": { "en": "Timed door opened", "fr": "Porte minutée ouverte" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-c8b9a086c09f",
+      "name": { "en": "Final boss defeated", "fr": "Boss final vaincu" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-cd3deb90b8ed",
+      "name": { "en": "Final boss defeated with a Boss Cell active", "fr": "Boss final vaincu avec une Cellule Souche de Boss active" },
+      "draws": 3,
+      "jokers": 2
+    }
+  ]
+}

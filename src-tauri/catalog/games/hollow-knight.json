@@ -1,0 +1,56 @@
+{
+  "id": "01a16ed9-87fb-77de-8da0-2cc8363324c4",
+  "name": "Hollow Knight",
+  "steamAppId": 367520,
+  "events": [
+    {
+      "id": "01a16ed9-87fb-77de-8da0-33f19a56fa4f",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8da0-346eeeafac5b",
+      "name": { "en": "Rest at a known bench", "fr": "Repos à un banc connu" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8da0-3a9922574a75",
+      "name": { "en": "Geo lost", "fr": "Géo perdus" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8da0-3c9f8515a001",
+      "name": { "en": "Mask Shard found", "fr": "Éclat de masque trouvé" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8da0-4282fd5f9968",
+      "name": { "en": "Charm found", "fr": "Charme trouvé" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-4c5f1639b88c",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-525ec0ef0d24",
+      "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-54e389f4b9d9",
+      "name": { "en": "Boss defeated without getting hit", "fr": "Boss vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}

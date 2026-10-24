@@ -1,0 +1,56 @@
+{
+  "id": "01a16ed9-87fc-766a-9610-789c1cc0e8cd",
+  "name": "Lies of P",
+  "steamAppId": 1627720,
+  "events": [
+    {
+      "id": "01a16ed9-87fc-766a-9610-7cd95d6acba4",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-815b257ceb51",
+      "name": { "en": "Rest at a known Stargazer", "fr": "Repos à un Stargazer connu" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-84044f60fb64",
+      "name": { "en": "Stargazer discovered", "fr": "Stargazer découvert" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-8a3d499f9dbf",
+      "name": { "en": "Level up", "fr": "Montée de niveau" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-8f00034cce3a",
+      "name": { "en": "Ergo lost", "fr": "Ergo perdu" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-913a93293489",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-96d3e7f45b7f",
+      "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-9b499f8abb52",
+      "name": { "en": "Boss defeated without getting hit", "fr": "Boss vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}

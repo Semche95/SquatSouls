@@ -1,0 +1,46 @@
+{
+  "id": "01a16ed9-87fb-77de-8d9f-f0f828974f3c",
+  "name": "Hades",
+  "steamAppId": 1145360,
+  "events": [
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-f429ff33b173",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-f94727dcd98a",
+      "name": { "en": "Legendary Boon obtained", "fr": "Bienfait légendaire obtenu" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8d9f-ffdd4dbbd5c3",
+      "name": { "en": "Duo Boon obtained", "fr": "Bienfait Duo obtenu" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8da0-022fa67b9d28",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8da0-05eb13a7c1ea",
+      "name": { "en": "Escape from the Underworld", "fr": "Évasion des Enfers réussie" },
+      "draws": 3,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fb-77de-8da0-0972583d3db2",
+      "name": { "en": "Escape at a new Heat level", "fr": "Évasion à un nouveau niveau de Température" },
+      "draws": 3,
+      "jokers": 2
+    }
+  ]
+}

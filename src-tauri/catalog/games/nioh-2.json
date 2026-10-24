@@ -1,0 +1,57 @@
+{
+  "id": "01a16ed9-87fc-766a-9611-2ca83c31ef28",
+  "name": "Nioh 2",
+  "steamAppId": 1325200,
+  "events": [
+    {
+      "id": "01a16ed9-87fc-766a-9611-301d972c9536",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-34d0485023a2",
+      "name": { "en": "Prayer at a known shrine", "fr": "Prière à un sanctuaire connu" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-3a05c998fec6",
+      "name": { "en": "Kodama found", "fr": "Kodama trouvé" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-3dce46ca9ba5",
+      "name": { "en": "Level up", "fr": "Montée de niveau" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-4365b8e97d7b",
+      "name": { "en": "Amrita lost", "fr": "Amrita perdue" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-468b84c67371",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-4bd1ed7d340f",
+      "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-4e4bf539a00f",
+      "name": { "en": "Boss defeated without getting hit", "fr": "Boss vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}

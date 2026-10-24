@@ -1,0 +1,57 @@
+{
+  "id": "01a16ed9-87fc-766a-9610-e754e3fda7ce",
+  "name": "Mortal Shell",
+  "steamAppId": 1110910,
+  "events": [
+    {
+      "id": "01a16ed9-87fc-766a-9610-ea0db31fa49a",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-ee107fbc67cd",
+      "name": { "en": "Ejected from a shell", "fr": "Éjection de l'enveloppe" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-f016ebf1aef8",
+      "name": { "en": "Tar lost", "fr": "Goudron perdu" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-f5addbdff5c6",
+      "name": { "en": "Ability unlocked", "fr": "Aptitude débloquée" },
+      "draws": 1,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-f989c74e70fb",
+      "name": { "en": "New shell found", "fr": "Nouvelle enveloppe trouvée" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9610-ff2d0da4749a",
+      "name": { "en": "Boss defeated", "fr": "Boss vaincu" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-01913e413cb7",
+      "name": { "en": "Boss defeated on the first try", "fr": "Boss vaincu au premier essai" },
+      "draws": 2,
+      "jokers": 1
+    },
+    {
+      "id": "01a16ed9-87fc-766a-9611-075f9700913a",
+      "name": { "en": "Boss defeated without getting hit", "fr": "Boss vaincu sans prendre un coup" },
+      "draws": 2,
+      "jokers": 2
+    }
+  ]
+}
