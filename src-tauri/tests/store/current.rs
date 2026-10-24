@@ -159,6 +159,37 @@ fn saved_before_counting(name: &str, s: &Session, done: &[LogEntry]) -> Session 
 }
 
 #[test]
+fn a_set_saved_before_keeping_what_it_asked_frees_its_exercises_drawn() {
+    let cfg = catalog_config(Language::Fr);
+    let mut s = Session::default();
+    s.start(&cfg, &game_id("ds3"), 1000).unwrap();
+    s.draw(
+        &cfg,
+        &game_id("ds3"),
+        &event_id("ds3", "Boss defeated"),
+        1000,
+        &mut StdRng::seed_from_u64(42),
+    )
+    .unwrap();
+    let path = temp_db("set-asked");
+    save(&mut Store::open(&path, LOCALE).unwrap(), &s, &[], 1500);
+    connect(&path)
+        .execute("UPDATE current_sets SET asked = NULL", [])
+        .unwrap();
+    let mut read = Store::open(&path, LOCALE)
+        .unwrap()
+        .current_session()
+        .unwrap()
+        .unwrap()
+        .0;
+    std::fs::remove_file(&path).unwrap();
+    assert_eq!(read.view().asked, 2);
+    let id = read.view().pending[0].id.clone();
+    read.dismiss(&id).unwrap();
+    assert_eq!(read.view().asked, 0);
+}
+
+#[test]
 fn a_session_saved_before_counting_what_it_asked_counts_it_again() {
     let cfg = catalog_config(Language::Fr);
     let (s, done) = played(1000);

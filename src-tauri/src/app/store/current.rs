@@ -49,8 +49,8 @@ impl Store {
             }
             let mut stmt = tx.prepare(
                 "INSERT INTO current_sets (id, position, game, game_name, event, event_name, jokers,
-                 trigger_count, max_per_session, spent, time, reduced)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
+                 trigger_count, max_per_session, spent, asked, time, reduced)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
             )?;
             for (position, d) in session.pending.iter().enumerate() {
                 stmt.execute(params![
@@ -64,6 +64,7 @@ impl Store {
                     d.trigger_count,
                     d.max_per_session,
                     d.spent,
+                    d.asked,
                     d.time,
                     d.reduced
                 ])?;
@@ -181,7 +182,7 @@ impl Store {
             .conn
             .prepare(
                 "SELECT id, game, game_name, event, event_name, jokers, trigger_count, max_per_session, spent,
-                 time, reduced FROM current_sets ORDER BY position",
+                 time, reduced, asked FROM current_sets ORDER BY position",
             )?
             .query_map([], |r| {
                 Ok(Draw {
@@ -199,8 +200,8 @@ impl Store {
                     max_per_session: r.get(7)?,
                     drawn: Vec::new(),
                     spent: r.get(8)?,
-                    // Not saved: they are those drawn, read below.
-                    asked: 0,
+                    // Saved before its exercises asked were kept: they are those drawn, read below.
+                    asked: r.get::<_, Option<u32>>(11)?.unwrap_or(0),
                     time: r.get(9)?,
                     reduced: r.get(10)?,
                 })
@@ -216,7 +217,9 @@ impl Store {
             d.drawn = items
                 .query_map(params![d.id, true], |r| item(r, 0))?
                 .collect::<Result<_>>()?;
-            d.asked = d.drawn.len() as u32;
+            if d.asked == 0 {
+                d.asked = d.drawn.len() as u32;
+            }
         }
         let reserved: Vec<((String, String), DrawItem)> = self
             .conn
