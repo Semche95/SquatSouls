@@ -2,8 +2,8 @@
 
 use super::Store;
 use crate::app::{
-    active_days, count_days, days_range, last_days, window_start, DayTotals, EventCount, Jokers,
-    LogEntry, SessionDuration, SessionRecords,
+    active_days, count_days, days_range, last_days, months, window_start, DayTotals, EventCount,
+    Jokers, LogEntry, SessionDuration, SessionRecords,
 };
 use chrono::NaiveDate;
 use rusqlite::{params, Params, Result, Row};
@@ -15,6 +15,9 @@ const SET_COLUMNS: &str = "at, session, game, event, exercise, unit, amount";
 
 /// Sessions started between `?1` and `?2` (included).
 const STARTED_BETWEEN: &str = "FROM sessions WHERE started_at BETWEEN ?1 AND ?2";
+
+/// Sets of the game `:game`, the parameter after the others, or of any game if it is NULL.
+const OF_GAME: &str = "(:game IS NULL OR game = :game)";
 
 impl Store {
     /// Records the session `id` started at `started_at`, before anything of it is saved; already recorded, it stays.
@@ -97,39 +100,66 @@ impl Store {
 
     /// Totals of the last `days` days (today included), most recent first.
     pub fn history(&self, days: u32, today: NaiveDate) -> Result<Vec<DayTotals>> {
-        let (entries, records) = self.sets_between(window_start(days, today), i64::MAX)?;
+        let (entries, records) = self.sets_between(window_start(days, today), i64::MAX, None)?;
         Ok(last_days(&entries, &records, days, today))
     }
 
-    /// Up to `days` days on which a session with sets done started, before `before` (from the
-    /// most recent if `None`), most recent first.
-    pub fn full_history(&self, before: Option<NaiveDate>, days: usize) -> Result<Vec<DayTotals>> {
-        let Some((from, to)) = days_range(&self.session_starts()?, before, days) else {
+    /// Up to `days` days on which a session with sets done of `game` (of any game if `None`)
+    /// started, before `before` (from the most recent if `None`), most recent first, with only
+    /// the sets of `game`.
+    pub fn full_history(
+        &self,
+        before: Option<NaiveDate>,
+        days: usize,
+        game: Option<&str>,
+    ) -> Result<Vec<DayTotals>> {
+        let Some((from, to)) = days_range(&self.session_starts(game)?, before, days) else {
             return Ok(Vec::new());
         };
-        let (entries, records) = self.sets_between(from, to)?;
+        let (entries, records) = self.sets_between(from, to, game)?;
         Ok(active_days(&entries, &records))
     }
 
-    /// Number of days on which a session with sets done started.
-    pub fn active_day_count(&self) -> Result<usize> {
-        Ok(count_days(&self.session_starts()?))
+    /// Number of days on which a session with sets done of `game` (of any game if `None`) started.
+    pub fn active_day_count(&self, game: Option<&str>) -> Result<usize> {
+        Ok(count_days(&self.session_starts(game)?))
     }
 
-    /// Starts of the sessions with sets done.
-    fn session_starts(&self) -> Result<Vec<i64>> {
+    /// Months (YYYY-MM) in which a session with sets done of `game` (of any game if `None`)
+    /// started, most recent first.
+    pub fn history_months(&self, game: Option<&str>) -> Result<Vec<String>> {
+        Ok(months(&self.session_starts(game)?))
+    }
+
+    /// Names of the games of the sets done, as they were named then.
+    pub fn history_games(&self) -> Result<Vec<String>> {
         self.conn
-            .prepare("SELECT started_at FROM sessions WHERE id IN (SELECT session FROM sets)")?
+            .prepare("SELECT DISTINCT game FROM sets")?
             .query_map([], |r| r.get(0))?
             .collect()
     }
 
-    /// Sets of the sessions started between `from` and `to` (included), and what is kept of
-    /// those sessions.
-    fn sets_between(&self, from: i64, to: i64) -> Result<(Vec<LogEntry>, SessionRecords)> {
+    /// Starts of the sessions with sets done of `game` (of any game if `None`).
+    fn session_starts(&self, game: Option<&str>) -> Result<Vec<i64>> {
+        self.conn
+            .prepare(&format!(
+                "SELECT started_at FROM sessions WHERE id IN (SELECT session FROM sets WHERE {OF_GAME})"
+            ))?
+            .query_map([game], |r| r.get(0))?
+            .collect()
+    }
+
+    /// Sets of `game` (of any game if `None`) of the sessions started between `from` and `to`
+    /// (included), and what is kept of those sessions.
+    fn sets_between(
+        &self,
+        from: i64,
+        to: i64,
+        game: Option<&str>,
+    ) -> Result<(Vec<LogEntry>, SessionRecords)> {
         let entries = self.sets_where(
-            &format!("session IN (SELECT id {STARTED_BETWEEN})"),
-            [from, to],
+            &format!("session IN (SELECT id {STARTED_BETWEEN}) AND {OF_GAME}"),
+            params![from, to, game],
         )?;
         let starts = self
             .conn

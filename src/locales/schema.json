@@ -199,7 +199,7 @@
     },
     "history": {
       "type": "object",
-      "required": ["current", "since", "notStarted", "waiting", "underway", "totals", "sets", "earned", "spent", "fullHistory", "activeDays", "lastDays", "bySession", "close", "seeAll", "noHistory", "rest", "copy", "copiedSummary", "copyDay", "dayTotal", "eventCount", "jokersLine"],
+      "required": ["current", "since", "notStarted", "waiting", "underway", "totals", "sets", "earned", "spent", "fullHistory", "activeDays", "lastDays", "bySession", "close", "seeAll", "month", "latest", "game", "allGames", "noHistory", "rest", "copy", "copiedSummary", "copyDay", "dayTotal", "eventCount", "jokersLine"],
       "additionalProperties": false,
       "properties": {
         "current": { "$ref": "#/$defs/text" },
@@ -217,6 +217,10 @@
         "bySession": { "$ref": "#/$defs/text" },
         "close": { "$ref": "#/$defs/text" },
         "seeAll": { "$ref": "#/$defs/text" },
+        "month": { "$ref": "#/$defs/text" },
+        "latest": { "$ref": "#/$defs/text" },
+        "game": { "$ref": "#/$defs/text" },
+        "allGames": { "$ref": "#/$defs/text" },
         "noHistory": { "$ref": "#/$defs/text" },
         "rest": { "$ref": "#/$defs/text" },
         "copy": { "$ref": "#/$defs/text" },

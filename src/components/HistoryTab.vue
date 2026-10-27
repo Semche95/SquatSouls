@@ -95,6 +95,6 @@ onMounted(async () => {
       </header>
       <HistoryDays :days="history" />
     </section>
-    <FullHistory v-if="full" :active-days="activeDays" @close="full = false" />
+    <FullHistory v-if="full" @close="full = false" />
   </main>
 </template>

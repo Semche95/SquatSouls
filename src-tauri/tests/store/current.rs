@@ -276,7 +276,7 @@ fn the_duration_leaves_out_the_time_the_app_was_closed() {
     let (mut s, done) = played(1000);
     save(&mut store, &s, &done, 1060);
     let today = |store: &Store| {
-        let days = store.full_history(None, 1).unwrap();
+        let days = store.full_history(None, 1, None).unwrap();
         days[0].sessions[0].duration
     };
     assert_eq!(today(&store), 20, "until the last set while in progress");
@@ -309,7 +309,7 @@ fn an_atomic_change_keeps_nothing_on_failure() {
     });
     assert!(failed.is_err());
     assert!(store.current_session().unwrap().is_none());
-    assert!(store.full_history(None, 1).unwrap().is_empty());
+    assert!(store.full_history(None, 1, None).unwrap().is_empty());
 }
 
 /// Store holding the session `played(1000)`, the app last seen open at 1500, its row then broken by `breaking`.
@@ -334,7 +334,7 @@ fn an_unreadable_session_ends_when_the_app_was_last_seen_open() {
     assert!(store.current_session().is_err());
     store.end_unreadable_session().unwrap();
     assert!(store.current_session().unwrap().is_none(), "forgotten");
-    let session = &store.full_history(None, 1).unwrap()[0].sessions[0];
+    let session = &store.full_history(None, 1, None).unwrap()[0].sessions[0];
     assert_eq!(session.sets, 3, "its exercises done stay");
     assert_eq!(session.duration, 500, "until the app was last seen open");
     drop(store);
@@ -349,7 +349,7 @@ fn an_unreadable_session_without_its_times_is_only_forgotten() {
     );
     store.end_unreadable_session().unwrap();
     assert!(store.current_session().unwrap().is_none());
-    let session = &store.full_history(None, 1).unwrap()[0].sessions[0];
+    let session = &store.full_history(None, 1, None).unwrap()[0].sessions[0];
     assert_eq!(session.duration, 20, "until its last set");
     drop(store);
     std::fs::remove_file(&path).unwrap();

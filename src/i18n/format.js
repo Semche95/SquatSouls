@@ -6,6 +6,12 @@ export function formatDay(iso) {
   return new Date(y, m - 1, d).toLocaleDateString(language.value, { weekday: 'short', day: 'numeric', month: 'short', year });
 }
 
+// Month in YYYY-MM format, with its year.
+export function formatMonth(month) {
+  const [y, m] = month.split('-').map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString(language.value, { month: 'long', year: 'numeric' });
+}
+
 export function formatTime(seconds) {
   return new Date(seconds * 1000).toLocaleTimeString(language.value, { hour: '2-digit', minute: '2-digit' });
 }

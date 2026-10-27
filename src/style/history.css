@@ -9,12 +9,31 @@
   font-size: 1.15rem;
   box-shadow: 0 0 0 100vmax var(--shade);
 }
-.group.full .group-head {
+/* Its head and filters stay at the top while the days scroll. */
+.full-head {
   position: sticky;
   top: -14px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   margin: -14px -14px 0;
   padding: 14px;
   background: var(--panel);
+}
+.history-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.history-filters .ts-wrapper {
+  width: 16em;
+  font-size: 1rem;
+}
+/* Months read as a list's entries: "Juin 2026" rather than "juin 2026". */
+.month-select .item::first-letter,
+.month-select .option::first-letter {
+  text-transform: uppercase;
 }
 .group.full .chip {
   font-size: 0.95rem;

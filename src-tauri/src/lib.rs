@@ -152,6 +152,8 @@ pub fn run() {
             commands::set_onboarding_seen,
             commands::get_history,
             commands::get_full_history,
+            commands::get_history_months,
+            commands::get_history_games,
             commands::count_active_days,
             commands::running_steam_app,
             commands::steam_game_name,

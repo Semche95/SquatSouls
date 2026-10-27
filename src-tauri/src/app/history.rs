@@ -124,6 +124,18 @@ pub fn count_days(sessions: &[i64]) -> usize {
         .len()
 }
 
+/// Local months (YYYY-MM) in which the sessions with sets done started, most recent first.
+pub fn months(sessions: &[i64]) -> Vec<String> {
+    sessions
+        .iter()
+        .filter_map(|&at| local_day(at))
+        .map(|d| d.format("%Y-%m").to_string())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .rev()
+        .collect()
+}
+
 /// Starts of the first and last sessions (included) of the `limit` most recent days before
 /// `before` (all days if `None`) on which `sessions` started, `None` if there is none.
 pub fn days_range(sessions: &[i64], before: Option<NaiveDate>, limit: usize) -> Option<(i64, i64)> {

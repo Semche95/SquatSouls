@@ -19,6 +19,7 @@ pub(crate) fn get_full_history(
     state: Shared,
     before: Option<String>,
     days: usize,
+    game: Option<String>,
 ) -> Result<Vec<DayTotals>, AppError> {
     let before = before
         .map(|d| NaiveDate::parse_from_str(&d, "%Y-%m-%d"))
@@ -26,14 +27,33 @@ pub(crate) fn get_full_history(
         .map_err(|e| AppError::internal(HISTORY_UNREADABLE, e))?;
     lock(&state)?
         .store
-        .full_history(before, days)
+        .full_history(before, days, game.as_deref())
         .map_err(|e| AppError::internal(HISTORY_UNREADABLE, e))
 }
 
 #[tauri::command]
-pub(crate) fn count_active_days(state: Shared) -> Result<usize, AppError> {
+pub(crate) fn count_active_days(state: Shared, game: Option<String>) -> Result<usize, AppError> {
     lock(&state)?
         .store
-        .active_day_count()
+        .active_day_count(game.as_deref())
+        .map_err(|e| AppError::internal(HISTORY_UNREADABLE, e))
+}
+
+#[tauri::command]
+pub(crate) fn get_history_months(
+    state: Shared,
+    game: Option<String>,
+) -> Result<Vec<String>, AppError> {
+    lock(&state)?
+        .store
+        .history_months(game.as_deref())
+        .map_err(|e| AppError::internal(HISTORY_UNREADABLE, e))
+}
+
+#[tauri::command]
+pub(crate) fn get_history_games(state: Shared) -> Result<Vec<String>, AppError> {
+    lock(&state)?
+        .store
+        .history_games()
         .map_err(|e| AppError::internal(HISTORY_UNREADABLE, e))
 }

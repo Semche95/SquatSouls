@@ -106,8 +106,8 @@ fn history_and_sessions_are_stored() {
         "last session deleted"
     );
     s.remove_session(&session(t - 60)).unwrap();
-    assert_eq!(s.full_history(None, usize::MAX).unwrap().len(), 1);
-    assert_eq!(s.active_day_count().unwrap(), 1);
+    assert_eq!(s.full_history(None, usize::MAX, None).unwrap().len(), 1);
+    assert_eq!(s.active_day_count(None).unwrap(), 1);
     append(&mut s, &[entry(t, t - 60, "Squats", 12)]);
     let again = s.history(1, today).unwrap()[0].sessions[0].clone();
     assert!(
@@ -138,6 +138,7 @@ fn full_history_is_read_by_pages() {
         s.full_history(
             before.map(|day| NaiveDate::from_ymd_opt(2026, 3, day).unwrap()),
             days,
+            None,
         )
         .unwrap()
         .iter()
@@ -152,10 +153,81 @@ fn full_history_is_read_by_pages() {
         "before the last one shown"
     );
     assert_eq!(dates(Some(2), 2), vec![], "nothing older");
-    let page = s.full_history(Some(NaiveDate::from_ymd_opt(2026, 3, 9).unwrap()), 1);
+    let page = s.full_history(Some(NaiveDate::from_ymd_opt(2026, 3, 9).unwrap()), 1, None);
     assert_eq!(
         page.unwrap()[0].sessions[0].duration,
         540,
         "with what is kept of its sessions"
+    );
+}
+
+#[test]
+fn full_history_is_filtered_by_game_and_month() {
+    let mut s = store();
+    let noon = |month: u32, day: u32| {
+        NaiveDate::from_ymd_opt(2026, month, day)
+            .unwrap()
+            .and_hms_opt(12, 0, 0)
+            .unwrap()
+            .and_local_timezone(Local)
+            .unwrap()
+            .timestamp()
+    };
+    for (start, game) in [
+        (noon(1, 15), "Dark Souls"),
+        (noon(3, 2), "Sekiro"),
+        (noon(3, 2) + 3600, "Dark Souls"),
+        (noon(4, 10), "Sekiro"),
+    ] {
+        let e = LogEntry {
+            game: game.into(),
+            ..entry(start, start, "Squats", 10)
+        };
+        append(&mut s, &[e]);
+    }
+    let mut games = s.history_games().unwrap();
+    games.sort();
+    assert_eq!(games, ["Dark Souls", "Sekiro"]);
+    assert_eq!(
+        s.history_months(None).unwrap(),
+        ["2026-04", "2026-03", "2026-01"]
+    );
+    assert_eq!(
+        s.history_months(Some("Sekiro")).unwrap(),
+        ["2026-04", "2026-03"],
+        "only the months the game was played"
+    );
+    assert_eq!(s.active_day_count(None).unwrap(), 3);
+    assert_eq!(s.active_day_count(Some("Sekiro")).unwrap(), 2);
+    let days = |before: Option<NaiveDate>, game| {
+        s.full_history(before, usize::MAX, game)
+            .unwrap()
+            .into_iter()
+            .map(|d| {
+                let games: Vec<_> = d.sessions.into_iter().map(|se| se.game).collect();
+                (d.date, games)
+            })
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(
+        days(None, Some("Sekiro")),
+        [
+            ("2026-04-10".to_string(), vec!["Sekiro".to_string()]),
+            ("2026-03-02".to_string(), vec!["Sekiro".to_string()]),
+        ],
+        "without the sessions of the other games"
+    );
+    assert_eq!(
+        days(NaiveDate::from_ymd_opt(2026, 4, 1), Some("Dark Souls")),
+        [
+            ("2026-03-02".to_string(), vec!["Dark Souls".to_string()]),
+            ("2026-01-15".to_string(), vec!["Dark Souls".to_string()]),
+        ],
+        "from the end of a month"
+    );
+    assert_eq!(
+        days(NaiveDate::from_ymd_opt(2026, 4, 1), None)[0].1,
+        ["Dark Souls", "Sekiro"],
+        "every game without a filter"
     );
 }

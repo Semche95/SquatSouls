@@ -61,6 +61,8 @@ export function setup(over = {}) {
     get_session: idleSession(),
     get_history: [],
     count_active_days: 0,
+    get_history_games: [],
+    get_history_months: [],
     get_last_game: 'er',
     set_last_game: undefined,
     get_onboarding_seen: true,

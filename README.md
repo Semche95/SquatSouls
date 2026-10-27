@@ -30,7 +30,7 @@ Pick your games from a catalog of ready-to-play ones, or set up your own, with y
 - Recovery countdown between exercises.
 - A timer for planks and other timed exercises, on each side if needed, that marks the exercise done when it ends.
 - The session in progress is saved as it goes and resumes after quitting or a crash.
-- Summary of the session and of the last 7 days, plus the full history, each session copyable to paste in a messaging app.
+- Summary of the session and of the last 7 days, plus the full history by month and game, each session copyable to paste in a messaging app.
 - Keyboard shortcuts, detection of the running Steam game, notification area icon.
 - Share games and exercises with other players.
 - Interface in English and French.

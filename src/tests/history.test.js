@@ -68,13 +68,13 @@ describe('history', () => {
     await flushPromises();
     await w.find('.group:not(.current) .group-head button').trigger('click');
     await flushPromises();
-    expect(invoke).toHaveBeenCalledWith('get_full_history', { before: null, days: 60 });
+    expect(invoke).toHaveBeenCalledWith('get_full_history', { before: null, days: 60, game: null });
     expect(w.find('.full .group-title').text()).toBe('Full history');
     expect(w.findAll('.full .days li')).toHaveLength(60);
 
     intersect();
     await flushPromises();
-    expect(invoke).toHaveBeenCalledWith('get_full_history', { before: '2026-08-12', days: 60 });
+    expect(invoke).toHaveBeenCalledWith('get_full_history', { before: '2026-08-12', days: 60, game: null });
     expect(w.findAll('.full .days li')).toHaveLength(61);
     expect(w.findAll('.full .days li')[60].text()).toContain(formatDay('2026-08-11'));
 
@@ -85,6 +85,46 @@ describe('history', () => {
 
     await w.find('.full .group-head button').trigger('click');
     expect(w.find('.full').exists()).toBe(false);
+  });
+
+  it('shows the full history of a game, from a month it was played in', async () => {
+    setup({
+      get_full_history: [{ date: '2026-10-10', sets: 1, sessions: [] }],
+      get_history_games: ['Sekiro', 'Elden Ring'],
+      get_history_months: ({ game }) => (game === 'Sekiro' ? ['2026-10'] : ['2026-10', '2026-06', '2025-12']),
+      count_active_days: (args) => (args?.game ? 1 : 3),
+    });
+    const w = await mountApp();
+    await w.findAll('.tabs button')[1].trigger('click');
+    await flushPromises();
+    await w.find('.group:not(.current) .group-head button').trigger('click');
+    await flushPromises();
+    const options = (id) => w.findAll(`#${id} option`).map((o) => o.text());
+    expect(options('history-month')).toEqual(['Most recent', 'October 2026', 'June 2026', 'December 2025']);
+    expect(options('history-game')).toEqual(['All games', 'Elden Ring', 'Sekiro']);
+    expect(w.find('.full .group-head').text()).toContain('3 days of activity');
+
+    await w.find('#history-month').setValue('2025-12');
+    await flushPromises();
+    expect(invoke).toHaveBeenLastCalledWith('get_full_history', { before: '2026-01-01', days: 60, game: null });
+
+    invoke.mockClear();
+    await w.find('#history-game').setValue('Sekiro');
+    await flushPromises();
+    expect(options('history-month')).toEqual(['Most recent', 'October 2026']);
+    expect(w.find('.full .group-head').text()).toContain('1 day of activity');
+    expect(w.find('#history-month').element.value).toBe('');
+    expect(invoke.mock.calls.filter(([cmd]) => cmd === 'get_full_history')).toEqual([['get_full_history', { before: null, days: 60, game: 'Sekiro' }]]);
+
+    await w.find('#history-month').setValue('2026-10');
+    await flushPromises();
+    expect(invoke).toHaveBeenLastCalledWith('get_full_history', { before: '2026-11-01', days: 60, game: 'Sekiro' });
+
+    await w.find('.full .group-head button').trigger('click');
+    await w.find('.group:not(.current) .group-head button').trigger('click');
+    await flushPromises();
+    expect(invoke).toHaveBeenCalledWith('get_full_history', { before: null, days: 60, game: null });
+    expect(w.find('#history-game').element.value).toBe('');
   });
 
   it('counts jokers without listing what they removed', async () => {

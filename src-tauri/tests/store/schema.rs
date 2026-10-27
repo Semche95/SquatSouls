@@ -118,7 +118,7 @@ fn database_migrated_before_refinery_keeps_its_data() {
         let path = legacy_db(name, version);
         let history = Store::open(&path, LOCALE)
             .unwrap()
-            .full_history(None, usize::MAX)
+            .full_history(None, usize::MAX, None)
             .unwrap();
         Store::open(&path, LOCALE).unwrap().steam_names().unwrap();
         let applied = applied(&path);
@@ -163,7 +163,7 @@ fn sessions_and_sets_receive_uuids_once_migrated() {
         )
         .unwrap();
     let store = Store::open(&path, LOCALE).unwrap();
-    let days = store.full_history(None, usize::MAX).unwrap();
+    let days = store.full_history(None, usize::MAX, None).unwrap();
     let (session, seen) = store.current_session().unwrap().unwrap();
     let ids: Vec<String> = connect(&path)
         .prepare("SELECT id FROM sets ORDER BY at, id")
