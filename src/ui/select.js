@@ -29,8 +29,9 @@ class Select extends TomSelect {
 const snapshot = (el) => JSON.stringify([el.value, el.disabled, [...el.options].map((o) => [o.value, o.text, o.disabled])]);
 
 // Draws a native select with Tom Select, the select Vue renders staying the source of truth. No search field, and
-// the empty option ("Choose a game", "Copy nothing") shown like the others rather than as a placeholder.
-const settings = { controlInput: null, openOnFocus: false, allowEmptyOption: true };
+// the empty option ("Choose a game", "Copy nothing") shown like the others rather than as a placeholder, and every
+// option listed, where Tom Select stops at 50.
+const settings = { controlInput: null, openOnFocus: false, allowEmptyOption: true, maxOptions: null };
 
 // With `v-select="{ search, none }"`, a field at the top of the list filters it, `search` its placeholder and `none`
 // what it says when no option matches. The options keep their order while filtered, without highlighting the text typed,

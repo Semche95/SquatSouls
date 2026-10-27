@@ -76,6 +76,15 @@ describe('select', () => {
     w.unmount();
   });
 
+  it('lists every option, however many there are', async () => {
+    const many = Array.from({ length: 120 }, (_, i) => ({ value: `${i}`, text: `Month ${i}` }));
+    const { w, ts } = await mountSelect(many, { value: '0' });
+    ts.control.click();
+    ts.refreshOptions();
+    expect(ts.dropdown_content.querySelectorAll('.option')).toHaveLength(120);
+    w.unmount();
+  });
+
   it('keeps its value on Backspace and Delete', async () => {
     const { w, value, ts } = await mountSelect(games, { value: 'er' });
     ts.focus();
