@@ -1,38 +1,26 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
-import { daySummary, formatDay, formatDuration, formatTime, sessionSummary } from '../i18n/format.js';
+import { computed, onMounted, ref } from 'vue';
+import { formatTime, sessionSummary } from '../i18n/format.js';
 import { t } from '../i18n/i18n.js';
 import { useApi } from '../composables/useApi.js';
 import { useConfig } from '../composables/useConfig.js';
+import { useCopy } from '../composables/useCopy.js';
 import { useSession } from '../composables/useSession.js';
-import { useKeydown } from '../composables/useKeydown.js';
+import FullHistory from './FullHistory.vue';
+import HistoryDays from './HistoryDays.vue';
 
-// How long a copy button reads "Copied".
-const COPIED_MS = 2000;
-// Days of the full history loaded at a time.
-const FULL_HISTORY_DAYS = 60;
-
-const { error, call } = useApi();
+const { call } = useApi();
 const { config } = useConfig();
 const { session } = useSession();
+const { copied, copy } = useCopy();
 
 const history = ref([]);
-// Full history, shown large over the History tab (null when closed).
-const fullHistory = ref(null);
-// End of the full history: the older days load once it comes into view.
-const fullEnd = ref(null);
-// Page of days being loaded, null when none is.
-let loading = null;
-const observer = new IntersectionObserver(([entry]) => {
-  if (entry.isIntersecting && !loading) loadDays();
-});
+// Full history, shown large over the History tab.
+const full = ref(false);
 // Days with at least one set, ever: a count that only goes up.
 const activeDays = ref(0);
 // Game set on the session's first event, absent before.
 const gameName = computed(() => config.value?.games.find((g) => g.id === session.value.gameId)?.name);
-// Copy button that last copied its summary, '' after a while.
-const copied = ref('');
-let copiedTimer;
 
 // The current session lasts until now, without the time the app was closed; its events follow the order of the
 // game's events.
@@ -51,50 +39,6 @@ function currentSummary() {
   });
 }
 
-async function copySummary(key, text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    copied.value = key;
-    clearTimeout(copiedTimer);
-    copiedTimer = setTimeout(() => (copied.value = ''), COPIED_MS);
-  } catch (e) {
-    error.value = t('common.copyFailed', { error: String(e) });
-  }
-}
-
-// Opens the full history, or loads the days older than those shown.
-async function loadDays() {
-  const shown = fullHistory.value ?? [];
-  const page = call('get_full_history', { before: shown.at(-1)?.date ?? null, days: FULL_HISTORY_DAYS });
-  loading = page;
-  try {
-    const days = await page;
-    // Closed or reopened meanwhile.
-    if (loading !== page) return;
-    fullHistory.value = [...shown, ...days];
-    await nextTick();
-    // Observing again checks right away whether the end is still in view.
-    observer.disconnect();
-    if (days.length === FULL_HISTORY_DAYS) observer.observe(fullEnd.value);
-  } catch {
-    /* error already shown */
-  } finally {
-    if (loading === page) loading = null;
-  }
-}
-
-function closeFullHistory() {
-  fullHistory.value = null;
-  loading = null;
-  observer.disconnect();
-}
-
-useKeydown((e) => {
-  if (fullHistory.value && e.code === 'Escape') closeFullHistory();
-});
-
-onUnmounted(() => observer.disconnect());
-
 onMounted(async () => {
   try {
     [history.value, activeDays.value] = await Promise.all([call('get_history', { days: 7 }), call('count_active_days')]);
@@ -110,7 +54,7 @@ onMounted(async () => {
       <header class="group-head">
         <h2 class="group-title">{{ t('history.current') }}</h2>
         <span class="muted"><template v-if="gameName">{{ gameName }} · </template>{{ session.startedAt ? t('history.since', { time: formatTime(session.startedAt) }) : t('history.notStarted') }}</span>
-        <button v-if="session.sets" class="ghost" @click="copySummary('current', currentSummary())">
+        <button v-if="session.sets" class="ghost" @click="copy('current', currentSummary())">
           {{ t(copied === 'current' ? 'history.copiedSummary' : 'history.copy') }}
         </button>
       </header>
@@ -143,41 +87,14 @@ onMounted(async () => {
       </div>
     </section>
 
-    <section class="group" :class="{ full: fullHistory }">
+    <section class="group">
       <header class="group-head">
-        <h2 class="group-title">{{ t(fullHistory ? 'history.fullHistory' : 'history.lastDays') }}</h2>
-        <span class="muted"><template v-if="!fullHistory">{{ t('history.bySession') }} · </template>{{ t('history.activeDays', activeDays) }}</span>
-        <button v-if="fullHistory" class="ghost" @click="closeFullHistory">{{ t('history.close') }}</button>
-        <button v-else class="ghost" @click="loadDays">{{ t('history.seeAll') }}</button>
+        <h2 class="group-title">{{ t('history.lastDays') }}</h2>
+        <span class="muted">{{ t('history.bySession') }} · {{ t('history.activeDays', activeDays) }}</span>
+        <button class="ghost" @click="full = true">{{ t('history.seeAll') }}</button>
       </header>
-      <p v-if="fullHistory && !fullHistory.length" class="muted">{{ t('history.noHistory') }}</p>
-      <ul class="days">
-        <li v-for="d in fullHistory ?? history" :key="d.date" :class="{ off: !d.sets }">
-          <span class="day">
-            {{ formatDay(d.date) }}
-            <button v-if="d.sessions?.length > 1" class="link" @click="copySummary(d.date, daySummary(d))">
-              {{ t(copied === d.date ? 'history.copiedSummary' : 'history.copyDay') }}
-            </button>
-          </span>
-          <span v-if="!d.sets" class="muted">{{ t('history.rest') }}</span>
-          <span v-else class="day-body">
-            <span v-for="se in d.sessions" :key="se.start + se.game" class="day-session">
-              <span class="day-games">
-                {{ formatTime(se.start) }} · {{ se.game }} · {{ formatDuration(se.duration) }}
-                <button class="link" @click="copySummary(se.start + se.game, sessionSummary(se))">
-                  {{ t(copied === se.start + se.game ? 'history.copiedSummary' : 'history.copy') }}
-                </button>
-              </span>
-              <span class="day-totals">
-                <span v-for="total in se.totals" :key="total.exercise + total.unit" class="chip">
-                  {{ total.exercise }} {{ total.amount }} {{ total.unit }}
-                </span>
-              </span>
-            </span>
-          </span>
-        </li>
-      </ul>
-      <div v-if="fullHistory" ref="fullEnd"></div>
+      <HistoryDays :days="history" />
     </section>
+    <FullHistory v-if="full" :active-days="activeDays" @close="full = false" />
   </main>
 </template>
