@@ -4,3 +4,9 @@ src-tauri/target/
 src-tauri/gen/
 .playwright-mcp/
 _site/
+.claude/*
+!.claude/rules/
+!.claude/agents/
+!.claude/hooks/
+!.claude/settings.json
+CLAUDE.local.md

@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(**/squatsouls.db)",
+      "Edit(**/squatsouls.db)",
+      "Write(**/squatsouls.db)",
+      "Read(~/.config/com.semche.squatsouls/squatsouls.*)",
+      "Edit(~/.config/com.semche.squatsouls/squatsouls.*)",
+      "Write(~/.config/com.semche.squatsouls/squatsouls.*)",
+      "Bash(*squatsouls.db*)",
+      "Read(~/.tauri/**)",
+      "Read(**/*.key)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Bash(git push *)",
+      "Bash(gh *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-bash.sh" }]
+      },
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [{ "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect-migrations.sh" }]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [{ "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/format-lint.sh" }]
+      }
+    ]
+  }
+}
