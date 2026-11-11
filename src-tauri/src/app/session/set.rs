@@ -42,10 +42,11 @@ impl DrawItem {
         .at(intensity)
     }
 
-    /// Takes as number the drawn one scaled by `intensity`, halved first if it was.
+    /// Takes as number the drawn one scaled by `intensity`, then halved if it was, as the joker halves the number
+    /// shown: recomputing it at the same intensity never changes it.
     pub(super) fn at(self, intensity: Intensity) -> Self {
         if self.halved {
-            let amount = intensity.scale(intensity.halve(self.base));
+            let amount = intensity.halve(intensity.scale(self.base));
             DrawItem { amount, ..self }
         } else {
             let amount = intensity.scale(self.base);

@@ -39,12 +39,16 @@ fn complete(s: &mut Session, id: &str, now: i64) -> Result<Vec<LogEntry>, AppErr
 
 /// Session where a completed "boss no hit" earned 2 jokers, with a two-exercise boss set pending.
 fn session_with_jokers() -> (Session, Draw) {
-    let cfg = catalog_config(Language::Fr);
+    session_with_jokers_in(&catalog_config(Language::Fr))
+}
+
+/// Same session, drawn from `cfg`.
+fn session_with_jokers_in(cfg: &Config) -> (Session, Draw) {
     let mut s = Session::default();
     let mut r = rng();
     let nohit = s
         .draw(
-            &cfg,
+            cfg,
             &game_id("ds3"),
             &event_id("ds3", "Boss defeated without getting hit"),
             0,
@@ -62,7 +66,7 @@ fn session_with_jokers() -> (Session, Draw) {
     assert_eq!(s.view().jokers, 2, "earned on completion");
     let boss = s
         .draw(
-            &cfg,
+            cfg,
             &game_id("ds3"),
             &event_id("ds3", "Boss defeated"),
             0,

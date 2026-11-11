@@ -72,16 +72,32 @@ fn a_new_intensity_rescales_the_amounts_to_do_from_the_drawn_ones() {
 }
 
 #[test]
-fn a_new_intensity_rescales_a_halved_amount_from_the_halved_drawn_one() {
+fn a_new_intensity_rescales_a_halved_amount_from_the_drawn_one_then_halves_it() {
     let (mut s, boss) = session_with_jokers();
     let item = &boss.items[0];
     s.halve(&boss.id, &item.exercise_id).unwrap();
     for intensity in [Intensity::Hard, Intensity::Easy] {
         s.set_intensity(intensity);
         let halved = &pending(&s, &boss.id).unwrap().items[0];
-        assert_eq!(halved.amount, intensity.scale(intensity.halve(item.amount)));
+        assert_eq!(halved.amount, intensity.halve(intensity.scale(item.amount)));
         assert_eq!(halved.halve_cost, None, "still halved");
     }
+}
+
+/// Every trigger applies the intensity again: a number halved at Hard stays the half of the one shown.
+#[test]
+fn a_number_halved_at_hard_keeps_its_half_when_the_intensity_applies_again() {
+    let mut cfg = catalog_config(Language::Fr);
+    for ex in &mut cfg.exercises {
+        (ex.min, ex.max) = (5, 5);
+    }
+    let (mut s, boss) = session_with_jokers_in(&cfg);
+    s.set_intensity(Intensity::Hard);
+    let id = &boss.items[0].exercise_id;
+    assert_eq!(pending(&s, &boss.id).unwrap().items[0].amount, 8);
+    s.halve(&boss.id, id).unwrap();
+    s.set_intensity(Intensity::Hard);
+    assert_eq!(pending(&s, &boss.id).unwrap().items[0].amount, 4);
 }
 
 #[test]
