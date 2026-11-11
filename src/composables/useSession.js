@@ -49,9 +49,13 @@ export const [provideSession, useSession] = defineShared(({ call }, { config, dr
 
   function startRecovery(item) {
     recovering.value = item;
-    recovery.start(recoveryAfter(item), () => {
-      if (config.value.sound) recoveryEnd();
-    });
+    const seconds = recoveryAfter(item);
+    // A 0 s recovery starts none, so it has no end to ring.
+    if (seconds) {
+      recovery.start(seconds, () => {
+        if (config.value.sound) recoveryEnd();
+      });
+    }
   }
 
   function skipRecovery() {

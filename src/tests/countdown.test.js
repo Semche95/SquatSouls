@@ -168,9 +168,10 @@ describe('countdown', () => {
       expect(w.find('.countdown-left').text()).toBe('1:30');
     });
 
-    it('does not start a recovery when every recovery is 0', async () => {
+    it('does not start a recovery, nor ring its bell, when every recovery is 0', async () => {
       const w = await completeOne(pushUps, 0, 0);
       expect(await sealShown(w)).toBe(false);
+      expect(recoveryEnd).not.toHaveBeenCalled();
     });
   });
 
