@@ -1,0 +1,54 @@
+{
+  "id": "01a1ca58-7735-72bc-b3ce-3b4434f1adb7",
+  "name": "Outlast",
+  "steamAppId": 238320,
+  "events": [
+    {
+      "id": "01a1ca58-7738-759e-b439-c4ea55811cf0",
+      "name": { "en": "Death", "fr": "Mort" },
+      "draws": 1,
+      "maxPerSession": 15,
+      "jokers": 0
+    },
+    {
+      "id": "01a1ca58-7738-759e-b439-c859149f05ff",
+      "name": { "en": "Checkpoint reached", "fr": "Checkpoint atteint" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a1ca58-7738-759e-b439-cfc6ea4c0858",
+      "name": { "en": "Batteries found", "fr": "Piles trouvées" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a1ca58-7738-759e-b439-d28ce3e8e90e",
+      "name": { "en": "Document or recording found", "fr": "Document ou enregistrement trouvé" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a1ca58-7738-759e-b439-d585bd7ab554",
+      "name": { "en": "Chase escaped", "fr": "Poursuite semée" },
+      "draws": 1,
+      "maxPerSession": 10,
+      "jokers": 0
+    },
+    {
+      "id": "01a1ca58-7738-759e-b439-d87338d3c9c0",
+      "name": { "en": "Chapter completed", "fr": "Chapitre terminé" },
+      "draws": 2,
+      "jokers": 0
+    },
+    {
+      "id": "01a1ca58-7738-759e-b439-dce8c33cf052",
+      "name": { "en": "Chapter completed without dying", "fr": "Chapitre terminé sans mourir" },
+      "draws": 2,
+      "jokers": 1
+    }
+  ]
+}
