@@ -43,6 +43,8 @@ fn repair_brings_a_configuration_within_the_limits() {
     cfg.exercises[2].recovery = Some(u32::MAX);
     cfg.games[0].events[0].max_per_session = Some(u32::MAX);
     cfg.games[0].events[0].jokers = u32::MAX;
+    cfg.games[0].events[0].draws = 0;
+    cfg.games[0].events[1].draws = u32::MAX;
     assert!(cfg.repair());
     cfg.validate().unwrap();
     assert_eq!((cfg.recovery, cfg.timer_prep), (MAX_SECONDS, MAX_SECONDS));
@@ -58,4 +60,8 @@ fn repair_brings_a_configuration_within_the_limits() {
     assert_eq!(cfg.exercises[2].recovery, Some(MAX_SECONDS));
     assert_eq!(cfg.games[0].events[0].max_per_session, Some(MAX_AMOUNT));
     assert_eq!(cfg.games[0].events[0].jokers, MAX_AMOUNT);
+    assert_eq!(
+        (cfg.games[0].events[0].draws, cfg.games[0].events[1].draws),
+        (1, MAX_ITEMS as u32)
+    );
 }

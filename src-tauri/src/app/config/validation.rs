@@ -116,7 +116,9 @@ impl Config {
             changed |= NAME.repair(&mut game.name, &game.id) | (game.events.len() > MAX_ITEMS);
             game.events.truncate(MAX_ITEMS);
             for ev in &mut game.events {
-                changed |= NAME.repair(&mut ev.name, &ev.id) | clamp(&mut ev.jokers, 0, MAX_AMOUNT);
+                changed |= NAME.repair(&mut ev.name, &ev.id)
+                    | clamp(&mut ev.draws, 1, MAX_ITEMS as u32)
+                    | clamp(&mut ev.jokers, 0, MAX_AMOUNT);
                 if let Some(limit) = &mut ev.max_per_session {
                     changed |= clamp(limit, 1, MAX_AMOUNT);
                 }
