@@ -201,11 +201,14 @@ describe('exercises', () => {
     await vi.waitFor(() => expect(shownTip()).toBeUndefined());
   });
 
-  it('brings a cleared required field back to 0 when leaving it', async () => {
+  it('reports a cleared required field while typing, then brings it back to 0 when leaving it', async () => {
     setup();
     await openExercises();
     const min = editDialog().find('input[aria-label="Minimum"]');
+    await min.trigger('focus');
     await min.setValue('');
+    expect(min.attributes('aria-invalid')).toBe('true');
+    await vi.waitFor(() => expect(shownTip()).toBe('at least 1'));
     await min.trigger('change');
     expect(min.element.value).toBe('0');
   });

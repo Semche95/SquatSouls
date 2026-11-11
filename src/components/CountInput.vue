@@ -13,7 +13,11 @@ const value = (t) => {
   const v = parseCount(t);
   return v === '' && props.optional ? undefined : v;
 };
-const error = computed(() => countError(value(text.value), props.bounds));
+// A cleared required field is checked as the 0 it becomes, so its error shows while typing, as on Save.
+const error = computed(() => {
+  const v = value(text.value);
+  return countError(v === '' ? 0 : v, props.bounds);
+});
 // The error shows right away while typing; outside the field, only on hover.
 const focused = ref(false);
 
