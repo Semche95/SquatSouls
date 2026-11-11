@@ -64,7 +64,20 @@ pub(crate) fn on_run_event(app: &AppHandle, event: RunEvent) {
 }
 
 /// Adds or removes the icon depending on the configuration. No icon until the interface has sent its texts.
+/// Without an icon, turned off or failing to build, a window started hidden is shown, as nothing could show it.
 pub(crate) fn apply(app: &AppHandle, state: &AppState) -> tauri::Result<()> {
+    let placed = place(app, state);
+    if app.tray_by_id(TRAY_ID).is_none() {
+        if let Some(window) = app.get_webview_window(main_window::LABEL) {
+            if window.is_visible().is_ok_and(|visible| !visible) {
+                show_main(app);
+            }
+        }
+    }
+    placed
+}
+
+fn place(app: &AppHandle, state: &AppState) -> tauri::Result<()> {
     let texts = state.native_texts.as_ref().filter(|_| state.config.tray);
     match (texts, app.tray_by_id(TRAY_ID)) {
         (Some(texts), None) => build(app, texts),
@@ -124,17 +137,17 @@ fn build(app: &AppHandle, texts: &NativeTexts) -> tauri::Result<()> {
     Ok(())
 }
 
-/// With the icon and the setting, closing the window hides it: the app and detection keep running.
+/// With the icon and the setting, closing the window hides it: the app and detection keep running. The icon
+/// itself is checked, not its setting, since it may be missing: its texts not received yet, or failing to build.
 /// Otherwise, closing it during a session waits for the quit confirmation.
 pub(crate) fn on_window_event(window: &Window, event: &WindowEvent) {
     let WindowEvent::CloseRequested { api, .. } = event else {
         return;
     };
-    let hide = window.try_state::<Mutex<AppState>>().is_some_and(|state| {
-        state
-            .lock()
-            .is_ok_and(|s| s.config.tray && s.config.close_to_tray)
-    });
+    let hide = window.app_handle().tray_by_id(TRAY_ID).is_some()
+        && window
+            .try_state::<Mutex<AppState>>()
+            .is_some_and(|state| state.lock().is_ok_and(|s| s.config.close_to_tray));
     if hide {
         api.prevent_close();
         let _ = window.hide();
