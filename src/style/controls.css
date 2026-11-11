@@ -31,7 +31,7 @@
   font-weight: 600;
 }
 .primary:hover {
-  background: #d8b46c;
+  background: var(--gold-hover);
 }
 .primary:disabled {
   background: var(--gold);
@@ -41,7 +41,7 @@
   background: transparent;
 }
 .ghost:disabled {
-  border-color: var(--line);
+  border-color: var(--control-line);
 }
 .danger {
   border-color: var(--red);
@@ -57,7 +57,7 @@
   color: inherit;
   width: 100%;
   background-color: var(--panel-2);
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-line);
   border-radius: 8px;
   padding-block: 6px;
   padding-left: 8px;
@@ -129,7 +129,7 @@ input[type='checkbox']:checked::before {
   background: var(--bg);
 }
 input[type='checkbox']:focus-visible {
-  outline: 2px solid var(--gold-soft);
+  outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
 :is(.setting, .config, .edit-dialog) .hint {
@@ -142,7 +142,7 @@ input[type='checkbox']:focus-visible {
   display: flex;
   align-items: center;
   flex: none;
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-line);
   border-radius: 8px;
 }
 .stepper button {

@@ -7,7 +7,7 @@
   display: flex;
   gap: 4px;
   background: var(--panel);
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-line);
   border-radius: 10px;
   padding: 3px;
 }
@@ -23,8 +23,13 @@
   background: var(--gold-soft);
   color: var(--text);
 }
+/* The current tab is framed like a control (3:1), the others keep a transparent edge so that nothing shifts. */
+.tabs button {
+  border: 1px solid transparent;
+}
 .tabs button.active {
   background: var(--panel-2);
+  border-color: var(--control-line);
   color: var(--text);
 }
 .segmented button.active {

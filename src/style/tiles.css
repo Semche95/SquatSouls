@@ -20,8 +20,7 @@
   min-height: 104px;
   padding: 14px;
   background: var(--panel);
-  /* Lighter than the usual line, so that the tile stands out from the page (3:1 against the background). */
-  border-color: color-mix(in srgb, var(--muted) 35%, var(--line));
+  border-color: var(--control-line);
   border-radius: var(--radius);
   text-align: left;
   /* Long names and numbers wrap inside the tile rather than widening its column. */

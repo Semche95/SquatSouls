@@ -15,7 +15,7 @@
   cursor: pointer;
 }
 .ts-control {
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-line);
   border-radius: 8px;
   outline: none;
   transition: border-color 0.12s;

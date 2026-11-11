@@ -31,9 +31,10 @@
   flex-direction: column;
   gap: 2px;
   padding: 8px 12px 9px;
-  background: var(--panel-2);
-  border: 1px solid var(--line);
+  background: var(--field-bg);
+  border: 1px solid var(--control-line);
   border-radius: 8px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition: border-color 0.12s;
 }
 .play-game > .tip {
@@ -67,20 +68,17 @@
   width: 12px;
   height: 6px;
   background-size: 6px 6px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--gold) 50%),
+    linear-gradient(135deg, var(--gold) 50%, transparent 50%);
 }
 .play-game .ts-dropdown .option {
   padding: 8px 12px;
 }
 .play-game:has(.ts-wrapper:not(.disabled):hover),
 .play-game:has(.ts-wrapper.focus) {
-  background: color-mix(in srgb, var(--gold) 8%, var(--panel-2));
+  background: color-mix(in srgb, var(--gold) 10%, var(--field-bg));
   border-color: var(--gold);
-}
-.play-game .ts-wrapper:not(.disabled):hover .ts-control::after,
-.play-game .ts-wrapper.focus .ts-control::after {
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--gold) 50%),
-    linear-gradient(135deg, var(--gold) 50%, transparent 50%);
 }
 /* Without a game yet, disabled like any field; locked during the session, no frame nor arrow, the name stays as the
    title. */
@@ -117,6 +115,25 @@
 .play-limit .ts-control {
   height: var(--h);
 }
+.play-options .segmented,
+.play-options .stepper,
+.play-limit .ts-control {
+  --select-bg: var(--field-bg);
+  background: var(--field-bg);
+}
+/* Value of the limit: same face as the other fields, its dividers and buttons readable. */
+.play-options .stepper .count-input,
+.play-options .stepper .unit {
+  border-color: var(--control-line);
+  color: var(--text);
+}
+.play-options .stepper button {
+  color: var(--gold);
+  font-size: 1.1rem;
+}
+.play-options .segmented button:not(.active) {
+  color: var(--text);
+}
 .play-options .segmented button {
   padding: 0 8px;
   white-space: nowrap;
@@ -143,8 +160,8 @@
   text-align: left;
   padding: 12px;
   min-height: 56px;
-  background: linear-gradient(180deg, #2c2720, #221f19);
-  border-color: rgba(201, 164, 92, 0.4);
+  background: var(--event-face);
+  border-color: var(--gold-edge);
   border-radius: 12px;
   box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.06), 0 6px 16px -8px rgba(0, 0, 0, 0.8);
 }
@@ -154,7 +171,7 @@
 }
 .event:hover:not(:disabled) {
   border-color: var(--gold);
-  background: linear-gradient(180deg, #352e23, #28231b);
+  background: var(--event-face-hover);
   box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.08), 0 0 0 3px var(--gold-soft);
 }
 /* Gauge of the per-session limit, at the bottom of the tile. */

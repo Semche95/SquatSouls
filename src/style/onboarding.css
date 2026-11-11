@@ -38,10 +38,13 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--line);
+  background: var(--control-line);
   transition: background 0.2s;
 }
+/* The current step is also longer, so that it does not rest on color alone. */
 .onboarding-dots .active {
+  width: 20px;
+  border-radius: 4px;
   background: var(--gold);
 }
 .onboarding-nav {

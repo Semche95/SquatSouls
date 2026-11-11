@@ -1,10 +1,17 @@
 /* Palette and base text, shared by the app and the site (site/). The muted and ember texts stay at least 7:1 on the
-   panels (WCAG AAA). */
+   panels (WCAG AAA). --line frames the cards and divides their rows (a dark gold, 2.1 to 2.5:1 on the panels); the edge of anything
+   the user operates (fields, buttons, selects) uses --control-line, at least 3:1 on every background (WCAG 1.4.11). */
 :root {
   --bg: #12110f;
   --panel: #1b1916;
   --panel-2: #24211c;
-  --line: #3a352c;
+  --field-bg: #2f2b24;
+  --line: #615132;
+  --control-line: #847963;
+  --gold-edge: rgba(201, 164, 92, 0.6);
+  --gold-hover: #d8b46c;
+  --event-face: linear-gradient(180deg, #2c2720, #221f19);
+  --event-face-hover: linear-gradient(180deg, #352e23, #28231b);
   --text: #e9e3d5;
   --muted: #bab29f;
   --gold: #c9a45c;
